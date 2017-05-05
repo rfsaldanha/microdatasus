@@ -84,10 +84,8 @@ datasusFetch <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mes
     # Junta arquivo baixado ao conjunto
     if(!all(vars %in% names(parcela))) stop("Uma ou mais variáveis são desconhecidas. Grafia incorreta?")
     if(is.null(vars)){
-      #dados <- rbindlist(list(dados, parcela))
       dados <- rbind.fill(dados, parcela)
     } else {
-      #dados <- rbindlist(list(dados, subset(parcela, select = vars)))
       dados <- rbind.fill(dados, subset(parcela, select = vars))
     }
 
