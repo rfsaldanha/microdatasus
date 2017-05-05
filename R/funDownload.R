@@ -1,7 +1,7 @@
 # funDonwload.R
 # Download de arquivos DBC do DataSUS
 
-funDownload <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mesFim, uf="all", sistema="SIM", vars=NULL){
+datasusFetch <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mesFim, uf="all", sistema="SIM", vars=NULL){
   # Pacotes necessários
   require(lubridate)
   require(read.dbc)
@@ -10,7 +10,7 @@ funDownload <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mesF
   # Verifica sistema
   sistemas <- c("SIH-RD","SIH-RJ","SIH-SP","SIH-ER","SIM","SINASC")
   if(!(sistema %in% sistemas)) stop("Sistema de informação desconhecido!")
-  
+
   # Cria datas para verificação
   if(substr(sistema,1,3) == "SIH"){
     dataIni <- as.Date(paste0(anoIni,"-",formatC(mesIni, width = 2, format = "d", flag = "0"),"-","01"))
@@ -19,10 +19,10 @@ funDownload <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mesF
     dataIni <- as.Date(paste0(anoIni,"-01-01"))
     dataFim <- as.Date(paste0(anoFim,"-01-01"))
   }
-  
+
   # Verifica data
   if(dataIni > dataFim) stop("Ano inicial maior que ano final!")
-    
+
   # Cria sequência de datas
   if(substr(sistema,1,3) == "SIH"){
     datas <- seq(dataIni, dataFim, by = "month")
@@ -31,19 +31,19 @@ funDownload <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mesF
     datas <- seq(dataIni, dataFim, by = "year")
     datas <- year(datas)
   }
-  
-  
+
+
   # Verifica sigla estados
   ufs <- c("AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO")
   if(!all((uf %in% c("all",ufs)))) stop("Sigla UF incorreta")
-  
+
   # Cria sequência de download baseado na data e UF
   if(all(uf == "all")) {
     extensao <- as.vector(sapply(ufs, paste0, datas,".dbc"))
   } else {
     extensao <- as.vector(sapply(uf, paste0, datas,".dbc"))
   }
-  
+
   # Inicia download
   if(sistema == "SIH-RD"){
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/dados/"
@@ -64,12 +64,12 @@ funDownload <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mesF
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINASC/NOV/DNRES/"
     listaArquivos <- paste0(url,"DN", extensao)
   }
-  
+
   # Baixa arquivos
   dados <- NULL
   for(arquivo in listaArquivos){
     temp <- tempfile()
-    
+
     # Tenta baixar
     tryCatch({
       download.file(arquivo, temp)
@@ -80,7 +80,7 @@ funDownload <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mesF
       message("Mensagem de erro original:")
       conditionMessage(cond)
     })
-    
+
     # Junta arquivo baixado ao conjunto
     if(!all(vars %in% names(parcela))) stop("Uma ou mais variáveis são desconhecidas. Grafia incorreta?")
     if(is.null(vars)){
@@ -90,7 +90,7 @@ funDownload <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mesF
       #dados <- rbindlist(list(dados, subset(parcela, select = vars)))
       dados <- rbind.fill(dados, subset(parcela, select = vars))
     }
-    
+
   }
   # Retorna objeto
   return(dados)
