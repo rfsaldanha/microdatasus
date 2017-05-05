@@ -1,7 +1,7 @@
 Package: downloadDataSUS
 Type: Package
 Title: Download and preprocessing DataSUS DBC files
-Version: 0.1.0
+Version: 0.1.1
 Author: Raphael de Freitas Saldanha
 Maintainer: Raphael de Freitas Saldanha <rfsaldanha@gmail.com>
 Description: Download files microdata files (DBC format) from DataSUS, convert them using the read.dbc package and preprocess the files for use.
