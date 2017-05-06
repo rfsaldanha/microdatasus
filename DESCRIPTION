@@ -1,17 +1,20 @@
 Package: downloadDataSUS
 Type: Package
-Title: Download and preprocessing DataSUS DBC files
+Title: Download and preprocess DataSUS files
+Description: Download microdata files (DBC format) from DataSUS, convert them using the read.dbc package and preprocess the files for use.
 Version: 0.1.1
-Author: Raphael de Freitas Saldanha
-Maintainer: Raphael de Freitas Saldanha <rfsaldanha@gmail.com>
-Description: Download files microdata files (DBC format) from DataSUS, convert them using the read.dbc package and preprocess the files for use.
-    The download function accepts Informantion System specification (like SIM, SINASC and etc), time range and another options, and convert the data using the read.dbc package to a ready to use data.frame.
-    The preprocess function prepares the data.frame for use, like specifing factors and formatting date fields by example.
+Depends:
+    R (>= 3.3.0)
 Imports:
     data.table,
     lubridate,
     plyr,
-    read.dbc
+    read.dbc    
+Author: Raphael de Freitas Saldanha <rfsaldanha@gmail.com>
+Maintainer: Raphael de Freitas Saldanha <rfsaldanha@gmail.com>
+URL: https://github.com/rfsaldanha/downloadDataSUS
+BugReports: https://github.com/rfsaldanha/downloadDataSUS/issues
+Copyright: 2017 Raphael Saldanha
 License: MIT
 Encoding: UTF-8
 LazyData: true

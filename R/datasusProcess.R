@@ -4,7 +4,7 @@
 datasusProcess <- function(data, sistema){
   # Verifica sistema
   sistemas <- c("SIM")
-  if(!(sistema %in% sistemas)) stop("Sistema de informação desconhecido!")
+  if(!(sistema %in% sistemas)) stop("Sistema de informação desconhecido ou não implementado.")
 
   # Campos
   campos <- names(data)

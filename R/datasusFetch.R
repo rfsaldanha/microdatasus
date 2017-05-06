@@ -4,7 +4,7 @@
 datasusFetch <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mesFim, uf="all", sistema="SIM", vars=NULL){
   # Verifica sistema
   sistemas <- c("SIH-RD","SIH-RJ","SIH-SP","SIH-ER","SIM","SINASC")
-  if(!(sistema %in% sistemas)) stop("Sistema de informação desconhecido!")
+  if(!(sistema %in% sistemas)) stop("Sistema de informação desconhecido ou não implementado.")
 
   # Cria datas para verificação
   if(substr(sistema,1,3) == "SIH"){
@@ -16,7 +16,7 @@ datasusFetch <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mes
   }
 
   # Verifica data
-  if(dataIni > dataFim) stop("Ano inicial maior que ano final!")
+  if(dataIni > dataFim) stop("Período inicial maior que período final.")
 
   # Cria sequência de datas
   if(substr(sistema,1,3) == "SIH"){
@@ -30,7 +30,7 @@ datasusFetch <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mes
 
   # Verifica sigla estados
   ufs <- c("AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO")
-  if(!all((uf %in% c("all",ufs)))) stop("Sigla UF incorreta")
+  if(!all((uf %in% c("all",ufs)))) stop("Sigla de UF incorreta.")
 
   # Cria sequência de download baseado na data e UF
   if(all(uf == "all")) {
@@ -71,9 +71,8 @@ datasusFetch <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mes
       parcela <- read.dbc::read.dbc(temp)
     },
     error=function(cond) {
-      message(paste("Algo deu errado com a URL:", url))
-      message("Mensagem de erro original:")
-      conditionMessage(cond)
+      message(paste("Algo deu errado com a URL:", arquivo))
+      message("Pode ser um problema na Internet ou o arquivo ainda não existe no site do DataSUS. Os dados deste arquivo não foram inclusos no resultado final.")
     })
 
     # Junta arquivo baixado ao conjunto
