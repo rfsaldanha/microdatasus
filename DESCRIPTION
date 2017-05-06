@@ -7,6 +7,11 @@ Maintainer: Raphael de Freitas Saldanha <rfsaldanha@gmail.com>
 Description: Download files microdata files (DBC format) from DataSUS, convert them using the read.dbc package and preprocess the files for use.
     The download function accepts Informantion System specification (like SIM, SINASC and etc), time range and another options, and convert the data using the read.dbc package to a ready to use data.frame.
     The preprocess function prepares the data.frame for use, like specifing factors and formatting date fields by example.
+Imports:
+    data.table,
+    lubridate,
+    plyr,
+    read.dbc
 License: MIT
 Encoding: UTF-8
 LazyData: true

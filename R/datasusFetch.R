@@ -2,11 +2,6 @@
 # Download de arquivos DBC do DataSUS
 
 datasusFetch <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mesFim, uf="all", sistema="SIM", vars=NULL){
-  # Pacotes necessários
-  require(lubridate)
-  require(read.dbc)
-  require(plyr)
-
   # Verifica sistema
   sistemas <- c("SIH-RD","SIH-RJ","SIH-SP","SIH-ER","SIM","SINASC")
   if(!(sistema %in% sistemas)) stop("Sistema de informação desconhecido!")
@@ -26,7 +21,7 @@ datasusFetch <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mes
   # Cria sequência de datas
   if(substr(sistema,1,3) == "SIH"){
     datas <- seq(dataIni, dataFim, by = "month")
-    datas <- paste0(substr(year(datas),3,4),formatC(month(datas), width = 2, format = "d", flag = "0"))
+    datas <- paste0(substr(lubridate::year(datas),3,4),formatC(lubridate::month(datas), width = 2, format = "d", flag = "0"))
   } else if(substr(sistema,1,3) == "SIM" | sistema == "SINASC"){
     datas <- seq(dataIni, dataFim, by = "year")
     datas <- year(datas)
@@ -70,10 +65,10 @@ datasusFetch <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mes
   for(arquivo in listaArquivos){
     temp <- tempfile()
 
-    # Tenta baixar
+    # Tenta baixar e ler arquivos
     tryCatch({
       download.file(arquivo, temp)
-      parcela <- read.dbc(temp)
+      parcela <- read.dbc::read.dbc(temp)
     },
     error=function(cond) {
       message(paste("Algo deu errado com a URL:", url))
@@ -84,9 +79,9 @@ datasusFetch <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mes
     # Junta arquivo baixado ao conjunto
     if(!all(vars %in% names(parcela))) stop("Uma ou mais variáveis são desconhecidas. Grafia incorreta?")
     if(is.null(vars)){
-      dados <- rbind.fill(dados, parcela)
+      dados <- plyr::rbind.fill(dados, parcela)
     } else {
-      dados <- rbind.fill(dados, subset(parcela, select = vars))
+      dados <- plyr::rbind.fill(dados, subset(parcela, select = vars))
     }
 
   }
