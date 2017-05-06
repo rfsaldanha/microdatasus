@@ -71,6 +71,8 @@ dados <- datasusProcess(dados, "SIM")
 
 ### Dicionário de variáveis do DataSUS
 
-* [SIM](ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/Docs/Estrutura_SIM_para_CD.pdf)
-* [SINASC](ftp://ftp.datasus.gov.br/dissemin/publicos/SINASC/NOV/Docs/Estrutura_SINASC_para_CD.pdf)
-* [SIH](ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/Doc/IT_SIHSUS_1603.pdf)
+[SIM](ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/Docs/Estrutura_SIM_para_CD.pdf)
+
+[SINASC](ftp://ftp.datasus.gov.br/dissemin/publicos/SINASC/NOV/Docs/Estrutura_SINASC_para_CD.pdf)
+
+[SIH](ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/Doc/IT_SIHSUS_1603.pdf)
