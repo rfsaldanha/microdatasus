@@ -49,15 +49,22 @@ Download de dados do SIH (AIH reduzida) entre abril de 2015 a maio de 2016, esta
 dados <- datasusFetch(anoIni = 2015, mesIni = 4, anoFim = 2016, mesFim = 5, uf = "RJ", sistema = "SIH-RD")
 ```
 
+Além das AIH reduzida (`sistema = "SIH-RD"`), é possível realizar o download das AIH rejeitadas (`sistema = "SIH-RJ"`), AIH de serviços profissionais (`sistema = "SIH-SP"`) e AIH rejeitadas com código de erro (`sistema = "SIH-ER"`).
+
 ### Pré-processamento
 
 Prepara o `data.frame` dos dados recém baixados para uso, informando rótulos de fatores e tratando campos de data e idade entre outras ações, conforme a documentação do sistema de informações.
 
-**Atualmente, apenas o SIM tem a opção de pré-processamento.**
-
 ```r
 dados <- datasusProcess(dados, "SIM")
 ```
+```r
+dados <- datasusProcess(dados, "SINASC")
+```
+```r
+dados <- datasusProcess(dados, "SIH-RD")
+```
+**O processamento dos dados de SIH-RJ, SIH-SP e SIH-ER não estão implementados.**
 
 ### Notas de utilização
 
@@ -65,8 +72,8 @@ dados <- datasusProcess(dados, "SIM")
 * O download dos arquivos DBC é realizado em uma pasta temporária do sistema e apagados assim que são lidos pela função `read.dbc`.
 * A especificação da Unidade Federativa através do argumento `uf` realiza o download dos arquivos conforme separados pelo DataSUS. Para obter dados de acordo com o local de **residência**, é recomendável realizar o download de todos os estados (`uf = "all"`) e filtrar posteriormente os dados de acordo com o município ou estado de residência.
 * Alguns sistemas de informação apresentam variáveis diferentes no decorrer dos anos. Ao realizar o download de dados nestes períodos, a função `datasusFetch` acrescenta as variáveis novas preenchendo com `NA` os registros de anos em que ela não existia (através da função `plyr::rbind.fill`).
-* O Sistema de Informações Hospitalares apresenta 4 subdivisões. O download pode ser feito desta maneira: AIH reduzida `sistema = "SIH-RD"`; AIH rejeitadas `sistema = "SIH-RJ"`; AIH serviços profisionais `sistema = "SIH-SP"`; AIH rejeitas com código de erro `sistema = "SIH-ER"`.
-* Variável **idade**. A função `datasusProcess` cria três campos de idade: `IDADEhoras`, `IDADEdias`, `IDADEmeses` e `IDADEanos` de acordo com o código de tipo de idade informado pelo DataSUS.
+* Variável **idade** no SIM. A função `datasusProcess` cria três campos de idade: `IDADEhoras`, `IDADEdias`, `IDADEmeses` e `IDADEanos` de acordo com o código de tipo de idade informado pelo DataSUS.
+* Variável **idade** no SIH. Atentar para código da idade (`COD_IDADE`).
 * Os nomes de variáveis foram mantidos conforme o original do DataSUS sempre que possível. Apenas o campo `IDADE` sofre alterações. 
 
 ### Dicionário de variáveis do DataSUS
