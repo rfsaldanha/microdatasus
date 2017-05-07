@@ -6,9 +6,9 @@ Version: 0.1.2
 Depends:
     R (>= 3.3.0)
 Imports:
-    data.table,
     lubridate,
     plyr,
+    dplyr,
     read.dbc    
 Author: Raphael de Freitas Saldanha <rfsaldanha@gmail.com>
 Maintainer: Raphael de Freitas Saldanha <rfsaldanha@gmail.com>

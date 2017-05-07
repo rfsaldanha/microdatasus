@@ -64,6 +64,13 @@ dados <- datasusProcess(dados, "SINASC")
 ```r
 dados <- datasusProcess(dados, "SIH-RD")
 ```
+
+Por padrão, a função `datasusProcess` inclui informações referentes ao município de **residência** (nome completo, latitude e longitude da sede e outras). Para não incluir estas informações use o argumento `dadosMunRes = FALSE`.
+
+```r
+dados <- datasusProcess(dados, "SIM", dadosMunRes = FALSE)
+```
+
 **O processamento dos dados de SIH-RJ, SIH-SP e SIH-ER não estão implementados.**
 
 ### Notas de utilização
@@ -85,6 +92,12 @@ dados <- datasusProcess(dados, "SIH-RD")
 ## Agradecimento
 
 O desenvolvimento deste pacote não seria possível sem a função `read.dbc` criada por Daniela Petruzalek, através do pacote [*read.dbc*](https://cran.r-project.org/web/packages/read.dbc/index.html).
+
+## Como citar
+
+Peço aos usuários que citem o pacote sempre que possível.
+
+SALDANHA, Raphael de Freitas. Pacote para o R 'downloadDataSUS'. Disponível em <https://github.com/rfsaldanha/downloadDataSUS>.
 
 ## Dúvidas e sugestões
 

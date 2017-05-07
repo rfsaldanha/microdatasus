@@ -24,7 +24,7 @@ datasusFetch <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mes
     datas <- paste0(substr(lubridate::year(datas),3,4),formatC(lubridate::month(datas), width = 2, format = "d", flag = "0"))
   } else if(substr(sistema,1,3) == "SIM" | sistema == "SINASC"){
     datas <- seq(dataIni, dataFim, by = "year")
-    datas <- year(datas)
+    datas <- lubridate::year(datas)
   }
 
 

@@ -1,12 +1,12 @@
 # funPreProcessa
 # Pré-processamento de dados do DataSUS
 
-datasusProcess <- function(data, sistema){
+datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
   # Verifica sistema
   sistemas <- c("SIM","SINASC","SIH-RD")
   if(!(sistema %in% sistemas)) stop("Sistema de informação desconhecido ou não implementado.")
 
-  # Campos
+  # Coleta nome dos campos
   campos <- names(data)
 
   # Trata campos
@@ -14,6 +14,14 @@ datasusProcess <- function(data, sistema){
   # SIM
 
   if(sistema == "SIM"){
+
+    # CODMUNRES
+    if("CODMUNRES" %in% campos & dadosMunRes == TRUE){
+      data$CODMUNRES <- as.integer(as.character(data$CODMUNRES))
+      colnames(tabMun)[1] <- "CODMUNRES"
+      data <- dplyr::left_join(data, tabMun, by = "CODMUNRES")
+    }
+
     # NUMERODO
     if("NUMERODO" %in% campos){
       data$NUMERODO <- as.character(data$NUMERODO)
@@ -41,8 +49,8 @@ datasusProcess <- function(data, sistema){
     # NATURAL
     if("NATURAL" %in% campos){
       data$NATURAL <- as.character(data$NATURAL)
-      data$NATURAL <- data.table:::merge.data.table(data.frame(cod=data$NATURAL), tabNaturalidade, all.x = TRUE)$nome
-      data$NATURAL <- factor(data$NATURAL)
+      colnames(tabNaturalidade)[1] <- "NATURAL"
+      data$NATURAL <- factor(dplyr::left_join(data, tabNaturalidade, by = "NATURAL")$nome)
     }
 
     # DTNASC
@@ -291,7 +299,7 @@ datasusProcess <- function(data, sistema){
 
     # TPPOS
     if("TPPOS" %in% campos){
-      data$TPPOS <- revalue(data$TPPOS, c("N"="Não", "S"="Sim"))
+      data$TPPOS <- plyr::revalue(data$TPPOS, c("N"="Não", "S"="Sim"))
     }
 
     # DTINVESTIG
@@ -341,6 +349,14 @@ datasusProcess <- function(data, sistema){
   # SINASC
 
   } else if(sistema == "SINASC"){
+
+    # CODMUNRES
+    if("CODMUNRES" %in% campos & dadosMunRes == TRUE){
+      data$CODMUNRES <- as.integer(as.character(data$CODMUNRES))
+      colnames(tabMun)[1] <- "CODMUNRES"
+      data <- dplyr::left_join(data, tabMun, by = "CODMUNRES")
+    }
+
     # NUMERODN
     if("NUMERODN" %in% campos){
       data$NUMERODN <- as.numeric(data$NUMERODN)
@@ -508,6 +524,14 @@ datasusProcess <- function(data, sistema){
 
   # SIH-RD
   if(sistema == "SIH-RD"){
+
+    # MUNIC_RES
+    if("MUNIC_RES" %in% campos & dadosMunRes == TRUE){
+      data$MUNIC_RES <- as.integer(as.character(data$MUNIC_RES))
+      colnames(tabMun)[1] <- "MUNIC_RES"
+      data <- dplyr::left_join(data, tabMun, by = "MUNIC_RES")
+    }
+
     # ESPEC
     if("ESPEC" %in% campos){
       data$ESPEC <- as.numeric(levels(data$ESPEC))[data$ESPEC]
