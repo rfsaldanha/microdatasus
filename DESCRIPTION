@@ -2,7 +2,7 @@ Package: downloadDataSUS
 Type: Package
 Title: Download and preprocess DataSUS files
 Description: Download microdata files (DBC format) from DataSUS, convert them using the read.dbc package and preprocess the files for use.
-Version: 0.1.1
+Version: 0.1.2
 Depends:
     R (>= 3.3.0)
 Imports:
