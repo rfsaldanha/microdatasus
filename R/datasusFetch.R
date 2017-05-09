@@ -67,7 +67,7 @@ datasusFetch <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mes
 
     # Tenta baixar e ler arquivos
     tryCatch({
-      download.file(arquivo, temp)
+      download.file(arquivo, temp, mode = "wb")
       parcela <- read.dbc::read.dbc(temp)
     },
     error=function(cond) {
