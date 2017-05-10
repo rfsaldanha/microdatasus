@@ -3,11 +3,11 @@
 
 datasusFetch <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mesFim, uf="all", sistema="SIM", vars=NULL){
   # Verifica sistema
-  sistemas <- c("SIH-RD","SIH-RJ","SIH-SP","SIH-ER","SIM","SINASC")
+  sistemas <- c("SIH-RD","SIH-RJ","SIH-SP","SIH-ER","SIM","SINASC","CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB","CNES-PF","CNES-EP","CNES-RC","CNES-IN","CNES-EE","CNES-EF","CNES-GM")
   if(!(sistema %in% sistemas)) stop("Sistema de informação desconhecido ou não implementado.")
 
   # Cria datas para verificação
-  if(substr(sistema,1,3) == "SIH"){
+  if(substr(sistema,1,3) == "SIH" | substr(sistema,1,4) == "CNES"){
     dataIni <- as.Date(paste0(anoIni,"-",formatC(mesIni, width = 2, format = "d", flag = "0"),"-","01"))
     dataFim <- as.Date(paste0(anoFim,"-",formatC(mesFim, width = 2, format = "d", flag = "0"),"-","01"))
   } else if(substr(sistema,1,3) == "SIM" | sistema == "SINASC"){
@@ -19,7 +19,7 @@ datasusFetch <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mes
   if(dataIni > dataFim) stop("Período inicial maior que período final.")
 
   # Cria sequência de datas
-  if(substr(sistema,1,3) == "SIH"){
+  if(substr(sistema,1,3) == "SIH" | substr(sistema,1,4) == "CNES"){
     datas <- seq(dataIni, dataFim, by = "month")
     datas <- paste0(substr(lubridate::year(datas),3,4),formatC(lubridate::month(datas), width = 2, format = "d", flag = "0"))
   } else if(substr(sistema,1,3) == "SIM" | sistema == "SINASC"){
@@ -58,6 +58,45 @@ datasusFetch <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mes
   } else if(sistema == "SINASC") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINASC/NOV/DNRES/"
     listaArquivos <- paste0(url,"DN", extensao)
+  } else if(sistema == "CNES-LT"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/LT/"
+    listaArquivos <- paste0(url,"LT", extensao)
+  } else if(sistema == "CNES-ST"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/ST/"
+    listaArquivos <- paste0(url,"ST", extensao)
+  } else if(sistema == "CNES-DC"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/DC/"
+    listaArquivos <- paste0(url,"DC", extensao)
+  } else if(sistema == "CNES-EQ"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/EQ/"
+    listaArquivos <- paste0(url,"EQ", extensao)
+  } else if(sistema == "CNES-SR"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/SR/"
+    listaArquivos <- paste0(url,"SR", extensao)
+  } else if(sistema == "CNES-HB"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/HB/"
+    listaArquivos <- paste0(url,"HB", extensao)
+  } else if(sistema == "CNES-PF"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/PF/"
+    listaArquivos <- paste0(url,"PF", extensao)
+  } else if(sistema == "CNES-EP"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/EP/"
+    listaArquivos <- paste0(url,"EP", extensao)
+  } else if(sistema == "CNES-RC"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/RC/"
+    listaArquivos <- paste0(url,"RC", extensao)
+  } else if(sistema == "CNES-IN"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/IN/"
+    listaArquivos <- paste0(url,"IN", extensao)
+  } else if(sistema == "CNES-EE"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/EE/"
+    listaArquivos <- paste0(url,"EE", extensao)
+  } else if(sistema == "CNES-EF"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/EF/"
+    listaArquivos <- paste0(url,"EF", extensao)
+  } else if(sistema == "CNES-GM"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/GM/"
+    listaArquivos <- paste0(url,"GM", extensao)
   }
 
   # Baixa arquivos
