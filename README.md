@@ -13,7 +13,7 @@ devtools::install_github("rfsaldanha/downloadDataSUS")
 
 ## Novidades
 
-* 31/05/2017: implementaço completa do SIM
+* 31/05/2017: implementação completa do SIM
 
 
 ## Utilização
