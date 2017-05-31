@@ -2,6 +2,10 @@
 
 O pacote para o R *downloadDataSUS* apresenta funções para download dos arquivos de microdados do DataSUS (formato *DBC*), leitura dos arquivos através do pacote [*read.dbc*](https://cran.r-project.org/web/packages/read.dbc/index.html) e pré-processamento para utilização. Nesta última etapa, os rótulos e formato das variáveis são atribuídos e tratados.
 
+## Novidades
+
+* 31/05/2017: implementação completa do SIM
+
 ## Instalação
 
 A versão de *desenvolvimento* pode ser instalada no R desta forma:
@@ -10,11 +14,6 @@ A versão de *desenvolvimento* pode ser instalada no R desta forma:
 install.packages("devtools")
 devtools::install_github("rfsaldanha/downloadDataSUS")
 ```
-
-## Novidades
-
-* 31/05/2017: implementação completa do SIM
-
 
 ## Utilização
 
