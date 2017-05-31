@@ -3,7 +3,8 @@
 
 datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
   # Verifica sistema
-  sistemas <- c("SIM","SINASC","SIH-RD")
+  sisSIM <- c("SIM-DO","SIM-DOFET","SIM-DOEXT","SIM-DOINF","SIM-DOMAT")
+  sistemas <- c("SIM",sisSIM,"SINASC","SIH-RD")
   if(!(sistema %in% sistemas)) stop("Sistema de informação desconhecido ou não implementado.")
 
   # Coleta nome dos campos
@@ -13,7 +14,7 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
 
   # SIM
 
-  if(sistema == "SIM"){
+  if(sistema %in% c("SIM",sisSIM)){
 
     # Declara objetos
     ano <- NULL
@@ -158,7 +159,7 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$OCUP <- as.character(data$OCUP)
       colnames(tabOcupacao)[1] <- "OCUP"
       colnames(tabCBO)[1] <- "OCUP"
-      ano <- year(data$DTOBITO)
+      ano <- lubridate::year(data$DTOBITO)
       data$OCUP <- factor(ifelse(ano <= 2005, plyr::join(data, tabOcupacao, by = "OCUP", match = "first")$nome, dplyr::left_join(data, tabCBO, by = "OCUP")$nome))
     }
 
@@ -204,7 +205,7 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$OCUPMAE <- as.character(data$OCUPMAE)
       colnames(tabOcupacao)[1] <- "OCUPMAE"
       colnames(tabCBO)[1] <- "OCUPMAE"
-      ano <- year(data$DTOBITO)
+      ano <- lubridate::year(data$DTOBITO)
       data$OCUP <- factor(ifelse(ano <= 2005, plyr::join(data, tabOcupacao, by = "OCUPMAE", match = "first")$nome, dplyr::left_join(data, tabCBO, by = "OCUPMAE")$nome))
     }
 

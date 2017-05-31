@@ -1,9 +1,13 @@
 # funDonwload.R
 # Download de arquivos DBC do DataSUS
 
-datasusFetch <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mesFim, uf="all", sistema="SIM", vars=NULL){
+datasusFetch <- function(anoIni, mesIni, anoFim, mesFim, uf="all", sistema="SIM-DO", vars=NULL){
   # Verifica sistema
-  sistemas <- c("SIH-RD","SIH-RJ","SIH-SP","SIH-ER","SIM","SINASC","CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB","CNES-PF","CNES-EP","CNES-RC","CNES-IN","CNES-EE","CNES-EF","CNES-GM")
+  sisSIH <- c("SIH-RD","SIH-RJ","SIH-SP","SIH-ER")
+  sisSIM <- c("SIM-DO","SIM-DOFET","SIM-DOEXT","SIM-DOINF","SIM-DOMAT")
+  sisSINASC <- c("SINASC")
+  sisCNES <- c("CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB","CNES-PF","CNES-EP","CNES-RC","CNES-IN","CNES-EE","CNES-EF","CNES-GM")
+  sistemas <- c(sisSIH, sisSIM, sisSINASC, sisCNES)
   if(!(sistema %in% sistemas)) stop("Sistema de informação desconhecido ou não implementado.")
 
   # Cria datas para verificação
@@ -32,15 +36,32 @@ datasusFetch <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mes
   ufs <- c("AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO")
   if(!all((uf %in% c("all",ufs)))) stop("Sigla de UF incorreta.")
 
-  # Cria sequência de download baseado na data e UF
-  if(all(uf == "all")) {
+  # Cria sequência de download baseado no sistema, UF e data
+  if(sistema %in% sisSIM[2:length(sisSIM)]){
+    extensao <- as.vector(paste0(substr(datas, 3,4),".dbc"))
+  } else if (all(uf == "all")) {
     extensao <- as.vector(sapply(ufs, paste0, datas,".dbc"))
   } else {
     extensao <- as.vector(sapply(uf, paste0, datas,".dbc"))
   }
 
   # Inicia download
-  if(sistema == "SIH-RD"){
+  if(sistema == "SIM-DO") {
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DORES/"
+    listaArquivos <- paste0(url,"DO", extensao)
+  } else if (sistema == "SIM-DOFET") {
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
+    listaArquivos <- paste0(url,"DOFET", extensao)
+  } else if (sistema == "SIM-DOEXT") {
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
+    listaArquivos <- paste0(url,"DOEXT", extensao)
+  } else if (sistema == "SIM-DOINF") {
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
+    listaArquivos <- paste0(url,"DOINF", extensao)
+  } else if (sistema == "SIM-DOMAT") {
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
+    listaArquivos <- paste0(url,"DOMAT", extensao)
+  } else if(sistema == "SIH-RD"){
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/dados/"
     listaArquivos <- paste0(url,"RD", extensao)
   } else if(sistema == "SIH-RJ") {
@@ -52,9 +73,6 @@ datasusFetch <- function(anoIni=year(today()), mesIni, anoFim=year(today()), mes
   } else if(sistema == "SIH-ER") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/dados/"
     listaArquivos <- paste0(url,"ER", extensao)
-  } else if(sistema == "SIM") {
-    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DORES/"
-    listaArquivos <- paste0(url,"DO", extensao)
   } else if(sistema == "SINASC") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINASC/NOV/DNRES/"
     listaArquivos <- paste0(url,"DN", extensao)
