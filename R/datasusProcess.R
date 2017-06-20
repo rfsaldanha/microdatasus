@@ -531,6 +531,10 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$LOCNASC[data$LOCNASC==2] <- "Outro estabelecimento de saúde"
       data$LOCNASC[data$LOCNASC==3] <- "Domicílio"
       data$LOCNASC[data$LOCNASC==4] <- "Outros"
+      data$LOCNASC[data$LOCNASC==5] <- NA
+      data$LOCNASC[data$LOCNASC==6] <- NA
+      data$LOCNASC[data$LOCNASC==7] <- NA
+      data$LOCNASC[data$LOCNASC==8] <- NA
       data$LOCNASC[data$LOCNASC==9] <- NA
       data$LOCNASC <- factor(data$LOCNASC)
     }
@@ -538,15 +542,22 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
     # IDADEMAE
     if("IDADEMAE" %in% campos){
       data$IDADEMAE <- as.numeric(data$IDADEMAE)
+      data$IDADEMAE[data$IDADEMAE==0] <- NA
+      data$IDADEMAE[data$IDADEMAE==99] <- NA
     }
 
     # ESTCIVMAE
     if("ESTCIVMAE" %in% campos){
       data$ESTCIVMAE <- as.numeric(levels(data$ESTCIVMAE))[data$ESTCIVMAE]
+      data$ESTCIVMAE[data$ESTCIVMAE==0] <- NA
       data$ESTCIVMAE[data$ESTCIVMAE==1] <- "Solteira"
       data$ESTCIVMAE[data$ESTCIVMAE==2] <- "Casada"
       data$ESTCIVMAE[data$ESTCIVMAE==3] <- "Viúva"
-      data$ESTCIVMAE[data$ESTCIVMAE==4] <- "Separado judicialmente / divorciado"
+      data$ESTCIVMAE[data$ESTCIVMAE==4] <- "Separado judicialmente"
+      data$ESTCIVMAE[data$ESTCIVMAE==5] <- "União Consensual"
+      data$ESTCIVMAE[data$ESTCIVMAE==6] <- NA
+      data$ESTCIVMAE[data$ESTCIVMAE==7] <- NA
+      data$ESTCIVMAE[data$ESTCIVMAE==8] <- NA
       data$ESTCIVMAE[data$ESTCIVMAE==9] <- NA
       data$ESTCIVMAE <- factor(data$ESTCIVMAE)
     }
@@ -559,6 +570,9 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$ESCMAE[data$ESCMAE==3] <- "4 a 7 anos"
       data$ESCMAE[data$ESCMAE==4] <- "8 a 11 anos"
       data$ESCMAE[data$ESCMAE==5] <- "12 e mais"
+      data$ESCMAE[data$ESCMAE==6] <- NA
+      data$ESCMAE[data$ESCMAE==7] <- NA
+      data$ESCMAE[data$ESCMAE==8] <- "9 a 11"
       data$ESCMAE[data$ESCMAE==9] <- NA
       data$ESCMAE <- factor(data$ESCMAE)
     }
@@ -566,22 +580,27 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
     # QTDFILVIVO
     if("QTDFILVIVO" %in% campos){
       data$QTDFILVIVO <- as.numeric(data$QTDFILVIVO)
+      data$QTDFILVIVO[data$QTDFILVIVO==99] <- NA
     }
 
     # QTDFILMORT
     if("QTDFILMORT" %in% campos){
       data$QTDFILMORT <- as.numeric(data$QTDFILMORT)
+      data$QTDFILMORT[data$QTDFILMORT==99] <- NA
     }
 
     # GESTACAO
     if("GESTACAO" %in% campos){
       data$GESTACAO <- as.numeric(levels(data$GESTACAO))[data$GESTACAO]
+      data$GESTACAO[data$GESTACAO==0] <- NA
       data$GESTACAO[data$GESTACAO==1] <- "Menos de 22 semanas"
       data$GESTACAO[data$GESTACAO==2] <- "22 a 27 semanas"
       data$GESTACAO[data$GESTACAO==3] <- "28 a 31 semanas"
       data$GESTACAO[data$GESTACAO==4] <- "32 a 36 semanas"
       data$GESTACAO[data$GESTACAO==5] <- "37 a 41 semanas"
       data$GESTACAO[data$GESTACAO==6] <- "42 semanas e mais"
+      data$GESTACAO[data$GESTACAO==7] <- NA
+      data$GESTACAO[data$GESTACAO==8] <- NA
       data$GESTACAO[data$GESTACAO==9] <- NA
       data$GESTACAO <- factor(data$GESTACAO)
     }
@@ -589,9 +608,15 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
     # GRAVIDEZ
     if("GRAVIDEZ" %in% campos){
       data$GRAVIDEZ <- as.numeric(levels(data$GRAVIDEZ))[data$GRAVIDEZ]
+      data$GRAVIDEZ[data$GRAVIDEZ==0] <- NA
       data$GRAVIDEZ[data$GRAVIDEZ==1] <- "Única"
       data$GRAVIDEZ[data$GRAVIDEZ==2] <- "Dupla"
       data$GRAVIDEZ[data$GRAVIDEZ==3] <- "Tripla e mais"
+      data$GRAVIDEZ[data$GRAVIDEZ==4] <- NA
+      data$GRAVIDEZ[data$GRAVIDEZ==5] <- NA
+      data$GRAVIDEZ[data$GRAVIDEZ==6] <- NA
+      data$GRAVIDEZ[data$GRAVIDEZ==7] <- NA
+      data$GRAVIDEZ[data$GRAVIDEZ==8] <- NA
       data$GRAVIDEZ[data$GRAVIDEZ==9] <- NA
       data$GRAVIDEZ <- factor(data$GRAVIDEZ)
     }
@@ -599,8 +624,15 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
     # PARTO
     if("PARTO" %in% campos){
       data$PARTO <- as.numeric(levels(data$PARTO))[data$PARTO]
+      data$PARTO[data$PARTO==0] <- NA
       data$PARTO[data$PARTO==1] <- "Vaginal"
       data$PARTO[data$PARTO==2] <- "Cesáreo"
+      data$PARTO[data$PARTO==3] <- NA
+      data$PARTO[data$PARTO==4] <- NA
+      data$PARTO[data$PARTO==5] <- NA
+      data$PARTO[data$PARTO==6] <- NA
+      data$PARTO[data$PARTO==7] <- NA
+      data$PARTO[data$PARTO==8] <- NA
       data$PARTO[data$PARTO==9] <- NA
       data$PARTO <- factor(data$PARTO)
     }
@@ -608,10 +640,15 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
     # CONSULTAS
     if("CONSULTAS" %in% campos){
       data$CONSULTAS <- as.numeric(levels(data$CONSULTAS))[data$CONSULTAS]
+      data$CONSULTAS[data$CONSULTAS==0] <- NA
       data$CONSULTAS[data$CONSULTAS==1] <- "Nenhuma"
       data$CONSULTAS[data$CONSULTAS==2] <- "de 1 a 3"
       data$CONSULTAS[data$CONSULTAS==3] <- "de 4 a 6"
       data$CONSULTAS[data$CONSULTAS==4] <- "7 e mais"
+      data$CONSULTAS[data$CONSULTAS==5] <- NA
+      data$CONSULTAS[data$CONSULTAS==6] <- NA
+      data$CONSULTAS[data$CONSULTAS==7] <- NA
+      data$CONSULTAS[data$CONSULTAS==8] <- NA
       data$CONSULTAS[data$CONSULTAS==9] <- NA
       data$CONSULTAS <- factor(data$CONSULTAS)
     }
@@ -630,20 +667,23 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
     # SEXO
     if("SEXO" %in% campos){
       data$SEXO <- as.numeric(levels(data$SEXO))[data$SEXO]
+      data$SEXO[data$SEXO==0] <- NA
       data$SEXO[data$SEXO==1] <- "Masculino"
       data$SEXO[data$SEXO==2] <- "Feminino"
-      data$SEXO[data$SEXO==0] <- NA
+      data$SEXO[data$SEXO==9] <- NA
       data$SEXO <- factor(data$SEXO)
     }
 
     # APGAR1
     if("APGAR1" %in% campos){
       data$APGAR1 <- as.numeric(data$APGAR1)
+      data$APGAR1[data$APGAR1==99] <- NA
     }
 
     # APGAR5
     if("APGAR5" %in% campos){
       data$APGAR5 <- as.numeric(data$APGAR5)
+      data$APGAR5[data$APGAR5==99] <- NA
     }
 
     # RACACOR
@@ -660,6 +700,8 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
     # PESO
     if("PESO" %in% campos){
       data$PESO <- as.numeric(data$PESO)
+      data$PESO[data$PESO==0] <- NA
+      data$PESO[data$PESO==9999] <- NA
     }
 
     # IDANOMAL
@@ -667,6 +709,12 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$IDANOMAL <- as.numeric(levels(data$IDANOMAL))[data$IDANOMAL]
       data$IDANOMAL[data$IDANOMAL==1] <- "Sim"
       data$IDANOMAL[data$IDANOMAL==2] <- "Não"
+      data$IDANOMAL[data$IDANOMAL==3] <- NA
+      data$IDANOMAL[data$IDANOMAL==4] <- NA
+      data$IDANOMAL[data$IDANOMAL==5] <- NA
+      data$IDANOMAL[data$IDANOMAL==6] <- NA
+      data$IDANOMAL[data$IDANOMAL==7] <- NA
+      data$IDANOMAL[data$IDANOMAL==8] <- NA
       data$IDANOMAL[data$IDANOMAL==9] <- NA
       data$IDANOMAL <- factor(data$IDANOMAL)
     }
@@ -683,6 +731,21 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$DTRECEBIM <- as.Date(data$DTRECEBIM, format = "%d%m%Y")
     }
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   # SIH-RD
   if(sistema == "SIH-RD"){
