@@ -7,11 +7,12 @@ datasusFetch <- function(anoIni, mesIni, anoFim, mesFim, uf="all", sistema="SIM-
   sisSIM <- c("SIM-DO","SIM-DOFET","SIM-DOEXT","SIM-DOINF","SIM-DOMAT")
   sisSINASC <- c("SINASC")
   sisCNES <- c("CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB","CNES-PF","CNES-EP","CNES-RC","CNES-IN","CNES-EE","CNES-EF","CNES-GM")
-  sistemas <- c(sisSIH, sisSIM, sisSINASC, sisCNES)
+  sisSIA <- c("SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD")
+  sistemas <- c(sisSIH, sisSIM, sisSINASC, sisCNES, sisSIA)
   if(!(sistema %in% sistemas)) stop("Sistema de informação desconhecido ou não implementado.")
 
   # Cria datas para verificação
-  if(substr(sistema,1,3) == "SIH" | substr(sistema,1,4) == "CNES"){
+  if(substr(sistema,1,3) == "SIH" | substr(sistema,1,4) == "CNES" | substr(sistema,1,3) == "SIA"){
     dataIni <- as.Date(paste0(anoIni,"-",formatC(mesIni, width = 2, format = "d", flag = "0"),"-","01"))
     dataFim <- as.Date(paste0(anoFim,"-",formatC(mesFim, width = 2, format = "d", flag = "0"),"-","01"))
   } else if(substr(sistema,1,3) == "SIM" | sistema == "SINASC"){
@@ -23,7 +24,7 @@ datasusFetch <- function(anoIni, mesIni, anoFim, mesFim, uf="all", sistema="SIM-
   if(dataIni > dataFim) stop("Período inicial maior que período final.")
 
   # Cria sequência de datas
-  if(substr(sistema,1,3) == "SIH" | substr(sistema,1,4) == "CNES"){
+  if(substr(sistema,1,3) == "SIH" | substr(sistema,1,4) == "CNES" | substr(sistema,1,3) == "SIA"){
     datas <- seq(dataIni, dataFim, by = "month")
     datas <- paste0(substr(lubridate::year(datas),3,4),formatC(lubridate::month(datas), width = 2, format = "d", flag = "0"))
   } else if(substr(sistema,1,3) == "SIM" | sistema == "SINASC"){
@@ -115,6 +116,42 @@ datasusFetch <- function(anoIni, mesIni, anoFim, mesFim, uf="all", sistema="SIM-
   } else if(sistema == "CNES-GM"){
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/GM/"
     listaArquivos <- paste0(url,"GM", extensao)
+  } else if(sistema == "SIA-AB"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
+    listaArquivos <- paste0(url,"AB", extensao)
+  } else if(sistema == "SIA-ABO"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
+    listaArquivos <- paste0(url,"ABO", extensao)
+  } else if(sistema == "SIA-ACF"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
+    listaArquivos <- paste0(url,"ACF", extensao)
+  } else if(sistema == "SIA-AD"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
+    listaArquivos <- paste0(url,"AD", extensao)
+  } else if(sistema == "SIA-AN"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
+    listaArquivos <- paste0(url,"AN", extensao)
+  } else if(sistema == "SIA-AM"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
+    listaArquivos <- paste0(url,"AM", extensao)
+  } else if(sistema == "SIA-AQ"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
+    listaArquivos <- paste0(url,"AQ", extensao)
+  } else if(sistema == "SIA-AR"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
+    listaArquivos <- paste0(url,"AR", extensao)
+  } else if(sistema == "SIA-ATD"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
+    listaArquivos <- paste0(url,"ATD", extensao)
+  } else if(sistema == "SIA-PA"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
+    listaArquivos <- paste0(url,"PA", extensao)
+  } else if(sistema == "SIA-PS"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
+    listaArquivos <- paste0(url,"PS", extensao)
+  } else if(sistema == "SIA-SAD"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
+    listaArquivos <- paste0(url,"SAD", extensao)
   }
 
   # Baixa arquivos
