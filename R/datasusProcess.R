@@ -1,18 +1,20 @@
-# funPreProcessa
+# datasusProcess.R
 # Pré-processamento de dados do DataSUS
 
 datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
   # Verifica sistema
   sisSIM <- c("SIM-DO","SIM-DOFET","SIM-DOEXT","SIM-DOINF","SIM-DOMAT")
   sistemas <- c("SIM",sisSIM,"SINASC","SIH-RD")
-  if(!(sistema %in% sistemas)) stop("Sistema de informação desconhecido ou não implementado.")
+  if(!(sistema %in% sistemas)) stop("Sistema de informação desconhecido ou não implementado na função.")
 
   # Coleta nome dos campos
   campos <- names(data)
 
   # Trata campos
 
+  ###################################################
   # SIM
+  ###################################################
 
   if(sistema %in% c("SIM",sisSIM)){
 
@@ -147,7 +149,7 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$ESC[data$ESC=="2"] <- "1 a 3 anos"
       data$ESC[data$ESC=="3"] <- "4 a 7 anos"
       data$ESC[data$ESC=="4"] <- "8 a 11 anos"
-      data$ESC[data$ESC=="5"] <- "12 e mais"
+      data$ESC[data$ESC=="5"] <- "12 anos ou mais"
       data$ESC[data$ESC=="8"] <- "De 9 a 11 anos"
       data$ESC[data$ESC=="9"] <- NA
       data$ESC <- factor(data$ESC)
@@ -193,7 +195,7 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$ESCMAE[data$ESCMAE=="2"] <- "1 a 3 anos"
       data$ESCMAE[data$ESCMAE=="3"] <- "4 a 7 anos"
       data$ESCMAE[data$ESCMAE=="4"] <- "8 a 11 anos"
-      data$ESCMAE[data$ESCMAE=="5"] <- "12 e mais"
+      data$ESCMAE[data$ESCMAE=="5"] <- "12 anos ou mais"
       data$ESCMAE[data$ESCMAE=="8"] <- "De 9 a 11 anos"
       data$ESCMAE[data$ESCMAE=="9"] <- NA
       data$ESCMAE <- factor(data$ESCMAE)
@@ -510,6 +512,7 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
   ###################################################
   # SINASC
   ###################################################
+
   } else if(sistema == "SINASC"){
 
     # CODMUNRES
@@ -742,19 +745,25 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
 
 
 
-
-
-
-
-
+  ###################################################
   # SIH-RD
+  ###################################################
+
   if(sistema == "SIH-RD"){
 
-    # MUNIC_RES
-    if("MUNIC_RES" %in% campos & dadosMunRes == TRUE){
-      data$MUNIC_RES <- as.integer(as.character(data$MUNIC_RES))
-      colnames(tabMun)[1] <- "MUNIC_RES"
-      data <- dplyr::left_join(data, tabMun, by = "MUNIC_RES")
+    # UF_ZI
+    if("UF_ZI" %in% campos){
+      data$UF_ZI <- as.character(data$UF_ZI)
+    }
+
+    # ANO_CMPT
+    if("ANO_CMPT" %in% campos){
+      data$ANO_CMPT <- as.integer(data$ANO_CMPT)
+    }
+
+    # MES_CMPT
+    if("MES_CMPT" %in% campos){
+      data$MES_CMPT <- as.integer(data$MES_CMPT)
     }
 
     # ESPEC
@@ -777,6 +786,16 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$ESPEC <- factor(data$ESPEC)
     }
 
+    # CGC_HOSP
+    if("CGC_HOSP" %in% campos){
+      data$CGC_HOSP <- as.character(data$CGC_HOSP)
+    }
+
+    # N_AIH
+    if("N_AIH" %in% campos){
+      data$N_AIH <- as.character(data$N_AIH)
+    }
+
     # IDENT
     if("IDENT" %in% campos){
       data$IDENT <- as.numeric(levels(data$IDENT))[data$IDENT]
@@ -786,168 +805,246 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$IDENT <- factor(data$IDENT)
     }
 
+    # CEP
+    if("CEP" %in% campos){
+      data$CEP <- as.character(data$CEP)
+    }
+
+    # MUNIC_RES
+    if("MUNIC_RES" %in% campos & dadosMunRes == TRUE){
+      data$MUNIC_RES <- as.integer(as.character(data$MUNIC_RES))
+      colnames(tabMun)[1] <- "MUNIC_RES"
+      data <- dplyr::left_join(data, tabMun, by = "MUNIC_RES")
+    }
+
     # NASC
     if("NASC" %in% campos){
       data$NASC <- as.character(data$NASC)
       data$NASC <- as.Date(data$NASC, format = "%Y%m%d")
-      data$NASC <- format(data$NASC, format = "%d-%m-%Y")
     }
 
     # SEXO
     if("SEXO" %in% campos){
       data$SEXO <- as.numeric(levels(data$SEXO))[data$SEXO]
       data$SEXO[data$SEXO==1] <- "Masculino"
+      data$SEXO[data$SEXO==2] <- "Feminino"
       data$SEXO[data$SEXO==3] <- "Feminino"
       data$SEXO <- factor(data$SEXO)
     }
 
     # UTI_MES_IN
     if("UTI_MES_IN" %in% campos){
-      data$UTI_MES_IN <- NULL
+      data$UTI_MES_IN <- as.integer(data$UTI_MES_IN)
     }
 
     # UTI_MES_AN
     if("UTI_MES_AN" %in% campos){
-      data$UTI_MES_AN <- NULL
+      data$UTI_MES_AN <- as.integer(data$UTI_MES_AN)
     }
 
     # UTI_MES_AL
     if("UTI_MES_AL" %in% campos){
-      data$UTI_MES_AL <- NULL
+      data$UTI_MES_AL <- as.integer(data$UTI_MES_AL)
     }
 
-    # UTI_INT_IN
-    if("UTI_INT_IN" %in% campos){
-      data$UTI_INT_IN <- NULL
-    }
-
-    # UTI_INT_AN
-    if("UTI_INT_AN" %in% campos){
-      data$UTI_INT_AN <- NULL
-    }
-
-    # UTI_INT_AL
-    if("UTI_INT_AL" %in% campos){
-      data$UTI_INT_AL <- NULL
-    }
-
-    # VAL_SADT
-    if("VAL_SADT" %in% campos){
-      data$VAL_SADT <- NULL
-    }
-
-    # VAL_RN
-    if("VAL_RN" %in% campos){
-      data$VAL_RN <- NULL
-    }
-
-    # VAL_ACOMP
-    if("VAL_ACOMP" %in% campos){
-      data$VAL_ACOMP <- NULL
-    }
-
-    # VAL_ORTP
-    if("VAL_ORTP" %in% campos){
-      data$VAL_ORTP <- NULL
-    }
-
-    # VAL_SANGUE
-    if("VAL_SANGUE" %in% campos){
-      data$VAL_SANGUE <- NULL
-    }
-
-    # VAL_SADTSR
-    if("VAL_SADTSR" %in% campos){
-      data$VAL_SADTSR <- NULL
-    }
-
-    # VAL_TRANSP
-    if("VAL_TRANSP" %in% campos){
-      data$VAL_TRANSP <- NULL
-    }
-
-    # VAL_OBSANG
-    if("VAL_OBSANG" %in% campos){
-      data$VAL_OBSANG <- NULL
-    }
-
-    # VAL_PED1AC
-    if("VAL_PED1AC" %in% campos){
-      data$VAL_PED1AC <- NULL
-    }
-
-    # RUBRICA
-    if("RUBRICA" %in% campos){
-      data$RUBRICA <- NULL
-    }
-
-    # NUM_PROC
-    if("NUM_PROC" %in% campos){
-      data$NUM_PROC <- NULL
-    }
-
-    # TOT_PT_SP
-    if("TOT_PT_SP" %in% campos){
-      data$TOT_PT_SP <- NULL
-    }
-
-    # CPF_AUT
-    if("CPF_AUT" %in% campos){
-      data$CPF_AUT <- NULL
+    # UTI_MES_TO
+    if("UTI_MES_TO" %in% campos){
+      data$UTI_MES_TO <- as.integer(data$UTI_MES_TO)
     }
 
     # MARCA_UTI
     if("MARCA_UTI" %in% campos){
       data$MARCA_UTI <- as.numeric(levels(data$MARCA_UTI))[data$MARCA_UTI]
-      data$MARCA_UTI[data$MARCA_UTI==0] <- "Leito sem especialidade ou não utilizou UTI"
-      data$MARCA_UTI[data$MARCA_UTI==1] <- "UTI adulto nível II"
-      data$MARCA_UTI[data$MARCA_UTI==2] <- "UTI adulto nível III"
-      data$MARCA_UTI[data$MARCA_UTI==3] <- "UTI neonatal nível III"
-      data$MARCA_UTI[data$MARCA_UTI==4] <- "UTI neonatal nível II"
-      data$MARCA_UTI[data$MARCA_UTI==5] <- "UTI pediátrica nível II"
-      data$MARCA_UTI[data$MARCA_UTI==6] <- "UTI pediátrica nível III"
-      data$MARCA_UTI[data$MARCA_UTI==7] <- "Transplante pediátrico"
-      data$MARCA_UTI[data$MARCA_UTI==8] <- "Transplante adulto"
+      data$MARCA_UTI[data$MARCA_UTI==0] <- "Não utilizou UTI"
+      data$MARCA_UTI[data$MARCA_UTI==74] <- "UTI adulto - tipo I"
+      data$MARCA_UTI[data$MARCA_UTI==75] <- "UTI adulto - tipo II"
+      data$MARCA_UTI[data$MARCA_UTI==76] <- "UTI adulto - tipo III"
+      data$MARCA_UTI[data$MARCA_UTI==77] <- "UTI infantil - tipo I"
+      data$MARCA_UTI[data$MARCA_UTI==78] <- "UTI infantil - tipo II"
+      data$MARCA_UTI[data$MARCA_UTI==79] <- "UTI infantil - tipo III"
+      data$MARCA_UTI[data$MARCA_UTI==80] <- "UTI neonatal - tipo I"
+      data$MARCA_UTI[data$MARCA_UTI==81] <- "UTI neonatal - tipo II"
+      data$MARCA_UTI[data$MARCA_UTI==82] <- "UTI neonatal - tipo III"
+      data$MARCA_UTI[data$MARCA_UTI==83] <- "UTI de queimados"
+      data$MARCA_UTI[data$MARCA_UTI==85] <- "UTI coronariana tipo II - UCO tipo II"
+      data$MARCA_UTI[data$MARCA_UTI==86] <- "UTI coronariana tipo III - UCO tipo III"
+      data$MARCA_UTI[data$MARCA_UTI==99] <- "UTI Doador"
+      data$MARCA_UTI[data$MARCA_UTI==1] <- "Utilizou mais de um tipo de UTI"
       data$MARCA_UTI <- factor(data$MARCA_UTI)
+    }
+
+    # UTI_INT_IN
+    if("UTI_INT_IN" %in% campos){
+      data$UTI_INT_IN <- as.integer(data$UTI_INT_IN)
+    }
+
+    # UTI_INT_AN
+    if("UTI_INT_AN" %in% campos){
+      data$UTI_INT_AN <- as.integer(data$UTI_INT_AN)
+    }
+
+    # UTI_INT_AL
+    if("UTI_INT_AL" %in% campos){
+      data$UTI_INT_AL <- as.integer(data$UTI_INT_AL)
     }
 
     # UTI_INT_TO
     if("UTI_INT_TO" %in% campos){
-      data$UTI_INT_TO <- as.numeric(data$UTI_INT_TO)
+      data$UTI_INT_TO <- as.integer(data$UTI_INT_TO)
     }
 
     # DIAR_ACOM
     if("DIAR_ACOM" %in% campos){
-      data$DIAR_ACOM <- as.numeric(data$DIAR_ACOM)
+      data$DIAR_ACOM <- as.integer(data$DIAR_ACOM)
     }
 
     # QT_DIARIAS
     if("QT_DIARIAS" %in% campos){
-      data$QT_DIARIAS <- as.numeric(data$QT_DIARIAS)
+      data$QT_DIARIAS <- as.integer(data$QT_DIARIAS)
     }
 
-    # VAL_UT
-    if("VAL_UT" %in% campos){
-      data$VAL_UT[data$MARCA_UTI=="Leito sem especialidade ou não utilizou UTI"] <- NA
+    # PROC_SOLIC
+    if("PROC_SOLIC" %in% campos){
+      data$PROC_SOLIC <- as.character(data$PROC_SOLIC)
     }
 
-    # DI_INTER
-    if("DI_INTER" %in% campos){
-      data$DI_INTER <- as.character(data$DI_INTER)
-      data$DI_INTER <- as.Date(data$DI_INTER, format = "%Y%m%d")
-      data$DI_INTER <- format(data$DI_INTER, format = "%d-%m-%Y")
+    # PROC_REA
+    if("PROC_REA" %in% campos){
+      data$PROC_REA <- as.character(data$PROC_REA)
+    }
+
+    # PROC_REA
+    if("PROC_REA" %in% campos){
+      data$PROC_REA <- as.character(data$PROC_REA)
+    }
+
+    # VAL_SH
+    if("VAL_SH" %in% campos){
+      data$VAL_SH <- as.numeric(data$VAL_SH)
+    }
+
+    # VAL_SP
+    if("VAL_SP" %in% campos){
+      data$VAL_SP <- as.numeric(data$VAL_SP)
+    }
+
+    # VAL_SADT
+    if("VAL_SADT" %in% campos){
+      data$VAL_SADT <- as.numeric(data$VAL_SADT)
+    }
+
+    # VAL_RN
+    if("VAL_RN" %in% campos){
+      data$VAL_RN <- as.numeric(data$VAL_RN)
+    }
+
+    # VAL_ACOMP
+    if("VAL_ACOMP" %in% campos){
+      data$VAL_RN <- as.numeric(data$VAL_ACOMP)
+    }
+
+    # VAL_ORTP
+    if("VAL_ORTP" %in% campos){
+      data$VAL_ORTP <- as.numeric(data$VAL_ORTP)
+    }
+
+    # VAL_SANGUE
+    if("VAL_SANGUE" %in% campos){
+      data$VAL_SANGUE <- as.numeric(data$VAL_SANGUE)
+    }
+
+    # VAL_SADTSR
+    if("VAL_SADTSR" %in% campos){
+      data$VAL_SADTSR <- as.numeric(data$VAL_SADTSR)
+    }
+
+    # VAL_TRANSP
+    if("VAL_TRANSP" %in% campos){
+      data$VAL_TRANSP <- as.numeric(data$VAL_TRANSP)
+    }
+
+    # VAL_OBSANG
+    if("VAL_OBSANG" %in% campos){
+      data$VAL_OBSANG <- as.numeric(data$VAL_OBSANG)
+    }
+
+    # VAL_PED1AC
+    if("VAL_PED1AC" %in% campos){
+      data$VAL_PED1AC <- as.numeric(data$VAL_PED1AC)
+    }
+
+    # VAL_TOT
+    if("VAL_TOT" %in% campos){
+      data$VAL_TOT <- as.numeric(data$VAL_TOT)
+    }
+
+    # VAL_UTI
+    if("VAL_UTI" %in% campos){
+      data$VAL_UTI <- as.numeric(data$VAL_UTI)
+    }
+
+    # US_TOT
+    if("US_TOT" %in% campos){
+      data$US_TOT <- as.numeric(data$US_TOT)
+    }
+
+    # DT_INTER
+    if("DT_INTER" %in% campos){
+      data$DT_INTER <- as.character(data$DT_INTER)
+      data$DT_INTER <- as.Date(data$DT_INTER, format = "%Y%m%d")
     }
 
     # DT_SAIDA
     if("DT_SAIDA" %in% campos){
       data$DT_SAIDA <- as.character(data$DT_SAIDA)
       data$DT_SAIDA <- as.Date(data$DT_SAIDA, format = "%Y%m%d")
-      data$DT_SAIDA <- format(data$DT_SAIDA, format = "%d-%m-%Y")
+    }
+
+    # DIAG_PRINC
+    if("DIAG_PRINC" %in% campos){
+      data$DIAG_PRINC <- as.character(data$DIAG_PRINC)
     }
 
     # DIAG_SECUN
     if("DIAG_SECUN" %in% campos){
-      data$DIAG_SECUN[data$DIAG_SECUN=="0000"] <- NA
+      data$DIAG_SECUN <- as.character(data$DIAG_SECUN)
+    }
+
+    # COBRANCA (motivo de saída/permanência, portaria SAS 719)
+    if("COBRANCA" %in% campos){
+      data$COBRANCA <- as.numeric(levels(data$COBRANCA))[data$COBRANCA]
+      data$COBRANCA[data$COBRANCA==11] <- "Alta curado"
+      data$COBRANCA[data$COBRANCA==12] <- "Alta melhorado"
+      data$COBRANCA[data$COBRANCA==14] <- "Alta a pedido"
+      data$COBRANCA[data$COBRANCA==15] <- "Alta com previsão de retorno p/acomp do paciente"
+      data$COBRANCA[data$COBRANCA==16] <- "Alta por evasão"
+      data$COBRANCA[data$COBRANCA==18] <- "Alta por outros motivos"
+      data$COBRANCA[data$COBRANCA==19] <- "Alta de paciente agudo em psiquiatria"
+      data$COBRANCA[data$COBRANCA==21] <- "Permanência por características próprias da doença"
+      data$COBRANCA[data$COBRANCA==22] <- "Permanência por intercorrência"
+      data$COBRANCA[data$COBRANCA==23] <- "Permanência por impossibilidade sócio-familiar"
+      data$COBRANCA[data$COBRANCA==24] <- "Permanência proc doação órg, tec, cél-doador vivo"
+      data$COBRANCA[data$COBRANCA==25] <- "Permanência proc doação órg, tec, cél-doador morto"
+      data$COBRANCA[data$COBRANCA==26] <- "Permanência por mudança de procedimento"
+      data$COBRANCA[data$COBRANCA==27] <- "Permanência por reoperação"
+      data$COBRANCA[data$COBRANCA==28] <- "Permanência por outros motivos"
+      data$COBRANCA[data$COBRANCA==29] <- "Transferência para internação domiciliar"
+      data$COBRANCA[data$COBRANCA==32] <- "Transferência para internação domiciliar"
+      data$COBRANCA[data$COBRANCA==31] <- "Transferência para outro estabelecimento"
+      data$COBRANCA[data$COBRANCA==41] <- "Óbito com DO fornecida pelo médico assistente"
+      data$COBRANCA[data$COBRANCA==42] <- "Óbito com DO fornecida pelo IML"
+      data$COBRANCA[data$COBRANCA==43] <- "Óbito com DO fornecida pelo SVO"
+      data$COBRANCA[data$COBRANCA==51] <- "Encerramento administrativo"
+      data$COBRANCA[data$COBRANCA==61] <- "Alta da mãe/puérpera e do recém-nascido"
+      data$COBRANCA[data$COBRANCA==17] <- "Alta da mãe/puérpera e do recém-nascido"
+      data$COBRANCA[data$COBRANCA==62] <- "Alta da mãe/puérpera e permanência recém-nascido"
+      data$COBRANCA[data$COBRANCA==13] <- "Alta da mãe/puérpera e permanência recém-nascido"
+      data$COBRANCA[data$COBRANCA==63] <- "Alta da mãe/puérpera e óbito do recém-nascido"
+      data$COBRANCA[data$COBRANCA==64] <- "Alta da mãe/puérpera com óbito fetal"
+      data$COBRANCA[data$COBRANCA==65] <- "Óbito da gestante e do concepto"
+      data$COBRANCA[data$COBRANCA==66] <- "Óbito da mãe/puérpera e alta do recém-nascido"
+      data$COBRANCA[data$COBRANCA==67] <- "Óbito da mãe/puérpera e permanência recém-nascido"
+      data$COBRANCA <- factor(data$COBRANCA)
     }
 
     # GESTAO
