@@ -9,7 +9,7 @@ datasusFetch <- function(anoIni, mesIni, anoFim, mesFim, uf="all", sistema="SIM-
   sisCNES <- c("CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB","CNES-PF","CNES-EP","CNES-RC","CNES-IN","CNES-EE","CNES-EF","CNES-GM")
   sisSIA <- c("SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD")
   sistemas <- c(sisSIH, sisSIM, sisSINASC, sisCNES, sisSIA)
-  if(!(sistema %in% sistemas)) stop("Sistema de informação desconhecido ou não implementado.")
+  if(!(sistema %in% sistemas)) stop("Sistema de Informação desconhecido ou não implementado.")
 
   # Cria datas para verificação
   if(substr(sistema,1,3) == "SIH" | substr(sistema,1,4) == "CNES" | substr(sistema,1,3) == "SIA"){
@@ -21,7 +21,7 @@ datasusFetch <- function(anoIni, mesIni, anoFim, mesFim, uf="all", sistema="SIM-
   }
 
   # Verifica data
-  if(dataIni > dataFim) stop("Período inicial maior que período final.")
+  if(dataIni > dataFim) stop("Data inicial maior que data final.")
 
   # Cria sequência de datas
   if(substr(sistema,1,3) == "SIH" | substr(sistema,1,4) == "CNES" | substr(sistema,1,3) == "SIA"){
