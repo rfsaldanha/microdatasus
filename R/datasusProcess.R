@@ -517,12 +517,12 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
 
     # NUMERODN
     if("NUMERODN" %in% campos){
-      data$NUMERODN <- as.numeric(data$NUMERODN)
+      data$NUMERODN <- as.integer(data$NUMERODN)
     }
 
     # CODINST
     if("CODINST" %in% campos){
-      data$CODINST <- as.character(data$CODINST)
+      data$CODINST <- as.integer(data$CODINST)
     }
 
     # ORIGEM
@@ -580,8 +580,8 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$ESTCIVMAE[data$ESTCIVMAE==1] <- "Solteira"
       data$ESTCIVMAE[data$ESTCIVMAE==2] <- "Casada"
       data$ESTCIVMAE[data$ESTCIVMAE==3] <- "Viúva"
-      data$ESTCIVMAE[data$ESTCIVMAE==4] <- "Separado judicialmente"
-      data$ESTCIVMAE[data$ESTCIVMAE==5] <- "União Consensual"
+      data$ESTCIVMAE[data$ESTCIVMAE==4] <- "Separada judicialmente"
+      data$ESTCIVMAE[data$ESTCIVMAE==5] <- "União consensual"
       data$ESTCIVMAE[data$ESTCIVMAE==6] <- NA
       data$ESTCIVMAE[data$ESTCIVMAE==7] <- NA
       data$ESTCIVMAE[data$ESTCIVMAE==8] <- NA
@@ -592,11 +592,11 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
     # ESCMAE
     if("ESCMAE" %in% campos){
       data$ESCMAE <- as.numeric(levels(data$ESCMAE))[data$ESCMAE]
-      data$ESCMAE[data$ESCMAE==1] <- "Nenhuma"
+      data$ESCMAE[data$ESCMAE==1] <- "Nenhum"
       data$ESCMAE[data$ESCMAE==2] <- "1 a 3 anos"
       data$ESCMAE[data$ESCMAE==3] <- "4 a 7 anos"
       data$ESCMAE[data$ESCMAE==4] <- "8 a 11 anos"
-      data$ESCMAE[data$ESCMAE==5] <- "12 anos e mais"
+      data$ESCMAE[data$ESCMAE==5] <- "12 anos ou mais"
       data$ESCMAE[data$ESCMAE==6] <- NA
       data$ESCMAE[data$ESCMAE==7] <- NA
       data$ESCMAE[data$ESCMAE==8] <- "9 a 11 anos"
@@ -637,7 +637,7 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$GESTACAO[data$GESTACAO==3] <- "28 a 31 semanas"
       data$GESTACAO[data$GESTACAO==4] <- "32 a 36 semanas"
       data$GESTACAO[data$GESTACAO==5] <- "37 a 41 semanas"
-      data$GESTACAO[data$GESTACAO==6] <- "42 semanas e mais"
+      data$GESTACAO[data$GESTACAO==6] <- "42 semanas ou mais"
       data$GESTACAO[data$GESTACAO==7] <- NA
       data$GESTACAO[data$GESTACAO==8] <- NA
       data$GESTACAO[data$GESTACAO==9] <- NA
@@ -877,13 +877,11 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
     # CONSPRENAT
     if("CONSPRENAT" %in% campos){
       data$CONSPRENAT <- as.integer(data$CONSPRENAT)
-      data$CONSPRENAT[data$CONSPRENAT==99] <- NA
     }
 
     # MESPRENAT
     if("MESPRENAT" %in% campos){
       data$MESPRENAT <- as.integer(data$MESPRENAT)
-      data$MESPRENAT[data$MESPRENAT==99] <- NA
     }
 
     # TPAPRESENT
