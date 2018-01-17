@@ -1045,6 +1045,8 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$SEXO[data$SEXO==1] <- "Masculino"
       data$SEXO[data$SEXO==2] <- "Feminino"
       data$SEXO[data$SEXO==3] <- "Feminino"
+      data$SEXO[data$SEXO==0] <- NA
+      data$SEXO[data$SEXO==9] <- NA
       data$SEXO <- factor(data$SEXO)
     }
 
@@ -1122,11 +1124,6 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
     # PROC_SOLIC
     if("PROC_SOLIC" %in% campos){
       data$PROC_SOLIC <- as.character(data$PROC_SOLIC)
-    }
-
-    # PROC_REA
-    if("PROC_REA" %in% campos){
-      data$PROC_REA <- as.character(data$PROC_REA)
     }
 
     # PROC_REA
@@ -1872,7 +1869,7 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
     # SEQ_AIH5
     if("SEQ_AIH5" %in% campos){
       data$SEQ_AIH5 <- as.numeric(levels(data$SEQ_AIH5))[data$SEQ_AIH5]
-      data$SEQ_AIH5[data$SEQ_AIH5==0] <- "SeqÃ¼encial zerado"
+      data$SEQ_AIH5[data$SEQ_AIH5==0] <- "Sequencial zerado"
       data$SEQ_AIH5[data$SEQ_AIH5==1] <- "Seq 1"
       data$SEQ_AIH5[data$SEQ_AIH5==2] <- "Seq 2"
       data$SEQ_AIH5[data$SEQ_AIH5==3] <- "Seq 3"
@@ -2169,25 +2166,25 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
     # COMPLEX
     if("COMPLEX" %in% campos){
       data$COMPLEX <- as.numeric(levels(data$COMPLEX))[data$COMPLEX]
-      data$COMPLEX[data$COMPLEX==0] <- "NÃ£o se aplica"
-      data$COMPLEX[data$COMPLEX==99] <- "NÃ£o se aplica"
       data$COMPLEX[data$COMPLEX==1] <- "AtenÃ§Ã£o BÃ¡sica"
       data$COMPLEX[data$COMPLEX==2] <- "MÃ©dia complexidade"
       data$COMPLEX[data$COMPLEX==3] <- "Alta complexidade"
+      data$COMPLEX[data$COMPLEX==0] <- NA
+      data$COMPLEX[data$COMPLEX==99] <- NA
       data$COMPLEX <- factor(data$COMPLEX)
     }
 
     # FINANC
     if("FINANC" %in% campos){
       data$FINANC <- as.numeric(levels(data$FINANC))[data$FINANC]
-      data$FINANC[data$FINANC==0] <- NA
-      data$FINANC[data$FINANC==99] <- NA
       data$FINANC[data$FINANC==1] <- "AtenÃ§Ã£o BÃ¡sica (PAB)"
       data$FINANC[data$FINANC==2] <- "AssistÃªncia FarmacÃªutica"
       data$FINANC[data$FINANC==4] <- "Fundo de AÃ§Ãµes EstratÃ©gicas e CompensaÃ§Ãµes FAEC"
       data$FINANC[data$FINANC==5] <- "Incentivo - MAC"
       data$FINANC[data$FINANC==6] <- "MÃ©dia e Alta Complexidade (MAC)"
       data$FINANC[data$FINANC==7] <- "VigilÃ¢ncia em SaÃºde"
+      data$FINANC[data$FINANC==0] <- NA
+      data$FINANC[data$FINANC==99] <- NA
       data$FINANC <- factor(data$FINANC)
     }
 
@@ -2314,9 +2311,7 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
     # ETNIA
     if("ETNIA" %in% campos){
       data$ETNIA <- as.numeric(levels(data$ETNIA))[data$ETNIA]
-      data$ETNIA[data$ETNIA==0] <- NA
-      data$ETNIA[data$ETNIA==9999] <- NA
-      data$ETNIA[data$ETNIA==1] <- "ACONA (WAKONAS, NACONAS, JAKONA, ACORA­NES)"
+      data$ETNIA[data$ETNIA==1] <- "ACONA (WAKONAS, NACONAS, JAKONA, ACORAï¿½NES)"
       data$ETNIA[data$ETNIA==2] <- "AIKANA (AIKANA, MAS SAKA,TUBARAO)"
       data$ETNIA[data$ETNIA==3] <- "AJURU"
       data$ETNIA[data$ETNIA==4] <- "AKUNSU (AKUNT'SU)"
@@ -2326,12 +2321,12 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$ETNIA[data$ETNIA==8] <- "APARAI (APALAI)"
       data$ETNIA[data$ETNIA==9] <- "APIAKA (APIACA)"
       data$ETNIA[data$ETNIA==10] <- "APINAYE (APINAJE/APINAIE/APINAGE)"
-      data$ETNIA[data$ETNIA==11] <- "APURINA (APORINA, IPURINA, IPURINA, IPURI­NAN)"
+      data$ETNIA[data$ETNIA==11] <- "APURINA (APORINA, IPURINA, IPURINA, IPURIï¿½NAN)"
       data$ETNIA[data$ETNIA==12] <- "ARANA (ARACUAI DO VALE DO JEQUITINHONHA)"
       data$ETNIA[data$ETNIA==13] <- "ARAPASO (ARAPACO)"
       data$ETNIA[data$ETNIA==14] <- "ARARA DE RONDONIA (KARO, URUCU, URUKU)"
       data$ETNIA[data$ETNIA==15] <- "ARARA DO ACRE (SHAWANAUA, AMAWAKA)"
-      data$ETNIA[data$ETNIA==16] <- "ARARA DO ARIPUANA (ARARA DO BEIRADAO/ARI­PUANA)"
+      data$ETNIA[data$ETNIA==16] <- "ARARA DO ARIPUANA (ARARA DO BEIRADAO/ARIï¿½PUANA)"
       data$ETNIA[data$ETNIA==17] <- "ARARA DO PARA (UKARAGMA, UKARAMMA)"
       data$ETNIA[data$ETNIA==18] <- "ARAWETE (ARAUETE)"
       data$ETNIA[data$ETNIA==19] <- "ARIKAPU (ARICAPU, ARIKAPO, MASUBI, MAXUBI)"
@@ -2347,7 +2342,7 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$ETNIA[data$ETNIA==29] <- "AWETI (AUETI/AUETO)"
       data$ETNIA[data$ETNIA==30] <- "BAKAIRI (KURA, BACAIRI)"
       data$ETNIA[data$ETNIA==31] <- "BANAWA YAFI (BANAWA, BANAWA-JAFI)"
-      data$ETNIA[data$ETNIA==32] <- "BANIWA (BANIUA, BANIVA, WALIMANAI, WAKUE­NAI)"
+      data$ETNIA[data$ETNIA==32] <- "BANIWA (BANIUA, BANIVA, WALIMANAI, WAKUEï¿½NAI)"
       data$ETNIA[data$ETNIA==33] <- "BARA (WAIPINOMAKA)"
       data$ETNIA[data$ETNIA==34] <- "BARASANA (HANERA)"
       data$ETNIA[data$ETNIA==35] <- "BARE"
@@ -2414,7 +2409,7 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$ETNIA[data$ETNIA==96] <- "KARAJA (CARAJA)"
       data$ETNIA[data$ETNIA==97] <- "KARAJA/JAVAE (JAVAE)"
       data$ETNIA[data$ETNIA==98] <- "KARAJA/XAMBIOA (KARAJA DO NORTE)"
-      data$ETNIA[data$ETNIA==99] <- "KARAPANA (CARAPANA, MUTEAMASA, UKOPINO­PONA)"
+      data$ETNIA[data$ETNIA==99] <- "KARAPANA (CARAPANA, MUTEAMASA, UKOPINOï¿½PONA)"
       data$ETNIA[data$ETNIA==100] <- "KARAPOTO (CARAPOTO)"
       data$ETNIA[data$ETNIA==101] <- "KARIPUNA (CARIPUNA)"
       data$ETNIA[data$ETNIA==102] <- "KARIPUNA DO AMAPA (CARIPUNA)"
@@ -2443,7 +2438,7 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$ETNIA[data$ETNIA==125] <- "KREJE (KRENYE)"
       data$ETNIA[data$ETNIA==126] <- "KRENAK (BORUN, CRENAQUE)"
       data$ETNIA[data$ETNIA==127] <- "KRIKATI (KRINKATI)"
-      data$ETNIA[data$ETNIA==128] <- "KUBEO (CUBEO, COBEWA, KUBEWA, PAMIWA, CU­BEU)"
+      data$ETNIA[data$ETNIA==128] <- "KUBEO (CUBEO, COBEWA, KUBEWA, PAMIWA, CUï¿½BEU)"
       data$ETNIA[data$ETNIA==129] <- "KUIKURO (KUIKURU, CUICURO)"
       data$ETNIA[data$ETNIA==130] <- "KUJUBIM (KUYUBI, CUJUBIM)"
       data$ETNIA[data$ETNIA==131] <- "KULINA PANO (CULINA)"
@@ -2476,7 +2471,7 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$ETNIA[data$ETNIA==158] <- "MURA"
       data$ETNIA[data$ETNIA==159] <- "NAHUKWA (NAFUQUA)"
       data$ETNIA[data$ETNIA==160] <- "NAMBIKWARA DO CAMPO (HALOTESU, KITHAULU, WAKALITES"
-      data$ETNIA[data$ETNIA==161] <- "NAMBIKWARA DO NORTE (NEGAROTE ,MAMAIN­DE, LATUNDE,"
+      data$ETNIA[data$ETNIA==161] <- "NAMBIKWARA DO NORTE (NEGAROTE ,MAMAINï¿½DE, LATUNDE,"
       data$ETNIA[data$ETNIA==162] <- "NAMBIKWARA DO SUL (WASUSU ,HAHAINTESU, ALANTESU, W"
       data$ETNIA[data$ETNIA==163] <- "NARAVUTE (NARUVOTO)"
       data$ETNIA[data$ETNIA==164] <- "NAWA (NAUA)"
@@ -2486,7 +2481,7 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$ETNIA[data$ETNIA==168] <- "PAIAKU (JENIPAPO-KANINDE)"
       data$ETNIA[data$ETNIA==169] <- "PAKAA NOVA (WARI, PACAAS NOVOS)"
       data$ETNIA[data$ETNIA==170] <- "PALIKUR (AUKWAYENE, AUKUYENE, PALIKU'ENE)"
-      data$ETNIA[data$ETNIA==171] <- "PANARA (KRENHAKARORE , KRENAKORE, KRENA­KARORE)"
+      data$ETNIA[data$ETNIA==171] <- "PANARA (KRENHAKARORE , KRENAKORE, KRENAï¿½KARORE)"
       data$ETNIA[data$ETNIA==172] <- "PANKARARE (PANCARARE)"
       data$ETNIA[data$ETNIA==173] <- "PANKARARU (PANCARARU)"
       data$ETNIA[data$ETNIA==174] <- "PANKARARU KALANKO (KALANKO)"
@@ -2501,7 +2496,7 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$ETNIA[data$ETNIA==183] <- "PAUMARI (PALMARI)"
       data$ETNIA[data$ETNIA==184] <- "PAUMELENHO"
       data$ETNIA[data$ETNIA==185] <- "PIRAHA (MURA PIRAHA)"
-      data$ETNIA[data$ETNIA==186] <- "PIRATUAPUIA (PIRATAPUYA, PIRATAPUYO, PIRA­TAPUYA,"
+      data$ETNIA[data$ETNIA==186] <- "PIRATUAPUIA (PIRATAPUYA, PIRATAPUYO, PIRAï¿½TAPUYA,"
       data$ETNIA[data$ETNIA==187] <- "PITAGUARI"
       data$ETNIA[data$ETNIA==188] <- "POTIGUARA"
       data$ETNIA[data$ETNIA==189] <- "POYANAWA (POIANAUA)"
@@ -2519,7 +2514,7 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$ETNIA[data$ETNIA==201] <- "TAPIRAPE (TAPI'IRAPE)"
       data$ETNIA[data$ETNIA==202] <- "TAPUIA (TAPUIA-XAVANTE, TAPUIO)"
       data$ETNIA[data$ETNIA==203] <- "TARIANO (TARIANA, TALIASERI)"
-      data$ETNIA[data$ETNIA==204] <- "TAUREPANG (TAULIPANG, PEMON, AREKUNA, PA­GEYN)"
+      data$ETNIA[data$ETNIA==204] <- "TAUREPANG (TAULIPANG, PEMON, AREKUNA, PAï¿½GEYN)"
       data$ETNIA[data$ETNIA==205] <- "TEMBE"
       data$ETNIA[data$ETNIA==206] <- "TENHARIM"
       data$ETNIA[data$ETNIA==207] <- "TERENA"
@@ -2541,12 +2536,12 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$ETNIA[data$ETNIA==223] <- "TUPINIQUIM"
       data$ETNIA[data$ETNIA==224] <- "TURIWARA"
       data$ETNIA[data$ETNIA==225] <- "TUXA"
-      data$ETNIA[data$ETNIA==226] <- "TUYUKA (TUIUCA, DOKAPUARA, UTAPINOMAKA­PHONA)"
+      data$ETNIA[data$ETNIA==226] <- "TUYUKA (TUIUCA, DOKAPUARA, UTAPINOMAKAï¿½PHONA)"
       data$ETNIA[data$ETNIA==227] <- "TXIKAO (TXICAO, IKPENG)"
       data$ETNIA[data$ETNIA==228] <- "UMUTINA (OMOTINA, BARBADOS)"
       data$ETNIA[data$ETNIA==229] <- "URU-EU-WAU-WAU (URUEU-UAU-UAU, URUPAIN, URUPA)"
       data$ETNIA[data$ETNIA==230] <- "WAI WAI HIXKARYANA (HIXKARYANA)"
-      data$ETNIA[data$ETNIA==231] <- "WAI WAI KARAFAWYANA (KARAFAWYANA, KARA­PAWYANA)"
+      data$ETNIA[data$ETNIA==231] <- "WAI WAI KARAFAWYANA (KARAFAWYANA, KARAï¿½PAWYANA)"
       data$ETNIA[data$ETNIA==232] <- "WAI WAI XEREU (XEREU)"
       data$ETNIA[data$ETNIA==233] <- "WAI WAI KATUENA (KATUENA)"
       data$ETNIA[data$ETNIA==234] <- "WAI WAI MAWAYANA (MAWAYANA)"
@@ -2570,9 +2565,9 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$ETNIA[data$ETNIA==252] <- "XUKURU KARIRI (XUCURU-KARIRI)"
       data$ETNIA[data$ETNIA==253] <- "YAIPIYANA"
       data$ETNIA[data$ETNIA==254] <- "YAMINAWA (JAMINAWA, IAMINAWA)"
-      data$ETNIA[data$ETNIA==255] <- "YANOMAMI NINAM (IANOMAMI, IANOAMA, XIRIA­NA)"
-      data$ETNIA[data$ETNIA==256] <- "YANOMAMI SANUMA (IANOMAMI, IANOAMA, XI­RIANA)"
-      data$ETNIA[data$ETNIA==257] <- "YANOMAMI YANOMAM (IANOMAMI, IANOAMA, XI­RIANA)"
+      data$ETNIA[data$ETNIA==255] <- "YANOMAMI NINAM (IANOMAMI, IANOAMA, XIRIAï¿½NA)"
+      data$ETNIA[data$ETNIA==256] <- "YANOMAMI SANUMA (IANOMAMI, IANOAMA, XIï¿½RIANA)"
+      data$ETNIA[data$ETNIA==257] <- "YANOMAMI YANOMAM (IANOMAMI, IANOAMA, XIï¿½RIANA)"
       data$ETNIA[data$ETNIA==258] <- "YAWALAPITI (IAUALAPITI)"
       data$ETNIA[data$ETNIA==259] <- "YAWANAWA (IAUANAUA)"
       data$ETNIA[data$ETNIA==260] <- "YEKUANA (MAIONGON, YE'KUANA, YEKWANA, MAYONGONG)"
@@ -2580,6 +2575,8 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$ETNIA[data$ETNIA==262] <- "ZO'E (POTURU)"
       data$ETNIA[data$ETNIA==263] <- "ZORO (PAGEYN)"
       data$ETNIA[data$ETNIA==264] <- "ZURUAHA (SOROWAHA, SURUWAHA)"
+      data$ETNIA[data$ETNIA==0] <- NA
+      data$ETNIA[data$ETNIA==9999] <- NA
       data$ETNIA <- factor(data$ETNIA)
     }
 
