@@ -1,3 +1,12 @@
+#' Process SIM variables from DataSUS
+#' 
+#' \code{process_sim} processes SIM variables retrieved by \code{fetch_datasus()}.
+#' 
+#' This function processes SIM variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables.
+#' 
+#' @param data \code{data.frame} created by \code{fetch_datasus()}.
+#' @param municipality_data optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.
+
 process_sim <- function(data, municipality_data = TRUE) {
   # Variables names
   variables_names <- names(data)
