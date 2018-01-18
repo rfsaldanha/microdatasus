@@ -2638,47 +2638,47 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
 
     # DIAGSEC1
     if("DIAGSEC1" %in% campos){
-      data$DIAGSEC1 <- as.numeric(data$DIAGSEC1)
+      data$DIAGSEC1 <- as.character(data$DIAGSEC1)
     }
 
     # DIAGSEC2
     if("DIAGSEC2" %in% campos){
-      data$DIAGSEC2 <- as.numeric(data$DIAGSEC2)
+      data$DIAGSEC2 <- as.character(data$DIAGSEC2)
     }
 
     # DIAGSEC3
     if("DIAGSEC3" %in% campos){
-      data$DIAGSEC3 <- as.numeric(data$DIAGSEC3)
+      data$DIAGSEC3 <- as.character(data$DIAGSEC3)
     }
 
     # DIAGSEC4
     if("DIAGSEC4" %in% campos){
-      data$DIAGSEC4 <- as.numeric(data$DIAGSEC4)
+      data$DIAGSEC4 <- as.character(data$DIAGSEC4)
     }
 
     # DIAGSEC5
     if("DIAGSEC5" %in% campos){
-      data$DIAGSEC5 <- as.numeric(data$DIAGSEC5)
+      data$DIAGSEC5 <- as.character(data$DIAGSEC5)
     }
 
     # DIAGSEC6
     if("DIAGSEC6" %in% campos){
-      data$DIAGSEC6 <- as.numeric(data$DIAGSEC6)
+      data$DIAGSEC6 <- as.character(data$DIAGSEC6)
     }
 
     # DIAGSEC7
     if("DIAGSEC7" %in% campos){
-      data$DIAGSEC7 <- as.numeric(data$DIAGSEC7)
+      data$DIAGSEC7 <- as.character(data$DIAGSEC7)
     }
 
     # DIAGSEC8
     if("DIAGSEC8" %in% campos){
-      data$DIAGSEC8 <- as.numeric(data$DIAGSEC8)
+      data$DIAGSEC8 <- as.character(data$DIAGSEC8)
     }
 
     # DIAGSEC9
     if("DIAGSEC9" %in% campos){
-      data$DIAGSEC9 <- as.numeric(data$DIAGSEC9)
+      data$DIAGSEC9 <- as.character(data$DIAGSEC9)
     }
 
     # TPDISEC1
