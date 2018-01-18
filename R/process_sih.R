@@ -1,989 +1,30 @@
-# datasusProcess.R
-# Pré-processamento de dados do DataSUS
-
-datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
-  # Verifica sistema
-  sisSIM <- c("SIM-DO","SIM-DOFET","SIM-DOEXT","SIM-DOINF","SIM-DOMAT")
-  sistemas <- c("SIM",sisSIM,"SINASC","SIH-RD")
-  if(!(sistema %in% sistemas)) stop("Sistema de informação desconhecido ou não implementado na função.")
-
-  # Coleta nome dos campos
-  campos <- names(data)
-
-  # Declara objetos
-  ano <- NULL
-  unidade <- NULL
-
-  # Trata campos
-
-  ###################################################
-  # SIM
-  ###################################################
-
-  if(sistema %in% c("SIM",sisSIM)){
-
-    # CODMUNRES
-    if("CODMUNRES" %in% campos & dadosMunRes == TRUE){
-      data$CODMUNRES <- as.integer(as.character(data$CODMUNRES))
-      colnames(tabMun)[1] <- "CODMUNRES"
-      data <- dplyr::left_join(data, tabMun, by = "CODMUNRES")
-    }
-
-    # NUMERODO
-    if("NUMERODO" %in% campos){
-      data$NUMERODO <- as.character(data$NUMERODO)
-    }
-
-    # TIPOBITO.CNV
-    if("TIPOBITO" %in% campos){
-      data$TIPOBITO <- as.numeric(levels(data$TIPOBITO))[data$TIPOBITO]
-      data$TIPOBITO[data$TIPOBITO==0] <- NA
-      data$TIPOBITO[data$TIPOBITO==9] <- NA
-      data$TIPOBITO[data$TIPOBITO==1] <- "Fetal"
-      data$TIPOBITO[data$TIPOBITO==2] <- "Não Fetal"
-      data$TIPOBITO <- factor(data$TIPOBITO)
-    }
-
-    # DTOBITO
-    if("DTOBITO" %in% campos){
-      data$DTOBITO <- as.character(data$DTOBITO)
-      data$DTOBITO <- as.Date(data$DTOBITO, format = "%d%m%Y")
-    }
-
-    # HORAOBITO
-    if("HORAOBITO" %in% campos){
-      data$HORAOBITO <- as.character(data$HORAOBITO)
-    }
-
-    # CODCART
-    if("CODCART" %in% campos){
-      data$CODCART <- as.character(data$CODCART)
-    }
-
-    # CODMUNCART
-    if("CODMUNCART" %in% campos){
-      data$CODMUNCART <- as.numeric(data$CODMUNCART)
-    }
-
-    # NATURAL.CNV
-    if("NATURAL" %in% campos){
-      data$NATURAL <- as.character(data$NATURAL)
-      colnames(tabNaturalidade)[1] <- "NATURAL"
-      data$NATURAL <- factor(dplyr::left_join(data, tabNaturalidade, by = "NATURAL")$nome)
-    }
-
-    # DTNASC
-    if("DTNASC" %in% campos){
-      data$DTNASC <- as.character(data$DTNASC)
-      data$DTNASC <- as.Date(data$DTNASC, format = "%d%m%Y")
-    }
-
-    # IDADE.CNV
-    if("IDADE" %in% campos){
-      data$IDADE <- as.character(data$IDADE)
-      data$IDADE[data$IDADE=="000" | data$IDADE=="999"] <- NA
-      unidade <- substr(data$IDADE,1,1)
-      # Horas
-      data$IDADEhoras <- as.numeric(ifelse(unidade == 1, substr(data$IDADE, 2,3), NA))
-      # Dias
-      data$IDADEdias <- as.numeric(ifelse(unidade == 2, substr(data$IDADE, 2,3), NA))
-      # Meses
-      data$IDADEmeses <- as.numeric(ifelse(unidade == 3, substr(data$IDADE, 2,3), NA))
-      # Anos
-      data$IDADEanos <- as.numeric(ifelse(unidade == 4, substr(data$IDADE, 2,3), ifelse(unidade == 5, 100 + as.numeric(substr(data$IDADE, 2,3)), NA)))
-      # Apaga campo original
-      data$IDADE <- NULL
-    }
-
-    # SEXO.CNV
-    if("SEXO" %in% campos){
-      data$SEXO <- as.numeric(levels(data$SEXO))[data$SEXO]
-      data$SEXO[data$SEXO==0] <- NA
-      data$SEXO[data$SEXO==9] <- NA
-      data$SEXO[data$SEXO==1] <- "Masculino"
-      data$SEXO[data$SEXO==2] <- "Feminino"
-      data$SEXO <- factor(data$SEXO)
-    }
-
-    # RACACOR.CNV
-    if("RACACOR" %in% campos){
-      data$RACACOR <- as.numeric(levels(data$RACACOR))[data$RACACOR]
-      data$RACACOR[data$RACACOR==0] <- NA
-      data$RACACOR[data$RACACOR==1] <- "Branca"
-      data$RACACOR[data$RACACOR==2] <- "Preta"
-      data$RACACOR[data$RACACOR==3] <- "Amarela"
-      data$RACACOR[data$RACACOR==4] <- "Parda"
-      data$RACACOR[data$RACACOR==5] <- "Indígena"
-      data$RACACOR[data$RACACOR==6] <- NA
-      data$RACACOR[data$RACACOR==7] <- NA
-      data$RACACOR[data$RACACOR==8] <- NA
-      data$RACACOR[data$RACACOR==9] <- NA
-      data$RACACOR <- factor(data$RACACOR)
-    }
-
-    # ESTCIV.CNV
-    if("ESTCIV" %in% campos){
-      data$ESTCIV <- as.numeric(levels(data$ESTCIV))[data$ESTCIV]
-      data$ESTCIV[data$ESTCIV==0] <- NA
-      data$ESTCIV[data$ESTCIV==1] <- "Solteiro"
-      data$ESTCIV[data$ESTCIV==2] <- "Casado"
-      data$ESTCIV[data$ESTCIV==3] <- "Viúvo"
-      data$ESTCIV[data$ESTCIV==4] <- "Separado judicialmente"
-      data$ESTCIV[data$ESTCIV==5] <- "União consensual"
-      data$ESTCIV[data$ESTCIV==6] <- NA
-      data$ESTCIV[data$ESTCIV==7] <- NA
-      data$ESTCIV[data$ESTCIV==8] <- NA
-      data$ESTCIV[data$ESTCIV==9] <- NA
-      data$ESTCIV <- factor(data$ESTCIV)
-    }
-
-    # ESC (INSTRUC.CNV)
-    if("ESC" %in% campos){
-      data$ESC <- as.character(levels(data$ESC))[data$ESC]
-      data$ESC[data$ESC=="0"] <- NA
-      data$ESC[data$ESC=="6"] <- NA
-      data$ESC[data$ESC=="7"] <- NA
-      data$ESC[data$ESC=="9"] <- NA
-      data$ESC[data$ESC=="A"] <- NA
-      data$ESC[data$ESC=="1"] <- "Nenhuma"
-      data$ESC[data$ESC=="2"] <- "1 a 3 anos"
-      data$ESC[data$ESC=="3"] <- "4 a 7 anos"
-      data$ESC[data$ESC=="4"] <- "8 a 11 anos"
-      data$ESC[data$ESC=="5"] <- "12 anos ou mais"
-      data$ESC[data$ESC=="8"] <- "9 a 11 anos"
-      data$ESC[data$ESC=="9"] <- NA
-      data$ESC <- factor(data$ESC)
-    }
-
-    # OCUP (OCUPA.CNV ou CBO2002.CNV)
-    if("OCUP" %in% campos){
-      if(!("DTOBITO" %in% campos)) stop("Necessário incluir o campo DTOBITO para o pré-processamento da variável OCUP.")
-      data$OCUP <- as.character(data$OCUP)
-      colnames(tabOcupacao)[1] <- "OCUP"
-      colnames(tabCBO)[1] <- "OCUP"
-      ano <- lubridate::year(data$DTOBITO)
-      data$OCUP <- factor(ifelse(ano <= 2005, plyr::join(data, tabOcupacao, by = "OCUP", match = "first")$nome, dplyr::left_join(data, tabCBO, by = "OCUP")$nome))
-    }
-
-    # LOCOCOR.CNV
-    if("LOCOCOR" %in% campos){
-      data$LOCOCOR <- as.numeric(levels(data$LOCOCOR))[data$LOCOCOR]
-      data$LOCOCOR[data$LOCOCOR==1] <- "Hospital"
-      data$LOCOCOR[data$LOCOCOR==2] <- "Outro estabelecimento de saúde"
-      data$LOCOCOR[data$LOCOCOR==3] <- "Domicílio"
-      data$LOCOCOR[data$LOCOCOR==4] <- "Via pública"
-      data$LOCOCOR[data$LOCOCOR==5] <- "Outros"
-      data$LOCOCOR[data$LOCOCOR==9] <- NA
-      data$LOCOCOR <- factor(data$LOCOCOR)
-    }
-
-    # IDADEMAE
-    if("IDADEMAE" %in% campos){
-      data$IDADEMAE <- as.numeric(data$IDADEMAE)
-      data$IDADEMAE[data$IDADEMAE==0] <- NA
-    }
-
-    # ESCMAE.CNV
-    if("ESCMAE" %in% campos){
-      data$ESCMAE <- as.character(levels(data$ESCMAE))[data$ESCMAE]
-      data$ESCMAE[data$ESCMAE=="0"] <- NA
-      data$ESCMAE[data$ESCMAE=="6"] <- NA
-      data$ESCMAE[data$ESCMAE=="7"] <- NA
-      data$ESCMAE[data$ESCMAE=="9"] <- NA
-      data$ESCMAE[data$ESCMAE=="A"] <- NA
-      data$ESCMAE[data$ESCMAE=="1"] <- "Nenhuma"
-      data$ESCMAE[data$ESCMAE=="2"] <- "1 a 3 anos"
-      data$ESCMAE[data$ESCMAE=="3"] <- "4 a 7 anos"
-      data$ESCMAE[data$ESCMAE=="4"] <- "8 a 11 anos"
-      data$ESCMAE[data$ESCMAE=="5"] <- "12 anos ou mais"
-      data$ESCMAE[data$ESCMAE=="8"] <- "9 a 11 anos"
-      data$ESCMAE[data$ESCMAE=="9"] <- NA
-      data$ESCMAE <- factor(data$ESCMAE)
-    }
-
-    # OCUPMAE (OCUPA.CNV ou CBO2002.CNV.)
-    if("OCUPMAE" %in% campos){
-      if(!("DTOBITO" %in% campos)) stop("Necessário incluir o campo DTOBITO para o pré-processamento da variável OCUP.")
-      data$OCUPMAE <- as.character(data$OCUPMAE)
-      colnames(tabOcupacao)[1] <- "OCUPMAE"
-      colnames(tabCBO)[1] <- "OCUPMAE"
-      ano <- lubridate::year(data$DTOBITO)
-      data$OCUP <- factor(ifelse(ano <= 2005, plyr::join(data, tabOcupacao, by = "OCUPMAE", match = "first")$nome, dplyr::left_join(data, tabCBO, by = "OCUPMAE")$nome))
-    }
-
-    # QTDFILVIVO
-    if("QTDFILVIVO" %in% campos){
-      data$QTDFILVIVO <- as.numeric(data$QTDFILVIVO)
-    }
-
-    # QTDFILMORT
-    if("QTDFILMORT" %in% campos){
-      data$QTDFILMORT <- as.numeric(data$QTDFILMORT)
-    }
-
-    # GRAVIDEZ.CNV
-    if("GRAVIDEZ" %in% campos){
-      data$GRAVIDEZ <- as.numeric(levels(data$GRAVIDEZ))[data$GRAVIDEZ]
-      data$GRAVIDEZ[data$GRAVIDEZ==1] <- "Única"
-      data$GRAVIDEZ[data$GRAVIDEZ==2] <- "Dupla"
-      data$GRAVIDEZ[data$GRAVIDEZ==3] <- "Tríplice e mais"
-      data$GRAVIDEZ[data$GRAVIDEZ==9] <- NA
-      data$GRAVIDEZ <- factor(data$GRAVIDEZ)
-    }
-
-    # GESTACAO.CNV
-    if("GESTACAO" %in% campos){
-      data$GESTACAO <- as.character(levels(data$GESTACAO))[data$GESTACAO]
-      data$GESTACAO[data$GESTACAO=="0"] <- NA
-      data$GESTACAO[data$GESTACAO=="A"] <- "21 a 27 semanas"
-      data$GESTACAO[data$GESTACAO=="1"] <- "Menos de 22 semanas"
-      data$GESTACAO[data$GESTACAO=="2"] <- "22 a 27 semanas"
-      data$GESTACAO[data$GESTACAO=="3"] <- "28 a 31 semanas"
-      data$GESTACAO[data$GESTACAO=="4"] <- "32 a 36 semanas"
-      data$GESTACAO[data$GESTACAO=="5"] <- "37 a 41 semanas"
-      data$GESTACAO[data$GESTACAO=="6"] <- "42 semanas e mais"
-      data$GESTACAO[data$GESTACAO=="7"] <- "28 semanas e mais"
-      data$GESTACAO[data$GESTACAO=="8"] <- "28 a 36 semanas"
-      data$GESTACAO[data$GESTACAO=="9"] <- NA
-      data$GESTACAO <- factor(data$GESTACAO)
-    }
-
-    # PARTO.CNV
-    if("PARTO" %in% campos){
-      data$PARTO <- as.numeric(levels(data$PARTO))[data$PARTO]
-      data$PARTO[data$PARTO==0] <- NA
-      data$PARTO[data$PARTO==1] <- "Vaginal"
-      data$PARTO[data$PARTO==2] <- "Cesáreo"
-      data$PARTO[data$PARTO==3] <- NA
-      data$PARTO[data$PARTO==4] <- NA
-      data$PARTO[data$PARTO==5] <- NA
-      data$PARTO[data$PARTO==6] <- NA
-      data$PARTO[data$PARTO==7] <- NA
-      data$PARTO[data$PARTO==8] <- NA
-      data$PARTO[data$PARTO==9] <- NA
-      data$PARTO <- factor(data$PARTO)
-    }
-
-    # OBITOPARTO.CNV
-    if("OBITOPARTO" %in% campos){
-      data$OBITOPARTO <- as.numeric(levels(data$OBITOPARTO))[data$OBITOPARTO]
-      data$OBITOPARTO[data$OBITOPARTO==0] <- NA
-      data$OBITOPARTO[data$OBITOPARTO==1] <- "Antes"
-      data$OBITOPARTO[data$OBITOPARTO==2] <- "Durante"
-      data$OBITOPARTO[data$OBITOPARTO==3] <- "Depois"
-      data$OBITOPARTO[data$OBITOPARTO==4] <- NA
-      data$OBITOPARTO[data$OBITOPARTO==5] <- NA
-      data$OBITOPARTO[data$OBITOPARTO==6] <- NA
-      data$OBITOPARTO[data$OBITOPARTO==7] <- NA
-      data$OBITOPARTO[data$OBITOPARTO==8] <- NA
-      data$OBITOPARTO[data$OBITOPARTO==9] <- NA
-      data$OBITOPARTO <- factor(data$OBITOPARTO)
-    }
-
-    # PESO.CNV
-    if("PESO" %in% campos){
-      data$PESO <- as.numeric(data$PESO)
-      data$PESO[data$PESO==0] <- NA
-    }
-
-    # NUMERODN
-    if("NUMERODN" %in% campos){
-      data$NUMERODN <- as.numeric(data$NUMERODN)
-    }
-
-    # CODESTAB
-    if("CODESTAB" %in% campos){
-      data$CODESTAB <- as.character(data$CODESTAB)
-    }
-
-    # OBITOGRAV.CNV
-    if("OBITOGRAV" %in% campos){
-      data$OBITOGRAV <- as.numeric(levels(data$OBITOGRAV))[data$OBITOGRAV]
-      data$OBITOGRAV[data$OBITOGRAV==1] <- "Sim"
-      data$OBITOGRAV[data$OBITOGRAV==2] <- "Não"
-      data$OBITOGRAV[data$OBITOGRAV==3] <- NA
-      data$OBITOGRAV[data$OBITOGRAV==4] <- NA
-      data$OBITOGRAV[data$OBITOGRAV==5] <- NA
-      data$OBITOGRAV[data$OBITOGRAV==6] <- NA
-      data$OBITOGRAV[data$OBITOGRAV==7] <- NA
-      data$OBITOGRAV[data$OBITOGRAV==8] <- NA
-      data$OBITOGRAV[data$OBITOGRAV==9] <- NA
-      data$OBITOGRAV <- factor(data$OBITOGRAV)
-    }
-
-    # OBITOPUERP.CNV
-    if("OBITOPUERP" %in% campos){
-      data$OBITOPUERP <- as.numeric(levels(data$OBITOPUERP))[data$OBITOPUERP]
-      data$OBITOPUERP[data$OBITOPUERP==1] <- "De 0 a 42 dias"
-      data$OBITOPUERP[data$OBITOPUERP==2] <- "De 43 dias a 1 ano"
-      data$OBITOPUERP[data$OBITOPUERP==3] <- "Não"
-      data$OBITOPUERP[data$OBITOPUERP==4] <- NA
-      data$OBITOPUERP[data$OBITOPUERP==5] <- NA
-      data$OBITOPUERP[data$OBITOPUERP==6] <- NA
-      data$OBITOPUERP[data$OBITOPUERP==7] <- NA
-      data$OBITOPUERP[data$OBITOPUERP==8] <- NA
-      data$OBITOPUERP[data$OBITOPUERP==9] <- NA
-      data$OBITOPUERP <- factor(data$OBITOPUERP)
-    }
-
-    # ASSISTMED.CNV
-    if("ASSISTMED" %in% campos){
-      data$ASSISTMED <- as.numeric(levels(data$ASSISTMED))[data$ASSISTMED]
-      data$ASSISTMED[data$ASSISTMED==1] <- "Sim"
-      data$ASSISTMED[data$ASSISTMED==2] <- "Não"
-      data$ASSISTMED[data$ASSISTMED==9] <- NA
-      data$ASSISTMED <- factor(data$ASSISTMED)
-    }
-
-    # EXAME.CNV
-    if("EXAME" %in% campos){
-      data$EXAME <- as.numeric(levels(data$EXAME))[data$EXAME]
-      data$EXAME[data$EXAME==1] <- "Sim"
-      data$EXAME[data$EXAME==2] <- "Não"
-      data$EXAME[data$EXAME==9] <- NA
-      data$EXAME <- factor(data$EXAME)
-    }
-
-    # CIRURGIA.CNV
-    if("CIRURGIA" %in% campos){
-      data$CIRURGIA <- as.numeric(levels(data$CIRURGIA))[data$CIRURGIA]
-      data$CIRURGIA[data$CIRURGIA==1] <- "Sim"
-      data$CIRURGIA[data$CIRURGIA==2] <- "Não"
-      data$CIRURGIA[data$CIRURGIA==9] <- NA
-      data$CIRURGIA <- factor(data$CIRURGIA)
-    }
-
-    # NECROPSIA (NECROPS.CNV)
-    if("NECROPSIA" %in% campos){
-      data$NECROPSIA <- as.numeric(levels(data$NECROPSIA))[data$NECROPSIA]
-      data$NECROPSIA[data$NECROPSIA==1] <- "Sim"
-      data$NECROPSIA[data$NECROPSIA==2] <- "Não"
-      data$NECROPSIA[data$NECROPSIA==9] <- NA
-      data$NECROPSIA <- factor(data$NECROPSIA)
-    }
-
-    # DTATESTADO
-    if("DTATESTADO" %in% campos){
-      data$DTATESTADO <- as.character(data$DTATESTADO)
-      data$DTATESTADO <- as.Date(data$DTATESTADO, format = "%d%m%Y")
-    }
-
-    # CIRCOBITO (TIPOVIOL.CNV)
-    if("CIRCOBITO" %in% campos){
-      data$CIRCOBITO <- as.numeric(levels(data$CIRCOBITO))[data$CIRCOBITO]
-      data$CIRCOBITO[data$CIRCOBITO==0] <- NA
-      data$CIRCOBITO[data$CIRCOBITO==1] <- "Acidente"
-      data$CIRCOBITO[data$CIRCOBITO==2] <- "Suicídio"
-      data$CIRCOBITO[data$CIRCOBITO==3] <- "Homicídio"
-      data$CIRCOBITO[data$CIRCOBITO==4] <- "Outro"
-      data$CIRCOBITO[data$CIRCOBITO==5] <- NA
-      data$CIRCOBITO[data$CIRCOBITO==6] <- NA
-      data$CIRCOBITO[data$CIRCOBITO==7] <- NA
-      data$CIRCOBITO[data$CIRCOBITO==8] <- NA
-      data$CIRCOBITO[data$CIRCOBITO==9] <- NA
-      data$CIRCOBITO <- factor(data$CIRCOBITO)
-    }
-
-    # ACIDTRAB.CNV
-    if("ACIDTRAB" %in% campos){
-      data$ACIDTRAB <- as.numeric(levels(data$ACIDTRAB))[data$ACIDTRAB]
-      data$ACIDTRAB[data$ACIDTRAB==1] <- "Sim"
-      data$ACIDTRAB[data$ACIDTRAB==2] <- "Não"
-      data$ACIDTRAB[data$ACIDTRAB==9] <- NA
-      data$ACIDTRAB <- factor(data$ACIDTRAB)
-    }
-
-    # FONTE (FONTINFO.CNV)
-    if("FONTE" %in% campos){
-      data$FONTE <- as.numeric(levels(data$FONTE))[data$FONTE]
-      data$FONTE[data$FONTE==1] <- "Boletim de Ocorrência"
-      data$FONTE[data$FONTE==2] <- "Hospital"
-      data$FONTE[data$FONTE==3] <- "Família"
-      data$FONTE[data$FONTE==4] <- "Outro"
-      data$FONTE[data$FONTE==9] <- NA
-      data$FONTE <- factor(data$FONTE)
-    }
-
-    # TPPOS (INVESTIG.CNV)
-    if("TPPOS" %in% campos){
-      data$TPPOS <- plyr::revalue(data$TPPOS, c("N"="Não investigado", "S"="Investigado"))
-    }
-
-    # DTINVESTIG
-    if("DTINVESTIG" %in% campos){
-      data$DTINVESTIG <- as.character(data$DTINVESTIG)
-      data$DTINVESTIG <- as.Date(data$DTINVESTIG, format = "%d%m%Y")
-    }
-
-    # DTCADASTRO
-    if("DTCADASTRO" %in% campos){
-      data$DTCADASTRO <- as.character(data$DTCADASTRO)
-      data$DTCADASTRO <- as.Date(data$DTCADASTRO, format = "%d%m%Y")
-    }
-
-    # ATESTANTE (ATESTANT.CNV)
-    if("ATESTANTE" %in% campos){
-      data$ATESTANTE <- as.numeric(levels(data$ATESTANTE))[data$ATESTANTE]
-      data$ATESTANTE[data$ATESTANTE==0] <- NA
-      data$ATESTANTE[data$ATESTANTE==1] <- "Sim"
-      data$ATESTANTE[data$ATESTANTE==2] <- "Substituto"
-      data$ATESTANTE[data$ATESTANTE==3] <- "IML"
-      data$ATESTANTE[data$ATESTANTE==4] <- "SVO"
-      data$ATESTANTE[data$ATESTANTE==5] <- "Outro"
-      data$ATESTANTE[data$ATESTANTE==6] <- NA
-      data$ATESTANTE[data$ATESTANTE==7] <- NA
-      data$ATESTANTE[data$ATESTANTE==8] <- NA
-      data$ATESTANTE[data$ATESTANTE==9] <- NA
-      data$ATESTANTE <- factor(data$ATESTANTE)
-    }
-
-    # FONTEINV.CNV
-    if("FONTEINV" %in% campos){
-      data$FONTEINV <- as.numeric(levels(data$FONTEINV))[data$FONTEINV]
-      data$FONTEINV[data$FONTEINV==1] <- "Comitê de Mortalidade Materna e/ou Infantil"
-      data$FONTEINV[data$FONTEINV==2] <- "Visita familiar / Entrevista família"
-      data$FONTEINV[data$FONTEINV==3] <- "Estabelecimento de saúde / Prontuário"
-      data$FONTEINV[data$FONTEINV==4] <- "Relacionamento com outros bancos de dados"
-      data$FONTEINV[data$FONTEINV==5] <- "SVO"
-      data$FONTEINV[data$FONTEINV==6] <- "IML"
-      data$FONTEINV[data$FONTEINV==7] <- "Outra fonte"
-      data$FONTEINV[data$FONTEINV==8] <- "Múltiplas fontes"
-      data$FONTEINV[data$FONTEINV==9] <- NA
-      data$FONTEINV <- factor(data$FONTEINV)
-    }
-
-    # DTRECEBIM
-    if("DTRECEBIM" %in% campos){
-      data$DTRECEBIM <- as.character(data$DTRECEBIM)
-      data$DTRECEBIM <- as.Date(data$DTRECEBIM, format = "%d%m%Y")
-    }
-
-    # UFINFORM (UF.CNV)
-    if("UFINFORM" %in% campos){
-      data$UFINFORM <- as.numeric(levels(data$UFINFORM))[data$UFINFORM]
-      data$UFINFORM[data$UFINFORM==0] <- NA
-      data$UFINFORM[data$UFINFORM==11] <- "Rondônia"
-      data$UFINFORM[data$UFINFORM==12] <- "Acre"
-      data$UFINFORM[data$UFINFORM==13] <- "Amazonas"
-      data$UFINFORM[data$UFINFORM==14] <- "Roraima"
-      data$UFINFORM[data$UFINFORM==15] <- "Pará"
-      data$UFINFORM[data$UFINFORM==16] <- "Amapá"
-      data$UFINFORM[data$UFINFORM==17] <- "Tocantins"
-      data$UFINFORM[data$UFINFORM==21] <- "Maranhão"
-      data$UFINFORM[data$UFINFORM==22] <- "Piauí"
-      data$UFINFORM[data$UFINFORM==23] <- "Ceará"
-      data$UFINFORM[data$UFINFORM==24] <- "Rio Grande do Norte"
-      data$UFINFORM[data$UFINFORM==25] <- "Paraíba"
-      data$UFINFORM[data$UFINFORM==26] <- "Pernambuco"
-      data$UFINFORM[data$UFINFORM==20] <- "Pernambuco"
-      data$UFINFORM[data$UFINFORM==27] <- "Alagoas"
-      data$UFINFORM[data$UFINFORM==28] <- "Sergipe"
-      data$UFINFORM[data$UFINFORM==29] <- "Bahia"
-      data$UFINFORM[data$UFINFORM==31] <- "Minas Gerais"
-      data$UFINFORM[data$UFINFORM==32] <- "Espírito Santo"
-      data$UFINFORM[data$UFINFORM==33] <- "Rio de Janeiro"
-      data$UFINFORM[data$UFINFORM==35] <- "São Paulo"
-      data$UFINFORM[data$UFINFORM==41] <- "Paraná"
-      data$UFINFORM[data$UFINFORM==42] <- "Santa Catarina"
-      data$UFINFORM[data$UFINFORM==43] <- "Rio Grande do Sul"
-      data$UFINFORM[data$UFINFORM==50] <- "Mato Grosso do Sul"
-      data$UFINFORM[data$UFINFORM==51] <- "Mato Grosso"
-      data$UFINFORM[data$UFINFORM==52] <- "Goiás"
-      data$UFINFORM[data$UFINFORM==53] <- "Distrito Federal"
-      data$UFINFORM[data$UFINFORM==99] <- NA
-      data$UFINFORM <- factor(data$UFINFORM)
-    }
-
-    # CODINST.CNV
-    if("CODINST" %in% campos){
-      data$CODINST <- as.character(levels(data$CODINST))[data$CODINST]
-      data$CODINST[data$CODINST=="E"] <- "Estado"
-      data$CODINST[data$CODINST=="R"] <- "Regional"
-      data$CODINST[data$CODINST=="M"] <- "Municipal"
-      data$CODINST <- factor(data$CODINST)
-    }
-
-
-
-
-
-
-
-  ###################################################
-  # SINASC
-  ###################################################
-
-  } else if(sistema == "SINASC"){
-
-    # NUMERODN
-    if("NUMERODN" %in% campos){
-      data$NUMERODN <- as.integer(data$NUMERODN)
-    }
-
-    # CODINST
-    if("CODINST" %in% campos){
-      data$CODINST <- as.integer(data$CODINST)
-    }
-
-    # ORIGEM
-    if("ORIGEM" %in% campos){
-      data$ORIGEM <- as.integer(data$ORIGEM)
-    }
-
-    # NUMERODV
-    if("NUMERODV" %in% campos){
-      data$NUMERODV <- as.integer(data$NUMERODV)
-    }
-
-    # PREFIXODN
-    if("PREFIXODN" %in% campos){
-      data$PREFIXODN <- as.integer(data$PREFIXODN)
-    }
-
-    # CODESTAB
-    if("CODESTAB" %in% campos){
-      data$CODESTAB <- as.character(data$CODESTAB)
-    }
-
-    # CODMUNNASC
-    if("CODMUNNASC" %in% campos){
-      data$CODMUNNASC <- as.integer(data$CODMUNNASC)
-    }
-
-    # LOCNASC
-    if("LOCNASC" %in% campos){
-      data$LOCNASC <- as.numeric(levels(data$LOCNASC))[data$LOCNASC]
-      data$LOCNASC[data$LOCNASC==0] <- NA
-      data$LOCNASC[data$LOCNASC==1] <- "Hospital"
-      data$LOCNASC[data$LOCNASC==2] <- "Outro estabelecimento de saúde"
-      data$LOCNASC[data$LOCNASC==3] <- "Domicílio"
-      data$LOCNASC[data$LOCNASC==4] <- "Outros"
-      data$LOCNASC[data$LOCNASC==5] <- NA
-      data$LOCNASC[data$LOCNASC==6] <- NA
-      data$LOCNASC[data$LOCNASC==7] <- NA
-      data$LOCNASC[data$LOCNASC==8] <- NA
-      data$LOCNASC[data$LOCNASC==9] <- NA
-      data$LOCNASC <- factor(data$LOCNASC)
-    }
-
-    # IDADEMAE
-    if("IDADEMAE" %in% campos){
-      data$IDADEMAE <- as.numeric(data$IDADEMAE)
-      data$IDADEMAE[data$IDADEMAE==0] <- NA
-      data$IDADEMAE[data$IDADEMAE==99] <- NA
-    }
-
-    # ESTCIVMAE
-    if("ESTCIVMAE" %in% campos){
-      data$ESTCIVMAE <- as.numeric(levels(data$ESTCIVMAE))[data$ESTCIVMAE]
-      data$ESTCIVMAE[data$ESTCIVMAE==0] <- NA
-      data$ESTCIVMAE[data$ESTCIVMAE==1] <- "Solteira"
-      data$ESTCIVMAE[data$ESTCIVMAE==2] <- "Casada"
-      data$ESTCIVMAE[data$ESTCIVMAE==3] <- "Viúva"
-      data$ESTCIVMAE[data$ESTCIVMAE==4] <- "Separada judicialmente"
-      data$ESTCIVMAE[data$ESTCIVMAE==5] <- "União consensual"
-      data$ESTCIVMAE[data$ESTCIVMAE==6] <- NA
-      data$ESTCIVMAE[data$ESTCIVMAE==7] <- NA
-      data$ESTCIVMAE[data$ESTCIVMAE==8] <- NA
-      data$ESTCIVMAE[data$ESTCIVMAE==9] <- NA
-      data$ESTCIVMAE <- factor(data$ESTCIVMAE)
-    }
-
-    # ESCMAE
-    if("ESCMAE" %in% campos){
-      data$ESCMAE <- as.numeric(levels(data$ESCMAE))[data$ESCMAE]
-      data$ESCMAE[data$ESCMAE==1] <- "Nenhum"
-      data$ESCMAE[data$ESCMAE==2] <- "1 a 3 anos"
-      data$ESCMAE[data$ESCMAE==3] <- "4 a 7 anos"
-      data$ESCMAE[data$ESCMAE==4] <- "8 a 11 anos"
-      data$ESCMAE[data$ESCMAE==5] <- "12 anos ou mais"
-      data$ESCMAE[data$ESCMAE==6] <- NA
-      data$ESCMAE[data$ESCMAE==7] <- NA
-      data$ESCMAE[data$ESCMAE==8] <- "9 a 11 anos"
-      data$ESCMAE[data$ESCMAE==9] <- NA
-      data$ESCMAE <- factor(data$ESCMAE)
-    }
-
-    # CODOCUPMAE
-    if("CODOCUPMAE" %in% campos){
-      data$CODOCUPMAE <- as.character(data$CODOCUPMAE)
-    }
-
-    # QTDFILVIVO
-    if("QTDFILVIVO" %in% campos){
-      data$QTDFILVIVO <- as.integer(data$QTDFILVIVO)
-      data$QTDFILVIVO[data$QTDFILVIVO==99] <- NA
-    }
-
-    # QTDFILMORT
-    if("QTDFILMORT" %in% campos){
-      data$QTDFILMORT <- as.integer(data$QTDFILMORT)
-      data$QTDFILMORT[data$QTDFILMORT==99] <- NA
-    }
-
-    # CODMUNRES
-    if("CODMUNRES" %in% campos & dadosMunRes == TRUE){
-      data$CODMUNRES <- as.integer(as.character(data$CODMUNRES))
-      colnames(tabMun)[1] <- "CODMUNRES"
-      data <- dplyr::left_join(data, tabMun, by = "CODMUNRES")
-    }
-
-    # GESTACAO
-    if("GESTACAO" %in% campos){
-      data$GESTACAO <- as.numeric(levels(data$GESTACAO))[data$GESTACAO]
-      data$GESTACAO[data$GESTACAO==0] <- NA
-      data$GESTACAO[data$GESTACAO==1] <- "Menos de 22 semanas"
-      data$GESTACAO[data$GESTACAO==2] <- "22 a 27 semanas"
-      data$GESTACAO[data$GESTACAO==3] <- "28 a 31 semanas"
-      data$GESTACAO[data$GESTACAO==4] <- "32 a 36 semanas"
-      data$GESTACAO[data$GESTACAO==5] <- "37 a 41 semanas"
-      data$GESTACAO[data$GESTACAO==6] <- "42 semanas ou mais"
-      data$GESTACAO[data$GESTACAO==7] <- NA
-      data$GESTACAO[data$GESTACAO==8] <- NA
-      data$GESTACAO[data$GESTACAO==9] <- NA
-      data$GESTACAO <- factor(data$GESTACAO)
-    }
-
-    # GRAVIDEZ
-    if("GRAVIDEZ" %in% campos){
-      data$GRAVIDEZ <- as.numeric(levels(data$GRAVIDEZ))[data$GRAVIDEZ]
-      data$GRAVIDEZ[data$GRAVIDEZ==0] <- NA
-      data$GRAVIDEZ[data$GRAVIDEZ==1] <- "Única"
-      data$GRAVIDEZ[data$GRAVIDEZ==2] <- "Dupla"
-      data$GRAVIDEZ[data$GRAVIDEZ==3] <- "Tripla e mais"
-      data$GRAVIDEZ[data$GRAVIDEZ==4] <- NA
-      data$GRAVIDEZ[data$GRAVIDEZ==5] <- NA
-      data$GRAVIDEZ[data$GRAVIDEZ==6] <- NA
-      data$GRAVIDEZ[data$GRAVIDEZ==7] <- NA
-      data$GRAVIDEZ[data$GRAVIDEZ==8] <- NA
-      data$GRAVIDEZ[data$GRAVIDEZ==9] <- NA
-      data$GRAVIDEZ <- factor(data$GRAVIDEZ)
-    }
-
-    # PARTO
-    if("PARTO" %in% campos){
-      data$PARTO <- as.numeric(levels(data$PARTO))[data$PARTO]
-      data$PARTO[data$PARTO==0] <- NA
-      data$PARTO[data$PARTO==1] <- "Vaginal"
-      data$PARTO[data$PARTO==2] <- "Cesáreo"
-      data$PARTO[data$PARTO==3] <- NA
-      data$PARTO[data$PARTO==4] <- NA
-      data$PARTO[data$PARTO==5] <- NA
-      data$PARTO[data$PARTO==6] <- NA
-      data$PARTO[data$PARTO==7] <- NA
-      data$PARTO[data$PARTO==8] <- NA
-      data$PARTO[data$PARTO==9] <- NA
-      data$PARTO <- factor(data$PARTO)
-    }
-
-    # CONSULTAS
-    if("CONSULTAS" %in% campos){
-      data$CONSULTAS <- as.numeric(levels(data$CONSULTAS))[data$CONSULTAS]
-      data$CONSULTAS[data$CONSULTAS==0] <- NA
-      data$CONSULTAS[data$CONSULTAS==1] <- "Nenhuma"
-      data$CONSULTAS[data$CONSULTAS==2] <- "1 a 3 vezes"
-      data$CONSULTAS[data$CONSULTAS==3] <- "4 a 6 vezes"
-      data$CONSULTAS[data$CONSULTAS==4] <- "7 ou mais vezes"
-      data$CONSULTAS[data$CONSULTAS==5] <- NA
-      data$CONSULTAS[data$CONSULTAS==6] <- NA
-      data$CONSULTAS[data$CONSULTAS==7] <- NA
-      data$CONSULTAS[data$CONSULTAS==8] <- NA
-      data$CONSULTAS[data$CONSULTAS==9] <- NA
-      data$CONSULTAS <- factor(data$CONSULTAS)
-    }
-
-    # DTNASC
-    if("DTNASC" %in% campos){
-      data$DTNASC <- as.character(data$DTNASC)
-      data$DTNASC <- as.Date(data$DTNASC, format = "%d%m%Y")
-    }
-
-    # HORANASC
-    if("HORANASC" %in% campos){
-      data$HORANASC <- as.character(data$HORANASC)
-    }
-
-    # SEXO
-    if("SEXO" %in% campos){
-      data$SEXO <- as.numeric(levels(data$SEXO))[data$SEXO]
-      data$SEXO[data$SEXO==0] <- NA
-      data$SEXO[data$SEXO==1] <- "Masculino"
-      data$SEXO[data$SEXO==2] <- "Feminino"
-      data$SEXO[data$SEXO==9] <- NA
-      data$SEXO <- factor(data$SEXO)
-    }
-
-    # APGAR1
-    if("APGAR1" %in% campos){
-      data$APGAR1 <- as.numeric(data$APGAR1)
-      data$APGAR1[data$APGAR1==99] <- NA
-    }
-
-    # APGAR5
-    if("APGAR5" %in% campos){
-      data$APGAR5 <- as.numeric(data$APGAR5)
-      data$APGAR5[data$APGAR5==99] <- NA
-    }
-
-    # RACACOR
-    if("RACACOR" %in% campos){
-      data$RACACOR <- as.numeric(levels(data$RACACOR))[data$RACACOR]
-      data$RACACOR[data$RACACOR==1] <- "Branca"
-      data$RACACOR[data$RACACOR==2] <- "Preta"
-      data$RACACOR[data$RACACOR==3] <- "Amarela"
-      data$RACACOR[data$RACACOR==4] <- "Parda"
-      data$RACACOR[data$RACACOR==5] <- "Indígena"
-      data$RACACOR <- factor(data$RACACOR)
-    }
-
-    # PESO
-    if("PESO" %in% campos){
-      data$PESO <- as.numeric(data$PESO)
-      data$PESO[data$PESO==0] <- NA
-      data$PESO[data$PESO==9999] <- NA
-    }
-
-    # IDANOMAL
-    if("IDANOMAL" %in% campos){
-      data$IDANOMAL <- as.numeric(levels(data$IDANOMAL))[data$IDANOMAL]
-      data$IDANOMAL[data$IDANOMAL==1] <- "Sim"
-      data$IDANOMAL[data$IDANOMAL==2] <- "Não"
-      data$IDANOMAL[data$IDANOMAL==3] <- NA
-      data$IDANOMAL[data$IDANOMAL==4] <- NA
-      data$IDANOMAL[data$IDANOMAL==5] <- NA
-      data$IDANOMAL[data$IDANOMAL==6] <- NA
-      data$IDANOMAL[data$IDANOMAL==7] <- NA
-      data$IDANOMAL[data$IDANOMAL==8] <- NA
-      data$IDANOMAL[data$IDANOMAL==9] <- NA
-      data$IDANOMAL <- factor(data$IDANOMAL)
-    }
-
-    # DTCADASTRO
-    if("DTCADASTRO" %in% campos){
-      data$DTCADASTRO <- as.character(data$DTCADASTRO)
-      data$DTCADASTRO <- as.Date(data$DTCADASTRO, format = "%d%m%Y")
-    }
-
-    # CODANOMAL
-    if("CODANOMAL" %in% campos){
-      data$CODANOMAL <- as.character(data$CODANOMAL)
-    }
-
-    # NUMEROLOTE
-    if("NUMEROLOTE" %in% campos){
-      data$NUMEROLOTE <- as.character(data$NUMEROLOTE)
-    }
-
-    # VERSAOSIST
-    if("VERSAOSIST" %in% campos){
-      data$VERSAOSIST <- as.character(data$VERSAOSIST)
-    }
-
-    # DTRECEBIM
-    if("DTRECEBIM" %in% campos){
-      data$DTRECEBIM <- as.character(data$DTRECEBIM)
-      data$DTRECEBIM <- as.Date(data$DTRECEBIM, format = "%d%m%Y")
-    }
-
-    # DIFDATA
-    if("DIFDATA" %in% campos){
-      data$DIFDATA <- as.integer(data$DIFDATA)
-    }
-
-    # DTRECORIG
-    if("DTRECORIG" %in% campos){
-      data$DTRECORIG <- as.character(data$DTRECORIG)
-      data$DTRECORIG <- as.Date(data$DTRECORIG, format = "%d%m%Y")
-    }
-
-    # NATURALMAE
-    if("NATURALMAE" %in% campos){
-      data$NATURALMAE <- as.integer(data$NATURALMAE)
-    }
-
-    # CODMUNNATU
-    if("CODMUNNATU" %in% campos){
-      data$CODMUNNATU <- as.integer(data$CODMUNNATU)
-    }
-
-    # CODUFNATU
-    if("CODUFNATU" %in% campos){
-      data$CODUFNATU <- as.integer(data$CODUFNATU)
-    }
-
-    # ESCMAE2010
-    if("CODUFNATU" %in% campos){
-      data$CODUFNATU <- as.integer(data$CODUFNATU)
-    }
-
-    # SERIESCMAE
-    if("SERIESCMAE" %in% campos){
-      data$SERIESCMAE <- as.integer(data$SERIESCMAE)
-    }
-
-    # DTNASCMAE
-    if("DTNASCMAE" %in% campos){
-      data$DTNASCMAE <- as.character(data$DTNASCMAE)
-      data$DTNASCMAE <- as.Date(data$DTNASCMAE, format = "%d%m%Y")
-    }
-
-    # RACACORMAE
-    if("RACACORMAE" %in% campos){
-      data$RACACORMAE <- as.numeric(levels(data$RACACORMAE))[data$RACACORMAE]
-      data$RACACORMAE[data$RACACORMAE==1] <- "Branca"
-      data$RACACORMAE[data$RACACORMAE==2] <- "Preta"
-      data$RACACORMAE[data$RACACORMAE==3] <- "Amarela"
-      data$RACACORMAE[data$RACACORMAE==4] <- "Parda"
-      data$RACACORMAE[data$RACACORMAE==5] <- "Indígena"
-      data$RACACORMAE <- factor(data$RACACORMAE)
-    }
-
-    # QTDGESTANT
-    if("QTDGESTANT" %in% campos){
-      data$QTDGESTANT <- as.integer(data$QTDGESTANT)
-    }
-
-    # QTDPARTNOR
-    if("QTDPARTNOR" %in% campos){
-      data$QTDPARTNOR <- as.integer(data$QTDPARTNOR)
-    }
-
-    # QTDPARTCES
-    if("QTDPARTCES" %in% campos){
-      data$QTDPARTCES <- as.integer(data$QTDPARTCES)
-    }
-
-    # IDADEPAI
-    if("IDADEPAI" %in% campos){
-      data$IDADEPAI <- as.integer(data$IDADEPAI)
-    }
-
-    # DTULTMENST
-    if("DTULTMENST" %in% campos){
-      data$DTULTMENST <- as.character(data$DTULTMENST)
-      data$DTULTMENST <- as.Date(data$DTULTMENST, format = "%d%m%Y")
-    }
-
-    # SEMAGESTAC
-    if("SEMAGESTAC" %in% campos){
-      data$SEMAGESTAC <- as.integer(data$SEMAGESTAC)
-    }
-
-    # TPMETESTIM
-    if("TPMETESTIM" %in% campos){
-      data$TPMETESTIM <- as.integer(data$TPMETESTIM)
-    }
-
-    # CONSPRENAT
-    if("CONSPRENAT" %in% campos){
-      data$CONSPRENAT <- as.integer(data$CONSPRENAT)
-    }
-
-    # MESPRENAT
-    if("MESPRENAT" %in% campos){
-      data$MESPRENAT <- as.integer(data$MESPRENAT)
-    }
-
-    # TPAPRESENT
-    if("TPAPRESENT" %in% campos){
-      data$TPAPRESENT <- as.integer(data$TPAPRESENT)
-    }
-
-    # STTRABPART
-    if("STTRABPART" %in% campos){
-      data$STTRABPART <- as.integer(data$STTRABPART)
-    }
-
-    # STCESPARTO
-    if("STCESPARTO" %in% campos){
-      data$STCESPARTO <- as.integer(data$STCESPARTO)
-    }
-
-    # TPNASCASSI
-    if("TPNASCASSI" %in% campos){
-      data$TPNASCASSI <- as.integer(data$TPNASCASSI)
-    }
-
-    # TPFUNCRESP
-    if("TPFUNCRESP" %in% campos){
-      data$TPFUNCRESP <- as.integer(data$TPFUNCRESP)
-    }
-
-    # TPDOCRESP
-    if("TPDOCRESP" %in% campos){
-      data$TPDOCRESP <- as.integer(data$TPDOCRESP)
-    }
-
-    # DTDECLARAC
-    if("DTDECLARAC" %in% campos){
-      data$DTDECLARAC <- as.character(data$DTDECLARAC)
-      data$DTDECLARAC <- as.Date(data$DTDECLARAC, format = "%d%m%Y")
-    }
-
-    # ESCMAEAGR1
-    if("ESCMAEAGR1" %in% campos){
-      data$ESCMAEAGR1 <- as.integer(data$ESCMAEAGR1)
-    }
-
-    # TPROBSON
-    if("TPROBSON" %in% campos){
-      data$TPROBSON <- as.integer(data$TPROBSON)
-    }
-
-    # STDNEPIDEM
-    if("STDNEPIDEM" %in% campos){
-      data$STDNEPIDEM <- as.integer(data$STDNEPIDEM)
-    }
-
-    # STDNNOVA
-    if("STDNNOVA" %in% campos){
-      data$STDNNOVA <- as.integer(data$STDNNOVA)
-    }
-
-    # CODPAISRES
-    if("CODPAISRES" %in% campos){
-      data$CODPAISRES <- as.integer(data$CODPAISRES)
-    }
-
-    # PARIDADE
-    if("PARIDADE" %in% campos){
-      data$PARIDADE <- as.integer(data$PARIDADE)
-    }
-  }
-
-
-
-
-
-
-
-
-
-
-
-  ###################################################
-  # SIH-RD
-  ###################################################
-
-  if(sistema == "SIH-RD"){
-
+process_sih <- function(data, information_system, municipality_data = TRUE) {
+  # Check information system
+  available_information_system <- "SIH-RD"
+  if(!(information_system %in% available_information_system)) stop("Health informaton system unknown.")
+  
+  # Variables names
+  variables_names <- names(data)
+  
+  if(information_system == "SIH-RD"){
+    
     # UF_ZI
-    if("UF_ZI" %in% campos){
+    if("UF_ZI" %in% variables_names){
       data$UF_ZI <- as.character(data$UF_ZI)
     }
-
+    
     # ANO_CMPT
-    if("ANO_CMPT" %in% campos){
+    if("ANO_CMPT" %in% variables_names){
       data$ANO_CMPT <- as.integer(data$ANO_CMPT)
     }
-
+    
     # MES_CMPT
-    if("MES_CMPT" %in% campos){
+    if("MES_CMPT" %in% variables_names){
       data$MES_CMPT <- as.integer(data$MES_CMPT)
     }
-
+    
     # ESPEC
-    if("ESPEC" %in% campos){
+    if("ESPEC" %in% variables_names){
       data$ESPEC <- as.numeric(levels(data$ESPEC))[data$ESPEC]
       data$ESPEC[data$ESPEC==1] <- "Cirurgia"
       data$ESPEC[data$ESPEC==2] <- "Obstetrícia"
@@ -1001,46 +42,48 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$ESPEC[data$ESPEC==14] <- "Hospital dia (saúde mental)"
       data$ESPEC <- factor(data$ESPEC)
     }
-
+    
     # CGC_HOSP
-    if("CGC_HOSP" %in% campos){
+    if("CGC_HOSP" %in% variables_names){
       data$CGC_HOSP <- as.character(data$CGC_HOSP)
     }
-
+    
     # N_AIH
-    if("N_AIH" %in% campos){
+    if("N_AIH" %in% variables_names){
       data$N_AIH <- as.character(data$N_AIH)
     }
-
+    
     # IDENT
-    if("IDENT" %in% campos){
+    if("IDENT" %in% variables_names){
       data$IDENT <- as.numeric(levels(data$IDENT))[data$IDENT]
       data$IDENT[data$IDENT==1] <- "Principal"
       data$IDENT[data$IDENT==3] <- "Continuação"
       data$IDENT[data$IDENT==5] <- "Longa permanência"
       data$IDENT <- factor(data$IDENT)
     }
-
+    
     # CEP
-    if("CEP" %in% campos){
+    if("CEP" %in% variables_names){
       data$CEP <- as.character(data$CEP)
     }
-
+    
     # MUNIC_RES
-    if("MUNIC_RES" %in% campos & dadosMunRes == TRUE){
+    if("MUNIC_RES" %in% variables_names & municipality_data == TRUE){
       data$MUNIC_RES <- as.integer(as.character(data$MUNIC_RES))
       colnames(tabMun)[1] <- "MUNIC_RES"
       data <- dplyr::left_join(data, tabMun, by = "MUNIC_RES")
+    } else {
+      data$MUNIC_RES <- as.integer(as.character(data$MUNIC_RES))
     }
-
+    
     # NASC
-    if("NASC" %in% campos){
+    if("NASC" %in% variables_names){
       data$NASC <- as.character(data$NASC)
       data$NASC <- as.Date(data$NASC, format = "%Y%m%d")
     }
-
+    
     # SEXO
-    if("SEXO" %in% campos){
+    if("SEXO" %in% variables_names){
       data$SEXO <- as.numeric(levels(data$SEXO))[data$SEXO]
       data$SEXO[data$SEXO==1] <- "Masculino"
       data$SEXO[data$SEXO==2] <- "Feminino"
@@ -1049,29 +92,29 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$SEXO[data$SEXO==9] <- NA
       data$SEXO <- factor(data$SEXO)
     }
-
+    
     # UTI_MES_IN
-    if("UTI_MES_IN" %in% campos){
+    if("UTI_MES_IN" %in% variables_names){
       data$UTI_MES_IN <- as.integer(data$UTI_MES_IN)
     }
-
+    
     # UTI_MES_AN
-    if("UTI_MES_AN" %in% campos){
+    if("UTI_MES_AN" %in% variables_names){
       data$UTI_MES_AN <- as.integer(data$UTI_MES_AN)
     }
-
+    
     # UTI_MES_AL
-    if("UTI_MES_AL" %in% campos){
+    if("UTI_MES_AL" %in% variables_names){
       data$UTI_MES_AL <- as.integer(data$UTI_MES_AL)
     }
-
+    
     # UTI_MES_TO
-    if("UTI_MES_TO" %in% campos){
+    if("UTI_MES_TO" %in% variables_names){
       data$UTI_MES_TO <- as.integer(data$UTI_MES_TO)
     }
-
+    
     # MARCA_UTI
-    if("MARCA_UTI" %in% campos){
+    if("MARCA_UTI" %in% variables_names){
       data$MARCA_UTI <- as.numeric(levels(data$MARCA_UTI))[data$MARCA_UTI]
       data$MARCA_UTI[data$MARCA_UTI==0] <- "Não utilizou UTI"
       data$MARCA_UTI[data$MARCA_UTI==74] <- "UTI adulto - tipo I"
@@ -1090,141 +133,141 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$MARCA_UTI[data$MARCA_UTI==1] <- "Utilizou mais de um tipo de UTI"
       data$MARCA_UTI <- factor(data$MARCA_UTI)
     }
-
+    
     # UTI_INT_IN
-    if("UTI_INT_IN" %in% campos){
+    if("UTI_INT_IN" %in% variables_names){
       data$UTI_INT_IN <- as.integer(data$UTI_INT_IN)
     }
-
+    
     # UTI_INT_AN
-    if("UTI_INT_AN" %in% campos){
+    if("UTI_INT_AN" %in% variables_names){
       data$UTI_INT_AN <- as.integer(data$UTI_INT_AN)
     }
-
+    
     # UTI_INT_AL
-    if("UTI_INT_AL" %in% campos){
+    if("UTI_INT_AL" %in% variables_names){
       data$UTI_INT_AL <- as.integer(data$UTI_INT_AL)
     }
-
+    
     # UTI_INT_TO
-    if("UTI_INT_TO" %in% campos){
+    if("UTI_INT_TO" %in% variables_names){
       data$UTI_INT_TO <- as.integer(data$UTI_INT_TO)
     }
-
+    
     # DIAR_ACOM
-    if("DIAR_ACOM" %in% campos){
+    if("DIAR_ACOM" %in% variables_names){
       data$DIAR_ACOM <- as.integer(data$DIAR_ACOM)
     }
-
+    
     # QT_DIARIAS
-    if("QT_DIARIAS" %in% campos){
+    if("QT_DIARIAS" %in% variables_names){
       data$QT_DIARIAS <- as.integer(data$QT_DIARIAS)
     }
-
+    
     # PROC_SOLIC
-    if("PROC_SOLIC" %in% campos){
+    if("PROC_SOLIC" %in% variables_names){
       data$PROC_SOLIC <- as.character(data$PROC_SOLIC)
     }
-
+    
     # PROC_REA
-    if("PROC_REA" %in% campos){
+    if("PROC_REA" %in% variables_names){
       data$PROC_REA <- as.character(data$PROC_REA)
     }
-
+    
     # VAL_SH
-    if("VAL_SH" %in% campos){
+    if("VAL_SH" %in% variables_names){
       data$VAL_SH <- as.numeric(data$VAL_SH)
     }
-
+    
     # VAL_SP
-    if("VAL_SP" %in% campos){
+    if("VAL_SP" %in% variables_names){
       data$VAL_SP <- as.numeric(data$VAL_SP)
     }
-
+    
     # VAL_SADT
-    if("VAL_SADT" %in% campos){
+    if("VAL_SADT" %in% variables_names){
       data$VAL_SADT <- as.numeric(data$VAL_SADT)
     }
-
+    
     # VAL_RN
-    if("VAL_RN" %in% campos){
+    if("VAL_RN" %in% variables_names){
       data$VAL_RN <- as.numeric(data$VAL_RN)
     }
-
+    
     # VAL_ACOMP
-    if("VAL_ACOMP" %in% campos){
+    if("VAL_ACOMP" %in% variables_names){
       data$VAL_ACOMP <- as.numeric(data$VAL_ACOMP)
     }
-
+    
     # VAL_ORTP
-    if("VAL_ORTP" %in% campos){
+    if("VAL_ORTP" %in% variables_names){
       data$VAL_ORTP <- as.numeric(data$VAL_ORTP)
     }
-
+    
     # VAL_SANGUE
-    if("VAL_SANGUE" %in% campos){
+    if("VAL_SANGUE" %in% variables_names){
       data$VAL_SANGUE <- as.numeric(data$VAL_SANGUE)
     }
-
+    
     # VAL_SADTSR
-    if("VAL_SADTSR" %in% campos){
+    if("VAL_SADTSR" %in% variables_names){
       data$VAL_SADTSR <- as.numeric(data$VAL_SADTSR)
     }
-
+    
     # VAL_TRANSP
-    if("VAL_TRANSP" %in% campos){
+    if("VAL_TRANSP" %in% variables_names){
       data$VAL_TRANSP <- as.numeric(data$VAL_TRANSP)
     }
-
+    
     # VAL_OBSANG
-    if("VAL_OBSANG" %in% campos){
+    if("VAL_OBSANG" %in% variables_names){
       data$VAL_OBSANG <- as.numeric(data$VAL_OBSANG)
     }
-
+    
     # VAL_PED1AC
-    if("VAL_PED1AC" %in% campos){
+    if("VAL_PED1AC" %in% variables_names){
       data$VAL_PED1AC <- as.numeric(data$VAL_PED1AC)
     }
-
+    
     # VAL_TOT
-    if("VAL_TOT" %in% campos){
+    if("VAL_TOT" %in% variables_names){
       data$VAL_TOT <- as.numeric(data$VAL_TOT)
     }
-
+    
     # VAL_UTI
-    if("VAL_UTI" %in% campos){
+    if("VAL_UTI" %in% variables_names){
       data$VAL_UTI <- as.numeric(data$VAL_UTI)
     }
-
+    
     # US_TOT
-    if("US_TOT" %in% campos){
+    if("US_TOT" %in% variables_names){
       data$US_TOT <- as.numeric(data$US_TOT)
     }
-
+    
     # DT_INTER
-    if("DT_INTER" %in% campos){
+    if("DT_INTER" %in% variables_names){
       data$DT_INTER <- as.character(data$DT_INTER)
       data$DT_INTER <- as.Date(data$DT_INTER, format = "%Y%m%d")
     }
-
+    
     # DT_SAIDA
-    if("DT_SAIDA" %in% campos){
+    if("DT_SAIDA" %in% variables_names){
       data$DT_SAIDA <- as.character(data$DT_SAIDA)
       data$DT_SAIDA <- as.Date(data$DT_SAIDA, format = "%Y%m%d")
     }
-
+    
     # DIAG_PRINC
-    if("DIAG_PRINC" %in% campos){
+    if("DIAG_PRINC" %in% variables_names){
       data$DIAG_PRINC <- as.character(data$DIAG_PRINC)
     }
-
+    
     # DIAG_SECUN
-    if("DIAG_SECUN" %in% campos){
+    if("DIAG_SECUN" %in% variables_names){
       data$DIAG_SECUN <- as.character(data$DIAG_SECUN)
     }
-
+    
     # COBRANCA (motivo de saída/permanência, portaria SAS 719)
-    if("COBRANCA" %in% campos){
+    if("COBRANCA" %in% variables_names){
       data$COBRANCA <- as.numeric(levels(data$COBRANCA))[data$COBRANCA]
       data$COBRANCA[data$COBRANCA==11] <- "Alta curado"
       data$COBRANCA[data$COBRANCA==12] <- "Alta melhorado"
@@ -1259,9 +302,9 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$COBRANCA[data$COBRANCA==67] <- "Óbito da mãe/puérpera e permanência recém-nascido"
       data$COBRANCA <- factor(data$COBRANCA)
     }
-
+    
     # NATUREZA
-    if("NATUREZA" %in% campos){
+    if("NATUREZA" %in% variables_names){
       data$NATUREZA <- as.numeric(levels(data$NATUREZA))[data$NATUREZA]
       data$NATUREZA[data$NATUREZA==0] <- NA
       data$NATUREZA[data$NATUREZA==99] <- NA
@@ -1285,9 +328,9 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$NATUREZA[data$NATUREZA==92] <- "Universitário de ensino e pesquisa privado"
       data$NATUREZA <- factor(data$NATUREZA)
     }
-
+    
     # NAT_JUR
-    if("NAT_JUR" %in% campos){
+    if("NAT_JUR" %in% variables_names){
       data$NAT_JUR <- as.numeric(levels(data$NAT_JUR))[data$NAT_JUR]
       data$NAT_JUR[data$NAT_JUR==1015] <- "Órgão Público do Poder Executivo Federal"
       data$NAT_JUR[data$NAT_JUR==1023] <- "Órgão Público do Poder Exec Estadual ou Distr Fed"
@@ -1360,9 +403,9 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$NAT_JUR[data$NAT_JUR==0] <- NA
       data$NAT_JUR <- factor(data$NAT_JUR)
     }
-
+    
     # GESTAO
-    if("GESTAO" %in% campos){
+    if("GESTAO" %in% variables_names){
       data$GESTAO <- as.numeric(levels(data$GESTAO))[data$GESTAO]
       data$GESTAO[data$GESTAO==0] <- "Estadual"
       data$GESTAO[data$GESTAO==2] <- "Estadual plena"
@@ -1371,27 +414,27 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$GESTAO[data$GESTAO==9] <- NA
       data$GESTAO <- factor(data$GESTAO)
     }
-
+    
     # RUBRICA
-    if("RUBRICA" %in% campos){
+    if("RUBRICA" %in% variables_names){
       data$RUBRICA <- as.numeric(data$RUBRICA)
     }
-
+    
     # IND_VDRL
-    if("IND_VDRL" %in% campos){
+    if("IND_VDRL" %in% variables_names){
       data$IND_VDRL <- as.numeric(levels(data$IND_VDRL))[data$IND_VDRL]
       data$IND_VDRL[data$IND_VDRL==0] <- "Não"
       data$IND_VDRL[data$IND_VDRL==1] <- "Sim"
       data$IND_VDRL <- factor(data$IND_VDRL)
     }
-
+    
     # MUNIC_MOV
-    if("MUNIC_MOV" %in% campos){
+    if("MUNIC_MOV" %in% variables_names){
       data$MUNIC_MOV <- as.integer(data$MUNIC_MOV)
     }
-
+    
     # COD_IDADE
-    if("COD_IDADE" %in% campos){
+    if("COD_IDADE" %in% variables_names){
       data$COD_IDADE <- as.numeric(levels(data$COD_IDADE))[data$COD_IDADE]
       data$COD_IDADE[data$COD_IDADE==0] <- NA
       data$COD_IDADE[data$COD_IDADE==2] <- "Dias"
@@ -1399,26 +442,26 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$COD_IDADE[data$COD_IDADE==4] <- "Anos"
       data$COD_IDADE <- factor(data$COD_IDADE)
     }
-
+    
     # IDADE
-    if("IDADE" %in% campos){
+    if("IDADE" %in% variables_names){
       data$IDADE <- as.integer(data$IDADE)
     }
-
+    
     # DIAS_PERM
-    if("DIAS_PERM" %in% campos){
+    if("DIAS_PERM" %in% variables_names){
       data$DIAS_PERM <- as.integer(data$DIAS_PERM)
     }
-
+    
     # MORTE
-    if("MORTE" %in% campos){
+    if("MORTE" %in% variables_names){
       data$MORTE[data$MORTE==0] <- "Não"
       data$MORTE[data$MORTE==1] <- "Sim"
       data$MORTE <- factor(data$MORTE)
     }
-
+    
     # NACIONAL
-    if("NACIONAL" %in% campos){
+    if("NACIONAL" %in% variables_names){
       data$NACIONAL <- as.numeric(levels(data$NACIONAL))[data$NACIONAL]
       data$NACIONAL[data$NACIONAL==170] <- "Abissinia"
       data$NACIONAL[data$NACIONAL==171] <- "Acores"
@@ -1755,14 +798,14 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$NACIONAL[data$NACIONAL==239] <- "Zimbabwe"
       data$NACIONAL <- factor(data$NACIONAL)
     }
-
+    
     # NUM_PROC
-    if("NUM_PROC" %in% campos){
+    if("NUM_PROC" %in% variables_names){
       data$NUM_PROC <- as.integer(data$NUM_PROC)
     }
-
+    
     # CAR_INT
-    if("CAR_INT" %in% campos){
+    if("CAR_INT" %in% variables_names){
       data$CAR_INT <- as.numeric(levels(data$CAR_INT))[data$CAR_INT]
       data$CAR_INT[data$CAR_INT==1] <- "Eletivo"
       data$CAR_INT[data$CAR_INT==2] <- "Urgência"
@@ -1772,32 +815,32 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$CAR_INT[data$CAR_INT==6] <- "Out tp lesões e envenen por agent quím físicos"
       data$CAR_INT <- factor(data$CAR_INT)
     }
-
+    
     # TOT_PT_SP
-    if("TOT_PT_SP" %in% campos){
+    if("TOT_PT_SP" %in% variables_names){
       data$TOT_PT_SP <- as.integer(data$TOT_PT_SP)
     }
-
+    
     # CPF_AUT
-    if("CPF_AUT" %in% campos){
+    if("CPF_AUT" %in% variables_names){
       data$CPF_AUT <- as.integer(data$CPF_AUT)
     }
-
+    
     # HOMONIMO
-    if("HOMONIMO" %in% campos){
+    if("HOMONIMO" %in% variables_names){
       data$HOMONIMO <- as.numeric(levels(data$HOMONIMO))[data$HOMONIMO]
       data$HOMONIMO[data$HOMONIMO==0] <- "Não"
       data$HOMONIMO[data$HOMONIMO==1] <- "Sim"
       data$HOMONIMO <- factor(data$HOMONIMO)
     }
-
+    
     # NUM_FILHOS
-    if("NUM_FILHOS" %in% campos){
+    if("NUM_FILHOS" %in% variables_names){
       data$NUM_FILHOS <- as.integer(data$NUM_FILHOS)
     }
-
+    
     # INSTRU
-    if("INSTRU" %in% campos){
+    if("INSTRU" %in% variables_names){
       data$INSTRU <- as.numeric(levels(data$INSTRU))[data$INSTRU]
       data$INSTRU[data$INSTRU==1] <- "Analfabeto"
       data$INSTRU[data$INSTRU==2] <- "1º grau"
@@ -1807,14 +850,14 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$INSTRU[data$INSTRU==9] <- NA
       data$INSTRU <- factor(data$INSTRU)
     }
-
+    
     # CID_NOTIF
-    if("CID_NOTIF" %in% campos){
+    if("CID_NOTIF" %in% variables_names){
       data$CID_NOTIF <- as.character(data$CID_NOTIF)
     }
-
+    
     # CONTRACEP1
-    if("CONTRACEP1" %in% campos){
+    if("CONTRACEP1" %in% variables_names){
       data$CONTRACEP1 <- as.numeric(levels(data$CONTRACEP1))[data$CONTRACEP1]
       data$CONTRACEP1[data$CONTRACEP1==1] <- "LAM"
       data$CONTRACEP1[data$CONTRACEP1==2] <- "Ogino Kaus"
@@ -1832,9 +875,9 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$CONTRACEP1[data$CONTRACEP1==99] <- NA
       data$CONTRACEP1 <- factor(data$CONTRACEP1)
     }
-
+    
     # CONTRACEP2
-    if("CONTRACEP2" %in% campos){
+    if("CONTRACEP2" %in% variables_names){
       data$CONTRACEP2 <- as.numeric(levels(data$CONTRACEP2))[data$CONTRACEP2]
       data$CONTRACEP2[data$CONTRACEP2==1] <- "LAM"
       data$CONTRACEP2[data$CONTRACEP2==2] <- "Ogino Kaus"
@@ -1852,22 +895,22 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$CONTRACEP2[data$CONTRACEP2==99] <- NA
       data$CONTRACEP2 <- factor(data$CONTRACEP2)
     }
-
+    
     # GESTRISCO
-    if("GESTRISCO" %in% campos){
+    if("GESTRISCO" %in% variables_names){
       data$GESTRISCO <- as.numeric(levels(data$GESTRISCO))[data$GESTRISCO]
       data$GESTRISCO[data$GESTRISCO==0] <- "Não"
       data$GESTRISCO[data$GESTRISCO==1] <- "Sim"
       data$GESTRISCO <- factor(data$GESTRISCO)
     }
-
+    
     # INSC_PN
-    if("INSC_PN" %in% campos){
+    if("INSC_PN" %in% variables_names){
       data$INSC_PN <- as.character(data$INSC_PN)
     }
-
+    
     # SEQ_AIH5
-    if("SEQ_AIH5" %in% campos){
+    if("SEQ_AIH5" %in% variables_names){
       data$SEQ_AIH5 <- as.numeric(levels(data$SEQ_AIH5))[data$SEQ_AIH5]
       data$SEQ_AIH5[data$SEQ_AIH5==0] <- "Sequencial zerado"
       data$SEQ_AIH5[data$SEQ_AIH5==1] <- "Seq 1"
@@ -1877,19 +920,19 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$SEQ_AIH5[data$SEQ_AIH5==999] <- NA
       data$SEQ_AIH5 <- factor(data$SEQ_AIH5)
     }
-
+    
     # CBOR
-    if("CBOR" %in% campos){
+    if("CBOR" %in% variables_names){
       data$CBOR <- as.character(data$CBOR)
     }
-
+    
     # CNAER
-    if("CNAER" %in% campos){
+    if("CNAER" %in% variables_names){
       data$CNAER <- as.character(data$CNAER)
     }
-
+    
     # VINCPREV
-    if("VINCPREV" %in% campos){
+    if("VINCPREV" %in% variables_names){
       data$VINCPREV <- as.numeric(levels(data$VINCPREV))[data$VINCPREV]
       data$VINCPREV[data$VINCPREV==1] <- "Autônomo"
       data$VINCPREV[data$VINCPREV==2] <- "Desempregado"
@@ -1901,9 +944,9 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$VINCPREV[data$VINCPREV==9] <- NA
       data$VINCPREV <- factor(data$VINCPREV)
     }
-
+    
     # GESTOR_COD
-    if("GESTOR_COD" %in% campos){
+    if("GESTOR_COD" %in% variables_names){
       data$GESTOR_COD <- as.numeric(levels(data$GESTOR_COD))[data$GESTOR_COD]
       data$GESTOR_COD[data$GESTOR_COD==1] <- "TEMPO DE PERMANENCIA"
       data$GESTOR_COD[data$GESTOR_COD==2] <- "IDADE MENOR"
@@ -2118,53 +1161,53 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$GESTOR_COD[data$GESTOR_COD==243] <- "CNS E TELEFONE E CBO E QTD E ID. MAIOR E PERM. MENOR"
       data$GESTOR_COD <- factor(data$GESTOR_COD)
     }
-
+    
     # GESTOR_TP
-    if("GESTOR_TP" %in% campos){
+    if("GESTOR_TP" %in% variables_names){
       data$GESTOR_TP <- as.integer(data$GESTOR_TP)
     }
-
+    
     # GESTOR_CPF
-    if("GESTOR_CPF" %in% campos){
+    if("GESTOR_CPF" %in% variables_names){
       data$GESTOR_CPF <- as.integer(data$GESTOR_CPF)
     }
-
+    
     # GESTOR_DT
-    if("GESTOR_DT" %in% campos){
+    if("GESTOR_DT" %in% variables_names){
       data$GESTOR_DT <- as.character(data$GESTOR_DT)
       data$GESTOR_DT <- as.Date(data$GESTOR_DT, format = "%Y%m%d")
     }
-
+    
     # CNES
-    if("CNES" %in% campos){
+    if("CNES" %in% variables_names){
       data$CNES <- as.character(data$CNES)
     }
-
+    
     # CNPJ_MANT
-    if("CNPJ_MANT" %in% campos){
+    if("CNPJ_MANT" %in% variables_names){
       data$CNPJ_MANT <- as.character(data$CNPJ_MANT)
     }
-
+    
     # INFEHOSP
-    if("INFEHOSP" %in% campos){
+    if("INFEHOSP" %in% variables_names){
       data$INFEHOSP <- as.numeric(levels(data$INFEHOSP))[data$INFEHOSP]
       data$INFEHOSP[data$INFEHOSP==0] <- "Não"
       data$INFEHOSP[data$INFEHOSP==1] <- "Sim"
       data$INFEHOSP <- factor(data$INFEHOSP)
     }
-
+    
     # CID_ASSO
-    if("CID_ASSO" %in% campos){
+    if("CID_ASSO" %in% variables_names){
       data$CID_ASSO <- as.character(data$CID_ASSO)
     }
-
+    
     # CID_MORTE
-    if("CID_MORTE" %in% campos){
+    if("CID_MORTE" %in% variables_names){
       data$CID_MORTE <- as.character(data$CID_MORTE)
     }
-
+    
     # COMPLEX
-    if("COMPLEX" %in% campos){
+    if("COMPLEX" %in% variables_names){
       data$COMPLEX <- as.numeric(levels(data$COMPLEX))[data$COMPLEX]
       data$COMPLEX[data$COMPLEX==1] <- "Atenção Básica"
       data$COMPLEX[data$COMPLEX==2] <- "Média complexidade"
@@ -2173,9 +1216,9 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$COMPLEX[data$COMPLEX==99] <- NA
       data$COMPLEX <- factor(data$COMPLEX)
     }
-
+    
     # FINANC
-    if("FINANC" %in% campos){
+    if("FINANC" %in% variables_names){
       data$FINANC <- as.numeric(levels(data$FINANC))[data$FINANC]
       data$FINANC[data$FINANC==1] <- "Atenção Básica (PAB)"
       data$FINANC[data$FINANC==2] <- "Assistência Farmacêutica"
@@ -2187,9 +1230,9 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$FINANC[data$FINANC==99] <- NA
       data$FINANC <- factor(data$FINANC)
     }
-
+    
     # FAEC_TP
-    if("FAEC_TP" %in% campos){
+    if("FAEC_TP" %in% variables_names){
       data$FAEC_TP <- as.numeric(levels(data$FAEC_TP))[data$FAEC_TP]
       data$FAEC_TP[data$FAEC_TP==10000] <- "Atenção Básica (PAB)"
       data$FAEC_TP[data$FAEC_TP==20000] <- "Assistência Farmacêutica"
@@ -2269,9 +1312,9 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$FAEC_TP[data$FAEC_TP==80000] <- "Gestão do SUS"
       data$FAEC_TP <- factor(data$FAEC_TP)
     }
-
+    
     # REGCT
-    if("REGCT" %in% campos){
+    if("REGCT" %in% variables_names){
       data$REGCT <- as.numeric(levels(data$REGCT))[data$REGCT]
       data$REGCT[data$REGCT==7100] <- "TABELA DE NAO GERACAO DE CREDITO POR PRODUCAO NA INTERNACAO E/OU AMBULATORIO"
       data$REGCT[data$REGCT==7101] <- "ESTABELECIMENTO DE SAUDE SEM GERACAO DE CREDITO NA MEDIA COMPLEXIDADE AMBULATORIAL"
@@ -2294,9 +1337,9 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$REGCT[data$REGCT==0] <- "Sem regra contratual"
       data$REGCT <- factor(data$REGCT)
     }
-
+    
     # RACA_COR
-    if("RACA_COR" %in% campos){
+    if("RACA_COR" %in% variables_names){
       data$RACA_COR <- as.numeric(levels(data$RACA_COR))[data$RACA_COR]
       data$RACA_COR[data$RACA_COR==1] <- "Branca"
       data$RACA_COR[data$RACA_COR==2] <- "Preta"
@@ -2307,9 +1350,9 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$RACA_COR[data$RACA_COR==99] <- NA
       data$RACA_COR <- factor(data$RACA_COR)
     }
-
+    
     # ETNIA
-    if("ETNIA" %in% campos){
+    if("ETNIA" %in% variables_names){
       data$ETNIA <- as.numeric(levels(data$ETNIA))[data$ETNIA]
       data$ETNIA[data$ETNIA==1] <- "ACONA (WAKONAS, NACONAS, JAKONA, ACORA�NES)"
       data$ETNIA[data$ETNIA==2] <- "AIKANA (AIKANA, MAS SAKA,TUBARAO)"
@@ -2579,54 +1622,54 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$ETNIA[data$ETNIA==9999] <- NA
       data$ETNIA <- factor(data$ETNIA)
     }
-
+    
     # SEQUENCIA
-    if("SEQUENCIA" %in% campos){
+    if("SEQUENCIA" %in% variables_names){
       data$SEQUENCIA <- as.character(data$SEQUENCIA)
     }
-
+    
     # REMESSA
-    if("REMESSA" %in% campos){
+    if("REMESSA" %in% variables_names){
       data$REMESSA <- as.character(data$REMESSA)
     }
-
+    
     # AUD_JUST
-    if("AUD_JUST" %in% campos){
+    if("AUD_JUST" %in% variables_names){
       data$AUD_JUST <- as.character(data$AUD_JUST)
     }
-
+    
     # SIS_JUST
-    if("SIS_JUST" %in% campos){
+    if("SIS_JUST" %in% variables_names){
       data$SIS_JUST <- as.character(data$SIS_JUST)
     }
-
+    
     # VAL_SH_FED
-    if("VAL_SH_FED" %in% campos){
+    if("VAL_SH_FED" %in% variables_names){
       data$VAL_SH_FED <- as.numeric(data$VAL_SH_FED)
     }
-
+    
     # VAL_SP_FED
-    if("VAL_SP_FED" %in% campos){
+    if("VAL_SP_FED" %in% variables_names){
       data$VAL_SP_FED <- as.numeric(data$VAL_SP_FED)
     }
-
+    
     # VAL_SH_GES
-    if("VAL_SH_GES" %in% campos){
+    if("VAL_SH_GES" %in% variables_names){
       data$VAL_SH_GES <- as.numeric(data$VAL_SH_GES)
     }
-
+    
     # VAL_SP_GES
-    if("VAL_SP_GES" %in% campos){
+    if("VAL_SP_GES" %in% variables_names){
       data$VAL_SP_GES <- as.numeric(data$VAL_SP_GES)
     }
-
+    
     # VAL_UCI
-    if("VAL_UCI" %in% campos){
+    if("VAL_UCI" %in% variables_names){
       data$VAL_UCI <- as.numeric(data$VAL_UCI)
     }
-
+    
     # MARCA_UCI
-    if("MARCA_UCI" %in% campos){
+    if("MARCA_UCI" %in% variables_names){
       data$MARCA_UCI <- as.numeric(levels(data$MARCA_UCI))[data$MARCA_UCI]
       data$MARCA_UCI[data$MARCA_UCI==0] <- "Não utilizou UCI"
       data$MARCA_UCI[data$MARCA_UCI==1] <- "Unidade de cuidados intermed neonatal convencional"
@@ -2635,143 +1678,138 @@ datasusProcess <- function(data, sistema, dadosMunRes = TRUE){
       data$MARCA_UCI[data$MARCA_UCI==88] <- "Utilizou dois tipos de leitos UCI"
       data$MARCA_UCI <- factor(data$MARCA_UCI)
     }
-
+    
     # DIAGSEC1
-    if("DIAGSEC1" %in% campos){
+    if("DIAGSEC1" %in% variables_names){
       data$DIAGSEC1 <- as.character(data$DIAGSEC1)
     }
-
+    
     # DIAGSEC2
-    if("DIAGSEC2" %in% campos){
+    if("DIAGSEC2" %in% variables_names){
       data$DIAGSEC2 <- as.character(data$DIAGSEC2)
     }
-
+    
     # DIAGSEC3
-    if("DIAGSEC3" %in% campos){
+    if("DIAGSEC3" %in% variables_names){
       data$DIAGSEC3 <- as.character(data$DIAGSEC3)
     }
-
+    
     # DIAGSEC4
-    if("DIAGSEC4" %in% campos){
+    if("DIAGSEC4" %in% variables_names){
       data$DIAGSEC4 <- as.character(data$DIAGSEC4)
     }
-
+    
     # DIAGSEC5
-    if("DIAGSEC5" %in% campos){
+    if("DIAGSEC5" %in% variables_names){
       data$DIAGSEC5 <- as.character(data$DIAGSEC5)
     }
-
+    
     # DIAGSEC6
-    if("DIAGSEC6" %in% campos){
+    if("DIAGSEC6" %in% variables_names){
       data$DIAGSEC6 <- as.character(data$DIAGSEC6)
     }
-
+    
     # DIAGSEC7
-    if("DIAGSEC7" %in% campos){
+    if("DIAGSEC7" %in% variables_names){
       data$DIAGSEC7 <- as.character(data$DIAGSEC7)
     }
-
+    
     # DIAGSEC8
-    if("DIAGSEC8" %in% campos){
+    if("DIAGSEC8" %in% variables_names){
       data$DIAGSEC8 <- as.character(data$DIAGSEC8)
     }
-
+    
     # DIAGSEC9
-    if("DIAGSEC9" %in% campos){
+    if("DIAGSEC9" %in% variables_names){
       data$DIAGSEC9 <- as.character(data$DIAGSEC9)
     }
-
+    
     # TPDISEC1
-    if("TPDISEC1" %in% campos){
+    if("TPDISEC1" %in% variables_names){
       data$TPDISEC1 <- as.numeric(levels(data$TPDISEC1))[data$TPDISEC1]
       data$TPDISEC1[data$TPDISEC1==0] <- NA
       data$TPDISEC1[data$TPDISEC1==1] <- "Pré-existente"
       data$TPDISEC1[data$TPDISEC1==2] <- "Adquirido"
       data$TPDISEC1 <- factor(data$TPDISEC1)
     }
-
+    
     # TPDISEC2
-    if("TPDISEC2" %in% campos){
+    if("TPDISEC2" %in% variables_names){
       data$TPDISEC2 <- as.numeric(levels(data$TPDISEC2))[data$TPDISEC2]
       data$TPDISEC2[data$TPDISEC2==0] <- NA
       data$TPDISEC2[data$TPDISEC2==1] <- "Pré-existente"
       data$TPDISEC2[data$TPDISEC2==2] <- "Adquirido"
       data$TPDISEC2 <- factor(data$TPDISEC2)
     }
-
+    
     # TPDISEC3
-    if("TPDISEC3" %in% campos){
+    if("TPDISEC3" %in% variables_names){
       data$TPDISEC3 <- as.numeric(levels(data$TPDISEC3))[data$TPDISEC3]
       data$TPDISEC3[data$TPDISEC3==0] <- NA
       data$TPDISEC3[data$TPDISEC3==1] <- "Pré-existente"
       data$TPDISEC3[data$TPDISEC3==2] <- "Adquirido"
       data$TPDISEC3 <- factor(data$TPDISEC3)
     }
-
+    
     # TPDISEC4
-    if("TPDISEC4" %in% campos){
+    if("TPDISEC4" %in% variables_names){
       data$TPDISEC4 <- as.numeric(levels(data$TPDISEC4))[data$TPDISEC4]
       data$TPDISEC4[data$TPDISEC4==0] <- NA
       data$TPDISEC4[data$TPDISEC4==1] <- "Pré-existente"
       data$TPDISEC4[data$TPDISEC4==2] <- "Adquirido"
       data$TPDISEC4 <- factor(data$TPDISEC4)
     }
-
+    
     # TPDISEC5
-    if("TPDISEC5" %in% campos){
+    if("TPDISEC5" %in% variables_names){
       data$TPDISEC5 <- as.numeric(levels(data$TPDISEC5))[data$TPDISEC5]
       data$TPDISEC5[data$TPDISEC5==0] <- NA
       data$TPDISEC5[data$TPDISEC5==1] <- "Pré-existente"
       data$TPDISEC5[data$TPDISEC5==2] <- "Adquirido"
       data$TPDISEC5 <- factor(data$TPDISEC5)
     }
-
+    
     # TPDISEC6
-    if("TPDISEC6" %in% campos){
+    if("TPDISEC6" %in% variables_names){
       data$TPDISEC6 <- as.numeric(levels(data$TPDISEC6))[data$TPDISEC6]
       data$TPDISEC6[data$TPDISEC6==0] <- NA
       data$TPDISEC6[data$TPDISEC6==1] <- "Pré-existente"
       data$TPDISEC6[data$TPDISEC6==2] <- "Adquirido"
       data$TPDISEC6 <- factor(data$TPDISEC6)
     }
-
+    
     # TPDISEC7
-    if("TPDISEC7" %in% campos){
+    if("TPDISEC7" %in% variables_names){
       data$TPDISEC7 <- as.numeric(levels(data$TPDISEC7))[data$TPDISEC7]
       data$TPDISEC7[data$TPDISEC7==0] <- NA
       data$TPDISEC7[data$TPDISEC7==1] <- "Pré-existente"
       data$TPDISEC7[data$TPDISEC7==2] <- "Adquirido"
       data$TPDISEC7 <- factor(data$TPDISEC7)
     }
-
+    
     # TPDISEC8
-    if("TPDISEC8" %in% campos){
+    if("TPDISEC8" %in% variables_names){
       data$TPDISEC8 <- as.numeric(levels(data$TPDISEC8))[data$TPDISEC8]
       data$TPDISEC8[data$TPDISEC8==0] <- NA
       data$TPDISEC8[data$TPDISEC8==1] <- "Pré-existente"
       data$TPDISEC8[data$TPDISEC8==2] <- "Adquirido"
       data$TPDISEC8 <- factor(data$TPDISEC8)
     }
-
+    
     # TPDISEC9
-    if("TPDISEC9" %in% campos){
+    if("TPDISEC9" %in% variables_names){
       data$TPDISEC9 <- as.numeric(levels(data$TPDISEC9))[data$TPDISEC9]
       data$TPDISEC9[data$TPDISEC9==0] <- NA
       data$TPDISEC9[data$TPDISEC9==1] <- "Pré-existente"
       data$TPDISEC9[data$TPDISEC9==2] <- "Adquirido"
       data$TPDISEC9 <- factor(data$TPDISEC9)
     }
-
-
-
   }
-
-  # Purge de levels não utilizados
+  
+  # Purge levels
   data <- droplevels(data)
-
-  # Remove objetos
-  rm(ano, unidade)
-
-  # Retorna resultado
+  
+  # Return
   return(data)
+  
 }

@@ -179,6 +179,6 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
 
   }
 
-  # Return final result
+  # Return
   return(data)
 }
