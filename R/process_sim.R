@@ -5,22 +5,28 @@ process_sim <- function(data, municipality_data = TRUE) {
   # Declara objetos
   ano <- NULL
   unidade <- NULL
-  
-  # CODMUNRES
-  if ("CODMUNRES" %in% variables_names & municipality_data == TRUE) {
-    data$CODMUNRES <- as.integer(as.character(data$CODMUNRES))
-    colnames(tabMun)[1] <- "CODMUNRES"
-    data <- dplyr::left_join(data, tabMun, by = "CODMUNRES")
-  } else {
-    data$CODMUNRES <- as.integer(as.character(data$CODMUNRES))
-  }
-  
+
   # NUMERODO
   if ("NUMERODO" %in% variables_names) {
     data$NUMERODO <- as.character(data$NUMERODO)
   }
   
-  # TIPOBITO.CNV
+  # CODINST
+  if ("CODINST" %in% variables_names) {
+    data$CODINST <- as.character(data$CODINST)
+  }
+  
+  # NUMERODV
+  if ("NUMERODV" %in% variables_names) {
+    data$NUMERODV <- as.character(data$NUMERODV)
+  }
+  
+  # ORIGEM
+  if ("ORIGEM" %in% variables_names) {
+    data$ORIGEM <- as.character(data$ORIGEM)
+  }
+  
+  # TIPOBITO
   if ("TIPOBITO" %in% variables_names) {
     data$TIPOBITO <- as.numeric(levels(data$TIPOBITO))[data$TIPOBITO]
     data$TIPOBITO[data$TIPOBITO == 0] <- NA
@@ -41,21 +47,21 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$HORAOBITO <- as.character(data$HORAOBITO)
   }
   
-  # CODCART
-  if ("CODCART" %in% variables_names) {
-    data$CODCART <- as.character(data$CODCART)
+  # NUMSUS
+  if ("NUMSUS" %in% variables_names) {
+    data$NUMSUS <- as.character(data$NUMSUS)
   }
   
-  # CODMUNCART
-  if ("CODMUNCART" %in% variables_names) {
-    data$CODMUNCART <- as.numeric(data$CODMUNCART)
-  }
-  
-  # NATURAL.CNV
+  # NATURAL
   if ("NATURAL" %in% variables_names) {
     data$NATURAL <- as.character(data$NATURAL)
     colnames(tabNaturalidade)[1] <- "NATURAL"
     data$NATURAL <- factor(dplyr::left_join(data, tabNaturalidade, by = "NATURAL")$nome)
+  }
+  
+  # CODMUNNATU
+  if ("CODMUNNATU" %in% variables_names) {
+    data$CODMUNNATU <- as.character(data$CODMUNNATU)
   }
   
   # DTNASC
@@ -64,7 +70,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$DTNASC <- as.Date(data$DTNASC, format = "%d%m%Y")
   }
   
-  # IDADE.CNV
+  # IDADE
   if ("IDADE" %in% variables_names) {
     data$IDADE <- as.character(data$IDADE)
     data$IDADE[data$IDADE == "000" | data$IDADE == "999"] <- NA
@@ -89,7 +95,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$IDADE <- NULL
   }
   
-  # SEXO.CNV
+  # SEXO
   if ("SEXO" %in% variables_names) {
     data$SEXO <- as.numeric(levels(data$SEXO))[data$SEXO]
     data$SEXO[data$SEXO == 0] <- NA
@@ -99,7 +105,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$SEXO <- factor(data$SEXO)
   }
   
-  # RACACOR.CNV
+  # RACACOR
   if ("RACACOR" %in% variables_names) {
     data$RACACOR <- as.numeric(levels(data$RACACOR))[data$RACACOR]
     data$RACACOR[data$RACACOR == 0] <- NA
@@ -115,7 +121,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$RACACOR <- factor(data$RACACOR)
   }
   
-  # ESTCIV.CNV
+  # ESTCIV
   if ("ESTCIV" %in% variables_names) {
     data$ESTCIV <- as.numeric(levels(data$ESTCIV))[data$ESTCIV]
     data$ESTCIV[data$ESTCIV == 0] <- NA
@@ -131,7 +137,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$ESTCIV <- factor(data$ESTCIV)
   }
   
-  # ESC (INSTRUC.CNV)
+  # ESC
   if ("ESC" %in% variables_names) {
     data$ESC <- as.character(levels(data$ESC))[data$ESC]
     data$ESC[data$ESC == "0"] <- NA
@@ -149,10 +155,20 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$ESC <- factor(data$ESC)
   }
   
-  # OCUP (OCUPA.CNV ou CBO2002.CNV)
+  # ESC2010
+  if ("ESC2010" %in% variables_names) {
+    data$ESC2010 <- as.character(data$ESC2010)
+  }
+  
+  # SERIESCFAL
+  if ("SERIESCFAL" %in% variables_names) {
+    data$SERIESCFAL <- as.character(data$SERIESCFAL)
+  }
+  
+  # OCUP
   if ("OCUP" %in% variables_names) {
     if (!("DTOBITO" %in% variables_names))
-      stop("Necessário incluir o campo DTOBITO para o pré-processamento da variável OCUP.")
+      stop("The variable DTOBITO is needed to preprocess the variable OCUP.")
     data$OCUP <- as.character(data$OCUP)
     colnames(tabOcupacao)[1] <- "OCUP"
     colnames(tabCBO)[1] <- "OCUP"
@@ -165,17 +181,40 @@ process_sim <- function(data, municipality_data = TRUE) {
       ))
   }
   
-  # LOCOCOR.CNV
+  # CODMUNRES
+  if ("CODMUNRES" %in% variables_names & municipality_data == TRUE) {
+    data$CODMUNRES <- as.integer(as.character(data$CODMUNRES))
+    colnames(tabMun)[1] <- "CODMUNRES"
+    data <- dplyr::left_join(data, tabMun, by = "CODMUNRES")
+  } else {
+    data$CODMUNRES <- as.integer(as.character(data$CODMUNRES))
+  }
+  
+  # LOCOCOR
   if ("LOCOCOR" %in% variables_names) {
     data$LOCOCOR <- as.numeric(levels(data$LOCOCOR))[data$LOCOCOR]
     data$LOCOCOR[data$LOCOCOR == 1] <- "Hospital"
-    data$LOCOCOR[data$LOCOCOR == 2] <-
-      "Outro estabelecimento de saúde"
+    data$LOCOCOR[data$LOCOCOR == 2] <- "Outro estabelecimento de saúde"
     data$LOCOCOR[data$LOCOCOR == 3] <- "Domicílio"
     data$LOCOCOR[data$LOCOCOR == 4] <- "Via pública"
     data$LOCOCOR[data$LOCOCOR == 5] <- "Outros"
     data$LOCOCOR[data$LOCOCOR == 9] <- NA
     data$LOCOCOR <- factor(data$LOCOCOR)
+  }
+  
+  # CODESTAB
+  if ("CODESTAB" %in% variables_names) {
+    data$CODESTAB <- as.character(data$CODESTAB)
+  }
+  
+  # ESTABDESCR
+  if ("ESTABDESCR" %in% variables_names) {
+    data$ESTABDESCR <- as.character(data$ESTABDESCR)
+  }
+  
+  # CODMUNOCOR
+  if ("CODMUNOCOR" %in% variables_names) {
+    data$CODMUNOCOR <- as.character(data$CODMUNOCOR)
   }
   
   # IDADEMAE
@@ -184,7 +223,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$IDADEMAE[data$IDADEMAE == 0] <- NA
   }
   
-  # ESCMAE.CNV
+  # ESCMAE
   if ("ESCMAE" %in% variables_names) {
     data$ESCMAE <- as.character(levels(data$ESCMAE))[data$ESCMAE]
     data$ESCMAE[data$ESCMAE == "0"] <- NA
@@ -202,10 +241,20 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$ESCMAE <- factor(data$ESCMAE)
   }
   
-  # OCUPMAE (OCUPA.CNV ou CBO2002.CNV.)
+  # ESCMAE2010
+  if ("ESCMAE2010" %in% variables_names) {
+    data$ESCMAE2010 <- as.character(data$ESCMAE2010)
+  }
+  
+  # SERIESCMAE
+  if ("SERIESCMAE" %in% variables_names) {
+    data$SERIESCMAE <- as.character(data$SERIESCMAE)
+  }
+  
+  # OCUPMAE
   if ("OCUPMAE" %in% variables_names) {
     if (!("DTOBITO" %in% variables_names))
-      stop("Necessário incluir o campo DTOBITO para o pré-processamento da variável OCUP.")
+      stop("The variable DTOBITO is needed to preprocess the variable OCUPMAE.")
     data$OCUPMAE <- as.character(data$OCUPMAE)
     colnames(tabOcupacao)[1] <- "OCUPMAE"
     colnames(tabCBO)[1] <- "OCUPMAE"
@@ -228,7 +277,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$QTDFILMORT <- as.numeric(data$QTDFILMORT)
   }
   
-  # GRAVIDEZ.CNV
+  # GRAVIDEZ
   if ("GRAVIDEZ" %in% variables_names) {
     data$GRAVIDEZ <- as.numeric(levels(data$GRAVIDEZ))[data$GRAVIDEZ]
     data$GRAVIDEZ[data$GRAVIDEZ == 1] <- "Única"
@@ -238,7 +287,12 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$GRAVIDEZ <- factor(data$GRAVIDEZ)
   }
   
-  # GESTACAO.CNV
+  # SEMAGESTAC
+  if ("SEMAGESTAC" %in% variables_names) {
+    data$SEMAGESTAC <- as.character(data$SEMAGESTAC)
+  }
+  
+  # GESTACAO
   if ("GESTACAO" %in% variables_names) {
     data$GESTACAO <- as.character(levels(data$GESTACAO))[data$GESTACAO]
     data$GESTACAO[data$GESTACAO == "0"] <- NA
@@ -255,7 +309,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$GESTACAO <- factor(data$GESTACAO)
   }
   
-  # PARTO.CNV
+  # PARTO
   if ("PARTO" %in% variables_names) {
     data$PARTO <- as.numeric(levels(data$PARTO))[data$PARTO]
     data$PARTO[data$PARTO == 0] <- NA
@@ -271,7 +325,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$PARTO <- factor(data$PARTO)
   }
   
-  # OBITOPARTO.CNV
+  # OBITOPARTO
   if ("OBITOPARTO" %in% variables_names) {
     data$OBITOPARTO <- as.numeric(levels(data$OBITOPARTO))[data$OBITOPARTO]
     data$OBITOPARTO[data$OBITOPARTO == 0] <- NA
@@ -287,7 +341,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$OBITOPARTO <- factor(data$OBITOPARTO)
   }
   
-  # PESO.CNV
+  # PESO
   if ("PESO" %in% variables_names) {
     data$PESO <- as.numeric(data$PESO)
     data$PESO[data$PESO == 0] <- NA
@@ -298,12 +352,12 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$NUMERODN <- as.numeric(data$NUMERODN)
   }
   
-  # CODESTAB
-  if ("CODESTAB" %in% variables_names) {
-    data$CODESTAB <- as.character(data$CODESTAB)
+  # TPMORTEOCO
+  if ("TPMORTEOCO" %in% variables_names) {
+    data$TPMORTEOCO <- as.character(data$TPMORTEOCO)
   }
   
-  # OBITOGRAV.CNV
+  # OBITOGRAV
   if ("OBITOGRAV" %in% variables_names) {
     data$OBITOGRAV <- as.numeric(levels(data$OBITOGRAV))[data$OBITOGRAV]
     data$OBITOGRAV[data$OBITOGRAV == 1] <- "Sim"
@@ -318,7 +372,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$OBITOGRAV <- factor(data$OBITOGRAV)
   }
   
-  # OBITOPUERP.CNV
+  # OBITOPUERP
   if ("OBITOPUERP" %in% variables_names) {
     data$OBITOPUERP <- as.numeric(levels(data$OBITOPUERP))[data$OBITOPUERP]
     data$OBITOPUERP[data$OBITOPUERP == 1] <- "De 0 a 42 dias"
@@ -333,7 +387,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$OBITOPUERP <- factor(data$OBITOPUERP)
   }
   
-  # ASSISTMED.CNV
+  # ASSISTMED
   if ("ASSISTMED" %in% variables_names) {
     data$ASSISTMED <- as.numeric(levels(data$ASSISTMED))[data$ASSISTMED]
     data$ASSISTMED[data$ASSISTMED == 1] <- "Sim"
@@ -342,7 +396,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$ASSISTMED <- factor(data$ASSISTMED)
   }
   
-  # EXAME.CNV
+  # EXAME
   if ("EXAME" %in% variables_names) {
     data$EXAME <- as.numeric(levels(data$EXAME))[data$EXAME]
     data$EXAME[data$EXAME == 1] <- "Sim"
@@ -351,7 +405,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$EXAME <- factor(data$EXAME)
   }
   
-  # CIRURGIA.CNV
+  # CIRURGIA
   if ("CIRURGIA" %in% variables_names) {
     data$CIRURGIA <- as.numeric(levels(data$CIRURGIA))[data$CIRURGIA]
     data$CIRURGIA[data$CIRURGIA == 1] <- "Sim"
@@ -360,7 +414,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$CIRURGIA <- factor(data$CIRURGIA)
   }
   
-  # NECROPSIA (NECROPS.CNV)
+  # NECROPSIA
   if ("NECROPSIA" %in% variables_names) {
     data$NECROPSIA <- as.numeric(levels(data$NECROPSIA))[data$NECROPSIA]
     data$NECROPSIA[data$NECROPSIA == 1] <- "Sim"
@@ -369,13 +423,58 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$NECROPSIA <- factor(data$NECROPSIA)
   }
   
+  # LINHAA
+  if ("LINHAA" %in% variables_names) {
+    data$LINHAA <- as.character(data$LINHAA)
+  }
+  
+  # LINHAB
+  if ("LINHAB" %in% variables_names) {
+    data$LINHAB <- as.character(data$LINHAB)
+  }
+  
+  # LINHAC
+  if ("LINHAC" %in% variables_names) {
+    data$LINHAC <- as.character(data$LINHAC)
+  }
+  
+  # LINHAD
+  if ("LINHAD" %in% variables_names) {
+    data$LINHAD <- as.character(data$LINHAD)
+  }
+  
+  # LINHAII
+  if ("LINHAII" %in% variables_names) {
+    data$LINHAII <- as.character(data$LINHAII)
+  }
+  
+  # CAUSABAS
+  if ("CAUSABAS" %in% variables_names) {
+    data$CAUSABAS <- as.character(data$CAUSABAS)
+  }
+  
+  # CB_PRE
+  if ("CB_PRE" %in% variables_names) {
+    data$CB_PRE <- as.character(data$CB_PRE)
+  }
+  
+  # CRM
+  if ("CRM" %in% variables_names) {
+    data$CRM <- as.character(data$CRM)
+  }
+  
+  # COMUNSVOIM
+  if ("COMUNSVOIM" %in% variables_names) {
+    data$COMUNSVOIM <- as.character(data$COMUNSVOIM)
+  }
+  
   # DTATESTADO
   if ("DTATESTADO" %in% variables_names) {
     data$DTATESTADO <- as.character(data$DTATESTADO)
     data$DTATESTADO <- as.Date(data$DTATESTADO, format = "%d%m%Y")
   }
   
-  # CIRCOBITO (TIPOVIOL.CNV)
+  # CIRCOBITO
   if ("CIRCOBITO" %in% variables_names) {
     data$CIRCOBITO <- as.numeric(levels(data$CIRCOBITO))[data$CIRCOBITO]
     data$CIRCOBITO[data$CIRCOBITO == 0] <- NA
@@ -391,7 +490,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$CIRCOBITO <- factor(data$CIRCOBITO)
   }
   
-  # ACIDTRAB.CNV
+  # ACIDTRAB
   if ("ACIDTRAB" %in% variables_names) {
     data$ACIDTRAB <- as.numeric(levels(data$ACIDTRAB))[data$ACIDTRAB]
     data$ACIDTRAB[data$ACIDTRAB == 1] <- "Sim"
@@ -400,7 +499,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$ACIDTRAB <- factor(data$ACIDTRAB)
   }
   
-  # FONTE (FONTINFO.CNV)
+  # FONTE
   if ("FONTE" %in% variables_names) {
     data$FONTE <- as.numeric(levels(data$FONTE))[data$FONTE]
     data$FONTE[data$FONTE == 1] <- "Boletim de Ocorrência"
@@ -411,7 +510,12 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$FONTE <- factor(data$FONTE)
   }
   
-  # TPPOS (INVESTIG.CNV)
+  # NUMEROLOTE
+  if ("NUMEROLOTE" %in% variables_names) {
+    data$NUMEROLOTE <- as.character(data$NUMEROLOTE)
+  }
+  
+  # TPPOS
   if ("TPPOS" %in% variables_names) {
     data$TPPOS <- plyr::revalue(data$TPPOS, c("N" = "Não investigado", "S" = "Investigado"))
   }
@@ -422,13 +526,18 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$DTINVESTIG <- as.Date(data$DTINVESTIG, format = "%d%m%Y")
   }
   
+  # CAUSABAS_O
+  if ("CAUSABAS_O" %in% variables_names) {
+    data$CAUSABAS_O <- as.character(data$CAUSABAS_O)
+  }
+  
   # DTCADASTRO
   if ("DTCADASTRO" %in% variables_names) {
     data$DTCADASTRO <- as.character(data$DTCADASTRO)
     data$DTCADASTRO <- as.Date(data$DTCADASTRO, format = "%d%m%Y")
   }
   
-  # ATESTANTE (ATESTANT.CNV)
+  # ATESTANTE
   if ("ATESTANTE" %in% variables_names) {
     data$ATESTANTE <- as.numeric(levels(data$ATESTANTE))[data$ATESTANTE]
     data$ATESTANTE[data$ATESTANTE == 0] <- NA
@@ -444,7 +553,27 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$ATESTANTE <- factor(data$ATESTANTE)
   }
   
-  # FONTEINV.CNV
+  # STCODIFICA
+  if ("STCODIFICA" %in% variables_names) {
+    data$STCODIFICA <- as.character(data$STCODIFICA)
+  }
+  
+  # CODIFICADO
+  if ("CODIFICADO" %in% variables_names) {
+    data$CODIFICADO <- as.character(data$CODIFICADO)
+  }
+  
+  # VERSAOSIST
+  if ("VERSAOSIST" %in% variables_names) {
+    data$VERSAOSIST <- as.character(data$VERSAOSIST)
+  }
+  
+  # VERSAOSCB
+  if ("VERSAOSCB" %in% variables_names) {
+    data$VERSAOSCB <- as.character(data$VERSAOSCB)
+  }
+  
+  # FONTEINV
   if ("FONTEINV" %in% variables_names) {
     data$FONTEINV <- as.numeric(levels(data$FONTEINV))[data$FONTEINV]
     data$FONTEINV[data$FONTEINV == 1] <- "Comitê de Mortalidade Materna e/ou Infantil"
@@ -465,49 +594,115 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$DTRECEBIM <- as.Date(data$DTRECEBIM, format = "%d%m%Y")
   }
   
-  # UFINFORM (UF.CNV)
-  if ("UFINFORM" %in% variables_names) {
-    data$UFINFORM <- as.numeric(levels(data$UFINFORM))[data$UFINFORM]
-    data$UFINFORM[data$UFINFORM == 0] <- NA
-    data$UFINFORM[data$UFINFORM == 11] <- "Rondônia"
-    data$UFINFORM[data$UFINFORM == 12] <- "Acre"
-    data$UFINFORM[data$UFINFORM == 13] <- "Amazonas"
-    data$UFINFORM[data$UFINFORM == 14] <- "Roraima"
-    data$UFINFORM[data$UFINFORM == 15] <- "Pará"
-    data$UFINFORM[data$UFINFORM == 16] <- "Amapá"
-    data$UFINFORM[data$UFINFORM == 17] <- "Tocantins"
-    data$UFINFORM[data$UFINFORM == 21] <- "Maranhão"
-    data$UFINFORM[data$UFINFORM == 22] <- "Piauí"
-    data$UFINFORM[data$UFINFORM == 23] <- "Ceará"
-    data$UFINFORM[data$UFINFORM == 24] <- "Rio Grande do Norte"
-    data$UFINFORM[data$UFINFORM == 25] <- "Paraíba"
-    data$UFINFORM[data$UFINFORM == 26] <- "Pernambuco"
-    data$UFINFORM[data$UFINFORM == 20] <- "Pernambuco"
-    data$UFINFORM[data$UFINFORM == 27] <- "Alagoas"
-    data$UFINFORM[data$UFINFORM == 28] <- "Sergipe"
-    data$UFINFORM[data$UFINFORM == 29] <- "Bahia"
-    data$UFINFORM[data$UFINFORM == 31] <- "Minas Gerais"
-    data$UFINFORM[data$UFINFORM == 32] <- "Espírito Santo"
-    data$UFINFORM[data$UFINFORM == 33] <- "Rio de Janeiro"
-    data$UFINFORM[data$UFINFORM == 35] <- "São Paulo"
-    data$UFINFORM[data$UFINFORM == 41] <- "Paraná"
-    data$UFINFORM[data$UFINFORM == 42] <- "Santa Catarina"
-    data$UFINFORM[data$UFINFORM == 43] <- "Rio Grande do Sul"
-    data$UFINFORM[data$UFINFORM == 50] <- "Mato Grosso do Sul"
-    data$UFINFORM[data$UFINFORM == 51] <- "Mato Grosso"
-    data$UFINFORM[data$UFINFORM == 52] <- "Goiás"
-    data$UFINFORM[data$UFINFORM == 53] <- "Distrito Federal"
-    data$UFINFORM[data$UFINFORM == 99] <- NA
-    data$UFINFORM <- factor(data$UFINFORM)
+  # ATESTADO
+  if ("ATESTADO" %in% variables_names) {
+    data$ATESTADO <- as.character(data$ATESTADO)
   }
   
-  # CODINST.CNV
-  if ("CODINST" %in% variables_names) {
-    data$CODINST <- as.character(levels(data$CODINST))[data$CODINST]
-    data$CODINST[data$CODINST == "E"] <- "Estado"
-    data$CODINST[data$CODINST == "R"] <- "Regional"
-    data$CODINST[data$CODINST == "M"] <- "Municipal"
-    data$CODINST <- factor(data$CODINST)
+  # DTRECORIGA
+  if ("DTRECORIGA" %in% variables_names) {
+    data$DTRECORIGA <- as.character(data$DTRECORIGA)
+    data$DTRECORIGA <- as.Date(data$DTRECORIGA, format = "%d%m%Y")
+  }
+  
+  # CAUSAMAT
+  if ("CAUSAMAT" %in% variables_names) {
+    data$CAUSAMAT <- as.character(data$CAUSAMAT)
+  }
+  
+  # ESCMAEAGR1
+  if ("ESCMAEAGR1" %in% variables_names) {
+    data$ESCMAEAGR1 <- as.character(data$ESCMAEAGR1)
+  }
+  
+  # ESCFALAGR1
+  if ("ESCFALAGR1" %in% variables_names) {
+    data$ESCFALAGR1 <- as.character(data$ESCFALAGR1)
+  }
+  
+  # STDOEPIDEM
+  if ("STDOEPIDEM" %in% variables_names) {
+    data$STDOEPIDEM <- as.character(data$STDOEPIDEM)
+  }
+  
+  # STDONOVA
+  if ("STDONOVA" %in% variables_names) {
+    data$STDONOVA <- as.character(data$STDONOVA)
+  }
+  
+  # DIFDATA
+  if ("DIFDATA" %in% variables_names) {
+    data$DIFDATA <- as.character(data$DIFDATA)
+  }
+  
+  # NUDIASOBCO
+  if ("NUDIASOBCO" %in% variables_names) {
+    data$NUDIASOBCO <- as.character(data$NUDIASOBCO)
+  }
+  
+  # NUDIASOBIN
+  if ("NUDIASOBIN" %in% variables_names) {
+    data$NUDIASOBIN <- as.character(data$NUDIASOBIN)
+  }
+  
+  # DTCADINV
+  if ("DTCADINV" %in% variables_names) {
+    data$DTCADINV <- as.character(data$DTCADINV)
+  }
+  
+  # TPOBITOCOR
+  if ("TPOBITOCOR" %in% variables_names) {
+    data$TPOBITOCOR <- as.character(data$TPOBITOCOR)
+  }
+  
+  # DTCONINV
+  if ("DTCONINV" %in% variables_names) {
+    data$DTCONINV <- as.character(data$DTCONINV)
+  }
+  
+  # FONTES
+  if ("FONTES" %in% variables_names) {
+    data$FONTES <- as.character(data$FONTES)
+  }
+  
+  # TPRESGINFO
+  if ("TPRESGINFO" %in% variables_names) {
+    data$TPRESGINFO <- as.character(data$TPRESGINFO)
+  }
+  
+  # TPNIVELINV
+  if ("TPNIVELINV" %in% variables_names) {
+    data$TPNIVELINV <- as.character(data$TPNIVELINV)
+  }
+  
+  # NUDIASINF
+  if ("NUDIASINF" %in% variables_names) {
+    data$NUDIASINF <- as.character(data$NUDIASINF)
+  }
+  
+  # DTCADINF
+  if ("DTCADINF" %in% variables_names) {
+    data$DTCADINF <- as.character(data$DTCADINF)
+  }
+  
+  # MORTEPARTO
+  if ("MORTEPARTO" %in% variables_names) {
+    data$MORTEPARTO <- as.character(data$MORTEPARTO)
+  }
+  
+  # DTCONCASO
+  if ("DTCONCASO" %in% variables_names) {
+    data$DTCONCASO <- as.character(data$DTCONCASO)
+  }
+  
+  # FONTESINF
+  if ("FONTESINF" %in% variables_names) {
+    data$FONTESINF <- as.character(data$FONTESINF)
+  }
+  
+  # ALTCAUSA
+  if ("ALTCAUSA" %in% variables_names) {
+    data$ALTCAUSA <- as.character(data$ALTCAUSA)
   }
   
   # Purge levels
