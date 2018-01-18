@@ -165,12 +165,12 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
       partial <- read.dbc::read.dbc(temp)
     },
     error=function(cond) {
-      message(paste("Algo deu errado com a URL:", file))
-      message("Pode ser um problema na Internet ou o arquivo ainda não existe no site do DataSUS. Os dados deste arquivo não foram inclusos no resultado final.")
+      message(paste("Something went wrong with this URL:", file))
+      message("This can be a problem with the Internet or the file does not exist yet.")
     })
 
-    # Junta arquivo baixado ao conjunto
-    if(!all(vars %in% names(partial))) stop("Uma ou mais variáveis são desconhecidas. Grafia incorreta?")
+    # Merge files
+    if(!all(vars %in% names(partial))) stop("One or more variables names are unknow. Typo?")
     if(is.null(vars)){
       data <- plyr::rbind.fill(data, partial)
     } else {
@@ -179,6 +179,6 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
 
   }
 
-  # Retorna objeto
+  # Return final result
   return(data)
 }
