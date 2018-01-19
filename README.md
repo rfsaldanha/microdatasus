@@ -25,6 +25,10 @@ dados <- process_sim(dados, "SIM-DO")
 
 O manual para a utilização do pacote encontra-se na [Wiki do projeto](https://github.com/rfsaldanha/downloadDataSUS/wiki).
 
+### Sistemas de Informação em Saúde suportados
+* Download: SIM, SINASC, SIH, CNES, SIA.
+* Pré-processamento: SIM, SINASC, SIH-RD.
+
 ## Agradecimento
 
 O desenvolvimento deste pacote não seria possível sem a função `read.dbc` criada por Daniela Petruzalek, através do pacote [*read.dbc*](https://cran.r-project.org/web/packages/read.dbc/index.html).
