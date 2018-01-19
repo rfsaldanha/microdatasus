@@ -29,7 +29,11 @@ process_sim <- function(data, municipality_data = TRUE) {
   
   # CODINST
   if ("CODINST" %in% variables_names) {
-    data$CODINST <- as.character(data$CODINST)
+    data$CODINST <- as.character(levels(data$CODINST))[data$CODINST]
+    data$CODINST[data$CODINST == "E"] <- "Estadual"
+    data$CODINST[data$CODINST == "R"] <- "Regional"
+    data$CODINST[data$CODINST == "M"] <- "Municipal"
+    data$CODINST <- factor(data$CODINST)
   }
   
   # NUMERODV
@@ -365,7 +369,7 @@ process_sim <- function(data, municipality_data = TRUE) {
   
   # NUMERODN
   if ("NUMERODN" %in% variables_names) {
-    data$NUMERODN <- as.numeric(data$NUMERODN)
+    data$NUMERODN <- as.character(data$NUMERODN)
   }
   
   # TPMORTEOCO
