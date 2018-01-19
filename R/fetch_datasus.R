@@ -24,15 +24,15 @@
 #' The files are downloaded to a temporary folder and deleted after the reading process.
 #' 
 #' @examples 
-#' fetch_datasus(year_start = 2010, year_end = 2012,
+#' fetch_datasus(year_start = 2010, year_end = 2011,
 #'               information_system = "SIM-DO")
 #'               
-#' fetch_datasus(year_start = 2014, year_end = 2015,
+#' fetch_datasus(year_start = 2014, year_end = 2014,
 #'               information_system = "SIM-DO",
 #'               vars = c("CODMUNRES", "DTOBITO", "CAUSABAS"))
 #'               
 #' fetch_datasus(year_start = 2014, month_start = 1, 
-#'               year_end = 2014, month_end = 6,
+#'               year_end = 2014, month_end = 2,
 #'               uf = c("RJ", "MG", "SP", "ES"), 
 #'               information_system = "SIH-RD")
 

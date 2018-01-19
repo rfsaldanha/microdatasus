@@ -15,5 +15,12 @@ process_sim(data, municipality_data = TRUE)
 \code{process_sim} processes SIM variables retrieved by \code{fetch_datasus()}.
 }
 \details{
-This function processes SIM variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables.
+This function processes SIM variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
+}
+\examples{
+df <- fetch_datasus(year_start = 2010, year_end = 2010,
+                    uf = "RJ",
+                    information_system = "SIM-DO")
+df_a <- process_sim(df)
+df_b <- process_sim(df, municipality_data = FALSE)
 }

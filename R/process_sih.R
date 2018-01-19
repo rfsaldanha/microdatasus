@@ -1,4 +1,24 @@
-process_sih <- function(data, information_system, municipality_data = TRUE) {
+#' Process SIH variables from DataSUS
+#' 
+#' \code{process_SIH} processes SIH variables retrieved by \code{fetch_datasus()}.
+#' 
+#' This function processes SIH variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
+#' 
+#' Currently, only "SIH-RD" is supported.
+#' 
+#' @param data \code{data.frame} created by \code{fetch_datasus()}.
+#' @param information_system string. The abbreviation of the health information system. See \emph{Details}.
+#' @param municipality_data optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.
+#' 
+#' @examples 
+#' df <- fetch_datasus(year_start = 2010, month_start = 1,
+#'                     year_end = 2010, month_end = 1,
+#'                     uf = "RJ",
+#'                     information_system = "SIH-RD")
+#' df_a <- process_sih(df)
+#' df_b <- process_sih(df, municipality_data = FALSE)
+
+process_sih <- function(data, information_system = "SIH-RD", municipality_data = TRUE) {
   # Check information system
   available_information_system <- "SIH-RD"
   if(!(information_system %in% available_information_system)) stop("Health informaton system unknown.")

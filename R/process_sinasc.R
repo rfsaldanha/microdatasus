@@ -1,3 +1,19 @@
+#' Process SINASC variables from DataSUS
+#' 
+#' \code{process_sinasc} processes SINASC variables retrieved by \code{fetch_datasus()}.
+#' 
+#' This function processes SINASC variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
+#' 
+#' @param data \code{data.frame} created by \code{fetch_datasus()}.
+#' @param municipality_data optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.
+#' 
+#' @examples 
+#' df <- fetch_datasus(year_start = 2010, year_end = 2010,
+#'                     uf = "RJ",
+#'                     information_system = "SINASC")
+#' df_a <- process_sinasc(df)
+#' df_b <- process_sinasc(df, municipality_data = FALSE)
+
 process_sinasc <- function(data, municipality_data = TRUE) {
   # Variables names
   variables_names <- names(data)
