@@ -23,7 +23,7 @@ dados <- datasus_fetch(anoIni = 2013, anoFim = 2014, uf = "RJ", sistema = "SIM-D
 dados <- process_sim(dados, "SIM-DO")
 ```
 
-O manual para a utilização do pacote encontra-se na [Wiki do projeto](https://github.com/rfsaldanha/downloadDataSUS/wiki).
+O manual para a utilização do pacote encontra-se na [Wiki do projeto](https://github.com/rfsaldanha/microdatasus/wiki).
 
 ### Sistemas de Informação em Saúde suportados
 * Download: SIM, SINASC, SIH, CNES, SIA.
