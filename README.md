@@ -37,8 +37,8 @@ O desenvolvimento deste pacote não seria possível sem a função `read.dbc` cr
 
 Peço aos usuários que citem o pacote sempre que ele for utilizado.
 
-SALDANHA, Raphael de Freitas. Pacote para o R 'downloadDataSUS', 2017. Disponível em <https://github.com/rfsaldanha/downloadDataSUS>.
+SALDANHA, Raphael de Freitas. Pacote para o R 'microdatasus', 2018. Disponível em <https://github.com/rfsaldanha/microdatasus>.
 
 ## Dúvidas e sugestões
 
-Crie uma [issue](https://github.com/rfsaldanha/downloadDataSUS/issues) no projeto ou envie um e-mail para `raphael.saldanha@icict.fiocruz.br`
+Crie uma [issue](https://github.com/rfsaldanha/microdatasus/issues) no projeto ou envie um e-mail para `raphael.saldanha@icict.fiocruz.br`
