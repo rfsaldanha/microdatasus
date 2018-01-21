@@ -107,10 +107,28 @@ process_sinasc <- function(data, municipality_data = TRUE) {
     data$ESCMAE <- factor(data$ESCMAE)
   }
   
-  # CODOCUPMAE
-  if("CODOCUPMAE" %in% variables_names){
-    data$CODOCUPMAE <- as.character(data$CODOCUPMAE)
+  # DTNASC
+  if("DTNASC" %in% variables_names){
+    data$DTNASC <- as.character(data$DTNASC)
+    data$DTNASC <- as.Date(data$DTNASC, format = "%d%m%Y")
   }
+  
+  # CODOCUPMAE
+  if ("CODOCUPMAE" %in% variables_names) {
+    if (!("DTNASC" %in% variables_names))
+      stop("The variable DTNASC is needed to preprocess the variable CODOCUPMAE")
+    data$CODOCUPMAE <- as.character(data$CODOCUPMAE)
+    colnames(tabOcupacao)[1] <- "CODOCUPMAE"
+    colnames(tabCBO)[1] <- "CODOCUPMAE"
+    ano <- lubridate::year(data$DTNASC)
+    data$CODOCUPMAE <-
+      factor(ifelse(
+        ano <= 2005,
+        plyr::join(data, tabOcupacao, by = "CODOCUPMAE", match = "first")$nome,
+        dplyr::left_join(data, tabCBO, by = "CODOCUPMAE")$nome
+      ))
+  }
+  
   
   # QTDFILVIVO
   if("QTDFILVIVO" %in% variables_names){
@@ -195,12 +213,6 @@ process_sinasc <- function(data, municipality_data = TRUE) {
     data$CONSULTAS[data$CONSULTAS==8] <- NA
     data$CONSULTAS[data$CONSULTAS==9] <- NA
     data$CONSULTAS <- factor(data$CONSULTAS)
-  }
-  
-  # DTNASC
-  if("DTNASC" %in% variables_names){
-    data$DTNASC <- as.character(data$DTNASC)
-    data$DTNASC <- as.Date(data$DTNASC, format = "%d%m%Y")
   }
   
   # HORANASC

@@ -946,6 +946,12 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
       data$CBOR <- as.character(data$CBOR)
     }
     
+    if ("CBOR" %in% variables_names) {
+      data$CBOR <- as.character(data$CBOR)
+      colnames(tabCBO)[1] <- "CBOR"
+      data$CBOR <- factor(dplyr::left_join(data, tabCBO, by = "CBOR")$nome)
+    }
+    
     # CNAER
     if("CNAER" %in% variables_names){
       data$CNAER <- as.character(data$CNAER)
