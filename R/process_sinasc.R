@@ -255,7 +255,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   
   # PESO
   if("PESO" %in% variables_names){
-    data$PESO <- as.numeric(data$PESO)
+    data$PESO <- as.numeric(as.character(data$PESO))
     data$PESO[data$PESO==0] <- NA
     data$PESO[data$PESO==9999] <- NA
   }
