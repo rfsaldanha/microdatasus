@@ -383,7 +383,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   
   # SEMAGESTAC
   if("SEMAGESTAC" %in% variables_names){
-    data$SEMAGESTAC <- as.integer(data$SEMAGESTAC)
+    data$SEMAGESTAC <- as.numeric(as.character(data$SEMAGESTAC))
   }
   
   # TPMETESTIM
