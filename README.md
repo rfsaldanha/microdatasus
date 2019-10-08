@@ -37,7 +37,8 @@ O desenvolvimento deste pacote não seria possível sem a função `read.dbc` cr
 
 Peço aos usuários que citem o pacote sempre que ele for utilizado.
 
-SALDANHA, Raphael de Freitas. Pacote para o R 'microdatasus', 2018. Disponível em <https://github.com/rfsaldanha/microdatasus>.
+SALDANHA, Raphael de Freitas; BASTOS, Ronaldo Rocha; BARCELLOS, Christovam. Microdatasus: pacote para download e pré-processamento de microdados do Departamento de Informática do SUS (DATASUS). Cad. Saúde Pública,  Rio de Janeiro ,  v. 35, n. 9,  e00032419,    2019 .   Available from <http://ref.scielo.org/dhcq3y>.
+
 
 ## Dúvidas e sugestões
 
