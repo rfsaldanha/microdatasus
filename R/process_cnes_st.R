@@ -1,3 +1,21 @@
+#' Process CNES-ST variables from DataSUS
+#' 
+#' \code{process_cnes_st} processes CNES-ST variables retrieved by \code{fetch_datasus()}.
+#' 
+#' This function processes CNES-ST (Estabelecimentos) variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
+#' 
+#' @param data \code{data.frame} created by \code{fetch_datasus()}.
+#' @param nomes optional logical. \code{TRUE} by default, add  \code{FANTASIA} and \code{RAZÃO SOCIAL} names to the dataset.
+#' @param municipality_data optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.
+#' 
+#' @examples 
+#' df <- fetch_datasus(year_start = 2015, month_start = 1,
+#'                     year_end = 2015, month_end = 1,
+#'                     uf = "RJ",
+#'                     information_system = "CNES-ST")
+#' df_a <- process_cnes_ST(df)
+#' df_b <- process_cnes_pf(df, nomes = FALSE, municipality_data = FALSE)
+
 process_cnes_st <- function(data, nomes = TRUE, municipality_data = TRUE) {
   # Variables names
   variables_names <- names(data)
@@ -513,6 +531,497 @@ process_cnes_st <- function(data, nomes = TRUE, municipality_data = TRUE) {
     data$ATENDHOS[data$ATENDHOS==0] <- "Não"
     data$ATENDHOS <- factor(data$ATENDHOS)
   }
+  
+  # SERAP01P
+  if("SERAP01P" %in% variables_names){
+    data$SERAP01P <- as.numeric(levels(data$SERAP01P))[data$SERAP01P]
+    data$SERAP01P[data$SERAP01P==1] <- "Sim"
+    data$SERAP01P[data$SERAP01P==0] <- "Não"
+    data$SERAP01P <- factor(data$SERAP01P)
+  }
+  
+  # SERAP01T
+  if("SERAP01T" %in% variables_names){
+    data$SERAP01T <- as.numeric(levels(data$SERAP01T))[data$SERAP01T]
+    data$SERAP01T[data$SERAP01T==1] <- "Sim"
+    data$SERAP01T[data$SERAP01T==0] <- "Não"
+    data$SERAP01T <- factor(data$SERAP01T)
+  }
+  
+  # SERAP02P
+  if("SERAP02P" %in% variables_names){
+    data$SERAP02P <- as.numeric(levels(data$SERAP02P))[data$SERAP02P]
+    data$SERAP02P[data$SERAP02P==1] <- "Sim"
+    data$SERAP02P[data$SERAP02P==0] <- "Não"
+    data$SERAP02P <- factor(data$SERAP02P)
+  }
+  
+  # SERAP02T
+  if("SERAP02T" %in% variables_names){
+    data$SERAP02T <- as.numeric(levels(data$SERAP02T))[data$SERAP02T]
+    data$SERAP02T[data$SERAP02T==1] <- "Sim"
+    data$SERAP02T[data$SERAP02T==0] <- "Não"
+    data$SERAP02T <- factor(data$SERAP02T)
+  }
+  
+  # SERAP03P
+  if("SERAP03P" %in% variables_names){
+    data$SERAP03P <- as.numeric(levels(data$SERAP03P))[data$SERAP03P]
+    data$SERAP03P[data$SERAP03P==1] <- "Sim"
+    data$SERAP03P[data$SERAP03P==0] <- "Não"
+    data$SERAP03P <- factor(data$SERAP03P)
+  }
+  
+  # SERAP03T
+  if("SERAP03T" %in% variables_names){
+    data$SERAP03T <- as.numeric(levels(data$SERAP03T))[data$SERAP03T]
+    data$SERAP03T[data$SERAP03T==1] <- "Sim"
+    data$SERAP03T[data$SERAP03T==0] <- "Não"
+    data$SERAP03T <- factor(data$SERAP03T)
+  }
+  
+  # SERAP04P
+  if("SERAP04P" %in% variables_names){
+    data$SERAP04P <- as.numeric(levels(data$SERAP04P))[data$SERAP04P]
+    data$SERAP04P[data$SERAP04P==1] <- "Sim"
+    data$SERAP04P[data$SERAP04P==0] <- "Não"
+    data$SERAP04P <- factor(data$SERAP04P)
+  }
+  
+  # SERAP04T
+  if("SERAP04T" %in% variables_names){
+    data$SERAP04T <- as.numeric(levels(data$SERAP04T))[data$SERAP04T]
+    data$SERAP04T[data$SERAP04T==1] <- "Sim"
+    data$SERAP04T[data$SERAP04T==0] <- "Não"
+    data$SERAP04T <- factor(data$SERAP04T)
+  }
+  
+  # SERAP05P
+  if("SERAP05P" %in% variables_names){
+    data$SERAP05P <- as.numeric(levels(data$SERAP05P))[data$SERAP05P]
+    data$SERAP05P[data$SERAP05P==1] <- "Sim"
+    data$SERAP05P[data$SERAP05P==0] <- "Não"
+    data$SERAP05P <- factor(data$SERAP05P)
+  }
+  
+  # SERAP05T
+  if("SERAP05T" %in% variables_names){
+    data$SERAP05T <- as.numeric(levels(data$SERAP05T))[data$SERAP05T]
+    data$SERAP05T[data$SERAP05T==1] <- "Sim"
+    data$SERAP05T[data$SERAP05T==0] <- "Não"
+    data$SERAP05T <- factor(data$SERAP05T)
+  }
+  
+  # SERAP06P
+  if("SERAP06P" %in% variables_names){
+    data$SERAP06P <- as.numeric(levels(data$SERAP06P))[data$SERAP06P]
+    data$SERAP06P[data$SERAP06P==1] <- "Sim"
+    data$SERAP06P[data$SERAP06P==0] <- "Não"
+    data$SERAP06P <- factor(data$SERAP06P)
+  }
+  
+  # SERAP06T
+  if("SERAP06T" %in% variables_names){
+    data$SERAP06T <- as.numeric(levels(data$SERAP06T))[data$SERAP06T]
+    data$SERAP06T[data$SERAP06T==1] <- "Sim"
+    data$SERAP06T[data$SERAP06T==0] <- "Não"
+    data$SERAP06T <- factor(data$SERAP06T)
+  }
+  
+  # SERAP07P
+  if("SERAP07P" %in% variables_names){
+    data$SERAP07P <- as.numeric(levels(data$SERAP07P))[data$SERAP07P]
+    data$SERAP07P[data$SERAP07P==1] <- "Sim"
+    data$SERAP07P[data$SERAP07P==0] <- "Não"
+    data$SERAP07P <- factor(data$SERAP07P)
+  }
+  
+  # SERAP07T
+  if("SERAP07T" %in% variables_names){
+    data$SERAP07T <- as.numeric(levels(data$SERAP07T))[data$SERAP07T]
+    data$SERAP07T[data$SERAP07T==1] <- "Sim"
+    data$SERAP07T[data$SERAP07T==0] <- "Não"
+    data$SERAP07T <- factor(data$SERAP07T)
+  }
+  
+  # SERAP08P
+  if("SERAP08P" %in% variables_names){
+    data$SERAP08P <- as.numeric(levels(data$SERAP08P))[data$SERAP08P]
+    data$SERAP08P[data$SERAP08P==1] <- "Sim"
+    data$SERAP08P[data$SERAP08P==0] <- "Não"
+    data$SERAP08P <- factor(data$SERAP08P)
+  }
+  
+  # SERAP08T
+  if("SERAP08T" %in% variables_names){
+    data$SERAP08T <- as.numeric(levels(data$SERAP08T))[data$SERAP08T]
+    data$SERAP08T[data$SERAP08T==1] <- "Sim"
+    data$SERAP08T[data$SERAP08T==0] <- "Não"
+    data$SERAP08T <- factor(data$SERAP08T)
+  }
+  
+  # SERAP09P
+  if("SERAP09P" %in% variables_names){
+    data$SERAP09P <- as.numeric(levels(data$SERAP09P))[data$SERAP09P]
+    data$SERAP09P[data$SERAP09P==1] <- "Sim"
+    data$SERAP09P[data$SERAP09P==0] <- "Não"
+    data$SERAP09P <- factor(data$SERAP09P)
+  }
+  
+  # SERAP09T
+  if("SERAP09T" %in% variables_names){
+    data$SERAP09T <- as.numeric(levels(data$SERAP09T))[data$SERAP09T]
+    data$SERAP09T[data$SERAP09T==1] <- "Sim"
+    data$SERAP09T[data$SERAP09T==0] <- "Não"
+    data$SERAP09T <- factor(data$SERAP09T)
+  }
+  
+  # SERAP10P
+  if("SERAP10P" %in% variables_names){
+    data$SERAP10P <- as.numeric(levels(data$SERAP10P))[data$SERAP10P]
+    data$SERAP10P[data$SERAP10P==1] <- "Sim"
+    data$SERAP10P[data$SERAP10P==0] <- "Não"
+    data$SERAP10P <- factor(data$SERAP10P)
+  }
+  
+  # SERAP10T
+  if("SERAP10T" %in% variables_names){
+    data$SERAP10T <- as.numeric(levels(data$SERAP10T))[data$SERAP10T]
+    data$SERAP10T[data$SERAP10T==1] <- "Sim"
+    data$SERAP10T[data$SERAP10T==0] <- "Não"
+    data$SERAP10T <- factor(data$SERAP10T)
+  }
+  
+  # SERAP11P
+  if("SERAP11P" %in% variables_names){
+    data$SERAP11P <- as.numeric(levels(data$SERAP11P))[data$SERAP11P]
+    data$SERAP11P[data$SERAP11P==1] <- "Sim"
+    data$SERAP11P[data$SERAP11P==0] <- "Não"
+    data$SERAP11P <- factor(data$SERAP11P)
+  }
+  
+  # SERAP11T
+  if("SERAP11T" %in% variables_names){
+    data$SERAP11T <- as.numeric(levels(data$SERAP11T))[data$SERAP11T]
+    data$SERAP11T[data$SERAP11T==1] <- "Sim"
+    data$SERAP11T[data$SERAP11T==0] <- "Não"
+    data$SERAP11T <- factor(data$SERAP11T)
+  }
+  
+  # SERAPOIO
+  if("SERAPOIO" %in% variables_names){
+    data$SERAPOIO <- as.numeric(levels(data$SERAPOIO))[data$SERAPOIO]
+    data$SERAPOIO[data$SERAPOIO==1] <- "Sim"
+    data$SERAPOIO[data$SERAPOIO==0] <- "Não"
+    data$SERAPOIO <- factor(data$SERAPOIO)
+  }
+  
+  # RES_BIOL
+  if("RES_BIOL" %in% variables_names){
+    data$RES_BIOL <- as.numeric(levels(data$RES_BIOL))[data$RES_BIOL]
+    data$RES_BIOL[data$RES_BIOL==1] <- "Sim"
+    data$RES_BIOL[data$RES_BIOL==0] <- "Não"
+    data$RES_BIOL <- factor(data$RES_BIOL)
+  }
+  
+  # RES_QUIM
+  if("RES_QUIM" %in% variables_names){
+    data$RES_QUIM <- as.numeric(levels(data$RES_QUIM))[data$RES_QUIM]
+    data$RES_QUIM[data$RES_QUIM==1] <- "Sim"
+    data$RES_QUIM[data$RES_QUIM==0] <- "Não"
+    data$RES_QUIM <- factor(data$RES_QUIM)
+  }
+  
+  # RES_RADI
+  if("RES_RADI" %in% variables_names){
+    data$RES_RADI <- as.numeric(levels(data$RES_RADI))[data$RES_RADI]
+    data$RES_RADI[data$RES_RADI==1] <- "Sim"
+    data$RES_RADI[data$RES_RADI==0] <- "Não"
+    data$RES_RADI <- factor(data$RES_RADI)
+  }
+  
+  # RES_COMU
+  if("RES_COMU" %in% variables_names){
+    data$RES_COMU <- as.numeric(levels(data$RES_COMU))[data$RES_COMU]
+    data$RES_COMU[data$RES_COMU==1] <- "Sim"
+    data$RES_COMU[data$RES_COMU==0] <- "Não"
+    data$RES_COMU <- factor(data$RES_COMU)
+  }
+  
+  # COLETRES
+  if("COLETRES" %in% variables_names){
+    data$COLETRES <- as.numeric(levels(data$COLETRES))[data$COLETRES]
+    data$COLETRES[data$COLETRES==1] <- "Sim"
+    data$COLETRES[data$COLETRES==0] <- "Não"
+    data$COLETRES <- factor(data$COLETRES)
+  }
+  
+  # COMISS01
+  if("COMISS01" %in% variables_names){
+    data$COMISS01 <- as.numeric(levels(data$COMISS01))[data$COMISS01]
+    data$COMISS01[data$COMISS01==1] <- "Sim"
+    data$COMISS01[data$COMISS01==0] <- "Não"
+    data$COMISS01 <- factor(data$COMISS01)
+  }
+  
+  # COMISS02
+  if("COMISS02" %in% variables_names){
+    data$COMISS02 <- as.numeric(levels(data$COMISS02))[data$COMISS02]
+    data$COMISS02[data$COMISS02==1] <- "Sim"
+    data$COMISS02[data$COMISS02==0] <- "Não"
+    data$COMISS02 <- factor(data$COMISS02)
+  }
+  
+  # COMISS03
+  if("COMISS03" %in% variables_names){
+    data$COMISS03 <- as.numeric(levels(data$COMISS03))[data$COMISS03]
+    data$COMISS03[data$COMISS03==1] <- "Sim"
+    data$COMISS03[data$COMISS03==0] <- "Não"
+    data$COMISS03 <- factor(data$COMISS03)
+  }
+  
+  # COMISS04
+  if("COMISS04" %in% variables_names){
+    data$COMISS04 <- as.numeric(levels(data$COMISS04))[data$COMISS04]
+    data$COMISS04[data$COMISS04==1] <- "Sim"
+    data$COMISS04[data$COMISS04==0] <- "Não"
+    data$COMISS04 <- factor(data$COMISS04)
+  }
+  
+  # COMISS05
+  if("COMISS05" %in% variables_names){
+    data$COMISS05 <- as.numeric(levels(data$COMISS05))[data$COMISS05]
+    data$COMISS05[data$COMISS05==1] <- "Sim"
+    data$COMISS05[data$COMISS05==0] <- "Não"
+    data$COMISS05 <- factor(data$COMISS05)
+  }
+  
+  # COMISS06
+  if("COMISS06" %in% variables_names){
+    data$COMISS06 <- as.numeric(levels(data$COMISS06))[data$COMISS06]
+    data$COMISS06[data$COMISS06==1] <- "Sim"
+    data$COMISS06[data$COMISS06==0] <- "Não"
+    data$COMISS06 <- factor(data$COMISS06)
+  }
+  
+  # COMISS07
+  if("COMISS07" %in% variables_names){
+    data$COMISS07 <- as.numeric(levels(data$COMISS07))[data$COMISS07]
+    data$COMISS07[data$COMISS07==1] <- "Sim"
+    data$COMISS07[data$COMISS07==0] <- "Não"
+    data$COMISS07 <- factor(data$COMISS07)
+  }
+  
+  # COMISS08
+  if("COMISS08" %in% variables_names){
+    data$COMISS08 <- as.numeric(levels(data$COMISS08))[data$COMISS08]
+    data$COMISS08[data$COMISS08==1] <- "Sim"
+    data$COMISS08[data$COMISS08==0] <- "Não"
+    data$COMISS08 <- factor(data$COMISS08)
+  }
+  
+  # COMISS09
+  if("COMISS09" %in% variables_names){
+    data$COMISS09 <- as.numeric(levels(data$COMISS09))[data$COMISS09]
+    data$COMISS09[data$COMISS09==1] <- "Sim"
+    data$COMISS09[data$COMISS09==0] <- "Não"
+    data$COMISS09 <- factor(data$COMISS09)
+  }
+  
+  # COMISS10
+  if("COMISS10" %in% variables_names){
+    data$COMISS10 <- as.numeric(levels(data$COMISS10))[data$COMISS10]
+    data$COMISS10[data$COMISS10==1] <- "Sim"
+    data$COMISS10[data$COMISS10==0] <- "Não"
+    data$COMISS10 <- factor(data$COMISS10)
+  }
+  
+  # COMISS11
+  if("COMISS11" %in% variables_names){
+    data$COMISS11 <- as.numeric(levels(data$COMISS11))[data$COMISS11]
+    data$COMISS11[data$COMISS11==1] <- "Sim"
+    data$COMISS11[data$COMISS11==0] <- "Não"
+    data$COMISS11 <- factor(data$COMISS11)
+  }
+  
+  # COMISS12
+  if("COMISS12" %in% variables_names){
+    data$COMISS12 <- as.numeric(levels(data$COMISS12))[data$COMISS12]
+    data$COMISS12[data$COMISS12==1] <- "Sim"
+    data$COMISS12[data$COMISS12==0] <- "Não"
+    data$COMISS12 <- factor(data$COMISS12)
+  }
+  
+  # COMISSAO
+  if("COMISSAO" %in% variables_names){
+    data$COMISSAO <- as.numeric(levels(data$COMISSAO))[data$COMISSAO]
+    data$COMISSAO[data$COMISSAO==1] <- "Sim"
+    data$COMISSAO[data$COMISSAO==0] <- "Não"
+    data$COMISSAO <- factor(data$COMISSAO)
+  }
+  
+  # AP01CV01
+  if("AP01CV01" %in% variables_names){
+    data$AP01CV01 <- as.numeric(levels(data$AP01CV01))[data$AP01CV01]
+    data$AP01CV01[data$AP01CV01==1] <- "Sim"
+    data$AP01CV01[data$AP01CV01==0] <- "Não"
+    data$AP01CV01 <- factor(data$AP01CV01)
+  }
+  
+  # AP01CV02
+  if("AP01CV02" %in% variables_names){
+    data$AP01CV02 <- as.numeric(levels(data$AP01CV02))[data$AP01CV02]
+    data$AP01CV02[data$AP01CV02==1] <- "Sim"
+    data$AP01CV02[data$AP01CV02==0] <- "Não"
+    data$AP01CV02 <- factor(data$AP01CV02)
+  }
+  
+  # AP01CV05
+  if("AP01CV05" %in% variables_names){
+    data$AP01CV05 <- as.numeric(levels(data$AP01CV05))[data$AP01CV05]
+    data$AP01CV05[data$AP01CV05==1] <- "Sim"
+    data$AP01CV05[data$AP01CV05==0] <- "Não"
+    data$AP01CV05 <- factor(data$AP01CV05)
+  }
+  
+  # AP01CV06
+  if("AP01CV06" %in% variables_names){
+    data$AP01CV06 <- as.numeric(levels(data$AP01CV06))[data$AP01CV06]
+    data$AP01CV06[data$AP01CV06==1] <- "Sim"
+    data$AP01CV06[data$AP01CV06==0] <- "Não"
+    data$AP01CV06 <- factor(data$AP01CV06)
+  }
+  
+  # AP01CV03
+  if("AP01CV03" %in% variables_names){
+    data$AP01CV03 <- as.numeric(levels(data$AP01CV03))[data$AP01CV03]
+    data$AP01CV03[data$AP01CV03==1] <- "Sim"
+    data$AP01CV03[data$AP01CV03==0] <- "Não"
+    data$AP01CV03 <- factor(data$AP01CV03)
+  }
+  
+  # AP01CV04
+  if("AP01CV04" %in% variables_names){
+    data$AP01CV04 <- as.numeric(levels(data$AP01CV04))[data$AP01CV04]
+    data$AP01CV04[data$AP01CV04==1] <- "Sim"
+    data$AP01CV04[data$AP01CV04==0] <- "Não"
+    data$AP01CV04 <- factor(data$AP01CV04)
+  }
+  
+  # AP02CV01
+  if("AP02CV01" %in% variables_names){
+    data$AP02CV01 <- as.numeric(levels(data$AP02CV01))[data$AP02CV01]
+    data$AP02CV01[data$AP02CV01==1] <- "Sim"
+    data$AP02CV01[data$AP02CV01==0] <- "Não"
+    data$AP02CV01 <- factor(data$AP02CV01)
+  }
+  
+  # AP02CV02
+  if("AP02CV02" %in% variables_names){
+    data$AP02CV02 <- as.numeric(levels(data$AP02CV02))[data$AP02CV02]
+    data$AP02CV02[data$AP02CV02==1] <- "Sim"
+    data$AP02CV02[data$AP02CV02==0] <- "Não"
+    data$AP02CV02 <- factor(data$AP02CV02)
+  }
+  
+  # AP02CV05
+  if("AP02CV05" %in% variables_names){
+    data$AP02CV05 <- as.numeric(levels(data$AP02CV05))[data$AP02CV05]
+    data$AP02CV05[data$AP02CV05==1] <- "Sim"
+    data$AP02CV05[data$AP02CV05==0] <- "Não"
+    data$AP02CV05 <- factor(data$AP02CV05)
+  }
+  
+  # AP02CV06
+  if("AP02CV06" %in% variables_names){
+    data$AP02CV06 <- as.numeric(levels(data$AP02CV06))[data$AP02CV06]
+    data$AP02CV06[data$AP02CV06==1] <- "Sim"
+    data$AP02CV06[data$AP02CV06==0] <- "Não"
+    data$AP02CV06 <- factor(data$AP02CV06)
+  }
+  
+  # AP02CV03
+  if("AP02CV03" %in% variables_names){
+    data$AP02CV03 <- as.numeric(levels(data$AP02CV03))[data$AP02CV03]
+    data$AP02CV03[data$AP02CV03==1] <- "Sim"
+    data$AP02CV03[data$AP02CV03==0] <- "Não"
+    data$AP02CV03 <- factor(data$AP02CV03)
+  }
+  
+  # AP02CV04
+  if("AP02CV04" %in% variables_names){
+    data$AP02CV04 <- as.numeric(levels(data$AP02CV04))[data$AP02CV04]
+    data$AP02CV04[data$AP02CV04==1] <- "Sim"
+    data$AP02CV04[data$AP02CV04==0] <- "Não"
+    data$AP02CV04 <- factor(data$AP02CV04)
+  }
+  
+  # AP03CV01
+  if("AP03CV01" %in% variables_names){
+    data$AP03CV01 <- as.numeric(levels(data$AP03CV01))[data$AP03CV01]
+    data$AP03CV01[data$AP03CV01==1] <- "Sim"
+    data$AP03CV01[data$AP03CV01==0] <- "Não"
+    data$AP03CV01 <- factor(data$AP03CV01)
+  }
+  
+  # AP03CV02
+  if("AP03CV02" %in% variables_names){
+    data$AP03CV02 <- as.numeric(levels(data$AP03CV02))[data$AP03CV02]
+    data$AP03CV02[data$AP03CV02==1] <- "Sim"
+    data$AP03CV02[data$AP03CV02==0] <- "Não"
+    data$AP03CV02 <- factor(data$AP03CV02)
+  }
+  
+  # AP03CV05
+  if("AP03CV05" %in% variables_names){
+    data$AP03CV05 <- as.numeric(levels(data$AP03CV05))[data$AP03CV05]
+    data$AP03CV05[data$AP03CV05==1] <- "Sim"
+    data$AP03CV05[data$AP03CV05==0] <- "Não"
+    data$AP03CV05 <- factor(data$AP03CV05)
+  }
+  
+  # AP03CV06
+  if("AP03CV06" %in% variables_names){
+    data$AP03CV06 <- as.numeric(levels(data$AP03CV06))[data$AP03CV06]
+    data$AP03CV06[data$AP03CV06==1] <- "Sim"
+    data$AP03CV06[data$AP03CV06==0] <- "Não"
+    data$AP03CV06 <- factor(data$AP03CV06)
+  }
+  
+  # AP03CV03
+  if("AP03CV03" %in% variables_names){
+    data$AP03CV03 <- as.numeric(levels(data$AP03CV03))[data$AP03CV03]
+    data$AP03CV03[data$AP03CV03==1] <- "Sim"
+    data$AP03CV03[data$AP03CV03==0] <- "Não"
+    data$AP03CV03 <- factor(data$AP03CV03)
+  }
+  
+  # AP03CV04
+  if("AP03CV04" %in% variables_names){
+    data$AP03CV04 <- as.numeric(levels(data$AP03CV04))[data$AP03CV04]
+    data$AP03CV04[data$AP03CV04==1] <- "Sim"
+    data$AP03CV04[data$AP03CV04==0] <- "Não"
+    data$AP03CV04 <- factor(data$AP03CV04)
+  }
+  
+  # AP04CV01
+  if("AP04CV01" %in% variables_names){
+    data$AP04CV01 <- as.numeric(levels(data$AP04CV01))[data$AP04CV01]
+    data$AP04CV01[data$AP04CV01==1] <- "Sim"
+    data$AP04CV01[data$AP04CV01==0] <- "Não"
+    data$AP04CV01 <- factor(data$AP04CV01)
+  }
+  
+  # AP04CV02
+  if("AP04CV02" %in% variables_names){
+    data$AP04CV02 <- as.numeric(levels(data$AP04CV02))[data$AP04CV02]
+    data$AP04CV02[data$AP04CV02==1] <- "Sim"
+    data$AP04CV02[data$AP04CV02==0] <- "Não"
+    data$AP04CV02 <- factor(data$AP04CV02)
+  }
+  
+  
+  
   
   
   
