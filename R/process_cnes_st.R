@@ -1,4 +1,4 @@
-process_cnes_st <- function(data, nomes = TRUE) {
+process_cnes_st <- function(data, nomes = TRUE, municipality_data = TRUE) {
   # Variables names
   variables_names <- names(data)
   
@@ -13,8 +13,12 @@ process_cnes_st <- function(data, nomes = TRUE) {
   }
   
   # CODUFMUN
-  if("CODUFMUN" %in% variables_names){
-    data$CODUFMUN <- as.integer(data$CODUFMUN)
+  if ("CODUFMUN" %in% variables_names & municipality_data == TRUE) {
+    data$CODUFMUN <- as.integer(as.character(data$CODUFMUN))
+    colnames(tabMun)[1] <- "CODUFMUN"
+    data <- dplyr::left_join(data, tabMun, by = "CODUFMUN")
+  } else {
+    data$CODUFMUN <- as.integer(as.character(data$CODUFMUN))
   }
   
   # COD_CEP
@@ -27,7 +31,6 @@ process_cnes_st <- function(data, nomes = TRUE) {
     data$CPF_CNPJ <- as.integer(data$CPF_CNPJ)
   }
 
-  
   # PF_PJ
   if("PF_PJ" %in% variables_names){
     data$PF_PJ <- as.numeric(levels(data$PF_PJ))[data$PF_PJ]
@@ -66,7 +69,7 @@ process_cnes_st <- function(data, nomes = TRUE) {
   
   # REGSAUDE
   if("REGSAUDE" %in% variables_names){
-    data$REGSAUDE <- as.integer(data$REGSAUDE)
+    data$REGSAUDE <- as.character(data$REGSAUDE)
   }
   
   # MICR_REG
