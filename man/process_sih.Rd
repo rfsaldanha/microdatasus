@@ -4,8 +4,7 @@
 \alias{process_sih}
 \title{Process SIH variables from DataSUS}
 \usage{
-process_sih(data, information_system = "SIH-RD",
-  municipality_data = TRUE)
+process_sih(data, information_system = "SIH-RD", municipality_data = TRUE)
 }
 \arguments{
 \item{data}{\code{data.frame} created by \code{fetch_datasus()}.}

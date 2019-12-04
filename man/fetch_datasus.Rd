@@ -4,8 +4,15 @@
 \alias{fetch_datasus}
 \title{Fetch and read microdata files from DataSUS}
 \usage{
-fetch_datasus(year_start, month_start, year_end, month_end, uf = "all",
-  information_system, vars = NULL)
+fetch_datasus(
+  year_start,
+  month_start,
+  year_end,
+  month_end,
+  uf = "all",
+  information_system,
+  vars = NULL
+)
 }
 \arguments{
 \item{year_start, year_end}{numeric. Start and end year of files in the format yyyy.}
