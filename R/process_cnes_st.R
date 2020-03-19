@@ -22,7 +22,7 @@ process_cnes_st <- function(data, nomes = TRUE, municipality_data = TRUE) {
   
   # CNES
   if("CNES" %in% variables_names){
-    data$CNES <- as.character(levels(data$CNES))[data$CNES]
+    data$CNES <- as.integer(as.character(levels(data$CNES))[data$CNES])
   }
   
   # Nome fantasia e razão social
@@ -1020,11 +1020,292 @@ process_cnes_st <- function(data, nomes = TRUE, municipality_data = TRUE) {
     data$AP04CV02 <- factor(data$AP04CV02)
   }
   
+  # AP04CV05
+  if("AP04CV05" %in% variables_names){
+    data$AP04CV05 <- as.numeric(levels(data$AP04CV05))[data$AP04CV05]
+    data$AP04CV05[data$AP04CV05==1] <- "Sim"
+    data$AP04CV05[data$AP04CV05==0] <- "Não"
+    data$AP04CV05 <- factor(data$AP04CV05)
+  }
   
+  # AP04CV06
+  if("AP04CV06" %in% variables_names){
+    data$AP04CV06 <- as.numeric(levels(data$AP04CV06))[data$AP04CV06]
+    data$AP04CV06[data$AP04CV06==1] <- "Sim"
+    data$AP04CV06[data$AP04CV06==0] <- "Não"
+    data$AP04CV06 <- factor(data$AP04CV06)
+  }
   
+  # AP04CV03
+  if("AP04CV03" %in% variables_names){
+    data$AP04CV03 <- as.numeric(levels(data$AP04CV03))[data$AP04CV03]
+    data$AP04CV03[data$AP04CV03==1] <- "Sim"
+    data$AP04CV03[data$AP04CV03==0] <- "Não"
+    data$AP04CV03 <- factor(data$AP04CV03)
+  }
   
+  # AP04CV04
+  if("AP04CV04" %in% variables_names){
+    data$AP04CV04 <- as.numeric(levels(data$AP04CV04))[data$AP04CV04]
+    data$AP04CV04[data$AP04CV04==1] <- "Sim"
+    data$AP04CV04[data$AP04CV04==0] <- "Não"
+    data$AP04CV04 <- factor(data$AP04CV04)
+  }
   
+  # AP05CV01
+  if("AP05CV01" %in% variables_names){
+    data$AP05CV01 <- as.numeric(levels(data$AP05CV01))[data$AP05CV01]
+    data$AP05CV01[data$AP05CV01==1] <- "Sim"
+    data$AP05CV01[data$AP05CV01==0] <- "Não"
+    data$AP05CV01 <- factor(data$AP05CV01)
+  }
   
+  # AP05CV02
+  if("AP05CV02" %in% variables_names){
+    data$AP05CV02 <- as.numeric(levels(data$AP05CV02))[data$AP05CV02]
+    data$AP05CV02[data$AP05CV02==1] <- "Sim"
+    data$AP05CV02[data$AP05CV02==0] <- "Não"
+    data$AP05CV02 <- factor(data$AP05CV02)
+  }
+  
+  # AP05CV05  
+  if("AP05CV05" %in% variables_names){
+    data$AP05CV05 <- as.numeric(levels(data$AP05CV05))[data$AP05CV05]
+    data$AP05CV05[data$AP05CV05==1] <- "Sim"
+    data$AP05CV05[data$AP05CV05==0] <- "Não"
+    data$AP05CV05 <- factor(data$AP05CV05)
+  }
+  
+  # AP05CV06  
+  if("AP05CV06" %in% variables_names){
+    data$AP05CV06 <- as.numeric(levels(data$AP05CV06))[data$AP05CV06]
+    data$AP05CV06[data$AP05CV06==1] <- "Sim"
+    data$AP05CV06[data$AP05CV06==0] <- "Não"
+    data$AP05CV06 <- factor(data$AP05CV06)
+  }
+  
+  # AP05CV03  
+  if("AP05CV03" %in% variables_names){
+    data$AP05CV03 <- as.numeric(levels(data$AP05CV03))[data$AP05CV03]
+    data$AP05CV03[data$AP05CV03==1] <- "Sim"
+    data$AP05CV03[data$AP05CV03==0] <- "Não"
+    data$AP05CV03 <- factor(data$AP05CV03)
+  }
+  
+  # AP05CV04  
+  if("AP05CV04" %in% variables_names){
+    data$AP05CV04 <- as.numeric(levels(data$AP05CV04))[data$AP05CV04]
+    data$AP05CV04[data$AP05CV04==1] <- "Sim"
+    data$AP05CV04[data$AP05CV04==0] <- "Não"
+    data$AP05CV04 <- factor(data$AP05CV04)
+  }
+  
+  # AP06CV01  
+  if("AP06CV01" %in% variables_names){
+    data$AP06CV01 <- as.numeric(levels(data$AP06CV01))[data$AP06CV01]
+    data$AP06CV01[data$AP06CV01==1] <- "Sim"
+    data$AP06CV01[data$AP06CV01==0] <- "Não"
+    data$AP06CV01 <- factor(data$AP06CV01)
+  }
+  
+  # AP06CV02  
+  if("AP06CV02" %in% variables_names){
+    data$AP06CV02 <- as.numeric(levels(data$AP06CV02))[data$AP06CV02]
+    data$AP06CV02[data$AP06CV02==1] <- "Sim"
+    data$AP06CV02[data$AP06CV02==0] <- "Não"
+    data$AP06CV02 <- factor(data$AP06CV02)
+  }
+  
+  # AP06CV05  
+  if("AP06CV05" %in% variables_names){
+    data$AP06CV05 <- as.numeric(levels(data$AP06CV05))[data$AP06CV05]
+    data$AP06CV05[data$AP06CV05==1] <- "Sim"
+    data$AP06CV05[data$AP06CV05==0] <- "Não"
+    data$AP06CV05 <- factor(data$AP06CV05)
+  }
+  
+  # AP06CV06  
+  if("AP06CV06" %in% variables_names){
+    data$AP06CV06 <- as.numeric(levels(data$AP06CV06))[data$AP06CV06]
+    data$AP06CV06[data$AP06CV06==1] <- "Sim"
+    data$AP06CV06[data$AP06CV06==0] <- "Não"
+    data$AP06CV06 <- factor(data$AP06CV06)
+  }
+  
+  # AP06CV03  
+  if("AP06CV03" %in% variables_names){
+    data$AP06CV03 <- as.numeric(levels(data$AP06CV03))[data$AP06CV03]
+    data$AP06CV03[data$AP06CV03==1] <- "Sim"
+    data$AP06CV03[data$AP06CV03==0] <- "Não"
+    data$AP06CV03 <- factor(data$AP06CV03)
+  }
+  
+  # AP06CV04  
+  if("AP06CV04" %in% variables_names){
+    data$AP06CV04 <- as.numeric(levels(data$AP06CV04))[data$AP06CV04]
+    data$AP06CV04[data$AP06CV04==1] <- "Sim"
+    data$AP06CV04[data$AP06CV04==0] <- "Não"
+    data$AP06CV04 <- factor(data$AP06CV04)
+  }
+  
+  # AP07CV01  
+  if("AP07CV01" %in% variables_names){
+    data$AP07CV01 <- as.numeric(levels(data$AP07CV01))[data$AP07CV01]
+    data$AP07CV01[data$AP07CV01==1] <- "Sim"
+    data$AP07CV01[data$AP07CV01==0] <- "Não"
+    data$AP07CV01 <- factor(data$AP07CV01)
+  }
+  
+  # AP07CV02  
+  if("AP07CV02" %in% variables_names){
+    data$AP07CV02 <- as.numeric(levels(data$AP07CV02))[data$AP07CV02]
+    data$AP07CV02[data$AP07CV02==1] <- "Sim"
+    data$AP07CV02[data$AP07CV02==0] <- "Não"
+    data$AP07CV02 <- factor(data$AP07CV02)
+  }
+  
+  # AP07CV05  
+  if("AP07CV05" %in% variables_names){
+    data$AP07CV05 <- as.numeric(levels(data$AP07CV05))[data$AP07CV05]
+    data$AP07CV05[data$AP07CV05==1] <- "Sim"
+    data$AP07CV05[data$AP07CV05==0] <- "Não"
+    data$AP07CV05 <- factor(data$AP07CV05)
+  }
+  
+  # AP07CV06  
+  if("AP07CV06" %in% variables_names){
+    data$AP07CV06 <- as.numeric(levels(data$AP07CV06))[data$AP07CV06]
+    data$AP07CV06[data$AP07CV06==1] <- "Sim"
+    data$AP07CV06[data$AP07CV06==0] <- "Não"
+    data$AP07CV06 <- factor(data$AP07CV06)
+  }
+  
+  # AP07CV03  
+  if("AP07CV03" %in% variables_names){
+    data$AP07CV03 <- as.numeric(levels(data$AP07CV03))[data$AP07CV03]
+    data$AP07CV03[data$AP07CV03==1] <- "Sim"
+    data$AP07CV03[data$AP07CV03==0] <- "Não"
+    data$AP07CV03 <- factor(data$AP07CV03)
+  }
+  
+  # AP07CV04  
+  if("AP07CV04" %in% variables_names){
+    data$AP07CV04 <- as.numeric(levels(data$AP07CV04))[data$AP07CV04]
+    data$AP07CV04[data$AP07CV04==1] <- "Sim"
+    data$AP07CV04[data$AP07CV04==0] <- "Não"
+    data$AP07CV04 <- factor(data$AP07CV04)
+  }
+  
+  # ATEND_PR  
+  if("ATEND_PR" %in% variables_names){
+    data$ATEND_PR <- as.numeric(levels(data$ATEND_PR))[data$ATEND_PR]
+    data$ATEND_PR[data$ATEND_PR==1] <- "Sim"
+    data$ATEND_PR[data$ATEND_PR==0] <- "Não"
+    data$ATEND_PR <- factor(data$ATEND_PR)
+  }
+  
+  # ATEND_PR  
+  if("ATEND_PR" %in% variables_names){
+    data$ATEND_PR <- as.numeric(levels(data$ATEND_PR))[data$ATEND_PR]
+    data$ATEND_PR[data$ATEND_PR==1] <- "Sim"
+    data$ATEND_PR[data$ATEND_PR==0] <- "Não"
+    data$ATEND_PR <- factor(data$ATEND_PR)
+  }
+  
+  # NAT_JUR
+  if("NAT_JUR" %in% variables_names){
+    data$NAT_JUR <- as.numeric(levels(data$NAT_JUR))[data$NAT_JUR]
+    data$NAT_JUR[data$NAT_JUR==0] <- NA
+    data$NAT_JUR[data$NAT_JUR==1000] <- "Administração Pública"
+    data$NAT_JUR[data$NAT_JUR==1015] <- "Órgão Público do Poder Executivo Federal"
+    data$NAT_JUR[data$NAT_JUR==1023] <- "Órgão Público do Poder Executivo Estadual ou do Distrito Federal"
+    data$NAT_JUR[data$NAT_JUR==1031] <- "Órgão Público do Poder Executivo Municipal"
+    data$NAT_JUR[data$NAT_JUR==1040] <- "Órgão Público do Poder Legislativo Federal"
+    data$NAT_JUR[data$NAT_JUR==1058] <- "Órgão Público do Poder Legislativo Estadual ou do Distrito Federal"
+    data$NAT_JUR[data$NAT_JUR==1066] <- "Órgão Público do Poder Legislativo Municipal"
+    data$NAT_JUR[data$NAT_JUR==1074] <- "Órgão Público do Poder Judiciário Federal"
+    data$NAT_JUR[data$NAT_JUR==1082] <- "Órgão Público do Poder Judiciário Estadual"
+    data$NAT_JUR[data$NAT_JUR==1104] <- "Autarquia Federal"
+    data$NAT_JUR[data$NAT_JUR==1112] <- "Autarquia Estadual ou do Distrito Federal"
+    data$NAT_JUR[data$NAT_JUR==1120] <- "Autarquia Municipal"
+    data$NAT_JUR[data$NAT_JUR==1139] <- "Fundação Pública de Direito Público Federal"
+    data$NAT_JUR[data$NAT_JUR==1147] <- "Fundação Pública de Direito Público Estadual ou do Distrito Federal"
+    data$NAT_JUR[data$NAT_JUR==1155] <- "Fundação Pública de Direito Público Municipal"
+    data$NAT_JUR[data$NAT_JUR==1163] <- "Órgão Público Autônomo Federal"
+    data$NAT_JUR[data$NAT_JUR==1171] <- "Órgão Público Autônomo Estadual ou do Distrito Federal"
+    data$NAT_JUR[data$NAT_JUR==1180] <- "Órgão Público Autônomo Municipal"
+    data$NAT_JUR[data$NAT_JUR==1198] <- "Comissão Polinacional"
+    data$NAT_JUR[data$NAT_JUR==1201] <- "Fundo Público"
+    data$NAT_JUR[data$NAT_JUR==1210] <- "Consórcio Público de Direito Público (Associação Pública)"
+    data$NAT_JUR[data$NAT_JUR==1228] <- "Consórcio Público de Direito Privado"
+    data$NAT_JUR[data$NAT_JUR==1236] <- "Estado ou Distrito Federal"
+    data$NAT_JUR[data$NAT_JUR==1244] <- "Município"
+    data$NAT_JUR[data$NAT_JUR==1252] <- "Fundação Pública de Direito Privado Federal"
+    data$NAT_JUR[data$NAT_JUR==1260] <- "Fundação Pública de Direito Privado Estadual ou do Distrito Federal"
+    data$NAT_JUR[data$NAT_JUR==1279] <- "Fundação Pública de Direito Privado Municipal"
+    data$NAT_JUR[data$NAT_JUR==2000] <- "Entidades Empresariais"
+    data$NAT_JUR[data$NAT_JUR==2001] <- "Empresa Pública"
+    data$NAT_JUR[data$NAT_JUR==2038] <- "Sociedade de Economia Mista"
+    data$NAT_JUR[data$NAT_JUR==2046] <- "Sociedade Anônima Aberta"
+    data$NAT_JUR[data$NAT_JUR==2054] <- "Sociedade Anônima Fechada"
+    data$NAT_JUR[data$NAT_JUR==2062] <- "Sociedade Empresária Limitada"
+    data$NAT_JUR[data$NAT_JUR==2070] <- "Sociedade Empresária em Nome Coletivo"
+    data$NAT_JUR[data$NAT_JUR==2089] <- "Sociedade Empresária em Comandita Simples"
+    data$NAT_JUR[data$NAT_JUR==2097] <- "Sociedade Empresária em Comandita por Ações"
+    data$NAT_JUR[data$NAT_JUR==2127] <- "Sociedade em Conta de Participação"
+    data$NAT_JUR[data$NAT_JUR==2135] <- "Empresário (Individual)"
+    data$NAT_JUR[data$NAT_JUR==2143] <- "Cooperativa"
+    data$NAT_JUR[data$NAT_JUR==2151] <- "Consórcio de Sociedades"
+    data$NAT_JUR[data$NAT_JUR==2160] <- "Grupo de Sociedades"
+    data$NAT_JUR[data$NAT_JUR==2178] <- "Estabelecimento, no Brasil, de Sociedade Estrangeira"
+    data$NAT_JUR[data$NAT_JUR==2194] <- "Estabelecimento, no Brasil, de Empresa Binacional Argentino-Brasileira"
+    data$NAT_JUR[data$NAT_JUR==2216] <- "Empresa Domiciliada no Exterior"
+    data$NAT_JUR[data$NAT_JUR==2224] <- "Clube/Fundo de Investimento"
+    data$NAT_JUR[data$NAT_JUR==2232] <- "Sociedade Simples Pura"
+    data$NAT_JUR[data$NAT_JUR==2240] <- "Sociedade Simples Limitada"
+    data$NAT_JUR[data$NAT_JUR==2259] <- "Sociedade Simples em Nome Coletivo"
+    data$NAT_JUR[data$NAT_JUR==2267] <- "Sociedade Simples em Comandita Simples"
+    data$NAT_JUR[data$NAT_JUR==2275] <- "Empresa Binacional"
+    data$NAT_JUR[data$NAT_JUR==2283] <- "Consórcio de Empregadores"
+    data$NAT_JUR[data$NAT_JUR==2291] <- "Consórcio Simples"
+    data$NAT_JUR[data$NAT_JUR==2305] <- "Empresa Individual de Responsabilidade Limitada (de Natureza Empresária)"
+    data$NAT_JUR[data$NAT_JUR==2313] <- "Empresa Individual de Responsabilidade Limitada (de Natureza Simples)"
+    data$NAT_JUR[data$NAT_JUR==2321] <- "Sociedade Unipessoal de Advogados"
+    data$NAT_JUR[data$NAT_JUR==2330] <- "Cooperativas de Consumo"
+    data$NAT_JUR[data$NAT_JUR==3000] <- "Entidades sem Fins Lucrativos"
+    data$NAT_JUR[data$NAT_JUR==3034] <- "Serviço Notarial e Registral (Cartório)"
+    data$NAT_JUR[data$NAT_JUR==3069] <- "Fundação Privada"
+    data$NAT_JUR[data$NAT_JUR==3077] <- "Serviço Social Autônomo"
+    data$NAT_JUR[data$NAT_JUR==3085] <- "Condomínio Edilício"
+    data$NAT_JUR[data$NAT_JUR==3107] <- "Comissão de Conciliação Prévia"
+    data$NAT_JUR[data$NAT_JUR==3115] <- "Entidade de Mediação e Arbitragem"
+    data$NAT_JUR[data$NAT_JUR==3131] <- "Entidade Sindical"
+    data$NAT_JUR[data$NAT_JUR==3204] <- "Estabelecimento, no Brasil, de Fundação ou Associação Estrangeiras"
+    data$NAT_JUR[data$NAT_JUR==3212] <- "Fundação ou Associação Domiciliada no Exterior"
+    data$NAT_JUR[data$NAT_JUR==3220] <- "Organização Religiosa"
+    data$NAT_JUR[data$NAT_JUR==3239] <- "Comunidade Indígena"
+    data$NAT_JUR[data$NAT_JUR==3247] <- "Fundo Privado"
+    data$NAT_JUR[data$NAT_JUR==3255] <- "Órgão de Direção Nacional de Partido Político"
+    data$NAT_JUR[data$NAT_JUR==3263] <- "Órgão de Direção Regional de Partido Político"
+    data$NAT_JUR[data$NAT_JUR==3271] <- "Órgão de Direção Local de Partido Político"
+    data$NAT_JUR[data$NAT_JUR==3280] <- "Comitê Financeiro de Partido Político"
+    data$NAT_JUR[data$NAT_JUR==3298] <- "Frente Plebiscitária ou Referendária"
+    data$NAT_JUR[data$NAT_JUR==3306] <- "Organização Social (OS)"
+    data$NAT_JUR[data$NAT_JUR==3310] <- "Demais Condomínios"
+    data$NAT_JUR[data$NAT_JUR==3999] <- "Associação Privada"
+    data$NAT_JUR[data$NAT_JUR==4000] <- "Pessoas Físicas"
+    data$NAT_JUR[data$NAT_JUR==4014] <- "Empresa Individual Imobiliária"
+    data$NAT_JUR[data$NAT_JUR==4022] <- "Segurado Especial"
+    data$NAT_JUR[data$NAT_JUR==4081] <- "Contribuinte individual"
+    data$NAT_JUR[data$NAT_JUR==4090] <- "Candidato a Cargo Político Eletivo"
+    data$NAT_JUR[data$NAT_JUR==4111] <- "Leiloeiro"
+    data$NAT_JUR[data$NAT_JUR==4124] <- "Produtor Rural (Pessoa Física)"
+    data$NAT_JUR[data$NAT_JUR==5000] <- "Organizações Internacionais e Outras Instituições Extraterritoriais"
+    data$NAT_JUR[data$NAT_JUR==5010] <- "Organização Internacional"
+    data$NAT_JUR[data$NAT_JUR==5029] <- "Representação Diplomática Estrangeira"
+    data$NAT_JUR[data$NAT_JUR==5037] <- "Outras Instituições Extraterritoriais"
+    data$NAT_JUR <- factor(data$NAT_JUR)
+  }
   
   # Purge levels
   data <- droplevels(data)
