@@ -232,13 +232,13 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   
   # APGAR1
   if("APGAR1" %in% variables_names){
-    data$APGAR1 <- as.numeric(data$APGAR1)
+    data$APGAR1 <- as.numeric(levels(data$APGAR1))[data$APGAR1]
     data$APGAR1[data$APGAR1==99] <- NA
   }
   
   # APGAR5
   if("APGAR5" %in% variables_names){
-    data$APGAR5 <- as.numeric(data$APGAR5)
+    data$APGAR5 <- as.numeric(levels(data$APGAR5))[data$APGAR5]
     data$APGAR5[data$APGAR5==99] <- NA
   }
   
