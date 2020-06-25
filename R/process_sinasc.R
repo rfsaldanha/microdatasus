@@ -19,9 +19,9 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   variables_names <- names(data)
   
   # NUMERODN
-  if("NUMERODN" %in% variables_names){
-    data$NUMERODN <- as.character(levels(data$NUMERODN))[data$NUMERODN]
-  }
+  # if("NUMERODN" %in% variables_names){
+  #   data$NUMERODN <- as.character(levels(data$NUMERODN))[data$NUMERODN]
+  # }
   
   # CODINST
   if("CODINST" %in% variables_names){

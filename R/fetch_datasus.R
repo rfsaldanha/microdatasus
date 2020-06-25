@@ -78,13 +78,16 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
   } else if (all(uf == "all")) {
     file_extension <- as.vector(sapply(ufs, paste0, dates,".dbc"))
   } else if(information_system %in% sisSIA & "SP" %in% uf){
-    uf_sia <- uf[!uf=="SP"]
+    uf_sia <- uf
     file_extension <- as.vector(sapply(uf_sia, paste0, dates,".dbc"))
     
     file_extension_sp_a <- as.vector(sapply("SP", paste0, dates,"a.dbc"))
     file_extension_sp_b <- as.vector(sapply("SP", paste0, dates,"b.dbc"))
+    file_extension_sp_c <- as.vector(sapply("SP", paste0, dates,"c.dbc"))
+    file_extension_sp_d <- as.vector(sapply("SP", paste0, dates,"d.dbc"))
+    file_extension_sp_e <- as.vector(sapply("SP", paste0, dates,"e.dbc"))
     
-    file_extension <- c(file_extension, file_extension_sp_a, file_extension_sp_b)
+    file_extension <- c(file_extension, file_extension_sp_a, file_extension_sp_b, file_extension_sp_c, file_extension_sp_d, file_extension_sp_e)
   } else {
     file_extension <- as.vector(sapply(uf, paste0, dates,".dbc"))
   }

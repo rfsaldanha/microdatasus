@@ -368,9 +368,9 @@ process_sim <- function(data, municipality_data = TRUE) {
   }
   
   # NUMERODN
-  if ("NUMERODN" %in% variables_names) {
-    data$NUMERODN <- as.character(data$NUMERODN)
-  }
+  # if ("NUMERODN" %in% variables_names) {
+  #   data$NUMERODN <- as.character(levels(data$NUMERODN))[data$NUMERODN]
+  # }
   
   # TPMORTEOCO
   if ("TPMORTEOCO" %in% variables_names) {
