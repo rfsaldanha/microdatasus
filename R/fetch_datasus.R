@@ -206,9 +206,11 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
     temp <- tempfile()
 
     # Try to dowload and read files
+    partial <- data.frame()
     tryCatch({
       download.file(file, temp, mode = "wb")
       partial <- read.dbc::read.dbc(temp)
+      file.remove(temp)
     },
     error=function(cond) {
       message(paste("Something went wrong with this URL:", file))
@@ -216,11 +218,13 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
     })
 
     # Merge files
-    if(!all(vars %in% names(partial))) stop("One or more variables names are unknow. Typo?")
-    if(is.null(vars)){
-      data <- plyr::rbind.fill(data, partial)
-    } else {
-      data <- plyr::rbind.fill(data, subset(partial, select = vars))
+    if(nrow(partial) > 0){
+      if(!all(vars %in% names(partial))) stop("One or more variables names are unknow. Typo?")
+      if(is.null(vars)){
+        data <- plyr::rbind.fill(data, partial)
+      } else {
+        data <- plyr::rbind.fill(data, subset(partial, select = vars))
+      }
     }
 
   }
