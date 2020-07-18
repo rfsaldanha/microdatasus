@@ -21,7 +21,8 @@ process_cnes_pf <- function(data, municipality_data = TRUE) {
   
   # CNES
   if("CNES" %in% variables_names){
-    data$CNES <- as.integer(as.character(levels(data$CNES))[data$CNES])
+    #data$CNES <- as.integer(as.character(levels(data$CNES))[data$CNES])
+    data$CNES <- as.character(data$CNES)
   }
   
   # UFMUNRES

@@ -22,8 +22,8 @@ process_cnes_st <- function(data, nomes = TRUE, municipality_data = TRUE) {
   
   # CNES
   if("CNES" %in% variables_names){
-    data$CNES <- as.integer(as.character(levels(data$CNES))[data$CNES])
-    #data$CNES <- as.character(data$CNES)
+    #data$CNES <- as.integer(as.character(levels(data$CNES))[data$CNES])
+    data$CNES <- as.character(data$CNES)
   }
   
   # Nome fantasia e razão social
