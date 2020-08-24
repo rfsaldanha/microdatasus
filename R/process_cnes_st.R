@@ -28,7 +28,10 @@ process_cnes_st <- function(data, nomes = TRUE, municipality_data = TRUE) {
   
   # Nome fantasia e razão social
   if(nomes == TRUE){
-    data <- dplyr::left_join(data, cadger, by = c("CNES" = "CNES"))
+    #data$CNES_integer <- as.integer(as.character(levels(data$CNES))[data$CNES])
+    data$CNES_integer <- as.integer(data$CNES)
+    data <- dplyr::left_join(data, cadger, by = c("CNES_integer" = "CNES"))
+    CNES_integer <- NULL
   }
   
   # CODUFMUN
