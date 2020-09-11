@@ -4,7 +4,7 @@ Title: Download and preprocess DataSUS files
 Description: Downloads microdata files (DBC format) from DataSUS and imports the files for use.
 Version: 0.3.0
 Depends:
-    R (>= 3.3.0)
+    R (>= 3.5.0)
 Imports:
     lubridate,
     plyr,
