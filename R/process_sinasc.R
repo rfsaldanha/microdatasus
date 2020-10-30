@@ -71,7 +71,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   
   # IDADEMAE
   if("IDADEMAE" %in% variables_names){
-    data$IDADEMAE <- as.numeric(data$IDADEMAE)
+    data$IDADEMAE <- as.numeric(levels(data$IDADEMAE))[data$IDADEMAE]
     data$IDADEMAE[data$IDADEMAE==0] <- NA
     data$IDADEMAE[data$IDADEMAE==99] <- NA
   }
@@ -132,13 +132,13 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   
   # QTDFILVIVO
   if("QTDFILVIVO" %in% variables_names){
-    data$QTDFILVIVO <- as.integer(data$QTDFILVIVO)
+    data$QTDFILVIVO <- as.integer(levels(data$QTDFILVIVO))[data$QTDFILVIVO]
     data$QTDFILVIVO[data$QTDFILVIVO==99] <- NA
   }
   
   # QTDFILMORT
   if("QTDFILMORT" %in% variables_names){
-    data$QTDFILMORT <- as.integer(data$QTDFILMORT)
+    data$QTDFILMORT <- as.integer(levels(data$QTDFILMORT))[data$QTDFILMORT]
     data$QTDFILMORT[data$QTDFILMORT==99] <- NA
   }
   
@@ -255,7 +255,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   
   # PESO
   if("PESO" %in% variables_names){
-    data$PESO <- as.numeric(as.character(data$PESO))
+    data$PESO <- as.numeric(levels(data$PESO))[data$PESO]
     data$PESO[data$PESO==0] <- NA
     data$PESO[data$PESO==9999] <- NA
   }

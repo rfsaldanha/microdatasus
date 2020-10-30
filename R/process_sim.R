@@ -239,7 +239,7 @@ process_sim <- function(data, municipality_data = TRUE) {
   
   # IDADEMAE
   if ("IDADEMAE" %in% variables_names) {
-    data$IDADEMAE <- as.numeric(data$IDADEMAE)
+    data$IDADEMAE <- as.numeric(levels(data$IDADEMAE))[data$IDADEMAE]
     data$IDADEMAE[data$IDADEMAE == 0] <- NA
   }
   
@@ -289,12 +289,12 @@ process_sim <- function(data, municipality_data = TRUE) {
   
   # QTDFILVIVO
   if ("QTDFILVIVO" %in% variables_names) {
-    data$QTDFILVIVO <- as.numeric(data$QTDFILVIVO)
+    data$QTDFILVIVO <- as.numeric(levels(data$QTDFILVIVO))[data$QTDFILVIVO]
   }
   
   # QTDFILMORT
   if ("QTDFILMORT" %in% variables_names) {
-    data$QTDFILMORT <- as.numeric(data$QTDFILMORT)
+    data$QTDFILMORT <- as.numeric(levels(data$QTDFILMORT))[data$QTDFILMORT]
   }
   
   # GRAVIDEZ
@@ -363,7 +363,7 @@ process_sim <- function(data, municipality_data = TRUE) {
   
   # PESO
   if ("PESO" %in% variables_names) {
-    data$PESO <- as.numeric(data$PESO)
+    data$PESO <- as.numeric(levels(data$PESO))[data$PESO]
     data$PESO[data$PESO == 0] <- NA
   }
   
