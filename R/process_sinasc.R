@@ -250,6 +250,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
     data$RACACOR[data$RACACOR==3] <- "Amarela"
     data$RACACOR[data$RACACOR==4] <- "Parda"
     data$RACACOR[data$RACACOR==5] <- "Indígena"
+    data$RACACOR[data$RACACOR==9] <- NA
     data$RACACOR <- factor(data$RACACOR)
   }
   
