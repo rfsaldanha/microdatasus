@@ -279,7 +279,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     colnames(tabOcupacao)[1] <- "OCUPMAE"
     colnames(tabCBO)[1] <- "OCUPMAE"
     ano <- lubridate::year(data$DTOBITO)
-    data$OCUP <-
+    data$OCUPMAE <-
       factor(ifelse(
         ano <= 2005,
         plyr::join(data, tabOcupacao, by = "OCUPMAE", match = "first")$nome,
