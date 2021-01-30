@@ -203,11 +203,12 @@ process_sim <- function(data, municipality_data = TRUE) {
   
   # CODMUNRES
   if ("CODMUNRES" %in% variables_names & municipality_data == TRUE) {
-    data$CODMUNRES <- as.integer(as.character(data$CODMUNRES))
+    data$CODMUNRES <- as.character(data$CODMUNRES)
     colnames(tabMun)[1] <- "CODMUNRES"
+    tabMun$CODMUNRES <- as.character(tabMun$CODMUNRES)
     data <- dplyr::left_join(data, tabMun, by = "CODMUNRES")
   } else {
-    data$CODMUNRES <- as.integer(as.character(data$CODMUNRES))
+    data$CODMUNRES <- as.character(data$CODMUNRES)
   }
   
   # LOCOCOR

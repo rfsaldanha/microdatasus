@@ -50,7 +50,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   
   # CODMUNNASC
   if("CODMUNNASC" %in% variables_names){
-    data$CODMUNNASC <- as.integer(data$CODMUNNASC)
+    data$CODMUNNASC <- as.character(data$CODMUNNASC)
   }
   
   # LOCNASC
@@ -144,11 +144,12 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   
   # CODMUNRES
   if("CODMUNRES" %in% variables_names & municipality_data == TRUE){
-    data$CODMUNRES <- as.integer(as.character(data$CODMUNRES))
+    data$CODMUNRES <- as.character(data$CODMUNRES)
     colnames(tabMun)[1] <- "CODMUNRES"
+    tabMun$CODMUNRES <- as.character(tabMun$CODMUNRES)
     data <- dplyr::left_join(data, tabMun, by = "CODMUNRES")
   } else {
-    data$CODMUNRES <- as.integer(as.character(data$CODMUNRES))
+    data$CODMUNRES <- as.character(data$CODMUNRES)
   }
   
   # GESTACAO
@@ -321,7 +322,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   
   # CODMUNNATU
   if("CODMUNNATU" %in% variables_names){
-    data$CODMUNNATU <- as.integer(data$CODMUNNATU)
+    data$CODMUNNATU <- as.character(data$CODMUNNATU)
   }
   
   # CODUFNATU
