@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Saldanha"
+  given-names: "Raphael de Freitas"
+  orcid: "http://orcid.org/0000-0003-0652-8466"
+- family-names: "Bastos"
+  given-names: "Ronaldo Rocha"
+  orcid: "http://orcid.org/0000-0001-9597-5967"
+- family-names: "Barcellos"
+  given-names: "Christovam"
+  orcid: "http://orcid.org/0000-0002-1161-2753"
+title: "Microdatasus: pacote para download e pré-processamento de microdados do Departamento de Informática do SUS (DATASUS)"
+version: 1.0.0
+doi: 10.1590/0102-311X00032419
+date-released: 2019-09-16
+url: "http://ref.scielo.org/dhcq3y"
