@@ -374,7 +374,9 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   
   # IDADEPAI
   if("IDADEPAI" %in% variables_names){
-    data$IDADEPAI <- as.integer(data$IDADEPAI)
+    data$IDADEPAI <- as.numeric(levels(data$IDADEPAI))[data$IDADEPAI]
+    data$IDADEPAI[data$IDADEPAI==0] <- NA
+    data$IDADEPAI[data$IDADEPAI==99] <- NA
   }
   
   # DTULTMENST
