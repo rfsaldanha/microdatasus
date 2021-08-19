@@ -20,10 +20,12 @@ process_cnes_st(data, nomes = TRUE, municipality_data = TRUE)
 This function processes CNES-ST (Estabelecimentos) variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
 }
 \examples{
+\dontrun{
 df <- fetch_datasus(year_start = 2015, month_start = 1,
                     year_end = 2015, month_end = 1,
                     uf = "RJ",
                     information_system = "CNES-ST")
 df_a <- process_cnes_ST(df)
 df_b <- process_cnes_pf(df, nomes = FALSE, municipality_data = FALSE)
+}
 }

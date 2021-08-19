@@ -8,13 +8,14 @@
 #' @param nomes optional logical. \code{TRUE} by default, add  \code{FANTASIA} and \code{RAZÃO SOCIAL} names to the dataset.
 #' @param municipality_data optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.
 #' 
-#' @examples 
+#' @examples \dontrun{
 #' df <- fetch_datasus(year_start = 2015, month_start = 1,
 #'                     year_end = 2015, month_end = 1,
 #'                     uf = "RJ",
 #'                     information_system = "CNES-ST")
 #' df_a <- process_cnes_ST(df)
 #' df_b <- process_cnes_pf(df, nomes = FALSE, municipality_data = FALSE)
+#' }
 
 process_cnes_st <- function(data, nomes = TRUE, municipality_data = TRUE) {
   # Variables names

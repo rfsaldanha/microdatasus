@@ -35,10 +35,12 @@ This function processes SIA variables retrieved by \code{fetch_datasus()}, infor
 Currently, only "SIA-PA" is supported.
 }
 \examples{
+\dontrun{
 df <- fetch_datasus(year_start = 2010, month_start = 1,
                     year_end = 2010, month_end = 1,
                     uf = "RJ",
                     information_system = "SIA-PA")
 df_a <- process_sia(df)
 df_b <- process_sia(df, municipality_data = FALSE)
+}
 }

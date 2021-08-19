@@ -23,7 +23,7 @@
 #' 
 #' The files are downloaded to a temporary folder and deleted after the reading process.
 #' 
-#' @examples 
+#' @examples \dontrun{
 #' fetch_datasus(year_start = 2010, year_end = 2011,
 #'               information_system = "SIM-DO")
 #'               
@@ -35,6 +35,7 @@
 #'               year_end = 2014, month_end = 2,
 #'               uf = c("RJ", "MG", "SP", "ES"), 
 #'               information_system = "SIH-RD")
+#' }
 
 fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all", information_system, vars=NULL){
   # Verify health information system
