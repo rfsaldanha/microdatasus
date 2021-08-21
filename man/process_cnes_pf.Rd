@@ -18,10 +18,12 @@ process_cnes_pf(data, municipality_data = TRUE)
 This function processes CNES-PF (Pessoa Física) variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
 }
 \examples{
+\dontrun{
 df <- fetch_datasus(year_start = 2015, month_start = 1,
                     year_end = 2015, month_end = 1,
                     uf = "RJ",
                     information_system = "CNES-PF")
 df_a <- process_cnes_pf(df)
 df_b <- process_cnes_pf(df, municipality_data = FALSE)
+}
 }

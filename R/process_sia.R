@@ -13,13 +13,14 @@
 #' @param nome_equipe optional logical. \code{TRUE} by default, add  \code{EQUIPE} name to the dataset.
 #' @param municipality_data optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.
 #' 
-#' @examples 
+#' @examples \dontrun{
 #' df <- fetch_datasus(year_start = 2010, month_start = 1,
 #'                     year_end = 2010, month_end = 1,
 #'                     uf = "RJ",
 #'                     information_system = "SIA-PA")
 #' df_a <- process_sia(df)
 #' df_b <- process_sia(df, municipality_data = FALSE)
+#' }
 
 process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE, nome_ocupacao = TRUE, nome_equipe = TRUE, municipality_data = TRUE) {
   # Check information system

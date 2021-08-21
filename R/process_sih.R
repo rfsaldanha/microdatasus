@@ -10,13 +10,14 @@
 #' @param information_system string. The abbreviation of the health information system. See \emph{Details}.
 #' @param municipality_data optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.
 #' 
-#' @examples 
+#' @examples \dontrun{
 #' df <- fetch_datasus(year_start = 2010, month_start = 1,
 #'                     year_end = 2010, month_end = 1,
 #'                     uf = "RJ",
 #'                     information_system = "SIH-RD")
 #' df_a <- process_sih(df)
 #' df_b <- process_sih(df, municipality_data = FALSE)
+#' }
 
 process_sih <- function(data, information_system = "SIH-RD", municipality_data = TRUE) {
   # Check information system
