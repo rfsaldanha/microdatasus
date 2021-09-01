@@ -48,19 +48,19 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     if("ESPEC" %in% variables_names){
       data$ESPEC <- as.numeric(levels(data$ESPEC))[data$ESPEC]
       data$ESPEC[data$ESPEC==1] <- "Cirurgia"
-      data$ESPEC[data$ESPEC==2] <- "Obstetrícia"
-      data$ESPEC[data$ESPEC==3] <- "Clínica médica"
-      data$ESPEC[data$ESPEC==4] <- "Crônicos"
+      data$ESPEC[data$ESPEC==2] <- "Obstetr\u00edcia"
+      data$ESPEC[data$ESPEC==3] <- "Cl\u00ednica m\u00e9dica"
+      data$ESPEC[data$ESPEC==4] <- "Cr\u00f4nicos"
       data$ESPEC[data$ESPEC==5] <- "Psiquiatria"
-      data$ESPEC[data$ESPEC==6] <- "Pneumologia sanitária"
+      data$ESPEC[data$ESPEC==6] <- "Pneumologia sanit\u00e1ria"
       data$ESPEC[data$ESPEC==7] <- "Pediatria"
-      data$ESPEC[data$ESPEC==8] <- "Reabilitação"
-      data$ESPEC[data$ESPEC==9] <- "Hospital dia (cirúrgicos)"
+      data$ESPEC[data$ESPEC==8] <- "Reabilita\u00e7\u00e3o"
+      data$ESPEC[data$ESPEC==9] <- "Hospital dia (cir\u00fargicos)"
       data$ESPEC[data$ESPEC==10] <- "Hospital dia (AIDS)"
-      data$ESPEC[data$ESPEC==11] <- "Hospital dia (fibrose cística)"
-      data$ESPEC[data$ESPEC==12] <- "Hospital dia (intercorrência pós transplantes)"
+      data$ESPEC[data$ESPEC==11] <- "Hospital dia (fibrose c\u00edstica)"
+      data$ESPEC[data$ESPEC==12] <- "Hospital dia (intercorr\u00eancia p\u00f3s transplantes)"
       data$ESPEC[data$ESPEC==13] <- "Hospital dia (geriatria)"
-      data$ESPEC[data$ESPEC==14] <- "Hospital dia (saúde mental)"
+      data$ESPEC[data$ESPEC==14] <- "Hospital dia (sa\u00fade mental)"
       data$ESPEC <- factor(data$ESPEC)
     }
 
@@ -78,8 +78,8 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     if("IDENT" %in% variables_names){
       data$IDENT <- as.numeric(levels(data$IDENT))[data$IDENT]
       data$IDENT[data$IDENT==1] <- "Principal"
-      data$IDENT[data$IDENT==3] <- "Continuação"
-      data$IDENT[data$IDENT==5] <- "Longa permanência"
+      data$IDENT[data$IDENT==3] <- "Continua\u00e7\u00e3o"
+      data$IDENT[data$IDENT==5] <- "Longa perman\u00eancia"
       data$IDENT <- factor(data$IDENT)
     }
 
@@ -137,7 +137,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     # MARCA_UTI
     if("MARCA_UTI" %in% variables_names){
       data$MARCA_UTI <- as.numeric(levels(data$MARCA_UTI))[data$MARCA_UTI]
-      data$MARCA_UTI[data$MARCA_UTI==0] <- "Não utilizou UTI"
+      data$MARCA_UTI[data$MARCA_UTI==0] <- "N\u00e3o utilizou UTI"
       data$MARCA_UTI[data$MARCA_UTI==74] <- "UTI adulto - tipo I"
       data$MARCA_UTI[data$MARCA_UTI==75] <- "UTI adulto - tipo II"
       data$MARCA_UTI[data$MARCA_UTI==76] <- "UTI adulto - tipo III"
@@ -293,34 +293,34 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
       data$COBRANCA[data$COBRANCA==11] <- "Alta curado"
       data$COBRANCA[data$COBRANCA==12] <- "Alta melhorado"
       data$COBRANCA[data$COBRANCA==14] <- "Alta a pedido"
-      data$COBRANCA[data$COBRANCA==15] <- "Alta com previsão de retorno p/acomp do paciente"
-      data$COBRANCA[data$COBRANCA==16] <- "Alta por evasão"
+      data$COBRANCA[data$COBRANCA==15] <- "Alta com previs\u00e3o de retorno p/acomp do paciente"
+      data$COBRANCA[data$COBRANCA==16] <- "Alta por evas\u00e3o"
       data$COBRANCA[data$COBRANCA==18] <- "Alta por outros motivos"
       data$COBRANCA[data$COBRANCA==19] <- "Alta de paciente agudo em psiquiatria"
-      data$COBRANCA[data$COBRANCA==21] <- "Permanência por características próprias da doença"
-      data$COBRANCA[data$COBRANCA==22] <- "Permanência por intercorrência"
-      data$COBRANCA[data$COBRANCA==23] <- "Permanência por impossibilidade sócio-familiar"
-      data$COBRANCA[data$COBRANCA==24] <- "Permanência proc doação órg, tec, cél-doador vivo"
-      data$COBRANCA[data$COBRANCA==25] <- "Permanência proc doação órg, tec, cél-doador morto"
-      data$COBRANCA[data$COBRANCA==26] <- "Permanência por mudança de procedimento"
-      data$COBRANCA[data$COBRANCA==27] <- "Permanência por reoperação"
-      data$COBRANCA[data$COBRANCA==28] <- "Permanência por outros motivos"
-      data$COBRANCA[data$COBRANCA==29] <- "Transferência para internação domiciliar"
-      data$COBRANCA[data$COBRANCA==32] <- "Transferência para internação domiciliar"
-      data$COBRANCA[data$COBRANCA==31] <- "Transferência para outro estabelecimento"
-      data$COBRANCA[data$COBRANCA==41] <- "Óbito com DO fornecida pelo médico assistente"
-      data$COBRANCA[data$COBRANCA==42] <- "Óbito com DO fornecida pelo IML"
-      data$COBRANCA[data$COBRANCA==43] <- "Óbito com DO fornecida pelo SVO"
+      data$COBRANCA[data$COBRANCA==21] <- "Perman\u00eancia por caracter\u00edsticas pr\u00f3prias da doen\u00e7a"
+      data$COBRANCA[data$COBRANCA==22] <- "Perman\u00eancia por intercorr\u00eancia"
+      data$COBRANCA[data$COBRANCA==23] <- "Perman\u00eancia por impossibilidade s\u00f3cio-familiar"
+      data$COBRANCA[data$COBRANCA==24] <- "Perman\u00eancia proc doa\u00e7\u00e3o \u00f3rg, tec, c\u00e9l-doador vivo"
+      data$COBRANCA[data$COBRANCA==25] <- "Perman\u00eancia proc doa\u00e7\u00e3o \u00f3rg, tec, c\u00e9l-doador morto"
+      data$COBRANCA[data$COBRANCA==26] <- "Perman\u00eancia por mudan\u00e7a de procedimento"
+      data$COBRANCA[data$COBRANCA==27] <- "Perman\u00eancia por reopera\u00e7\u00e3o"
+      data$COBRANCA[data$COBRANCA==28] <- "Perman\u00eancia por outros motivos"
+      data$COBRANCA[data$COBRANCA==29] <- "Transfer\u00eancia para interna\u00e7\u00e3o domiciliar"
+      data$COBRANCA[data$COBRANCA==32] <- "Transfer\u00eancia para interna\u00e7\u00e3o domiciliar"
+      data$COBRANCA[data$COBRANCA==31] <- "Transfer\u00eancia para outro estabelecimento"
+      data$COBRANCA[data$COBRANCA==41] <- "\u00d3bito com DO fornecida pelo m\u00e9dico assistente"
+      data$COBRANCA[data$COBRANCA==42] <- "\u00d3bito com DO fornecida pelo IML"
+      data$COBRANCA[data$COBRANCA==43] <- "\u00d3bito com DO fornecida pelo SVO"
       data$COBRANCA[data$COBRANCA==51] <- "Encerramento administrativo"
-      data$COBRANCA[data$COBRANCA==61] <- "Alta da mãe/puérpera e do recém-nascido"
-      data$COBRANCA[data$COBRANCA==17] <- "Alta da mãe/puérpera e do recém-nascido"
-      data$COBRANCA[data$COBRANCA==62] <- "Alta da mãe/puérpera e permanência recém-nascido"
-      data$COBRANCA[data$COBRANCA==13] <- "Alta da mãe/puérpera e permanência recém-nascido"
-      data$COBRANCA[data$COBRANCA==63] <- "Alta da mãe/puérpera e óbito do recém-nascido"
-      data$COBRANCA[data$COBRANCA==64] <- "Alta da mãe/puérpera com óbito fetal"
-      data$COBRANCA[data$COBRANCA==65] <- "Óbito da gestante e do concepto"
-      data$COBRANCA[data$COBRANCA==66] <- "Óbito da mãe/puérpera e alta do recém-nascido"
-      data$COBRANCA[data$COBRANCA==67] <- "Óbito da mãe/puérpera e permanência recém-nascido"
+      data$COBRANCA[data$COBRANCA==61] <- "Alta da m\u00e3e/pu\u00e9rpera e do rec\u00e9m-nascido"
+      data$COBRANCA[data$COBRANCA==17] <- "Alta da m\u00e3e/pu\u00e9rpera e do rec\u00e9m-nascido"
+      data$COBRANCA[data$COBRANCA==62] <- "Alta da m\u00e3e/pu\u00e9rpera e perman\u00eancia rec\u00e9m-nascido"
+      data$COBRANCA[data$COBRANCA==13] <- "Alta da m\u00e3e/pu\u00e9rpera e perman\u00eancia rec\u00e9m-nascido"
+      data$COBRANCA[data$COBRANCA==63] <- "Alta da m\u00e3e/pu\u00e9rpera e \u00f3bito do rec\u00e9m-nascido"
+      data$COBRANCA[data$COBRANCA==64] <- "Alta da m\u00e3e/pu\u00e9rpera com \u00f3bito fetal"
+      data$COBRANCA[data$COBRANCA==65] <- "\u00d3bito da gestante e do concepto"
+      data$COBRANCA[data$COBRANCA==66] <- "\u00d3bito da m\u00e3e/pu\u00e9rpera e alta do rec\u00e9m-nascido"
+      data$COBRANCA[data$COBRANCA==67] <- "\u00d3bito da m\u00e3e/pu\u00e9rpera e perman\u00eancia rec\u00e9m-nascido"
       data$COBRANCA <- factor(data$COBRANCA)
     }
 
@@ -329,62 +329,62 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
       data$NATUREZA <- as.numeric(levels(data$NATUREZA))[data$NATUREZA]
       data$NATUREZA[data$NATUREZA==0] <- NA
       data$NATUREZA[data$NATUREZA==99] <- NA
-      data$NATUREZA[data$NATUREZA==10] <- "Próprio"
+      data$NATUREZA[data$NATUREZA==10] <- "Pr\u00f3prio"
       data$NATUREZA[data$NATUREZA==20] <- "Contratado"
       data$NATUREZA[data$NATUREZA==22] <- "Contratado optante SIMPLES"
       data$NATUREZA[data$NATUREZA==30] <- "Federal"
-      data$NATUREZA[data$NATUREZA==31] <- "Federal Verba Própria"
+      data$NATUREZA[data$NATUREZA==31] <- "Federal Verba Pr\u00f3pria"
       data$NATUREZA[data$NATUREZA==40] <- "Estadual"
-      data$NATUREZA[data$NATUREZA==41] <- "Estadual Verba Própria"
+      data$NATUREZA[data$NATUREZA==41] <- "Estadual Verba Pr\u00f3pria"
       data$NATUREZA[data$NATUREZA==50] <- "Municipal"
-      data$NATUREZA[data$NATUREZA==60] <- "Filantrópico"
-      data$NATUREZA[data$NATUREZA==61] <- "Filantrópico isento tributos e contr.sociais"
-      data$NATUREZA[data$NATUREZA==63] <- "Filantrópico isento IR e contr.s/lucro líquido"
-      data$NATUREZA[data$NATUREZA==70] <- "Universitário Ensino"
+      data$NATUREZA[data$NATUREZA==60] <- "Filantr\u00f3pico"
+      data$NATUREZA[data$NATUREZA==61] <- "Filantr\u00f3pico isento tributos e contr.sociais"
+      data$NATUREZA[data$NATUREZA==63] <- "Filantr\u00f3pico isento IR e contr.s/lucro l\u00edquido"
+      data$NATUREZA[data$NATUREZA==70] <- "Universit\u00e1rio Ensino"
       data$NATUREZA[data$NATUREZA==80] <- "Sindicato"
-      data$NATUREZA[data$NATUREZA==90] <- "Universitário Pesquisas"
+      data$NATUREZA[data$NATUREZA==90] <- "Universit\u00e1rio Pesquisas"
       data$NATUREZA[data$NATUREZA==91] <- "Univ. Pesquisas isento tributos e contr.sociais"
-      data$NATUREZA[data$NATUREZA==93] <- "Univ. Pesquisas isento IR e contr.s/lucro líquido"
-      data$NATUREZA[data$NATUREZA==94] <- "Universitário de ensino e pesquisa privado"
-      data$NATUREZA[data$NATUREZA==92] <- "Universitário de ensino e pesquisa privado"
+      data$NATUREZA[data$NATUREZA==93] <- "Univ. Pesquisas isento IR e contr.s/lucro l\u00edquido"
+      data$NATUREZA[data$NATUREZA==94] <- "Universit\u00e1rio de ensino e pesquisa privado"
+      data$NATUREZA[data$NATUREZA==92] <- "Universit\u00e1rio de ensino e pesquisa privado"
       data$NATUREZA <- factor(data$NATUREZA)
     }
 
     # NAT_JUR
     if("NAT_JUR" %in% variables_names){
       data$NAT_JUR <- as.numeric(levels(data$NAT_JUR))[data$NAT_JUR]
-      data$NAT_JUR[data$NAT_JUR==1015] <- "Órgão Público do Poder Executivo Federal"
-      data$NAT_JUR[data$NAT_JUR==1023] <- "Órgão Público do Poder Exec Estadual ou Distr Fed"
-      data$NAT_JUR[data$NAT_JUR==1031] <- "Órgão Público do Poder Executivo Municipal"
-      data$NAT_JUR[data$NAT_JUR==1040] <- "Órgão Público do Poder Legislativo Federal"
-      data$NAT_JUR[data$NAT_JUR==1058] <- "Órgão Público do Poder Legisl Estadual ou Dist Fed"
-      data$NAT_JUR[data$NAT_JUR==1066] <- "Órgão Público do Poder Legislativo Municipal"
-      data$NAT_JUR[data$NAT_JUR==1074] <- "Órgão Público do Poder Judiciário Federal"
-      data$NAT_JUR[data$NAT_JUR==1082] <- "Órgão Público do Poder Judiciário Estadual"
+      data$NAT_JUR[data$NAT_JUR==1015] <- "\u00d3rg\u00e3o P\u00fablico do Poder Executivo Federal"
+      data$NAT_JUR[data$NAT_JUR==1023] <- "\u00d3rg\u00e3o P\u00fablico do Poder Exec Estadual ou Distr Fed"
+      data$NAT_JUR[data$NAT_JUR==1031] <- "\u00d3rg\u00e3o P\u00fablico do Poder Executivo Municipal"
+      data$NAT_JUR[data$NAT_JUR==1040] <- "\u00d3rg\u00e3o P\u00fablico do Poder Legislativo Federal"
+      data$NAT_JUR[data$NAT_JUR==1058] <- "\u00d3rg\u00e3o P\u00fablico do Poder Legisl Estadual ou Dist Fed"
+      data$NAT_JUR[data$NAT_JUR==1066] <- "\u00d3rg\u00e3o P\u00fablico do Poder Legislativo Municipal"
+      data$NAT_JUR[data$NAT_JUR==1074] <- "\u00d3rg\u00e3o P\u00fablico do Poder Judici\u00e1rio Federal"
+      data$NAT_JUR[data$NAT_JUR==1082] <- "\u00d3rg\u00e3o P\u00fablico do Poder Judici\u00e1rio Estadual"
       data$NAT_JUR[data$NAT_JUR==1104] <- "Autarquia Federal"
       data$NAT_JUR[data$NAT_JUR==1112] <- "Autarquia Estadual ou do Distrito Federal"
       data$NAT_JUR[data$NAT_JUR==1120] <- "Autarquia Municipal"
-      data$NAT_JUR[data$NAT_JUR==1139] <- "Fundação Federal"
-      data$NAT_JUR[data$NAT_JUR==1147] <- "Fundação Estadual ou do Distrito Federal"
-      data$NAT_JUR[data$NAT_JUR==1155] <- "Fundação Municipal"
-      data$NAT_JUR[data$NAT_JUR==1163] <- "Órgão Público Autônomo Federal"
-      data$NAT_JUR[data$NAT_JUR==1171] <- "Órgão Público Autônomo Estadual ou Distr Federal"
-      data$NAT_JUR[data$NAT_JUR==1180] <- "Órgão Público Autônomo Estadual ou Distr Federal"
-      data$NAT_JUR[data$NAT_JUR==1198] <- "Comissão Polinacional"
-      data$NAT_JUR[data$NAT_JUR==1201] <- "Fundo Público"
-      data$NAT_JUR[data$NAT_JUR==1210] <- "Associação Pública"
-      data$NAT_JUR[data$NAT_JUR==2011] <- "Empresa Pública"
+      data$NAT_JUR[data$NAT_JUR==1139] <- "Funda\u00e7\u00e3o Federal"
+      data$NAT_JUR[data$NAT_JUR==1147] <- "Funda\u00e7\u00e3o Estadual ou do Distrito Federal"
+      data$NAT_JUR[data$NAT_JUR==1155] <- "Funda\u00e7\u00e3o Municipal"
+      data$NAT_JUR[data$NAT_JUR==1163] <- "\u00d3rg\u00e3o P\u00fablico Aut\u00f4nomo Federal"
+      data$NAT_JUR[data$NAT_JUR==1171] <- "\u00d3rg\u00e3o P\u00fablico Aut\u00f4nomo Estadual ou Distr Federal"
+      data$NAT_JUR[data$NAT_JUR==1180] <- "\u00d3rg\u00e3o P\u00fablico Aut\u00f4nomo Estadual ou Distr Federal"
+      data$NAT_JUR[data$NAT_JUR==1198] <- "Comiss\u00e3o Polinacional"
+      data$NAT_JUR[data$NAT_JUR==1201] <- "Fundo P\u00fablico"
+      data$NAT_JUR[data$NAT_JUR==1210] <- "Associa\u00e7\u00e3o P\u00fablica"
+      data$NAT_JUR[data$NAT_JUR==2011] <- "Empresa P\u00fablica"
       data$NAT_JUR[data$NAT_JUR==2038] <- "Sociedade de Economia Mista"
-      data$NAT_JUR[data$NAT_JUR==2046] <- "Sociedade Anônima Aberta"
-      data$NAT_JUR[data$NAT_JUR==2054] <- "Sociedade Anônima Fechada"
-      data$NAT_JUR[data$NAT_JUR==2062] <- "Sociedade Empresária Limitada"
-      data$NAT_JUR[data$NAT_JUR==2070] <- "Sociedade Empresária em Nome Coletivo"
-      data$NAT_JUR[data$NAT_JUR==2089] <- "Sociedade Empresária em Comandita Simples"
-      data$NAT_JUR[data$NAT_JUR==2097] <- "Sociedade Empresária em Comandita por Ações"
-      data$NAT_JUR[data$NAT_JUR==2127] <- "Sociedade em Conta de Participação"
-      data$NAT_JUR[data$NAT_JUR==2135] <- "Empresário (Individual)"
+      data$NAT_JUR[data$NAT_JUR==2046] <- "Sociedade An\u00f4nima Aberta"
+      data$NAT_JUR[data$NAT_JUR==2054] <- "Sociedade An\u00f4nima Fechada"
+      data$NAT_JUR[data$NAT_JUR==2062] <- "Sociedade Empres\u00e1ria Limitada"
+      data$NAT_JUR[data$NAT_JUR==2070] <- "Sociedade Empres\u00e1ria em Nome Coletivo"
+      data$NAT_JUR[data$NAT_JUR==2089] <- "Sociedade Empres\u00e1ria em Comandita Simples"
+      data$NAT_JUR[data$NAT_JUR==2097] <- "Sociedade Empres\u00e1ria em Comandita por A\u00e7\u00f5es"
+      data$NAT_JUR[data$NAT_JUR==2127] <- "Sociedade em Conta de Participa\u00e7\u00e3o"
+      data$NAT_JUR[data$NAT_JUR==2135] <- "Empres\u00e1rio (Individual)"
       data$NAT_JUR[data$NAT_JUR==2143] <- "Cooperativa"
-      data$NAT_JUR[data$NAT_JUR==2151] <- "Consórcio de Sociedades"
+      data$NAT_JUR[data$NAT_JUR==2151] <- "Cons\u00f3rcio de Sociedades"
       data$NAT_JUR[data$NAT_JUR==2160] <- "Grupo de Sociedades"
       data$NAT_JUR[data$NAT_JUR==2178] <- "Estabelecimento no Brasil de Sociedade Estrangeira"
       data$NAT_JUR[data$NAT_JUR==2194] <- "Estab no Brasil Empr Binacional Argentina-Brasil"
@@ -395,32 +395,32 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
       data$NAT_JUR[data$NAT_JUR==2259] <- "Sociedade Simples em Nome Coletivo"
       data$NAT_JUR[data$NAT_JUR==2267] <- "Sociedade Simples em Comandita Simples"
       data$NAT_JUR[data$NAT_JUR==2275] <- "Empresa Binacional"
-      data$NAT_JUR[data$NAT_JUR==2283] <- "Consórcio de Empregadores"
-      data$NAT_JUR[data$NAT_JUR==2291] <- "Consórcio Simples"
-      data$NAT_JUR[data$NAT_JUR==2305] <- "Empr Individ Responsab Limitada (Natur Empresária)"
+      data$NAT_JUR[data$NAT_JUR==2283] <- "Cons\u00f3rcio de Empregadores"
+      data$NAT_JUR[data$NAT_JUR==2291] <- "Cons\u00f3rcio Simples"
+      data$NAT_JUR[data$NAT_JUR==2305] <- "Empr Individ Responsab Limitada (Natur Empres\u00e1ria)"
       data$NAT_JUR[data$NAT_JUR==2313] <- "Empr Individ Responsab Limitada (Natureza Simples)"
-      data$NAT_JUR[data$NAT_JUR==3034] <- "Serviço Notarial e Registral (Cartório)"
-      data$NAT_JUR[data$NAT_JUR==3069] <- "Fundação Privada"
-      data$NAT_JUR[data$NAT_JUR==3077] <- "Serviço Social Autônomo"
-      data$NAT_JUR[data$NAT_JUR==3085] <- "Condomínio Edilício"
-      data$NAT_JUR[data$NAT_JUR==3107] <- "Comissão de Conciliação Prévia"
-      data$NAT_JUR[data$NAT_JUR==3115] <- "Entidade de Mediação e Arbitragem"
-      data$NAT_JUR[data$NAT_JUR==3123] <- "Partido Político"
+      data$NAT_JUR[data$NAT_JUR==3034] <- "Servi\u00e7o Notarial e Registral (Cart\u00f3rio)"
+      data$NAT_JUR[data$NAT_JUR==3069] <- "Funda\u00e7\u00e3o Privada"
+      data$NAT_JUR[data$NAT_JUR==3077] <- "Servi\u00e7o Social Aut\u00f4nomo"
+      data$NAT_JUR[data$NAT_JUR==3085] <- "Condom\u00ednio Edil\u00edcio"
+      data$NAT_JUR[data$NAT_JUR==3107] <- "Comiss\u00e3o de Concilia\u00e7\u00e3o Pr\u00e9via"
+      data$NAT_JUR[data$NAT_JUR==3115] <- "Entidade de Media\u00e7\u00e3o e Arbitragem"
+      data$NAT_JUR[data$NAT_JUR==3123] <- "Partido Pol\u00edtico"
       data$NAT_JUR[data$NAT_JUR==3131] <- "Entidade Sindical"
-      data$NAT_JUR[data$NAT_JUR==3204] <- "Estab no Brasil de Fundação ou Associação Estrang"
-      data$NAT_JUR[data$NAT_JUR==3212] <- "Fundação ou Associação Domiciliada no Exterior"
-      data$NAT_JUR[data$NAT_JUR==3220] <- "Organização Religiosa"
-      data$NAT_JUR[data$NAT_JUR==3239] <- "Comunidade Indígena"
+      data$NAT_JUR[data$NAT_JUR==3204] <- "Estab no Brasil de Funda\u00e7\u00e3o ou Associa\u00e7\u00e3o Estrang"
+      data$NAT_JUR[data$NAT_JUR==3212] <- "Funda\u00e7\u00e3o ou Associa\u00e7\u00e3o Domiciliada no Exterior"
+      data$NAT_JUR[data$NAT_JUR==3220] <- "Organiza\u00e7\u00e3o Religiosa"
+      data$NAT_JUR[data$NAT_JUR==3239] <- "Comunidade Ind\u00edgena"
       data$NAT_JUR[data$NAT_JUR==3247] <- "Fundo Privado"
-      data$NAT_JUR[data$NAT_JUR==3999] <- "Associação Privada"
-      data$NAT_JUR[data$NAT_JUR==4014] <- "Empresa Individual Imobiliária"
+      data$NAT_JUR[data$NAT_JUR==3999] <- "Associa\u00e7\u00e3o Privada"
+      data$NAT_JUR[data$NAT_JUR==4014] <- "Empresa Individual Imobili\u00e1ria"
       data$NAT_JUR[data$NAT_JUR==4022] <- "Segurado Especial"
       data$NAT_JUR[data$NAT_JUR==4081] <- "Contribuinte Individual"
-      data$NAT_JUR[data$NAT_JUR==4090] <- "Candidato a Cargo Político Eletivo"
+      data$NAT_JUR[data$NAT_JUR==4090] <- "Candidato a Cargo Pol\u00edtico Eletivo"
       data$NAT_JUR[data$NAT_JUR==4111] <- "Leiloeiro"
-      data$NAT_JUR[data$NAT_JUR==5010] <- "Organização Internacional"
-      data$NAT_JUR[data$NAT_JUR==5029] <- "Representação Diplomática Estrangeira"
-      data$NAT_JUR[data$NAT_JUR==5037] <- "Outras Instituições Extraterritoriais"
+      data$NAT_JUR[data$NAT_JUR==5010] <- "Organiza\u00e7\u00e3o Internacional"
+      data$NAT_JUR[data$NAT_JUR==5029] <- "Representa\u00e7\u00e3o Diplom\u00e1tica Estrangeira"
+      data$NAT_JUR[data$NAT_JUR==5037] <- "Outras Institui\u00e7\u00f5es Extraterritoriais"
       data$NAT_JUR[data$NAT_JUR==0] <- NA
       data$NAT_JUR <- factor(data$NAT_JUR)
     }
@@ -444,7 +444,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     # IND_VDRL
     if("IND_VDRL" %in% variables_names){
       data$IND_VDRL <- as.numeric(levels(data$IND_VDRL))[data$IND_VDRL]
-      data$IND_VDRL[data$IND_VDRL==0] <- "Não"
+      data$IND_VDRL[data$IND_VDRL==0] <- "N\u00e3o"
       data$IND_VDRL[data$IND_VDRL==1] <- "Sim"
       data$IND_VDRL <- factor(data$IND_VDRL)
     }
@@ -476,7 +476,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # MORTE
     if("MORTE" %in% variables_names){
-      data$MORTE[data$MORTE==0] <- "Não"
+      data$MORTE[data$MORTE==0] <- "N\u00e3o"
       data$MORTE[data$MORTE==1] <- "Sim"
       data$MORTE <- factor(data$MORTE)
     }
@@ -829,11 +829,11 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     if("CAR_INT" %in% variables_names){
       data$CAR_INT <- as.numeric(levels(data$CAR_INT))[data$CAR_INT]
       data$CAR_INT[data$CAR_INT==1] <- "Eletivo"
-      data$CAR_INT[data$CAR_INT==2] <- "Urgência"
+      data$CAR_INT[data$CAR_INT==2] <- "Urg\u00eancia"
       data$CAR_INT[data$CAR_INT==3] <- "Acidente no local trabalho ou a serv da empresa"
       data$CAR_INT[data$CAR_INT==4] <- "Acidente no trajeto para o trabalho"
-      data$CAR_INT[data$CAR_INT==5] <- "Outros tipo de acidente de trânsito"
-      data$CAR_INT[data$CAR_INT==6] <- "Out tp lesões e envenen por agent quím físicos"
+      data$CAR_INT[data$CAR_INT==5] <- "Outros tipo de acidente de tr\u00e2nsito"
+      data$CAR_INT[data$CAR_INT==6] <- "Out tp les\u00f5es e envenen por agent qu\u00edm f\u00edsicos"
       data$CAR_INT <- factor(data$CAR_INT)
     }
 
@@ -850,7 +850,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     # HOMONIMO
     if("HOMONIMO" %in% variables_names){
       data$HOMONIMO <- as.numeric(levels(data$HOMONIMO))[data$HOMONIMO]
-      data$HOMONIMO[data$HOMONIMO==0] <- "Não"
+      data$HOMONIMO[data$HOMONIMO==0] <- "N\u00e3o"
       data$HOMONIMO[data$HOMONIMO==1] <- "Sim"
       data$HOMONIMO <- factor(data$HOMONIMO)
     }
@@ -864,9 +864,9 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     if("INSTRU" %in% variables_names){
       data$INSTRU <- as.numeric(levels(data$INSTRU))[data$INSTRU]
       data$INSTRU[data$INSTRU==1] <- "Analfabeto"
-      data$INSTRU[data$INSTRU==2] <- "1º grau"
-      data$INSTRU[data$INSTRU==3] <- "2º grau"
-      data$INSTRU[data$INSTRU==4] <- "3º grau"
+      data$INSTRU[data$INSTRU==2] <- "1\u00ba grau"
+      data$INSTRU[data$INSTRU==3] <- "2\u00ba grau"
+      data$INSTRU[data$INSTRU==4] <- "3\u00ba grau"
       data$INSTRU[data$INSTRU==0] <- NA
       data$INSTRU[data$INSTRU==9] <- NA
       data$INSTRU <- factor(data$INSTRU)
@@ -884,13 +884,13 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
       data$CONTRACEP1[data$CONTRACEP1==2] <- "Ogino Kaus"
       data$CONTRACEP1[data$CONTRACEP1==3] <- "Temperatura basal"
       data$CONTRACEP1[data$CONTRACEP1==4] <- "Billings"
-      data$CONTRACEP1[data$CONTRACEP1==5] <- "Cinto térmico"
+      data$CONTRACEP1[data$CONTRACEP1==5] <- "Cinto t\u00e9rmico"
       data$CONTRACEP1[data$CONTRACEP1==6] <- "DIU"
       data$CONTRACEP1[data$CONTRACEP1==7] <- "Diafragma"
       data$CONTRACEP1[data$CONTRACEP1==8] <- "Preservativo"
       data$CONTRACEP1[data$CONTRACEP1==9] <- "Espermicida"
-      data$CONTRACEP1[data$CONTRACEP1==10] <- "Hormônio oral"
-      data$CONTRACEP1[data$CONTRACEP1==11] <- "Hormônio injetável"
+      data$CONTRACEP1[data$CONTRACEP1==10] <- "Horm\u00f4nio oral"
+      data$CONTRACEP1[data$CONTRACEP1==11] <- "Horm\u00f4nio injet\u00e1vel"
       data$CONTRACEP1[data$CONTRACEP1==12] <- "Coito interrompido"
       data$CONTRACEP1[data$CONTRACEP1==0] <- NA
       data$CONTRACEP1[data$CONTRACEP1==99] <- NA
@@ -904,13 +904,13 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
       data$CONTRACEP2[data$CONTRACEP2==2] <- "Ogino Kaus"
       data$CONTRACEP2[data$CONTRACEP2==3] <- "Temperatura basal"
       data$CONTRACEP2[data$CONTRACEP2==4] <- "Billings"
-      data$CONTRACEP2[data$CONTRACEP2==5] <- "Cinto térmico"
+      data$CONTRACEP2[data$CONTRACEP2==5] <- "Cinto t\u00e9rmico"
       data$CONTRACEP2[data$CONTRACEP2==6] <- "DIU"
       data$CONTRACEP2[data$CONTRACEP2==7] <- "Diafragma"
       data$CONTRACEP2[data$CONTRACEP2==8] <- "Preservativo"
       data$CONTRACEP2[data$CONTRACEP2==9] <- "Espermicida"
-      data$CONTRACEP2[data$CONTRACEP2==10] <- "Hormônio oral"
-      data$CONTRACEP2[data$CONTRACEP2==11] <- "Hormônio injetável"
+      data$CONTRACEP2[data$CONTRACEP2==10] <- "Horm\u00f4nio oral"
+      data$CONTRACEP2[data$CONTRACEP2==11] <- "Horm\u00f4nio injet\u00e1vel"
       data$CONTRACEP2[data$CONTRACEP2==12] <- "Coito interrompido"
       data$CONTRACEP2[data$CONTRACEP2==0] <- NA
       data$CONTRACEP2[data$CONTRACEP2==99] <- NA
@@ -920,7 +920,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     # GESTRISCO
     if("GESTRISCO" %in% variables_names){
       data$GESTRISCO <- as.numeric(levels(data$GESTRISCO))[data$GESTRISCO]
-      data$GESTRISCO[data$GESTRISCO==0] <- "Não"
+      data$GESTRISCO[data$GESTRISCO==0] <- "N\u00e3o"
       data$GESTRISCO[data$GESTRISCO==1] <- "Sim"
       data$GESTRISCO <- factor(data$GESTRISCO)
     }
@@ -961,10 +961,10 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     # VINCPREV
     if("VINCPREV" %in% variables_names){
       data$VINCPREV <- as.numeric(levels(data$VINCPREV))[data$VINCPREV]
-      data$VINCPREV[data$VINCPREV==1] <- "Autônomo"
+      data$VINCPREV[data$VINCPREV==1] <- "Aut\u00f4nomo"
       data$VINCPREV[data$VINCPREV==2] <- "Desempregado"
       data$VINCPREV[data$VINCPREV==3] <- "Aposentado"
-      data$VINCPREV[data$VINCPREV==4] <- "Não segurado"
+      data$VINCPREV[data$VINCPREV==4] <- "N\u00e3o segurado"
       data$VINCPREV[data$VINCPREV==5] <- "Empregado"
       data$VINCPREV[data$VINCPREV==6] <- "Empregador"
       data$VINCPREV[data$VINCPREV==0] <- NA
@@ -1218,7 +1218,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     # INFEHOSP
     if("INFEHOSP" %in% variables_names){
       data$INFEHOSP <- as.numeric(levels(data$INFEHOSP))[data$INFEHOSP]
-      data$INFEHOSP[data$INFEHOSP==0] <- "Não"
+      data$INFEHOSP[data$INFEHOSP==0] <- "N\u00e3o"
       data$INFEHOSP[data$INFEHOSP==1] <- "Sim"
       data$INFEHOSP <- factor(data$INFEHOSP)
     }
@@ -1236,8 +1236,8 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     # COMPLEX
     if("COMPLEX" %in% variables_names){
       data$COMPLEX <- as.numeric(levels(data$COMPLEX))[data$COMPLEX]
-      data$COMPLEX[data$COMPLEX==1] <- "Atenção Básica"
-      data$COMPLEX[data$COMPLEX==2] <- "Média complexidade"
+      data$COMPLEX[data$COMPLEX==1] <- "Aten\u00e7\u00e3o B\u00e1sica"
+      data$COMPLEX[data$COMPLEX==2] <- "M\u00e9dia complexidade"
       data$COMPLEX[data$COMPLEX==3] <- "Alta complexidade"
       data$COMPLEX[data$COMPLEX==0] <- NA
       data$COMPLEX[data$COMPLEX==99] <- NA
@@ -1247,12 +1247,12 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     # FINANC
     if("FINANC" %in% variables_names){
       data$FINANC <- as.numeric(levels(data$FINANC))[data$FINANC]
-      data$FINANC[data$FINANC==1] <- "Atenção Básica (PAB)"
-      data$FINANC[data$FINANC==2] <- "Assistência Farmacêutica"
-      data$FINANC[data$FINANC==4] <- "Fundo de Ações Estratégicas e Compensações FAEC"
+      data$FINANC[data$FINANC==1] <- "Aten\u00e7\u00e3o B\u00e1sica (PAB)"
+      data$FINANC[data$FINANC==2] <- "Assist\u00eancia Farmac\u00eautica"
+      data$FINANC[data$FINANC==4] <- "Fundo de A\u00e7\u00f5es Estrat\u00e9gicas e Compensa\u00e7\u00f5es FAEC"
       data$FINANC[data$FINANC==5] <- "Incentivo - MAC"
-      data$FINANC[data$FINANC==6] <- "Média e Alta Complexidade (MAC)"
-      data$FINANC[data$FINANC==7] <- "Vigilância em Saúde"
+      data$FINANC[data$FINANC==6] <- "M\u00e9dia e Alta Complexidade (MAC)"
+      data$FINANC[data$FINANC==7] <- "Vigil\u00e2ncia em Sa\u00fade"
       data$FINANC[data$FINANC==0] <- NA
       data$FINANC[data$FINANC==99] <- NA
       data$FINANC <- factor(data$FINANC)
@@ -1261,82 +1261,82 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     # FAEC_TP
     if("FAEC_TP" %in% variables_names){
       data$FAEC_TP <- as.numeric(levels(data$FAEC_TP))[data$FAEC_TP]
-      data$FAEC_TP[data$FAEC_TP==10000] <- "Atenção Básica (PAB)"
-      data$FAEC_TP[data$FAEC_TP==20000] <- "Assistência Farmacêutica"
+      data$FAEC_TP[data$FAEC_TP==10000] <- "Aten\u00e7\u00e3o B\u00e1sica (PAB)"
+      data$FAEC_TP[data$FAEC_TP==20000] <- "Assist\u00eancia Farmac\u00eautica"
       data$FAEC_TP[data$FAEC_TP==40001] <- "Coleta de material"
-      data$FAEC_TP[data$FAEC_TP==40002] <- "Diagnóstico em laboratório clínico"
-      data$FAEC_TP[data$FAEC_TP==40003] <- "Coleta/exame anátomo-patológico colo uterino"
-      data$FAEC_TP[data$FAEC_TP==40004] <- "Diagnóstico em neurologia"
-      data$FAEC_TP[data$FAEC_TP==40005] <- "Diagnóstico em otorrinolaringologia/fonoaudiologia"
-      data$FAEC_TP[data$FAEC_TP==40006] <- "Diagnóstico em psicologia/psiquiatria"
-      data$FAEC_TP[data$FAEC_TP==40007] <- "Consultas médicas/outros profissionais de nível superior"
-      data$FAEC_TP[data$FAEC_TP==40008] <- "Atenção domiciliar"
-      data$FAEC_TP[data$FAEC_TP==40009] <- "Atendimento/acompanhamento em reabilitação física, mental, visual, auditiva e múltiplas defic"
+      data$FAEC_TP[data$FAEC_TP==40002] <- "Diagn\u00f3stico em laborat\u00f3rio cl\u00ednico"
+      data$FAEC_TP[data$FAEC_TP==40003] <- "Coleta/exame an\u00e1tomo-patol\u00f3gico colo uterino"
+      data$FAEC_TP[data$FAEC_TP==40004] <- "Diagn\u00f3stico em neurologia"
+      data$FAEC_TP[data$FAEC_TP==40005] <- "Diagn\u00f3stico em otorrinolaringologia/fonoaudiologia"
+      data$FAEC_TP[data$FAEC_TP==40006] <- "Diagn\u00f3stico em psicologia/psiquiatria"
+      data$FAEC_TP[data$FAEC_TP==40007] <- "Consultas m\u00e9dicas/outros profissionais de n\u00edvel superior"
+      data$FAEC_TP[data$FAEC_TP==40008] <- "Aten\u00e7\u00e3o domiciliar"
+      data$FAEC_TP[data$FAEC_TP==40009] <- "Atendimento/acompanhamento em reabilita\u00e7\u00e3o f\u00edsica, mental, visual, auditiva e m\u00faltiplas defic"
       data$FAEC_TP[data$FAEC_TP==40010] <- "Atendimento/acompanhamento psicossocial"
-      data$FAEC_TP[data$FAEC_TP==40011] <- "Atendimento/acompanhamento em saúde do idoso"
+      data$FAEC_TP[data$FAEC_TP==40011] <- "Atendimento/acompanhamento em sa\u00fade do idoso"
       data$FAEC_TP[data$FAEC_TP==40012] <- "Atendimento/acompanhamento de queimados"
-      data$FAEC_TP[data$FAEC_TP==40013] <- "Atendimento/acompanhamento de diagnóstico de doenças endocrinas/metabólicas e nutricionais"
-      data$FAEC_TP[data$FAEC_TP==40014] <- "Tratamento de doenças do sistema nervoso central e periférico"
-      data$FAEC_TP[data$FAEC_TP==40015] <- "Tratamento de doenças do aparelho da visão"
+      data$FAEC_TP[data$FAEC_TP==40013] <- "Atendimento/acompanhamento de diagn\u00f3stico de doen\u00e7as endocrinas/metab\u00f3licas e nutricionais"
+      data$FAEC_TP[data$FAEC_TP==40014] <- "Tratamento de doen\u00e7as do sistema nervoso central e perif\u00e9rico"
+      data$FAEC_TP[data$FAEC_TP==40015] <- "Tratamento de doen\u00e7as do aparelho da vis\u00e3o"
       data$FAEC_TP[data$FAEC_TP==40016] <- "Tratamento em oncologia"
       data$FAEC_TP[data$FAEC_TP==40017] <- "Nefrologia"
-      data$FAEC_TP[data$FAEC_TP==40018] <- "Tratamentos odontológicos"
-      data$FAEC_TP[data$FAEC_TP==40019] <- "Cirurgia do sistema nervoso central e periférico"
+      data$FAEC_TP[data$FAEC_TP==40018] <- "Tratamentos odontol\u00f3gicos"
+      data$FAEC_TP[data$FAEC_TP==40019] <- "Cirurgia do sistema nervoso central e perif\u00e9rico"
       data$FAEC_TP[data$FAEC_TP==40020] <- "Cirurgias de ouvido, nariz e garganta"
-      data$FAEC_TP[data$FAEC_TP==40021] <- "Deformidade labio-palatal e crânio-facial"
-      data$FAEC_TP[data$FAEC_TP==40022] <- "Cirurgia do aparelho da visão"
-      data$FAEC_TP[data$FAEC_TP==40023] <- "Cirurgia do aparelho circulatório"
-      data$FAEC_TP[data$FAEC_TP==40024] <- "Cirurgia do aparelho digestivo, orgãos anexos e parede abdominal(inclui pré e pós operatório)"
-      data$FAEC_TP[data$FAEC_TP==40025] <- "Cirurgia do aparelho geniturinário"
+      data$FAEC_TP[data$FAEC_TP==40021] <- "Deformidade labio-palatal e cr\u00e2nio-facial"
+      data$FAEC_TP[data$FAEC_TP==40022] <- "Cirurgia do aparelho da vis\u00e3o"
+      data$FAEC_TP[data$FAEC_TP==40023] <- "Cirurgia do aparelho circulat\u00f3rio"
+      data$FAEC_TP[data$FAEC_TP==40024] <- "Cirurgia do aparelho digestivo, org\u00e3os anexos e parede abdominal(inclui pr\u00e9 e p\u00f3s operat\u00f3rio)"
+      data$FAEC_TP[data$FAEC_TP==40025] <- "Cirurgia do aparelho geniturin\u00e1rio"
       data$FAEC_TP[data$FAEC_TP==40026] <- "Tratamento de queimados"
       data$FAEC_TP[data$FAEC_TP==40027] <- "Cirurgia reparadora para lipodistrofia"
-      data$FAEC_TP[data$FAEC_TP==40028] <- "Outras cirurgias plásticas/reparadoras"
+      data$FAEC_TP[data$FAEC_TP==40028] <- "Outras cirurgias pl\u00e1sticas/reparadoras"
       data$FAEC_TP[data$FAEC_TP==40029] <- "Cirurgia orofacial"
       data$FAEC_TP[data$FAEC_TP==40030] <- "Sequenciais"
       data$FAEC_TP[data$FAEC_TP==40031] <- "Cirurgias em nefrologia"
-      data$FAEC_TP[data$FAEC_TP==40032] <- "Transplantes de orgãos, tecidos e células"
+      data$FAEC_TP[data$FAEC_TP==40032] <- "Transplantes de org\u00e3os, tecidos e c\u00e9lulas"
       data$FAEC_TP[data$FAEC_TP==40033] <- "Medicamentos para transplante"
       data$FAEC_TP[data$FAEC_TP==40034] <- "OPM auditivas"
       data$FAEC_TP[data$FAEC_TP==40035] <- "OPM em odontologia"
       data$FAEC_TP[data$FAEC_TP==40036] <- "OPM em queimados"
       data$FAEC_TP[data$FAEC_TP==40037] <- "OPM em nefrologia"
       data$FAEC_TP[data$FAEC_TP==40038] <- "OPM para transplantes"
-      data$FAEC_TP[data$FAEC_TP==40039] <- "Incentivos ao pré-natal e nascimento"
-      data$FAEC_TP[data$FAEC_TP==40040] <- "Incentivo ao registro cívil de nascimento"
-      data$FAEC_TP[data$FAEC_TP==40041] <- "Central Nacional de Regulação de Alta Complexidade (CNRAC)"
+      data$FAEC_TP[data$FAEC_TP==40039] <- "Incentivos ao pr\u00e9-natal e nascimento"
+      data$FAEC_TP[data$FAEC_TP==40040] <- "Incentivo ao registro c\u00edvil de nascimento"
+      data$FAEC_TP[data$FAEC_TP==40041] <- "Central Nacional de Regula\u00e7\u00e3o de Alta Complexidade (CNRAC)"
       data$FAEC_TP[data$FAEC_TP==40042] <- "Reguladores de Atividade hormonal - Inibidores de prolactina"
-      data$FAEC_TP[data$FAEC_TP==40043] <- "Política Nacional de Cirurgias Eletivas"
-      data$FAEC_TP[data$FAEC_TP==40044] <- "Redesignação e Acompanhamento"
+      data$FAEC_TP[data$FAEC_TP==40043] <- "Pol\u00edtica Nacional de Cirurgias Eletivas"
+      data$FAEC_TP[data$FAEC_TP==40044] <- "Redesigna\u00e7\u00e3o e Acompanhamento"
       data$FAEC_TP[data$FAEC_TP==40045] <- "Projeto Olhar Brasil"
       data$FAEC_TP[data$FAEC_TP==40046] <- "Mamografia para Rastreamento"
       data$FAEC_TP[data$FAEC_TP==40047] <- "Projeto Olhar Brasil - Consulta"
-      data$FAEC_TP[data$FAEC_TP==40048] <- "Projeto Olhar Brasil - Óculos"
-      data$FAEC_TP[data$FAEC_TP==40049] <- "Implementar Cirg. CV Pediátrica"
+      data$FAEC_TP[data$FAEC_TP==40048] <- "Projeto Olhar Brasil - \u00d3culos"
+      data$FAEC_TP[data$FAEC_TP==40049] <- "Implementar Cirg. CV Pedi\u00e1trica"
       data$FAEC_TP[data$FAEC_TP==40050] <- "Cirurgias Eletivas - Componente I"
       data$FAEC_TP[data$FAEC_TP==40051] <- "Cirurgias Eletivas - Componente II"
       data$FAEC_TP[data$FAEC_TP==40052] <- "Cirurgias Eletivas - Componente III"
-      data$FAEC_TP[data$FAEC_TP==40053] <- "Prótese Mamária - Exames"
-      data$FAEC_TP[data$FAEC_TP==40054] <- "Prótese Mamária - Cirurgia"
+      data$FAEC_TP[data$FAEC_TP==40053] <- "Pr\u00f3tese Mam\u00e1ria - Exames"
+      data$FAEC_TP[data$FAEC_TP==40054] <- "Pr\u00f3tese Mam\u00e1ria - Cirurgia"
       data$FAEC_TP[data$FAEC_TP==40055] <- "Transplante - Histocompatibilidade"
       data$FAEC_TP[data$FAEC_TP==40056] <- "Triagem Neonatal"
-      data$FAEC_TP[data$FAEC_TP==40057] <- "Controle de qualidade do exame citopatológico do colo de útero"
+      data$FAEC_TP[data$FAEC_TP==40057] <- "Controle de qualidade do exame citopatol\u00f3gico do colo de \u00fatero"
       data$FAEC_TP[data$FAEC_TP==40058] <- "Exames do Leite Materno"
-      data$FAEC_TP[data$FAEC_TP==40059] <- "Atenção as Pessoas em Situação de Violência Sexual"
+      data$FAEC_TP[data$FAEC_TP==40059] <- "Aten\u00e7\u00e3o as Pessoas em Situa\u00e7\u00e3o de Viol\u00eancia Sexual"
       data$FAEC_TP[data$FAEC_TP==40060] <- "Sangue e Hemoderivados"
-      data$FAEC_TP[data$FAEC_TP==40061] <- "Mamografia para rastreamento em faixa etária recomendada"
-      data$FAEC_TP[data$FAEC_TP==40062] <- "Doenças Raras"
+      data$FAEC_TP[data$FAEC_TP==40061] <- "Mamografia para rastreamento em faixa et\u00e1ria recomendada"
+      data$FAEC_TP[data$FAEC_TP==40062] <- "Doen\u00e7as Raras"
       data$FAEC_TP[data$FAEC_TP==40063] <- "Cadeiras de Rodas"
       data$FAEC_TP[data$FAEC_TP==40064] <- "Sistema de Frequencia Modulada Pessoal-FM"
-      data$FAEC_TP[data$FAEC_TP==40065] <- "Medicamentos em Urgência"
-      data$FAEC_TP[data$FAEC_TP==40066] <- "Cirurgias Eletivas - Componente Único"
-      data$FAEC_TP[data$FAEC_TP==40067] <- "Atenção Especializada em Saúde Auditiva"
+      data$FAEC_TP[data$FAEC_TP==40065] <- "Medicamentos em Urg\u00eancia"
+      data$FAEC_TP[data$FAEC_TP==40066] <- "Cirurgias Eletivas - Componente \u00danico"
+      data$FAEC_TP[data$FAEC_TP==40067] <- "Aten\u00e7\u00e3o Especializada em Sa\u00fade Auditiva"
       data$FAEC_TP[data$FAEC_TP==40068] <- "Terapias Especializadas em Angiologia"
-      data$FAEC_TP[data$FAEC_TP==21012] <- "FAEC CNRAC (21012-cód ant à tab unif-vál p/2008-01)"
-      data$FAEC_TP[data$FAEC_TP==21014] <- "FAEC Eletiv(21014-cód ant à tab unif-vál p/2008-01)"
+      data$FAEC_TP[data$FAEC_TP==21012] <- "FAEC CNRAC (21012-c\u00f3d ant \u00e0 tab unif-v\u00e1l p/2008-01)"
+      data$FAEC_TP[data$FAEC_TP==21014] <- "FAEC Eletiv(21014-c\u00f3d ant \u00e0 tab unif-v\u00e1l p/2008-01)"
       data$FAEC_TP[data$FAEC_TP==50000] <- "Incentivo - MAC"
-      data$FAEC_TP[data$FAEC_TP==60000] <- "Média e Alta Complexidade (MAC)"
-      data$FAEC_TP[data$FAEC_TP==70000] <- "Vigilância em Saúde"
-      data$FAEC_TP[data$FAEC_TP==80000] <- "Gestão do SUS"
+      data$FAEC_TP[data$FAEC_TP==60000] <- "M\u00e9dia e Alta Complexidade (MAC)"
+      data$FAEC_TP[data$FAEC_TP==70000] <- "Vigil\u00e2ncia em Sa\u00fade"
+      data$FAEC_TP[data$FAEC_TP==80000] <- "Gest\u00e3o do SUS"
       data$FAEC_TP <- factor(data$FAEC_TP)
     }
 
@@ -1349,18 +1349,18 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
       data$REGCT[data$REGCT==7103] <- "ESTABELECIMENTO DE SAUDE SEM GERACAO DE CREDITO NA ALTA COMPLEXIDADE AMBULATORIAL"
       data$REGCT[data$REGCT==7104] <- "ESTABELECIMENTO DE SAUDE SEM GERACAO DE CREDITO NA ALTA COMPLEXIDADE HOSPITALAR"
       data$REGCT[data$REGCT==7105] <- "ESTABELECIMENTO DE SAUDE SEM GERACAO DE CREDITO PARA OS PROCEDIMENTOS FINANCIADOS COM O FAEC"
-      data$REGCT[data$REGCT==7106] <- "ESTABELECIMENTO SEM GERAÇÃO DE CREDITO TOTAL - EXCLUINDO FAEC"
+      data$REGCT[data$REGCT==7106] <- "ESTABELECIMENTO SEM GERA\u00c7\u00c3O DE CREDITO TOTAL - EXCLUINDO FAEC"
       data$REGCT[data$REGCT==7107] <- "ESTABELECIMENTO SEM GERACAO DE CREDITO NAS ACOES ESPEC. DE ODONTOLOGIA(INCENTIVO CEO I,II E III)"
       data$REGCT[data$REGCT==7108] <- "ESTABELECIMENTO SEM GERACAO DE CREDITO(INCENTIVO A SAUDE DO TRABALHADOR)"
       data$REGCT[data$REGCT==7109] <- "ESTABELECIMENTO SEM GERACAO DE CREDITO TOTAL-MEC"
-      data$REGCT[data$REGCT==7110] <- "ESTABELECIMENTO DE SAUDE DA ESTRUTURA DO MINISTERIO DA SAUDE - SEM GERAÇAO DE CREDITO TOTAL"
+      data$REGCT[data$REGCT==7110] <- "ESTABELECIMENTO DE SAUDE DA ESTRUTURA DO MINISTERIO DA SAUDE - SEM GERA\u00c7AO DE CREDITO TOTAL"
       data$REGCT[data$REGCT==7111] <- "ESTABELECIMENTO DE SAUDE SEM GERACAO DE CREDITO - NASF, EXCETO FAEC"
-      data$REGCT[data$REGCT==7112] <- "ESTABELECIMENTO SEM GERAÇÃO DE CREDITO TOTAL - INCLUINDO FAEC  - EXCLUSIVO PARA REDE SARAH"
-      data$REGCT[data$REGCT==7113] <- "ESTABELECIMENTO SEM GERAÇÃO DE CREDITO TOTAL - INCLUINDO FAEC - OUTROS ESTABELECIMENTOS FEDERAIS"
-      data$REGCT[data$REGCT==7114] <- "ESTABELECIMENTO DE SAÚDE SEM GERAÇÃO DE CRÉDITO TOTAL, INCLUSIVE FAEC - PRONTO ATENDIMENTO"
-      data$REGCT[data$REGCT==7115] <- "ESTABELECIMENTO DE SAÚDE SEM GERAÇÃO DE CRÉDITO NA MÉDIA COMPLEXIDADE - HU/MEC"
-      data$REGCT[data$REGCT==7116] <- "ESTABELECIMENTO DE SAÚDE SEM GERAÇÃO DE CRÉDITO NA MÉDIA COMPLEXIDADE - LRPD"
-      data$REGCT[data$REGCT==7117] <- "Estabelecimento de Saúde sem geração de crédito na média complexidade (exceto OPM) - CER"
+      data$REGCT[data$REGCT==7112] <- "ESTABELECIMENTO SEM GERA\u00c7\u00c3O DE CREDITO TOTAL - INCLUINDO FAEC  - EXCLUSIVO PARA REDE SARAH"
+      data$REGCT[data$REGCT==7113] <- "ESTABELECIMENTO SEM GERA\u00c7\u00c3O DE CREDITO TOTAL - INCLUINDO FAEC - OUTROS ESTABELECIMENTOS FEDERAIS"
+      data$REGCT[data$REGCT==7114] <- "ESTABELECIMENTO DE SA\u00daDE SEM GERA\u00c7\u00c3O DE CR\u00c9DITO TOTAL, INCLUSIVE FAEC - PRONTO ATENDIMENTO"
+      data$REGCT[data$REGCT==7115] <- "ESTABELECIMENTO DE SA\u00daDE SEM GERA\u00c7\u00c3O DE CR\u00c9DITO NA M\u00c9DIA COMPLEXIDADE - HU/MEC"
+      data$REGCT[data$REGCT==7116] <- "ESTABELECIMENTO DE SA\u00daDE SEM GERA\u00c7\u00c3O DE CR\u00c9DITO NA M\u00c9DIA COMPLEXIDADE - LRPD"
+      data$REGCT[data$REGCT==7117] <- "Estabelecimento de Sa\u00fade sem gera\u00e7\u00e3o de cr\u00e9dito na m\u00e9dia complexidade (exceto OPM) - CER"
       data$REGCT[data$REGCT==0] <- "Sem regra contratual"
       data$REGCT <- factor(data$REGCT)
     }
@@ -1372,7 +1372,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
       data$RACA_COR[data$RACA_COR==2] <- "Preta"
       data$RACA_COR[data$RACA_COR==3] <- "Parda"
       data$RACA_COR[data$RACA_COR==4] <- "Amarela"
-      data$RACA_COR[data$RACA_COR==5] <- "Indígena"
+      data$RACA_COR[data$RACA_COR==5] <- "Ind\u00edgena"
       data$RACA_COR[data$RACA_COR==0] <- NA
       data$RACA_COR[data$RACA_COR==99] <- NA
       data$RACA_COR <- factor(data$RACA_COR)
@@ -1698,10 +1698,10 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     # MARCA_UCI
     if("MARCA_UCI" %in% variables_names){
       data$MARCA_UCI <- as.numeric(levels(data$MARCA_UCI))[data$MARCA_UCI]
-      data$MARCA_UCI[data$MARCA_UCI==0] <- "Não utilizou UCI"
+      data$MARCA_UCI[data$MARCA_UCI==0] <- "N\u00e3o utilizou UCI"
       data$MARCA_UCI[data$MARCA_UCI==1] <- "Unidade de cuidados intermed neonatal convencional"
       data$MARCA_UCI[data$MARCA_UCI==2] <- "Unidade de cuidados intermed neonatal canguru"
-      data$MARCA_UCI[data$MARCA_UCI==3] <- "Unidade intermediária neonatal"
+      data$MARCA_UCI[data$MARCA_UCI==3] <- "Unidade intermedi\u00e1ria neonatal"
       data$MARCA_UCI[data$MARCA_UCI==88] <- "Utilizou dois tipos de leitos UCI"
       data$MARCA_UCI <- factor(data$MARCA_UCI)
     }
@@ -1755,7 +1755,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     if("TPDISEC1" %in% variables_names){
       data$TPDISEC1 <- as.numeric(levels(data$TPDISEC1))[data$TPDISEC1]
       data$TPDISEC1[data$TPDISEC1==0] <- NA
-      data$TPDISEC1[data$TPDISEC1==1] <- "Pré-existente"
+      data$TPDISEC1[data$TPDISEC1==1] <- "Pr\u00e9-existente"
       data$TPDISEC1[data$TPDISEC1==2] <- "Adquirido"
       data$TPDISEC1 <- factor(data$TPDISEC1)
     }
@@ -1764,7 +1764,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     if("TPDISEC2" %in% variables_names){
       data$TPDISEC2 <- as.numeric(levels(data$TPDISEC2))[data$TPDISEC2]
       data$TPDISEC2[data$TPDISEC2==0] <- NA
-      data$TPDISEC2[data$TPDISEC2==1] <- "Pré-existente"
+      data$TPDISEC2[data$TPDISEC2==1] <- "Pr\u00e9-existente"
       data$TPDISEC2[data$TPDISEC2==2] <- "Adquirido"
       data$TPDISEC2 <- factor(data$TPDISEC2)
     }
@@ -1773,7 +1773,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     if("TPDISEC3" %in% variables_names){
       data$TPDISEC3 <- as.numeric(levels(data$TPDISEC3))[data$TPDISEC3]
       data$TPDISEC3[data$TPDISEC3==0] <- NA
-      data$TPDISEC3[data$TPDISEC3==1] <- "Pré-existente"
+      data$TPDISEC3[data$TPDISEC3==1] <- "Pr\u00e9-existente"
       data$TPDISEC3[data$TPDISEC3==2] <- "Adquirido"
       data$TPDISEC3 <- factor(data$TPDISEC3)
     }
@@ -1782,7 +1782,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     if("TPDISEC4" %in% variables_names){
       data$TPDISEC4 <- as.numeric(levels(data$TPDISEC4))[data$TPDISEC4]
       data$TPDISEC4[data$TPDISEC4==0] <- NA
-      data$TPDISEC4[data$TPDISEC4==1] <- "Pré-existente"
+      data$TPDISEC4[data$TPDISEC4==1] <- "Pr\u00e9-existente"
       data$TPDISEC4[data$TPDISEC4==2] <- "Adquirido"
       data$TPDISEC4 <- factor(data$TPDISEC4)
     }
@@ -1791,7 +1791,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     if("TPDISEC5" %in% variables_names){
       data$TPDISEC5 <- as.numeric(levels(data$TPDISEC5))[data$TPDISEC5]
       data$TPDISEC5[data$TPDISEC5==0] <- NA
-      data$TPDISEC5[data$TPDISEC5==1] <- "Pré-existente"
+      data$TPDISEC5[data$TPDISEC5==1] <- "Pr\u00e9-existente"
       data$TPDISEC5[data$TPDISEC5==2] <- "Adquirido"
       data$TPDISEC5 <- factor(data$TPDISEC5)
     }
@@ -1800,7 +1800,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     if("TPDISEC6" %in% variables_names){
       data$TPDISEC6 <- as.numeric(levels(data$TPDISEC6))[data$TPDISEC6]
       data$TPDISEC6[data$TPDISEC6==0] <- NA
-      data$TPDISEC6[data$TPDISEC6==1] <- "Pré-existente"
+      data$TPDISEC6[data$TPDISEC6==1] <- "Pr\u00e9-existente"
       data$TPDISEC6[data$TPDISEC6==2] <- "Adquirido"
       data$TPDISEC6 <- factor(data$TPDISEC6)
     }
@@ -1809,7 +1809,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     if("TPDISEC7" %in% variables_names){
       data$TPDISEC7 <- as.numeric(levels(data$TPDISEC7))[data$TPDISEC7]
       data$TPDISEC7[data$TPDISEC7==0] <- NA
-      data$TPDISEC7[data$TPDISEC7==1] <- "Pré-existente"
+      data$TPDISEC7[data$TPDISEC7==1] <- "Pr\u00e9-existente"
       data$TPDISEC7[data$TPDISEC7==2] <- "Adquirido"
       data$TPDISEC7 <- factor(data$TPDISEC7)
     }
@@ -1818,7 +1818,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     if("TPDISEC8" %in% variables_names){
       data$TPDISEC8 <- as.numeric(levels(data$TPDISEC8))[data$TPDISEC8]
       data$TPDISEC8[data$TPDISEC8==0] <- NA
-      data$TPDISEC8[data$TPDISEC8==1] <- "Pré-existente"
+      data$TPDISEC8[data$TPDISEC8==1] <- "Pr\u00e9-existente"
       data$TPDISEC8[data$TPDISEC8==2] <- "Adquirido"
       data$TPDISEC8 <- factor(data$TPDISEC8)
     }
@@ -1827,7 +1827,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     if("TPDISEC9" %in% variables_names){
       data$TPDISEC9 <- as.numeric(levels(data$TPDISEC9))[data$TPDISEC9]
       data$TPDISEC9[data$TPDISEC9==0] <- NA
-      data$TPDISEC9[data$TPDISEC9==1] <- "Pré-existente"
+      data$TPDISEC9[data$TPDISEC9==1] <- "Pr\u00e9-existente"
       data$TPDISEC9[data$TPDISEC9==2] <- "Adquirido"
       data$TPDISEC9 <- factor(data$TPDISEC9)
     }
@@ -1835,6 +1835,9 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
   # Purge levels
   data <- droplevels(data)
+
+  # Unescape unicode characters
+  data <- as.data.frame(lapply(X = data, FUN = stringi::stri_unescape_unicode))
 
   # Return
   return(data)
