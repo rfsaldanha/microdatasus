@@ -1,15 +1,16 @@
 Package: microdatasus
-Title: What the Package Does (One Line, Title Case)
+Title: Download and preprocess DataSUS files
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Raphael",
+           family = "Saldanha",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
+           email = "raphael.saldanha@icict.fiocruz.br",
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+URL: https://github.com/rfsaldanha/microdatasus
+BugReports: https://github.com/rfsaldanha/microdatasus/issues
+Description: Downloads microdata files (DBC format) from DataSUS and imports the files for use.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
