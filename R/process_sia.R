@@ -55,22 +55,22 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
     # PA_REGCT
     if("PA_REGCT" %in% variables_names){
       data$PA_REGCT <- as.character(data$PA_REGCT)
-      data$PA_REGCT[data$PA_REGCT=="7100"] <- "TAB.DE NÃO GERAÇÃO CRÉDITO P/PROD.INTERN./AMBULAT."
-      data$PA_REGCT[data$PA_REGCT=="7101"] <- "ESTAB.S/CRÉDITO NA MEDIA COMPLEXIDADE AMBULATORIAL"
-      data$PA_REGCT[data$PA_REGCT=="7102"] <- "ESTAB.S/CRÉDITO NA MEDIA COMPLEXIDADE HOSPITALAR"
-      data$PA_REGCT[data$PA_REGCT=="7103"] <- "ESTAB.S/CRÉDITO NA ALTA COMPLEXIDADE AMBULATORIAL"
-      data$PA_REGCT[data$PA_REGCT=="7104"] <- "ESTAB.S/CRÉDITO NA ALTA COMPLEXIDADE HOSPITALAR"
-      data$PA_REGCT[data$PA_REGCT=="7105"] <- "ESTAB.S/CRED.PROCED.FINANC.FD.AÇÕES ESTRAT/COMPENS."
-      data$PA_REGCT[data$PA_REGCT=="7106"] <- "ESTABELECIM. DE SAÚDE SEM GERAÇÃO DE CRÉDITO TOTAL"
-      data$PA_REGCT[data$PA_REGCT=="7107"] <- "ESTAB.S/CRÉDITO ACOES ESPEC.ODONT(INC.CEO I,II,III)"
-      data$PA_REGCT[data$PA_REGCT=="7108"] <- "ESTAB.S/GER.CRÉDITO(INCENTIVO SAUDE DO TRABALHADOR)"
-      data$PA_REGCT[data$PA_REGCT=="7109"] <- "ESTAB.SAÚDE (HU/MEC) SEM GERAÇÃO DE CRÉDITO TOTAL"
-      data$PA_REGCT[data$PA_REGCT=="7110"] <- "ESTAB.SAUDE (MIN.SAUDE)SEM GERAÇÃO DE CRÉDITO TOTAL"
-      data$PA_REGCT[data$PA_REGCT=="7111"] <- "ESTAB.SAUDE SEM GERAÇÃO DE CRÉDITO-NASF,exceto FAEC"
+      data$PA_REGCT[data$PA_REGCT=="7100"] <- "TAB.DE N\u00c3O GERA\u00c7\u00c3O CR\u00c9DITO P/PROD.INTERN./AMBULAT."
+      data$PA_REGCT[data$PA_REGCT=="7101"] <- "ESTAB.S/CR\u00c9DITO NA MEDIA COMPLEXIDADE AMBULATORIAL"
+      data$PA_REGCT[data$PA_REGCT=="7102"] <- "ESTAB.S/CR\u00c9DITO NA MEDIA COMPLEXIDADE HOSPITALAR"
+      data$PA_REGCT[data$PA_REGCT=="7103"] <- "ESTAB.S/CR\u00c9DITO NA ALTA COMPLEXIDADE AMBULATORIAL"
+      data$PA_REGCT[data$PA_REGCT=="7104"] <- "ESTAB.S/CR\u00c9DITO NA ALTA COMPLEXIDADE HOSPITALAR"
+      data$PA_REGCT[data$PA_REGCT=="7105"] <- "ESTAB.S/CRED.PROCED.FINANC.FD.A\u00c7\u00d5ES ESTRAT/COMPENS."
+      data$PA_REGCT[data$PA_REGCT=="7106"] <- "ESTABELECIM. DE SA\u00daDE SEM GERA\u00c7\u00c3O DE CR\u00c9DITO TOTAL"
+      data$PA_REGCT[data$PA_REGCT=="7107"] <- "ESTAB.S/CR\u00c9DITO ACOES ESPEC.ODONT(INC.CEO I,II,III)"
+      data$PA_REGCT[data$PA_REGCT=="7108"] <- "ESTAB.S/GER.CR\u00c9DITO(INCENTIVO SAUDE DO TRABALHADOR)"
+      data$PA_REGCT[data$PA_REGCT=="7109"] <- "ESTAB.SA\u00daDE (HU/MEC) SEM GERA\u00c7\u00c3O DE CR\u00c9DITO TOTAL"
+      data$PA_REGCT[data$PA_REGCT=="7110"] <- "ESTAB.SAUDE (MIN.SAUDE)SEM GERA\u00c7\u00c3O DE CR\u00c9DITO TOTAL"
+      data$PA_REGCT[data$PA_REGCT=="7111"] <- "ESTAB.SAUDE SEM GERA\u00c7\u00c3O DE CR\u00c9DITO-NASF,exceto FAEC"
       data$PA_REGCT[data$PA_REGCT=="7112"] <- "ESTAB.S/CRED.TOTAL-INCL.FAEC-EXCLUSIVO P/REDE SARAH"
       data$PA_REGCT[data$PA_REGCT=="7113"] <- "ESTAB.S/CRED.TOTAL,INCL.FAEC-OUTROS ESTAB. FEDERAIS"
-      data$PA_REGCT[data$PA_REGCT=="7116"] <- "ESTAB.SAÚDE S/GER DE CRÉDITO NA MÉDIA COMPLEX-LRPD"
-      data$PA_REGCT[data$PA_REGCT=="7117"] <- "ESTAB.SAÚDE S/GER DE CRÉD. MÉD COMP(EXCETO OPM)-CER"
+      data$PA_REGCT[data$PA_REGCT=="7116"] <- "ESTAB.SA\u00daDE S/GER DE CR\u00c9DITO NA M\u00c9DIA COMPLEX-LRPD"
+      data$PA_REGCT[data$PA_REGCT=="7117"] <- "ESTAB.SA\u00daDE S/GER DE CR\u00c9D. M\u00c9D COMP(EXCETO OPM)-CER"
       data$PA_REGCT[data$PA_REGCT=="0000"] <- "SEM REGRA CONTRATUAL"
     }
 
@@ -91,12 +91,12 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
     # PA_TPUPS
     if("PA_TPUPS" %in% variables_names){
       data$PA_TPUPS <- as.character(data$PA_TPUPS)
-      data$PA_TPUPS[data$PA_TPUPS=="74"] <- "ACADEMIA DA SAÚDE"
-      data$PA_TPUPS[data$PA_TPUPS=="81"] <- "CENTRAL DE REGULAÇÃO"
-      data$PA_TPUPS[data$PA_TPUPS=="76"] <- "CENTRAL DE REGULAÇÃO MÉDICA DAS URGÊNCIAS"
-      data$PA_TPUPS[data$PA_TPUPS=="71"] <- "CENTRO DE APOIO A SAÚDE DA FAMÍLIA-CASF"
-      data$PA_TPUPS[data$PA_TPUPS=="69"] <- "CENTRO DE ATENÇÃO HEMOTERÁPICA E/OU HEMATOLÓGICA"
-      data$PA_TPUPS[data$PA_TPUPS=="70"] <- "CENTRO DE ATENÇÃO PSICOSSOCIAL-CAPS"
+      data$PA_TPUPS[data$PA_TPUPS=="74"] <- "ACADEMIA DA SA\u00daDE"
+      data$PA_TPUPS[data$PA_TPUPS=="81"] <- "CENTRAL DE REGULA\u00c7\u00c3O"
+      data$PA_TPUPS[data$PA_TPUPS=="76"] <- "CENTRAL DE REGULA\u00c7\u00c3O M\u00c9DICA DAS URG\u00caNCIAS"
+      data$PA_TPUPS[data$PA_TPUPS=="71"] <- "CENTRO DE APOIO A SA\u00daDE DA FAM\u00cdLIA-CASF"
+      data$PA_TPUPS[data$PA_TPUPS=="69"] <- "CENTRO DE ATEN\u00c7\u00c3O HEMOTER\u00c1PICA E/OU HEMATOL\u00d3GICA"
+      data$PA_TPUPS[data$PA_TPUPS=="70"] <- "CENTRO DE ATEN\u00c7\u00c3O PSICOSSOCIAL-CAPS"
       data$PA_TPUPS[data$PA_TPUPS=="61"] <- "CENTRO DE PARTO NORMAL"
       data$PA_TPUPS[data$PA_TPUPS=="02"] <- "CENTRO DE SAUDE/UNIDADE BASICA DE SAUDE"
       data$PA_TPUPS[data$PA_TPUPS=="64"] <- "CENTRAL DE REGULACAO DE SERVICOS DE SAUDE"
@@ -118,7 +118,7 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
       data$PA_TPUPS[data$PA_TPUPS=="68"] <- "SECRETARIA DE SAUDE"
       data$PA_TPUPS[data$PA_TPUPS=="77"] <- "SERVICO DE ATENCAO DOMICILIAR ISOLADO(HOME CARE)"
       data$PA_TPUPS[data$PA_TPUPS=="63"] <- "UNIDADE AUTORIZADORA"
-      data$PA_TPUPS[data$PA_TPUPS=="72"] <- "UNIDADE DE ATENÇÃO À SAÚDE INDÍGENA"
+      data$PA_TPUPS[data$PA_TPUPS=="72"] <- "UNIDADE DE ATEN\u00c7\u00c3O \u00c0 SA\u00daDE IND\u00cdGENA"
       data$PA_TPUPS[data$PA_TPUPS=="78"] <- "UNIDADE DE ATENCAO EM REGIME RESIDENCIAL"
       data$PA_TPUPS[data$PA_TPUPS=="39"] <- "UNIDADE DE SERVICO DE APOIO DE DIAGNOSE E TERAPIA"
       data$PA_TPUPS[data$PA_TPUPS=="45"] <- "UNIDADE DE SAUDE DA FAMILIA"
@@ -129,7 +129,7 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
       data$PA_TPUPS[data$PA_TPUPS=="42"] <- "UNIDADE MOVEL DE NIVEL PRE-HOSP-URGENCIA/EMERGENCIA"
       data$PA_TPUPS[data$PA_TPUPS=="32"] <- "UNIDADE MOVEL FLUVIAL"
       data$PA_TPUPS[data$PA_TPUPS=="40"] <- "UNIDADE MOVEL TERRESTRE"
-      data$PA_TPUPS[data$PA_TPUPS=="75"] <- "TELESAÚDE"
+      data$PA_TPUPS[data$PA_TPUPS=="75"] <- "TELESA\u00daDE"
       data$PA_TPUPS[data$PA_TPUPS=="09"] <- "PRONTO SOCORRO DE HOSPITAL GERAL (ANTIGO)"
       data$PA_TPUPS[data$PA_TPUPS=="12"] <- "PRONTO SOCORRO TRAUMATO-ORTOPEDICO (ANTIGO)"
       data$PA_TPUPS <- factor(data$PA_TPUPS)
@@ -195,12 +195,12 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
     # PA_TPFIN
     if("PA_TPFIN" %in% variables_names){
       data$PA_TPFIN <- as.character(data$PA_TPFIN)
-      data$PA_TPFIN[data$PA_TPFIN=="01"] <- "Atenção Básica (PAB)"
-      data$PA_TPFIN[data$PA_TPFIN=="02"] <- "Assistência Farmacêutica"
-      data$PA_TPFIN[data$PA_TPFIN=="04"] <- "Fundo de Ações Estratégicas e Compensações FAEC"
+      data$PA_TPFIN[data$PA_TPFIN=="01"] <- "Aten\u00e7\u00e3o B\u00e1sica (PAB)"
+      data$PA_TPFIN[data$PA_TPFIN=="02"] <- "Assist\u00eancia Farmac\u00eautica"
+      data$PA_TPFIN[data$PA_TPFIN=="04"] <- "Fundo de A\u00e7\u00f5es Estrat\u00e9gicas e Compensa\u00e7\u00f5es FAEC"
       data$PA_TPFIN[data$PA_TPFIN=="05"] <- "Incentivo - MAC"
-      data$PA_TPFIN[data$PA_TPFIN=="06"] <- "Média e Alta Complexidade (MAC)"
-      data$PA_TPFIN[data$PA_TPFIN=="07"] <- "Vigilância em Saúde"
+      data$PA_TPFIN[data$PA_TPFIN=="06"] <- "M\u00e9dia e Alta Complexidade (MAC)"
+      data$PA_TPFIN[data$PA_TPFIN=="07"] <- "Vigil\u00e2ncia em Sa\u00fade"
       data$PA_TPFIN <- factor(data$PA_TPFIN)
     }
 
@@ -212,9 +212,9 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
     # PA_NIVCPL
     if("PA_NIVCPL" %in% variables_names){
       data$PA_NIVCPL <- as.character(data$PA_NIVCPL)
-      data$PA_NIVCPL[data$PA_NIVCPL=="0"] <- "Não se Aplica"
-      data$PA_NIVCPL[data$PA_NIVCPL=="1"] <- "Atenção Básica"
-      data$PA_NIVCPL[data$PA_NIVCPL=="2"] <- "Média Complexidade"
+      data$PA_NIVCPL[data$PA_NIVCPL=="0"] <- "N\u00e3o se Aplica"
+      data$PA_NIVCPL[data$PA_NIVCPL=="1"] <- "Aten\u00e7\u00e3o B\u00e1sica"
+      data$PA_NIVCPL[data$PA_NIVCPL=="2"] <- "M\u00e9dia Complexidade"
       data$PA_NIVCPL[data$PA_NIVCPL=="2"] <- "Alta Complexidade"
       data$PA_NIVCPL <- factor(data$PA_NIVCPL)
     }
@@ -225,8 +225,8 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
       data$PA_DOCORIG[data$PA_DOCORIG=="C"] <- "BPA-C"
       data$PA_DOCORIG[data$PA_DOCORIG=="I"] <- "BPA-I"
       data$PA_DOCORIG[data$PA_DOCORIG=="P"] <- "APAC - Procedimento Principal"
-      data$PA_DOCORIG[data$PA_DOCORIG=="S"] <- "APAC - Procedimento Secundário"
-      data$PA_DOCORIG[data$PA_DOCORIG=="A"] <- "RAAS - Atenção Domiciliar"
+      data$PA_DOCORIG[data$PA_DOCORIG=="S"] <- "APAC - Procedimento Secund\u00e1rio"
+      data$PA_DOCORIG[data$PA_DOCORIG=="A"] <- "RAAS - Aten\u00e7\u00e3o Domiciliar"
       data$PA_DOCORIG[data$PA_DOCORIG=="B"] <- "RAAS - Psicossocial"
       data$PA_DOCORIG <- factor(data$PA_DOCORIG)
     }
@@ -256,41 +256,41 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
       data$PA_MOTSAI <- as.character(data$PA_MOTSAI)
       data$PA_MOTSAI[data$PA_MOTSAI=="11"] <- "ALTA CURADO"
       data$PA_MOTSAI[data$PA_MOTSAI=="12"] <- "ALTA MELHORADO"
-      data$PA_MOTSAI[data$PA_MOTSAI=="13"] <- "ALTA DA PUÉRPERA E PERMANÊNCIA DO RECÉM NASCIDO"
+      data$PA_MOTSAI[data$PA_MOTSAI=="13"] <- "ALTA DA PU\u00c9RPERA E PERMAN\u00caNCIA DO REC\u00c9M NASCIDO"
       data$PA_MOTSAI[data$PA_MOTSAI=="14"] <- "ALTA A PEDIDO"
-      data$PA_MOTSAI[data$PA_MOTSAI=="15"] <- "ALTA COM PREVISÃO DE RETORNO P/ ACOMPAN. DO PACIENT"
-      data$PA_MOTSAI[data$PA_MOTSAI=="16"] <- "ALTA POR EVASÃO"
-      data$PA_MOTSAI[data$PA_MOTSAI=="17"] <- "ALTA DA PUÉRPERA E RECÉM NASCIDO"
+      data$PA_MOTSAI[data$PA_MOTSAI=="15"] <- "ALTA COM PREVIS\u00c3O DE RETORNO P/ ACOMPAN. DO PACIENT"
+      data$PA_MOTSAI[data$PA_MOTSAI=="16"] <- "ALTA POR EVAS\u00c3O"
+      data$PA_MOTSAI[data$PA_MOTSAI=="17"] <- "ALTA DA PU\u00c9RPERA E REC\u00c9M NASCIDO"
       data$PA_MOTSAI[data$PA_MOTSAI=="18"] <- "ALTA POR OUTROS MOTIVOS"
-      data$PA_MOTSAI[data$PA_MOTSAI=="21"] <- "PERMANÊNCIA POR CARACTERÍSTICAS PRÓPRIAS DA DOENÇA"
-      data$PA_MOTSAI[data$PA_MOTSAI=="22"] <- "PERMANÊNCIA POR INTERCORRÊNCIA"
-      data$PA_MOTSAI[data$PA_MOTSAI=="23"] <- "PERMANÊNCIA POR IMPOSSIBILIDADE SÓCIO-FAMILIAR"
-      data$PA_MOTSAI[data$PA_MOTSAI=="24"] <- "PERMAN. POR PROCESSO-DOAÇÃO DE ÓRGÃOS-DOADOR VIVO"
-      data$PA_MOTSAI[data$PA_MOTSAI=="25"] <- "PERMAN. POR PROCESSO-DOAÇÃO DE ÓRGÃOS-DOADOR MORTO"
-      data$PA_MOTSAI[data$PA_MOTSAI=="26"] <- "PERMANÊNCIA POR MUDANÇA DE PROCEDIMENTO"
-      data$PA_MOTSAI[data$PA_MOTSAI=="27"] <- "PERMANÊNCIA POR REOPERAÇÃO"
-      data$PA_MOTSAI[data$PA_MOTSAI=="28"] <- "PERMANÊNCIA POR OUTROS MOTIVOS"
+      data$PA_MOTSAI[data$PA_MOTSAI=="21"] <- "PERMAN\u00caNCIA POR CARACTER\u00cdSTICAS PR\u00d3PRIAS DA DOEN\u00c7A"
+      data$PA_MOTSAI[data$PA_MOTSAI=="22"] <- "PERMAN\u00caNCIA POR INTERCORR\u00caNCIA"
+      data$PA_MOTSAI[data$PA_MOTSAI=="23"] <- "PERMAN\u00caNCIA POR IMPOSSIBILIDADE S\u00d3CIO-FAMILIAR"
+      data$PA_MOTSAI[data$PA_MOTSAI=="24"] <- "PERMAN. POR PROCESSO-DOA\u00c7\u00c3O DE \u00d3RG\u00c3OS-DOADOR VIVO"
+      data$PA_MOTSAI[data$PA_MOTSAI=="25"] <- "PERMAN. POR PROCESSO-DOA\u00c7\u00c3O DE \u00d3RG\u00c3OS-DOADOR MORTO"
+      data$PA_MOTSAI[data$PA_MOTSAI=="26"] <- "PERMAN\u00caNCIA POR MUDAN\u00c7A DE PROCEDIMENTO"
+      data$PA_MOTSAI[data$PA_MOTSAI=="27"] <- "PERMAN\u00caNCIA POR REOPERA\u00c7\u00c3O"
+      data$PA_MOTSAI[data$PA_MOTSAI=="28"] <- "PERMAN\u00caNCIA POR OUTROS MOTIVOS"
       data$PA_MOTSAI[data$PA_MOTSAI=="31"] <- "TRANSFERIDO PARA OUTRO ESTABELECIMENTO"
-      data$PA_MOTSAI[data$PA_MOTSAI=="41"] <- "ÓBITO COM DECLARAÇÃO DE ÓBITO FORNEC. MÉDICO ASSIST"
-      data$PA_MOTSAI[data$PA_MOTSAI=="42"] <- "ÓBITO COM DECLARAÇÃO DE ÓBITO FORNECIDA PELO I.M.L"
-      data$PA_MOTSAI[data$PA_MOTSAI=="43"] <- "ÓBITO COM DECLARAÇÃO DE ÓBITO FORNECIDA PELO I.M.L"
+      data$PA_MOTSAI[data$PA_MOTSAI=="41"] <- "\u00d3BITO COM DECLARA\u00c7\u00c3O DE \u00d3BITO FORNEC. M\u00c9DICO ASSIST"
+      data$PA_MOTSAI[data$PA_MOTSAI=="42"] <- "\u00d3BITO COM DECLARA\u00c7\u00c3O DE \u00d3BITO FORNECIDA PELO I.M.L"
+      data$PA_MOTSAI[data$PA_MOTSAI=="43"] <- "\u00d3BITO COM DECLARA\u00c7\u00c3O DE \u00d3BITO FORNECIDA PELO I.M.L"
       data$PA_MOTSAI[data$PA_MOTSAI=="51"] <- "ENCERRAMENTO ADMINSTRATIVO"
-      data$PA_MOTSAI[data$PA_MOTSAI=="00"] <- "PRODUÇÃO SEM MOTIVO DE SAÍDA (BPA-C / BPA-I)"
+      data$PA_MOTSAI[data$PA_MOTSAI=="00"] <- "PRODU\u00c7\u00c3O SEM MOTIVO DE SA\u00cdDA (BPA-C / BPA-I)"
       data$PA_MOTSAI <- factor(data$PA_MOTSAI)
     }
 
     # PA_OBITO
     if("PA_OBITO" %in% variables_names){
       data$PA_OBITO <- as.character(data$PA_OBITO)
-      data$PA_OBITO[data$PA_OBITO=="1"] <- "Sim (motivo de saída-ÓBITO)"
-      data$PA_OBITO[data$PA_OBITO=="0"] <- "Nao houve ÓBITO"
+      data$PA_OBITO[data$PA_OBITO=="1"] <- "Sim (motivo de sa\u00edda-\u00d3BITO)"
+      data$PA_OBITO[data$PA_OBITO=="0"] <- "Nao houve \u00d3BITO"
       data$PA_OBITO <- factor(data$PA_OBITO)
     }
 
     # PA_ENCERR
     if("PA_ENCERR" %in% variables_names){
       data$PA_ENCERR <- as.character(data$PA_ENCERR)
-      data$PA_ENCERR[data$PA_ENCERR=="1"] <- "Sim (motivo de saída-ENCERRAMENTO)"
+      data$PA_ENCERR[data$PA_ENCERR=="1"] <- "Sim (motivo de sa\u00edda-ENCERRAMENTO)"
       data$PA_ENCERR[data$PA_ENCERR=="0"] <- "Nao houve ENCERRAMENTO"
       data$PA_ENCERR <- factor(data$PA_ENCERR)
     }
@@ -298,24 +298,24 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
     # PA_PERMAN
     if("PA_PERMAN" %in% variables_names){
       data$PA_PERMAN <- as.character(data$PA_PERMAN)
-      data$PA_PERMAN[data$PA_PERMAN=="1"] <- "Sim (motivo de saída-PERMANÊNCIA)"
-      data$PA_PERMAN[data$PA_PERMAN=="0"] <- "Nao houve a PERMANÊNCIA do paciente na unidade"
+      data$PA_PERMAN[data$PA_PERMAN=="1"] <- "Sim (motivo de sa\u00edda-PERMAN\u00caNCIA)"
+      data$PA_PERMAN[data$PA_PERMAN=="0"] <- "Nao houve a PERMAN\u00caNCIA do paciente na unidade"
       data$PA_PERMAN <- factor(data$PA_PERMAN)
     }
 
     # PA_ALTA
     if("PA_ALTA" %in% variables_names){
       data$PA_ALTA <- as.character(data$PA_ALTA)
-      data$PA_ALTA[data$PA_ALTA=="1"] <- "Sim (motivo de saída-PERMANÊNCIA)"
-      data$PA_ALTA[data$PA_ALTA=="0"] <- "Nao houve a PERMANÊNCIA do paciente na unidade"
+      data$PA_ALTA[data$PA_ALTA=="1"] <- "Sim (motivo de sa\u00edda-PERMAN\u00caNCIA)"
+      data$PA_ALTA[data$PA_ALTA=="0"] <- "Nao houve a PERMAN\u00caNCIA do paciente na unidade"
       data$PA_ALTA <- factor(data$PA_ALTA)
     }
 
     # PA_TRANSF
     if("PA_TRANSF" %in% variables_names){
       data$PA_TRANSF <- as.character(data$PA_TRANSF)
-      data$PA_TRANSF[data$PA_TRANSF=="1"] <- "Sim (motivo de saída-TRANSFERÊNCIA)"
-      data$PA_TRANSF[data$PA_TRANSF=="0"] <- "Nao houve TRANSFERÊNCIA do paciente"
+      data$PA_TRANSF[data$PA_TRANSF=="1"] <- "Sim (motivo de sa\u00edda-TRANSFER\u00caNCIA)"
+      data$PA_TRANSF[data$PA_TRANSF=="0"] <- "Nao houve TRANSFER\u00caNCIA do paciente"
       data$PA_TRANSF <- factor(data$PA_TRANSF)
     }
 
@@ -338,13 +338,13 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
     if("PA_CATEND" %in% variables_names){
       data$PA_CATEND <- as.character(data$PA_CATEND)
       data$PA_CATEND[data$PA_CATEND=="01"] <- "ELETIVO"
-      data$PA_CATEND[data$PA_CATEND=="02"] <- "URGÊNCIA"
-      data$PA_CATEND[data$PA_CATEND=="03"] <- "ACIDENTE NO LOCAL TRABALHO OU A SERViÇO DA EMPRESA"
+      data$PA_CATEND[data$PA_CATEND=="02"] <- "URG\u00caNCIA"
+      data$PA_CATEND[data$PA_CATEND=="03"] <- "ACIDENTE NO LOCAL TRABALHO OU A SERVi\u00c7O DA EMPRESA"
       data$PA_CATEND[data$PA_CATEND=="04"] <- "ACIDENTE NO TRAJETO PARA O TRABALHO"
-      data$PA_CATEND[data$PA_CATEND=="05"] <- "OUTROS TIPOS DE ACIDENTE DE TRÂNSITO"
-      data$PA_CATEND[data$PA_CATEND=="06"] <- "OUTROS TIPOS LESÕES/ENVENENAMENTOS(AGENT.FIS./QUIM."
-      data$PA_CATEND[data$PA_CATEND=="99"] <- "INFORMAÇÃO INEXISTENTE  (BPA-C)"
-      data$PA_CATEND[data$PA_CATEND=="00"] <- "CARATER DE ATENDIMENTO NÃO INFORMADO"
+      data$PA_CATEND[data$PA_CATEND=="05"] <- "OUTROS TIPOS DE ACIDENTE DE TR\u00c2NSITO"
+      data$PA_CATEND[data$PA_CATEND=="06"] <- "OUTROS TIPOS LES\u00d5ES/ENVENENAMENTOS(AGENT.FIS./QUIM."
+      data$PA_CATEND[data$PA_CATEND=="99"] <- "INFORMA\u00c7\u00c3O INEXISTENTE  (BPA-C)"
+      data$PA_CATEND[data$PA_CATEND=="00"] <- "CARATER DE ATENDIMENTO N\u00c3O INFORMADO"
       data$PA_CATEND[data$PA_CATEND=="07"] <- "CARATER DE ATENDIMENTO INVALIDO"
       data$PA_CATEND[data$PA_CATEND=="10"] <- "CARATER DE ATENDIMENTO INVALIDO"
       data$PA_CATEND[data$PA_CATEND=="12"] <- "CARATER DE ATENDIMENTO INVALIDO"
@@ -374,7 +374,7 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
     # PA_FLIDADE
     if("PA_FLIDADE" %in% variables_names){
       data$PA_FLIDADE <- as.character(data$PA_FLIDADE)
-      data$PA_FLIDADE[data$PA_FLIDADE=="0"] <- "IDADE NÃO EXIGIDA"
+      data$PA_FLIDADE[data$PA_FLIDADE=="0"] <- "IDADE N\u00c3O EXIGIDA"
       data$PA_FLIDADE[data$PA_FLIDADE=="1"] <- "IDADE COMPATIVEL COM O SIGTAP"
       data$PA_FLIDADE[data$PA_FLIDADE=="2"] <- "IDADE FORA DA FAIXA DO SIGTAP"
       data$PA_FLIDADE[data$PA_FLIDADE=="3"] <- "IDADE INEXISTENTE"
@@ -385,7 +385,7 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
     # PA_SEXO
     if("PA_SEXO" %in% variables_names){
       data$PA_SEXO <- as.character(data$PA_SEXO)
-      data$PA_SEXO[data$PA_SEXO=="0"] <- "Não exigido"
+      data$PA_SEXO[data$PA_SEXO=="0"] <- "N\u00e3o exigido"
       data$PA_SEXO[data$PA_SEXO=="M"] <- "Masculino"
       data$PA_SEXO[data$PA_SEXO=="F"] <- "Feminino"
       data$PA_SEXO <- factor(data$PA_SEXO)
@@ -394,21 +394,21 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
     # PA_RACACOR
     if("PA_RACACOR" %in% variables_names){
       data$PA_RACACOR <- as.character(data$PA_RACACOR)
-      data$PA_RACACOR[data$PA_RACACOR=="00"] <- "RAÇA/COR NÃO EXIGIDO"
+      data$PA_RACACOR[data$PA_RACACOR=="00"] <- "RA\u00c7A/COR N\u00c3O EXIGIDO"
       data$PA_RACACOR[data$PA_RACACOR=="01"] <- "BRANCA"
       data$PA_RACACOR[data$PA_RACACOR=="02"] <- "PRETA"
       data$PA_RACACOR[data$PA_RACACOR=="03"] <- "PARDA"
       data$PA_RACACOR[data$PA_RACACOR=="04"] <- "AMARELA"
       data$PA_RACACOR[data$PA_RACACOR=="05"] <- "INDIGENA"
-      data$PA_RACACOR[data$PA_RACACOR=="99"] <- "SEM INFORMAÇÃO"
-      data$PA_RACACOR[data$PA_RACACOR=="06"] <- "RAÇA/COR=06 (INDEVIDO)"
-      data$PA_RACACOR[data$PA_RACACOR=="09"] <- "RAÇA/COR=09 (INDEVIDO)"
-      data$PA_RACACOR[data$PA_RACACOR=="1M"] <- "RAÇA/COR  (OUTROS INDEVIDOS)"
-      data$PA_RACACOR[data$PA_RACACOR=="1G"] <- "RAÇA/COR  (OUTROS INDEVIDOS)"
-      data$PA_RACACOR[data$PA_RACACOR=="1C"] <- "RAÇA/COR  (OUTROS INDEVIDOS)"
-      data$PA_RACACOR[data$PA_RACACOR=="DE"] <- "RAÇA/COR  (OUTROS INDEVIDOS)"
-      data$PA_RACACOR[data$PA_RACACOR=="D"] <- "RAÇA/COR  (OUTROS INDEVIDOS)"
-      data$PA_RACACOR[data$PA_RACACOR=="87"] <- "RAÇA/COR  (OUTROS INDEVIDOS)"
+      data$PA_RACACOR[data$PA_RACACOR=="99"] <- "SEM INFORMA\u00c7\u00c3O"
+      data$PA_RACACOR[data$PA_RACACOR=="06"] <- "RA\u00c7A/COR=06 (INDEVIDO)"
+      data$PA_RACACOR[data$PA_RACACOR=="09"] <- "RA\u00c7A/COR=09 (INDEVIDO)"
+      data$PA_RACACOR[data$PA_RACACOR=="1M"] <- "RA\u00c7A/COR  (OUTROS INDEVIDOS)"
+      data$PA_RACACOR[data$PA_RACACOR=="1G"] <- "RA\u00c7A/COR  (OUTROS INDEVIDOS)"
+      data$PA_RACACOR[data$PA_RACACOR=="1C"] <- "RA\u00c7A/COR  (OUTROS INDEVIDOS)"
+      data$PA_RACACOR[data$PA_RACACOR=="DE"] <- "RA\u00c7A/COR  (OUTROS INDEVIDOS)"
+      data$PA_RACACOR[data$PA_RACACOR=="D"] <- "RA\u00c7A/COR  (OUTROS INDEVIDOS)"
+      data$PA_RACACOR[data$PA_RACACOR=="87"] <- "RA\u00c7A/COR  (OUTROS INDEVIDOS)"
       data$PA_RACACOR <- factor(data$PA_RACACOR)
     }
 
@@ -449,16 +449,16 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
     # PA_UFDIF
     if("PA_UFDIF" %in% variables_names){
       data$PA_UFDIF <- as.character(data$PA_UFDIF)
-      data$PA_UFDIF[data$PA_UFDIF=="1"] <- "Sim (houve invasão)"
-      data$PA_UFDIF[data$PA_UFDIF=="0"] <- "Não houve invasão"
+      data$PA_UFDIF[data$PA_UFDIF=="1"] <- "Sim (houve invas\u00e3o)"
+      data$PA_UFDIF[data$PA_UFDIF=="0"] <- "N\u00e3o houve invas\u00e3o"
       data$PA_UFDIF <- factor(data$PA_UFDIF)
     }
 
     # PA_MNDIF
     if("PA_MNDIF" %in% variables_names){
       data$PA_MNDIF <- as.character(data$PA_MNDIF)
-      data$PA_MNDIF[data$PA_MNDIF=="1"] <- "Sim (houve invasão)"
-      data$PA_MNDIF[data$PA_MNDIF=="0"] <- "Não houve invasão"
+      data$PA_MNDIF[data$PA_MNDIF=="1"] <- "Sim (houve invas\u00e3o)"
+      data$PA_MNDIF[data$PA_MNDIF=="0"] <- "N\u00e3o houve invas\u00e3o"
       data$PA_MNDIF <- factor(data$PA_MNDIF)
     }
 
@@ -482,7 +482,7 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
       data$PA_INDICA <- as.character(data$PA_INDICA)
       data$PA_INDICA[data$PA_INDICA=="5"] <- "Aprovado totalmente"
       data$PA_INDICA[data$PA_INDICA=="6"] <- "Aprovado parcialmente"
-      data$PA_INDICA[data$PA_INDICA=="0"] <- "Não aprovado"
+      data$PA_INDICA[data$PA_INDICA=="0"] <- "N\u00e3o aprovado"
       data$PA_INDICA <- factor(data$PA_INDICA)
     }
 
@@ -803,6 +803,9 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
   # Purge levels
   data <- droplevels(data)
+
+  # Unescape unicode characters
+  data <- as.data.frame(lapply(X = data, FUN = stringi::stri_unescape_unicode))
 
   # Return
   return(data)
