@@ -17,4 +17,5 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Imports: 
     dplyr,
+    lubridate,
     read.dbc
