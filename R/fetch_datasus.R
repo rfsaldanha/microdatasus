@@ -209,7 +209,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
     # Try to dowload and read files
     partial <- data.frame()
     tryCatch({
-      download.file(file, temp, mode = "wb")
+      utils::download.file(file, temp, mode = "wb")
       partial <- read.dbc::read.dbc(temp)
       file.remove(temp)
     },
