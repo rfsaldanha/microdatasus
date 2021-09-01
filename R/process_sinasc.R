@@ -190,7 +190,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
     data$PARTO <- as.numeric(levels(data$PARTO))[data$PARTO]
     data$PARTO[data$PARTO==0] <- NA
     data$PARTO[data$PARTO==1] <- "Vaginal"
-    data$PARTO[data$PARTO==2] <- "Cesáreo"
+    data$PARTO[data$PARTO==2] <- "Ces\\u00e1reo"
     data$PARTO[data$PARTO==3] <- NA
     data$PARTO[data$PARTO==4] <- NA
     data$PARTO[data$PARTO==5] <- NA
