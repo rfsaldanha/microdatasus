@@ -197,7 +197,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$OCUP <-
       factor(ifelse(
         ano <= 2005,
-        plyr::join(data, tabOcupacao, by = "OCUP", match = "first")$nome,
+        dplyr::left_join(data, tabOcupacao, by = "OCUP")$nome,
         dplyr::left_join(data, tabCBO, by = "OCUP")$nome
       ))
   }
@@ -284,7 +284,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$OCUPMAE <-
       factor(ifelse(
         ano <= 2005,
-        plyr::join(data, tabOcupacao, by = "OCUPMAE", match = "first")$nome,
+        dplyr::left_join(data, tabOcupacao, by = "OCUPMAE")$nome,
         dplyr::left_join(data, tabCBO, by = "OCUPMAE")$nome
       ))
   }
@@ -539,7 +539,9 @@ process_sim <- function(data, municipality_data = TRUE) {
 
   # TPPOS
   if ("TPPOS" %in% variables_names) {
-    data$TPPOS <- plyr::revalue(data$TPPOS, c("N" = "Não investigado", "S" = "Investigado"))
+    data$TPPOS <- as.character(data$TPPOS)
+    data$TPPOS[data$TPPOS == "N"] <- "Não investigado"
+    data$TPPOS[data$TPPOS == "S"] <- "Investigado"
   }
 
   # DTINVESTIG
