@@ -20,9 +20,9 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   variables_names <- names(data)
 
   # NUMERODN
-  # if("NUMERODN" %in% variables_names){
-  #   data$NUMERODN <- as.character(levels(data$NUMERODN))[data$NUMERODN]
-  # }
+  if("NUMERODN" %in% variables_names){
+    data$NUMERODN <- as.character(levels(data$NUMERODN))[data$NUMERODN]
+  }
 
   # CODINST
   if("CODINST" %in% variables_names){
@@ -59,8 +59,8 @@ process_sinasc <- function(data, municipality_data = TRUE) {
     data$LOCNASC <- as.numeric(levels(data$LOCNASC))[data$LOCNASC]
     data$LOCNASC[data$LOCNASC==0] <- NA
     data$LOCNASC[data$LOCNASC==1] <- "Hospital"
-    data$LOCNASC[data$LOCNASC==2] <- "Outro estabelecimento de saúde"
-    data$LOCNASC[data$LOCNASC==3] <- "Domicílio"
+    data$LOCNASC[data$LOCNASC==2] <- "Outro estabelecimento de sa\\u00fade"
+    data$LOCNASC[data$LOCNASC==3] <- "Domic\\u00edlio"
     data$LOCNASC[data$LOCNASC==4] <- "Outros"
     data$LOCNASC[data$LOCNASC==5] <- NA
     data$LOCNASC[data$LOCNASC==6] <- NA
@@ -83,9 +83,9 @@ process_sinasc <- function(data, municipality_data = TRUE) {
     data$ESTCIVMAE[data$ESTCIVMAE==0] <- NA
     data$ESTCIVMAE[data$ESTCIVMAE==1] <- "Solteira"
     data$ESTCIVMAE[data$ESTCIVMAE==2] <- "Casada"
-    data$ESTCIVMAE[data$ESTCIVMAE==3] <- "Viúva"
+    data$ESTCIVMAE[data$ESTCIVMAE==3] <- "Vi\\u00fava"
     data$ESTCIVMAE[data$ESTCIVMAE==4] <- "Separada judicialmente"
-    data$ESTCIVMAE[data$ESTCIVMAE==5] <- "União consensual"
+    data$ESTCIVMAE[data$ESTCIVMAE==5] <- "Uni\\u00e3o consensual"
     data$ESTCIVMAE[data$ESTCIVMAE==6] <- NA
     data$ESTCIVMAE[data$ESTCIVMAE==7] <- NA
     data$ESTCIVMAE[data$ESTCIVMAE==8] <- NA
@@ -125,7 +125,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
     data$CODOCUPMAE <-
       factor(ifelse(
         ano <= 2005,
-        plyr::join(data, tabOcupacao, by = "CODOCUPMAE", match = "first")$nome,
+        dplyr::left_join(data, tabOcupacao, by = "CODOCUPMAE")$nome,
         dplyr::left_join(data, tabCBO, by = "CODOCUPMAE")$nome
       ))
   }
@@ -173,7 +173,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   if("GRAVIDEZ" %in% variables_names){
     data$GRAVIDEZ <- as.numeric(levels(data$GRAVIDEZ))[data$GRAVIDEZ]
     data$GRAVIDEZ[data$GRAVIDEZ==0] <- NA
-    data$GRAVIDEZ[data$GRAVIDEZ==1] <- "Única"
+    data$GRAVIDEZ[data$GRAVIDEZ==1] <- "\\u00fanica"
     data$GRAVIDEZ[data$GRAVIDEZ==2] <- "Dupla"
     data$GRAVIDEZ[data$GRAVIDEZ==3] <- "Tripla e mais"
     data$GRAVIDEZ[data$GRAVIDEZ==4] <- NA
@@ -251,7 +251,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
     data$RACACOR[data$RACACOR==2] <- "Preta"
     data$RACACOR[data$RACACOR==3] <- "Amarela"
     data$RACACOR[data$RACACOR==4] <- "Parda"
-    data$RACACOR[data$RACACOR==5] <- "Indígena"
+    data$RACACOR[data$RACACOR==5] <- "Ind\\u00edgena"
     data$RACACOR[data$RACACOR==9] <- NA
     data$RACACOR <- factor(data$RACACOR)
   }
@@ -267,7 +267,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   if("IDANOMAL" %in% variables_names){
     data$IDANOMAL <- as.numeric(levels(data$IDANOMAL))[data$IDANOMAL]
     data$IDANOMAL[data$IDANOMAL==1] <- "Sim"
-    data$IDANOMAL[data$IDANOMAL==2] <- "Não"
+    data$IDANOMAL[data$IDANOMAL==2] <- "N\\u00e3o"
     data$IDANOMAL[data$IDANOMAL==3] <- NA
     data$IDANOMAL[data$IDANOMAL==4] <- NA
     data$IDANOMAL[data$IDANOMAL==5] <- NA
@@ -354,7 +354,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
     data$RACACORMAE[data$RACACORMAE==2] <- "Preta"
     data$RACACORMAE[data$RACACORMAE==3] <- "Amarela"
     data$RACACORMAE[data$RACACORMAE==4] <- "Parda"
-    data$RACACORMAE[data$RACACORMAE==5] <- "Indígena"
+    data$RACACORMAE[data$RACACORMAE==5] <- "Ind\\u00edgena"
     data$RACACORMAE <- factor(data$RACACORMAE)
   }
 
@@ -474,6 +474,9 @@ process_sinasc <- function(data, municipality_data = TRUE) {
 
   # Purge levels
   data <- droplevels(data)
+
+  # Unescape unicode characters
+  data <- as.data.frame(lapply(X = data, FUN = stringi::stri_unescape_unicode))
 
   # Return
   return(data)
