@@ -53,7 +53,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$TIPOBITO[data$TIPOBITO == 0] <- NA
     data$TIPOBITO[data$TIPOBITO == 9] <- NA
     data$TIPOBITO[data$TIPOBITO == 1] <- "Fetal"
-    data$TIPOBITO[data$TIPOBITO == 2] <- "Não Fetal"
+    data$TIPOBITO[data$TIPOBITO == 2] <- "N\\u00e3o Fetal"
     data$TIPOBITO <- factor(data$TIPOBITO)
   }
 
@@ -134,7 +134,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$RACACOR[data$RACACOR == 2] <- "Preta"
     data$RACACOR[data$RACACOR == 3] <- "Amarela"
     data$RACACOR[data$RACACOR == 4] <- "Parda"
-    data$RACACOR[data$RACACOR == 5] <- "Indígena"
+    data$RACACOR[data$RACACOR == 5] <- "Ind\\u00edgena"
     data$RACACOR[data$RACACOR == 6] <- NA
     data$RACACOR[data$RACACOR == 7] <- NA
     data$RACACOR[data$RACACOR == 8] <- NA
@@ -148,9 +148,9 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$ESTCIV[data$ESTCIV == 0] <- NA
     data$ESTCIV[data$ESTCIV == 1] <- "Solteiro"
     data$ESTCIV[data$ESTCIV == 2] <- "Casado"
-    data$ESTCIV[data$ESTCIV == 3] <- "Viúvo"
+    data$ESTCIV[data$ESTCIV == 3] <- "Vi\\u00favo"
     data$ESTCIV[data$ESTCIV == 4] <- "Separado judicialmente"
-    data$ESTCIV[data$ESTCIV == 5] <- "União consensual"
+    data$ESTCIV[data$ESTCIV == 5] <- "Uni\\u00e3o consensual"
     data$ESTCIV[data$ESTCIV == 6] <- NA
     data$ESTCIV[data$ESTCIV == 7] <- NA
     data$ESTCIV[data$ESTCIV == 8] <- NA
@@ -216,9 +216,9 @@ process_sim <- function(data, municipality_data = TRUE) {
   if ("LOCOCOR" %in% variables_names) {
     data$LOCOCOR <- as.numeric(levels(data$LOCOCOR))[data$LOCOCOR]
     data$LOCOCOR[data$LOCOCOR == 1] <- "Hospital"
-    data$LOCOCOR[data$LOCOCOR == 2] <- "Outro estabelecimento de saúde"
-    data$LOCOCOR[data$LOCOCOR == 3] <- "Domicílio"
-    data$LOCOCOR[data$LOCOCOR == 4] <- "Via pública"
+    data$LOCOCOR[data$LOCOCOR == 2] <- "Outro estabelecimento de sa\\u00fade"
+    data$LOCOCOR[data$LOCOCOR == 3] <- "Domic\\u00edlio"
+    data$LOCOCOR[data$LOCOCOR == 4] <- "Via p\\u00fablica"
     data$LOCOCOR[data$LOCOCOR == 5] <- "Outros"
     data$LOCOCOR[data$LOCOCOR == 9] <- NA
     data$LOCOCOR <- factor(data$LOCOCOR)
@@ -302,9 +302,9 @@ process_sim <- function(data, municipality_data = TRUE) {
   # GRAVIDEZ
   if ("GRAVIDEZ" %in% variables_names) {
     data$GRAVIDEZ <- as.numeric(levels(data$GRAVIDEZ))[data$GRAVIDEZ]
-    data$GRAVIDEZ[data$GRAVIDEZ == 1] <- "Única"
+    data$GRAVIDEZ[data$GRAVIDEZ == 1] <- "\\u00fanica"
     data$GRAVIDEZ[data$GRAVIDEZ == 2] <- "Dupla"
-    data$GRAVIDEZ[data$GRAVIDEZ == 3] <- "Tríplice e mais"
+    data$GRAVIDEZ[data$GRAVIDEZ == 3] <- "Tr\\u00edplice e mais"
     data$GRAVIDEZ[data$GRAVIDEZ == 9] <- NA
     data$GRAVIDEZ <- factor(data$GRAVIDEZ)
   }
@@ -336,7 +336,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$PARTO <- as.numeric(levels(data$PARTO))[data$PARTO]
     data$PARTO[data$PARTO == 0] <- NA
     data$PARTO[data$PARTO == 1] <- "Vaginal"
-    data$PARTO[data$PARTO == 2] <- "Cesáreo"
+    data$PARTO[data$PARTO == 2] <- "Ces\\u00e1reo"
     data$PARTO[data$PARTO == 3] <- NA
     data$PARTO[data$PARTO == 4] <- NA
     data$PARTO[data$PARTO == 5] <- NA
@@ -383,7 +383,7 @@ process_sim <- function(data, municipality_data = TRUE) {
   if ("OBITOGRAV" %in% variables_names) {
     data$OBITOGRAV <- as.numeric(levels(data$OBITOGRAV))[data$OBITOGRAV]
     data$OBITOGRAV[data$OBITOGRAV == 1] <- "Sim"
-    data$OBITOGRAV[data$OBITOGRAV == 2] <- "Não"
+    data$OBITOGRAV[data$OBITOGRAV == 2] <- "N\\u00e3o"
     data$OBITOGRAV[data$OBITOGRAV == 3] <- NA
     data$OBITOGRAV[data$OBITOGRAV == 4] <- NA
     data$OBITOGRAV[data$OBITOGRAV == 5] <- NA
@@ -399,7 +399,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$OBITOPUERP <- as.numeric(levels(data$OBITOPUERP))[data$OBITOPUERP]
     data$OBITOPUERP[data$OBITOPUERP == 1] <- "De 0 a 42 dias"
     data$OBITOPUERP[data$OBITOPUERP == 2] <- "De 43 dias a 1 ano"
-    data$OBITOPUERP[data$OBITOPUERP == 3] <- "Não"
+    data$OBITOPUERP[data$OBITOPUERP == 3] <- "N\\u00e3o"
     data$OBITOPUERP[data$OBITOPUERP == 4] <- NA
     data$OBITOPUERP[data$OBITOPUERP == 5] <- NA
     data$OBITOPUERP[data$OBITOPUERP == 6] <- NA
@@ -413,7 +413,7 @@ process_sim <- function(data, municipality_data = TRUE) {
   if ("ASSISTMED" %in% variables_names) {
     data$ASSISTMED <- as.numeric(levels(data$ASSISTMED))[data$ASSISTMED]
     data$ASSISTMED[data$ASSISTMED == 1] <- "Sim"
-    data$ASSISTMED[data$ASSISTMED == 2] <- "Não"
+    data$ASSISTMED[data$ASSISTMED == 2] <- "N\\u00e3o"
     data$ASSISTMED[data$ASSISTMED == 9] <- NA
     data$ASSISTMED <- factor(data$ASSISTMED)
   }
@@ -422,7 +422,7 @@ process_sim <- function(data, municipality_data = TRUE) {
   if ("EXAME" %in% variables_names) {
     data$EXAME <- as.numeric(levels(data$EXAME))[data$EXAME]
     data$EXAME[data$EXAME == 1] <- "Sim"
-    data$EXAME[data$EXAME == 2] <- "Não"
+    data$EXAME[data$EXAME == 2] <- "N\\u00e3o"
     data$EXAME[data$EXAME == 9] <- NA
     data$EXAME <- factor(data$EXAME)
   }
@@ -431,7 +431,7 @@ process_sim <- function(data, municipality_data = TRUE) {
   if ("CIRURGIA" %in% variables_names) {
     data$CIRURGIA <- as.numeric(levels(data$CIRURGIA))[data$CIRURGIA]
     data$CIRURGIA[data$CIRURGIA == 1] <- "Sim"
-    data$CIRURGIA[data$CIRURGIA == 2] <- "Não"
+    data$CIRURGIA[data$CIRURGIA == 2] <- "N\\u00e3o"
     data$CIRURGIA[data$CIRURGIA == 9] <- NA
     data$CIRURGIA <- factor(data$CIRURGIA)
   }
@@ -440,7 +440,7 @@ process_sim <- function(data, municipality_data = TRUE) {
   if ("NECROPSIA" %in% variables_names) {
     data$NECROPSIA <- as.numeric(levels(data$NECROPSIA))[data$NECROPSIA]
     data$NECROPSIA[data$NECROPSIA == 1] <- "Sim"
-    data$NECROPSIA[data$NECROPSIA == 2] <- "Não"
+    data$NECROPSIA[data$NECROPSIA == 2] <- "N\\u00e3o"
     data$NECROPSIA[data$NECROPSIA == 9] <- NA
     data$NECROPSIA <- factor(data$NECROPSIA)
   }
@@ -501,8 +501,8 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$CIRCOBITO <- as.numeric(levels(data$CIRCOBITO))[data$CIRCOBITO]
     data$CIRCOBITO[data$CIRCOBITO == 0] <- NA
     data$CIRCOBITO[data$CIRCOBITO == 1] <- "Acidente"
-    data$CIRCOBITO[data$CIRCOBITO == 2] <- "Suicídio"
-    data$CIRCOBITO[data$CIRCOBITO == 3] <- "Homicídio"
+    data$CIRCOBITO[data$CIRCOBITO == 2] <- "Suic\\u00eddio"
+    data$CIRCOBITO[data$CIRCOBITO == 3] <- "Homic\\u00eddio"
     data$CIRCOBITO[data$CIRCOBITO == 4] <- "Outro"
     data$CIRCOBITO[data$CIRCOBITO == 5] <- NA
     data$CIRCOBITO[data$CIRCOBITO == 6] <- NA
@@ -516,7 +516,7 @@ process_sim <- function(data, municipality_data = TRUE) {
   if ("ACIDTRAB" %in% variables_names) {
     data$ACIDTRAB <- as.numeric(levels(data$ACIDTRAB))[data$ACIDTRAB]
     data$ACIDTRAB[data$ACIDTRAB == 1] <- "Sim"
-    data$ACIDTRAB[data$ACIDTRAB == 2] <- "Não"
+    data$ACIDTRAB[data$ACIDTRAB == 2] <- "N\\u00e3o"
     data$ACIDTRAB[data$ACIDTRAB == 9] <- NA
     data$ACIDTRAB <- factor(data$ACIDTRAB)
   }
@@ -524,9 +524,9 @@ process_sim <- function(data, municipality_data = TRUE) {
   # FONTE
   if ("FONTE" %in% variables_names) {
     data$FONTE <- as.numeric(levels(data$FONTE))[data$FONTE]
-    data$FONTE[data$FONTE == 1] <- "Boletim de Ocorrência"
+    data$FONTE[data$FONTE == 1] <- "Boletim de Ocorr\\u00eancia"
     data$FONTE[data$FONTE == 2] <- "Hospital"
-    data$FONTE[data$FONTE == 3] <- "Família"
+    data$FONTE[data$FONTE == 3] <- "Fam\\u00edlia"
     data$FONTE[data$FONTE == 4] <- "Outro"
     data$FONTE[data$FONTE == 9] <- NA
     data$FONTE <- factor(data$FONTE)
@@ -540,7 +540,7 @@ process_sim <- function(data, municipality_data = TRUE) {
   # TPPOS
   if ("TPPOS" %in% variables_names) {
     data$TPPOS <- as.character(data$TPPOS)
-    data$TPPOS[data$TPPOS == "N"] <- "Não investigado"
+    data$TPPOS[data$TPPOS == "N"] <- "N\\u00e3o investigado"
     data$TPPOS[data$TPPOS == "S"] <- "Investigado"
   }
 
@@ -600,14 +600,14 @@ process_sim <- function(data, municipality_data = TRUE) {
   # FONTEINV
   if ("FONTEINV" %in% variables_names) {
     data$FONTEINV <- as.numeric(levels(data$FONTEINV))[data$FONTEINV]
-    data$FONTEINV[data$FONTEINV == 1] <- "Comitê de Mortalidade Materna e/ou Infantil"
-    data$FONTEINV[data$FONTEINV == 2] <- "Visita familiar / Entrevista família"
-    data$FONTEINV[data$FONTEINV == 3] <- "Estabelecimento de saúde / Prontuário"
+    data$FONTEINV[data$FONTEINV == 1] <- "Comit\\u00ea de Mortalidade Materna e/ou Infantil"
+    data$FONTEINV[data$FONTEINV == 2] <- "Visita familiar / Entrevista fam\\u00edlia"
+    data$FONTEINV[data$FONTEINV == 3] <- "Estabelecimento de sa\\u00fade / Prontu\\u00e1rio"
     data$FONTEINV[data$FONTEINV == 4] <- "Relacionamento com outros bancos de dados"
     data$FONTEINV[data$FONTEINV == 5] <- "SVO"
     data$FONTEINV[data$FONTEINV == 6] <- "IML"
     data$FONTEINV[data$FONTEINV == 7] <- "Outra fonte"
-    data$FONTEINV[data$FONTEINV == 8] <- "Múltiplas fontes"
+    data$FONTEINV[data$FONTEINV == 8] <- "M\\u00faltiplas fontes"
     data$FONTEINV[data$FONTEINV == 9] <- NA
     data$FONTEINV <- factor(data$FONTEINV)
   }
