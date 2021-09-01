@@ -189,7 +189,7 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
     # PA_PROC_NOME
     if(nome_proced == TRUE){
-      data <- dplyr::left_join(data, sigtab, by = c("PA_PROC_ID" = "COD"))
+      data <- dplyr::left_join(data, microdatasus::sigtab, by = c("PA_PROC_ID" = "COD"))
     }
 
     # PA_TPFIN
@@ -248,7 +248,7 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
     # Nome OCUPACAO
     if(nome_ocupacao == TRUE){
-      data <- dplyr::left_join(data, cbo02, by = c("PA_CBOCOD" = "COD"))
+      data <- dplyr::left_join(data, microdatasus::tabCBO, by = c("PA_CBOCOD" = "cod"))
     }
 
     # PA_MOTSAI
@@ -796,7 +796,7 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
     # PA_INE
     if("PA_INE" %in% variables_names){
       data$PA_INE <- as.character(data$PA_INE)
-      data <- dplyr::left_join(data, equipe, by = c("PA_INE" = "COD"))
+      data <- dplyr::left_join(data, microdatasus::equipe, by = c("PA_INE" = "COD"))
     }
 
   }
