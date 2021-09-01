@@ -735,6 +735,9 @@ process_sim <- function(data, municipality_data = TRUE) {
   # Remove objects
   rm(ano, unidade)
 
+  # Unescape unicode characters
+  data <- as.data.frame(lapply(X = data, FUN = stringi::stri_unescape_unicode))
+
   # Return
   return(data)
 

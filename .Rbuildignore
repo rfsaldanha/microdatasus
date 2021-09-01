@@ -4,3 +4,4 @@ README.md
 ^CITATION\.cff$
 ^microdatasus\.Rproj$
 ^LICENSE\.md$
+^data-raw$

@@ -19,7 +19,10 @@ Imports:
     dplyr,
     lubridate,
     read.dbc,
+    stringi,
     utils
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+Depends: 
+    R (>= 2.10)

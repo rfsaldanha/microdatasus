@@ -1,0 +1,351 @@
+cod,nome
+1,Procura prim emprego
+2,Ocup nao identificavel
+3,Ocup nao declarada
+4,Militar
+5,Desempregado
+6,Estudante
+7,Aposentado/pension
+8,Dona-de-casa
+11,Quimico
+12,Fisico
+19,Out quimicos/fisicos
+21,Eng civil/arquiteto
+22,Eng oper/des indust
+23,Eng eletric/eletron
+24,Eng mecanico
+25,Eng quimico
+26,Eng metalurg
+27,Eng minas/geologo
+28,Eng O&M
+29,Out eng/arquit
+30,Tecn contab/estat
+31,Tec biolog/agron
+32,Tecn miner/metal/geo
+33,Tecn edif/agrim/sane
+34,Tecn eletr/telecom
+35,Tecn mecanica
+36,Tecn quimica
+37,Tecn texteis
+38,Desenh tecnico
+39,Out tecn/desenh
+41,Pilotos/out aero
+42,Oficiais/out naveg
+43,Oficiais maquinistas
+51,Biologista
+52,Bacteriol/farmacolog
+53,Eng agronomo
+61,Medico
+63,Dentista
+65,Veterinario
+67,Farmaceutico
+68,Nutricionista
+71,Enfermeiro
+72,Pess enfermagem
+74,Parteira
+75,Ortoptista/otico
+76,Terapeuta
+77,Oper equip med/odont
+79,Out med/dent/vet/enf
+81,Estatistico
+82,Matematico/atuario
+83,Analista sistema
+84,Program computador
+91,Economista
+92,Tecn administracao
+110,Contador
+121,Advogado
+129,Out juristas
+131,Prof pedagogia sup
+132,Prof fis/quimica sup
+133,Prof eng/arquit
+134,Prof matem/estat sup
+135,Prof econ/admin sup
+136,Prof humanas sup
+137,Prof biol/medica sup
+138,Prof ling/liter sup
+139,Out professor sup
+141,Prof 2o. grau
+142,Prof 1o. grau
+143,Prof pre-escolar
+144,Prof form profiss
+145,Prof ensino especial
+149,Out professor
+151,Escritor/critico
+152,Jornalista/redator
+153,Locutor radio/TV
+159,Out escrit/jornal
+161,Escultor/pintor
+162,Desenh com/decorad
+163,Fotografo/camera
+171,Musicos/composit
+172,Coreog/bailarino
+173,Ator/diretor espet
+174,Empres/prod espet
+175,Artista circo
+179,Out artistas
+181,Tecn desportista
+182,Atleta
+189,Out desportistas
+191,Bibliot/arquivol
+192,Sociolog/antropol
+193,Assistente social
+194,Psicologo
+195,Filol/tradut/interpr
+196,Religioso
+197,Anal carg/salarios
+199,Out cient/tecn/art
+211,Legislativo sup
+212,Executivo sup
+213,Judiciario sup
+214,Func publico sup
+221,Diplomata
+231,Diretor empr manuf
+232,Diretor empr agrop
+233,Dir emp luz/agua/gas
+234,Diretor empr constr
+235,Diretor empr com/hot
+236,Dir empr transp/com
+237,Dir empr financ/imob
+238,Diretor empr sociais
+239,Diretor out empresas
+241,Gerente administr
+242,Gerente producao
+243,Gerente financ/com
+249,Gerente out empr
+301,Chefe administrativo
+302,Chefe cont/financ
+309,Out chefes
+311,Agente administr
+312,Tecn trib/arrecad
+313,Agente policia
+314,Servent justica
+319,Out agentes publ
+321,Secretario
+323,Datilog/estenog
+331,Aux contab/caixa
+332,Atend guiche
+339,Out contab/caixa
+341,Oper maq cont/calc
+342,Oper computador
+343,Digitador
+351,Agente ferroviario
+352,Chefe correios/telec
+353,Chefe serv aereos
+354,Chefe rodoviario
+355,Chefe maritimo
+360,Desp/fisc transp col
+370,Carteiro/mensag
+380,Telefonista/telegr
+391,Trab abast/armaz
+393,Auxiliar escritorio
+394,Recepcionista
+395,Arquivista
+399,Out trab admin
+410,Comerciante
+421,Superv vendas
+422,Comprador
+431,Agente vendas
+432,Vend prac/rep comerc
+441,Corretor
+442,Ag venda servicos
+443,Leiloeiro/avaliador
+451,Vendedor
+452,Ambulante/jornaleiro
+453,Demonstrador
+490,Out comercio
+500,Ger hotel/restaur
+520,Mordomo/governanta
+531,Cozinheiro
+532,Garcom
+540,Domestica/trab serv
+541,Comissario
+551,Trab adm edificio
+552,Serv edific/lograd
+560,Lavadeiro/tintureiro
+570,Cabeleireiro/beleza
+581,Bombeiro
+582,Policial
+583,Guarda seguranca
+584,Guarda transito
+589,Out seguranca
+591,Ag viagens/guia tur
+592,Agente funerario
+599,Out trab servicos
+600,Adm agropecuaria
+601,Capataz agropec
+611,Prod agropec poliv
+612,Prod agropec espec
+621,Trab agropec poliv
+631,Trab cult gramineas
+632,Trab cult fibrosas
+633,Trab hortigranjeiro
+634,Trab floricultura
+635,Trab fruticultura
+636,Trab cult cafe/cacau
+637,Trab cult oleagin
+638,Trab cult arom/medic
+639,Out trab agricolas
+641,Trab pecuar gr.porte
+642,Trab pecuar med.port
+643,Trab pecuar peq.port
+644,Trab pecuar insetos
+649,Out trab pecuaria
+651,Trab flor madeira
+652,Trab flor gomas
+653,Trab flor fibra/oleo
+654,Trab flor aliment
+655,Trab flor arom/medic
+659,Out trab florestais
+661,Patrao pesca
+662,Pescador industrial
+663,Pescador artesanal
+664,Trab aquicultura
+669,Out pescadores
+671,Oper maq agricola
+672,Oper maq pecuaria
+673,Oper maq florestal
+701,Mestre manuf/c.civil
+702,Mestre empr mineral
+703,Mestre luz/agua/gas
+704,Contramestre textil
+711,Mineiro/canteiro
+712,Oper maq mineral
+713,Trab benef mineral
+714,Sondador petrol/gas
+715,Sondador pocos
+716,Salineiro
+719,Out trab minerais
+721,Forneiro 1a fusao
+722,Oper laminacao
+723,Forneiro 2a fusao
+724,Fundidor metal
+725,Moldador/macheiro
+726,Trab term/termoq met
+727,Trefilador/estirador
+728,Galvaniz/recobridor
+729,Out metal/siderurg
+731,Trab trat madeira
+732,Oper maq madeira
+733,Prep pasta papel
+734,Oper maq papel
+735,Prep compens/aglomer
+739,Out trab madeira
+741,Oper britad/triturad
+742,Oper inst termicas
+743,Oper filtrag/separ
+744,Oper destil/reacao
+745,Oper refin petroleo
+746,Oper coqueria
+747,Trab prod medicam
+749,Out trab quimicos
+751,Trab prep fibras
+752,Fiandeiros
+753,Trab prep tecelagem
+754,Tecelao
+755,Tecelao malhas
+756,Trab acabam textil
+759,Out trab texteis
+761,Curtidor couro/pele
+771,Moleiro
+772,Trab acucar
+773,Magarefe
+774,Trab indust alimento
+775,Trab laticinios
+776,Padeiro/confeiteiro
+777,Trab prep cafe/cacau
+778,Trab cerveja/vinho
+779,Out trab alim/bebida
+781,Preparador fumo
+782,Charuteiro
+783,Cigarreiro
+791,Alfaiate/costureiro
+793,Chapeleiro
+794,Modelista/cortador
+795,Costureiro em serie
+796,Estofador
+797,Bordador/cerzideiro
+799,Out trab costura
+801,Sapateiro
+802,Trab calcados
+803,Trab artef couro
+811,Marceneiro
+812,Oper maq lavrar mad
+819,Out trab madeira
+820,Cort/polidor pedra
+831,Forjador
+832,Ferrament/modelador
+833,Torneiro/fresador
+834,Prep maq-ferramenta
+835,Oper maq-ferramenta
+836,Polidor metal/afiad
+839,Out trab usinagem
+840,Ajustador mecanico
+841,Montador maquinas
+842,Relojoeiros
+843,Mecanico veiculos
+844,Mecanico aeronaves
+845,Mecanico manut maq
+849,Out trab mecanicos
+851,Montador eletrico
+852,Montador eletronico
+854,Repar eletr/eletron
+855,Eletricista instalac
+856,Inst/repar telecomun
+857,Inst/rep linhas elet
+859,Out trab eletricos
+861,Oper radio/TV
+862,Oper som/cinema
+871,Encanador/tubulac
+872,Soldador/oxicortador
+873,Chapeador/caldeir
+874,Mont estrut metalica
+880,Joalheiro/ourives
+890,Soprador/mold vidro
+891,Cortador/polid vidro
+892,Ceramista
+893,Forneiro vidro
+894,Gravador vidro
+895,Pintor/decor vidro
+899,Out trab vidro/ceram
+901,Trab prod borracha
+902,Trab pneumaticos
+903,Trab prod plastico
+910,Trab produto papel
+921,Compositor tipograf
+922,Impressor tipograf
+923,Ester/eletrotipista
+924,Gravador/clicherista
+925,Fotogravador
+926,Encadernador
+927,Trab labor fotograf
+929,Out trab graficos
+931,Pintor obras/estrut
+939,Out pintores
+941,Conf instr musicais
+942,Cesteiro/prod vime
+943,Trab mineral nao metal
+949,Out confeccionadores
+951,Pedreiro/estucador
+952,Trab concr armado
+953,Telhador
+954,Carpinteiro
+955,Ladrilh/parqueteiro
+956,Inst mat isolante
+957,Vidraceiro
+959,Out const civil
+961,Oper energ eletrica
+969,Oper maq fixas
+971,Estivador/carregador
+972,Aparelhador/emend
+973,Oper guindaste
+974,Oper maq const civil
+979,Out manip mercadoria
+981,Contram/marinheiro
+982,Maquin/foguista emb
+983,Maquin/foguista trem
+984,Ag/aux manobras
+985,Condutor veiculos
+986,Condutor animais
+989,Out condutores
+999,Out trab bracais

@@ -1,0 +1,352 @@
+351 3 
+    351  Ignorado                                           000-999
+    001  Procura prim emprego                               001
+    002  Ocup nao identificavel                             002
+    003  Ocup nao declarada                                 003
+    004  Militar                                            004
+    005  Desempregado                                       005
+    006  Estudante                                          006
+    007  Aposentado/pension                                 007
+    008  Dona-de-casa                                       008
+    009  Quimico                                            011
+    010  Fisico                                             012
+    011  Out quimicos/fisicos                               019
+    012  Eng civil/arquiteto                                021
+    013  Eng oper/des indust                                022
+    014  Eng eletric/eletron                                023
+    015  Eng mecanico                                       024
+    016  Eng quimico                                        025
+    017  Eng metalurg                                       026
+    018  Eng minas/geologo                                  027
+    019  Eng O&M                                            028
+    020  Out eng/arquit                                     029
+    021  Tecn contab/estat                                  030
+    022  Tec biolog/agron                                   031
+    023  Tecn miner/metal/geo                               032
+    024  Tecn edif/agrim/sane                               033
+    025  Tecn eletr/telecom                                 034
+    026  Tecn mecanica                                      035
+    027  Tecn quimica                                       036
+    028  Tecn texteis                                       037
+    029  Desenh tecnico                                     038
+    030  Out tecn/desenh                                    039
+    031  Pilotos/out aero                                   041
+    032  Oficiais/out naveg                                 042
+    033  Oficiais maquinistas                               043
+    034  Biologista                                         051
+    035  Bacteriol/farmacolog                               052
+    036  Eng agronomo                                       053
+    037  Medico                                             061
+    038  Dentista                                           063
+    039  Veterinario                                        065
+    040  Farmaceutico                                       067
+    041  Nutricionista                                      068
+    042  Enfermeiro                                         071
+    043  Pess enfermagem                                    072
+    044  Parteira                                           074
+    045  Ortoptista/otico                                   075
+    046  Terapeuta                                          076
+    047  Oper equip med/odont                               077
+    048  Out med/dent/vet/enf                               079
+    049  Estatistico                                        081
+    050  Matematico/atuario                                 082
+    051  Analista sistema                                   083
+    052  Program computador                                 084
+    053  Economista                                         091
+    054  Tecn administracao                                 092
+    055  Contador                                           110
+    056  Advogado                                           121
+    057  Out juristas                                       129
+    058  Prof pedagogia sup                                 131
+    059  Prof fis/quimica sup                               132
+    060  Prof eng/arquit                                    133
+    061  Prof matem/estat sup                               134
+    062  Prof econ/admin sup                                135
+    063  Prof humanas sup                                   136
+    064  Prof biol/medica sup                               137
+    065  Prof ling/liter sup                                138
+    066  Out professor sup                                  139
+    067  Prof 2o. grau                                      141
+    068  Prof 1o. grau                                      142
+    069  Prof pre-escolar                                   143
+    070  Prof form profiss                                  144
+    071  Prof ensino especial                               145
+    072  Out professor                                      149
+    073  Escritor/critico                                   151
+    074  Jornalista/redator                                 152
+    075  Locutor radio/TV                                   153
+    076  Out escrit/jornal                                  159
+    077  Escultor/pintor                                    161
+    078  Desenh com/decorad                                 162
+    079  Fotografo/camera                                   163
+    080  Musicos/composit                                   171
+    081  Coreog/bailarino                                   172
+    082  Ator/diretor espet                                 173
+    083  Empres/prod espet                                  174
+    084  Artista circo                                      175
+    085  Out artistas                                       179
+    086  Tecn desportista                                   181
+    087  Atleta                                             182
+    088  Out desportistas                                   189
+    089  Bibliot/arquivol                                   191
+    090  Sociolog/antropol                                  192
+    091  Assistente social                                  193
+    092  Psicologo                                          194
+    093  Filol/tradut/interpr                               195
+    094  Religioso                                          196
+    095  Anal carg/salarios                                 197
+    096  Out cient/tecn/art                                 199
+    097  Legislativo sup                                    211
+    098  Executivo sup                                      212
+    099  Judiciario sup                                     213
+    100  Func publico sup                                   214
+    101  Diplomata                                          221
+    102  Diretor empr manuf                                 231
+    103  Diretor empr agrop                                 232
+    104  Dir emp luz/agua/gas                               233
+    105  Diretor empr constr                                234
+    106  Diretor empr com/hot                               235
+    107  Dir empr transp/com                                236
+    108  Dir empr financ/imob                               237
+    109  Diretor empr sociais                               238
+    110  Diretor out empresas                               239
+    111  Gerente administr                                  241
+    112  Gerente producao                                   242
+    113  Gerente financ/com                                 243
+    114  Gerente out empr                                   249
+    115  Chefe administrativo                               301
+    116  Chefe cont/financ                                  302
+    117  Out chefes                                         309
+    118  Agente administr                                   311
+    119  Tecn trib/arrecad                                  312
+    120  Agente policia                                     313
+    121  Servent justica                                    314
+    122  Out agentes publ                                   319
+    123  Secretario                                         321
+    124  Datilog/estenog                                    323
+    125  Aux contab/caixa                                   331
+    126  Atend guiche                                       332
+    127  Out contab/caixa                                   339
+    128  Oper maq cont/calc                                 341
+    129  Oper computador                                    342
+    130  Digitador                                          343
+    131  Agente ferroviario                                 351
+    132  Chefe correios/telec                               352
+    133  Chefe serv aereos                                  353
+    134  Chefe rodoviario                                   354
+    135  Chefe maritimo                                     355
+    136  Desp/fisc transp col                               360
+    137  Carteiro/mensag                                    370
+    138  Telefonista/telegr                                 380
+    139  Trab abast/armaz                                   391
+    140  Auxiliar escritorio                                393
+    141  Recepcionista                                      394
+    142  Arquivista                                         395
+    143  Out trab admin                                     399
+    144  Comerciante                                        410
+    145  Superv vendas                                      421
+    146  Comprador                                          422
+    147  Agente vendas                                      431
+    148  Vend prac/rep comerc                               432
+    149  Corretor                                           441
+    150  Ag venda servicos                                  442
+    151  Leiloeiro/avaliador                                443
+    152  Vendedor                                           451
+    153  Ambulante/jornaleiro                               452
+    154  Demonstrador                                       453
+    155  Out comercio                                       490
+    156  Ger hotel/restaur                                  500
+    157  Mordomo/governanta                                 520
+    158  Cozinheiro                                         531
+    159  Garcom                                             532
+    160  Domestica/trab serv                                540
+    161  Comissario                                         541
+    162  Trab adm edificio                                  551
+    163  Serv edific/lograd                                 552
+    164  Lavadeiro/tintureiro                               560
+    165  Cabeleireiro/beleza                                570
+    166  Bombeiro                                           581
+    167  Policial                                           582
+    168  Guarda seguranca                                   583
+    169  Guarda transito                                    584
+    170  Out seguranca                                      589
+    171  Ag viagens/guia tur                                591
+    172  Agente funerario                                   592
+    173  Out trab servicos                                  599
+    174  Adm agropecuaria                                   600
+    175  Capataz agropec                                    601
+    176  Prod agropec poliv                                 611
+    177  Prod agropec espec                                 612
+    178  Trab agropec poliv                                 621
+    179  Trab cult gramineas                                631
+    180  Trab cult fibrosas                                 632
+    181  Trab hortigranjeiro                                633
+    182  Trab floricultura                                  634
+    183  Trab fruticultura                                  635
+    184  Trab cult cafe/cacau                               636
+    185  Trab cult oleagin                                  637
+    186  Trab cult arom/medic                               638
+    187  Out trab agricolas                                 639
+    188  Trab pecuar gr.porte                               641
+    189  Trab pecuar med.port                               642
+    190  Trab pecuar peq.port                               643
+    191  Trab pecuar insetos                                644
+    192  Out trab pecuaria                                  649
+    193  Trab flor madeira                                  651
+    194  Trab flor gomas                                    652
+    195  Trab flor fibra/oleo                               653
+    196  Trab flor aliment                                  654
+    197  Trab flor arom/medic                               655
+    198  Out trab florestais                                659
+    199  Patrao pesca                                       661
+    200  Pescador industrial                                662
+    201  Pescador artesanal                                 663
+    202  Trab aquicultura                                   664
+    203  Out pescadores                                     669
+    204  Oper maq agricola                                  671
+    205  Oper maq pecuaria                                  672
+    206  Oper maq florestal                                 673
+    207  Mestre manuf/c.civil                               701
+    208  Mestre empr mineral                                702
+    209  Mestre luz/agua/gas                                703
+    210  Contramestre textil                                704
+    211  Mineiro/canteiro                                   711
+    212  Oper maq mineral                                   712
+    213  Trab benef mineral                                 713
+    214  Sondador petrol/gas                                714
+    215  Sondador pocos                                     715
+    216  Salineiro                                          716
+    217  Out trab minerais                                  719
+    218  Forneiro 1a fusao                                  721
+    219  Oper laminacao                                     722
+    220  Forneiro 2a fusao                                  723
+    221  Fundidor metal                                     724
+    222  Moldador/macheiro                                  725
+    223  Trab term/termoq met                               726
+    224  Trefilador/estirador                               727
+    225  Galvaniz/recobridor                                728
+    226  Out metal/siderurg                                 729
+    227  Trab trat madeira                                  731
+    228  Oper maq madeira                                   732
+    229  Prep pasta papel                                   733
+    230  Oper maq papel                                     734
+    231  Prep compens/aglomer                               735
+    232  Out trab madeira                                   739
+    233  Oper britad/triturad                               741
+    234  Oper inst termicas                                 742
+    235  Oper filtrag/separ                                 743
+    236  Oper destil/reacao                                 744
+    237  Oper refin petroleo                                745
+    238  Oper coqueria                                      746
+    239  Trab prod medicam                                  747
+    240  Out trab quimicos                                  749
+    241  Trab prep fibras                                   751
+    242  Fiandeiros                                         752
+    243  Trab prep tecelagem                                753
+    244  Tecelao                                            754
+    245  Tecelao malhas                                     755
+    246  Trab acabam textil                                 756
+    247  Out trab texteis                                   759
+    248  Curtidor couro/pele                                761
+    249  Moleiro                                            771
+    250  Trab acucar                                        772
+    251  Magarefe                                           773
+    252  Trab indust alimento                               774
+    253  Trab laticinios                                    775
+    254  Padeiro/confeiteiro                                776
+    255  Trab prep cafe/cacau                               777
+    256  Trab cerveja/vinho                                 778
+    257  Out trab alim/bebida                               779
+    258  Preparador fumo                                    781
+    259  Charuteiro                                         782
+    260  Cigarreiro                                         783
+    261  Alfaiate/costureiro                                791
+    262  Chapeleiro                                         793
+    263  Modelista/cortador                                 794
+    264  Costureiro em serie                                795
+    265  Estofador                                          796
+    266  Bordador/cerzideiro                                797
+    267  Out trab costura                                   799
+    268  Sapateiro                                          801
+    269  Trab calcados                                      802
+    270  Trab artef couro                                   803
+    271  Marceneiro                                         811
+    272  Oper maq lavrar mad                                812
+    273  Out trab madeira                                   819
+    274  Cort/polidor pedra                                 820
+    275  Forjador                                           831
+    276  Ferrament/modelador                                832
+    277  Torneiro/fresador                                  833
+    278  Prep maq-ferramenta                                834
+    279  Oper maq-ferramenta                                835
+    280  Polidor metal/afiad                                836
+    281  Out trab usinagem                                  839
+    282  Ajustador mecanico                                 840
+    283  Montador maquinas                                  841
+    284  Relojoeiros                                        842
+    285  Mecanico veiculos                                  843
+    286  Mecanico aeronaves                                 844
+    287  Mecanico manut maq                                 845
+    288  Out trab mecanicos                                 849
+    289  Montador eletrico                                  851
+    290  Montador eletronico                                852
+    291  Repar eletr/eletron                                854
+    292  Eletricista instalac                               855
+    293  Inst/repar telecomun                               856
+    294  Inst/rep linhas elet                               857
+    295  Out trab eletricos                                 859
+    296  Oper radio/TV                                      861
+    297  Oper som/cinema                                    862
+    298  Encanador/tubulac                                  871
+    299  Soldador/oxicortador                               872
+    300  Chapeador/caldeir                                  873
+    301  Mont estrut metalica                               874
+    302  Joalheiro/ourives                                  880
+    303  Soprador/mold vidro                                890
+    304  Cortador/polid vidro                               891
+    305  Ceramista                                          892
+    306  Forneiro vidro                                     893
+    307  Gravador vidro                                     894
+    308  Pintor/decor vidro                                 895
+    309  Out trab vidro/ceram                               899
+    310  Trab prod borracha                                 901
+    311  Trab pneumaticos                                   902
+    312  Trab prod plastico                                 903
+    313  Trab produto papel                                 910
+    314  Compositor tipograf                                921
+    315  Impressor tipograf                                 922
+    316  Ester/eletrotipista                                923
+    317  Gravador/clicherista                               924
+    318  Fotogravador                                       925
+    319  Encadernador                                       926
+    320  Trab labor fotograf                                927
+    321  Out trab graficos                                  929
+    322  Pintor obras/estrut                                931
+    323  Out pintores                                       939
+    324  Conf instr musicais                                941
+    325  Cesteiro/prod vime                                 942
+    326  Trab mineral nao metal                             943
+    327  Out confeccionadores                               949
+    328  Pedreiro/estucador                                 951
+    329  Trab concr armado                                  952
+    330  Telhador                                           953
+    331  Carpinteiro                                        954
+    332  Ladrilh/parqueteiro                                955
+    333  Inst mat isolante                                  956
+    334  Vidraceiro                                         957
+    335  Out const civil                                    959
+    336  Oper energ eletrica                                961
+    337  Oper maq fixas                                     969
+    338  Estivador/carregador                               971
+    339  Aparelhador/emend                                  972
+    340  Oper guindaste                                     973
+    341  Oper maq const civil                               974
+    342  Out manip mercadoria                               979
+    343  Contram/marinheiro                                 981
+    344  Maquin/foguista emb                                982
+    345  Maquin/foguista trem                               983
+    346  Ag/aux manobras                                    984
+    347  Condutor veiculos                                  985
+    348  Condutor animais                                   986
+    349  Out condutores                                     989
+    350  Out trab bracais                                   999
