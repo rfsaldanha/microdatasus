@@ -4,8 +4,6 @@ O pacote para o R *microdatasus* apresenta funções para download dos arquivos 
 
 ## Instalação
 
-A versão de *desenvolvimento* pode ser instalada no R desta forma:
-
 ```r
 install.packages("remotes")
 remotes::install_github("rfsaldanha/microdatasus")
@@ -27,7 +25,7 @@ O manual para a utilização do pacote encontra-se na [Wiki do projeto](https://
 
 ### Sistemas de Informação em Saúde suportados
 * Download: SIM, SINASC, SIH, CNES, SIA.
-* Pré-processamento: SIM, SINASC, SIH-RD.
+* Pré-processamento: SIM, SINASC, SIH-RD, CNES-ST, CNES-PF.
 
 ## Agradecimento
 
