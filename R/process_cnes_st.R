@@ -37,11 +37,11 @@ process_cnes_st <- function(data, nomes = TRUE, municipality_data = TRUE) {
 
   # CODUFMUN
   if ("CODUFMUN" %in% variables_names & municipality_data == TRUE) {
-    data$CODUFMUN <- as.integer(as.character(data$CODUFMUN))
+    data$CODUFMUN <- as.character(data$CODUFMUN)
     colnames(tabMun)[1] <- "CODUFMUN"
-    data <- dplyr::left_join(data, microdatasus::tabMun, by = "CODUFMUN")
+    data <- dplyr::left_join(data, microdatasus::tabMun, by = c("CODUFMUN" = "munResUf"))
   } else {
-    data$CODUFMUN <- as.integer(as.character(data$CODUFMUN))
+    data$CODUFMUN <- as.character(data$CODUFMUN)
   }
 
   # COD_CEP
