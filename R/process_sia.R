@@ -249,7 +249,7 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
     # Nome OCUPACAO
     if(nome_ocupacao == TRUE){
       data <- dplyr::left_join(data, microdatasus::tabCBO, by = c("PA_CBOCOD" = "cod"))
-      data <- dplyr::rename(data, ocupacao = nome)
+      data <- dplyr::rename(data, "ocupacao" = "nome")
     }
 
     # PA_MOTSAI
