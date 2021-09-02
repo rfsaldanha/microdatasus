@@ -28,11 +28,11 @@ process_cnes_pf <- function(data, municipality_data = TRUE) {
 
   # UFMUNRES
   if ("UFMUNRES" %in% variables_names & municipality_data == TRUE) {
-    data$UFMUNRES <- as.integer(as.character(data$UFMUNRES))
+    data$UFMUNRES <- as.character(data$UFMUNRES)
     colnames(tabMun)[1] <- "UFMUNRES"
-    data <- dplyr::left_join(data, microdatasus::tabMun, by = "UFMUNRES")
+    data <- dplyr::left_join(data, microdatasus::tabMun, by = c("UFMUNRES" = "munResUf"))
   } else {
-    data$UFMUNRES <- as.integer(as.character(data$UFMUNRES))
+    data$UFMUNRES <- as.character(data$UFMUNRES)
   }
 
   # REGSAUDE
@@ -260,7 +260,7 @@ process_cnes_pf <- function(data, municipality_data = TRUE) {
   # CBO
   if ("CBO" %in% variables_names) {
     data$CBO <- as.character(levels(data$CBO))[data$CBO]
-    data <- dplyr::left_join(data, microdatasus::cbo02, by = c("CBO" = "COD"))
+    data <- dplyr::left_join(data, microdatasus::tabCBO, by = c("CBO" = "cod"))
   }
 
   # NOMEPROF
@@ -270,8 +270,11 @@ process_cnes_pf <- function(data, municipality_data = TRUE) {
 
   # VINCULAC
   if("VINCULAC" %in% variables_names){
-    data$VINCULAC <- as.character(levels(data$VINCULAC))[data$VINCULAC]
-    data <- dplyr::left_join(data, microdatasus::vinculo, by = c("VINCULAC" = "CO_VINC"))
+    data$VINCULAC <- as.numeric(levels(data$VINCULAC))[data$VINCULAC]
+    data$VINCULAC[data$VINCULAC==1] <- "Profissional CONTRATADO"
+    data$VINCULAC[data$VINCULAC==2] <- "Profissional AUT\u00d4NOMO"
+    data$VINCULAC[data$VINCULAC==3] <- "Profissional V\u00cdNCULO N\u00c3O IDENTIFICADO"
+    data$VINCULAC <- factor(data$VINCULAC)
   }
 
   # NAT_JUR
