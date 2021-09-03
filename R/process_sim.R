@@ -14,6 +14,7 @@
 #' df_a <- process_sim(df)
 #' df_b <- process_sim(df, municipality_data = FALSE)
 #' }
+#' @export
 
 process_sim <- function(data, municipality_data = TRUE) {
   # Variables names

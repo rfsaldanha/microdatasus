@@ -21,6 +21,7 @@
 #' df_a <- process_sia(df)
 #' df_b <- process_sia(df, municipality_data = FALSE)
 #' }
+#' @export
 
 process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE, nome_ocupacao = TRUE, nome_equipe = TRUE, municipality_data = TRUE) {
   # Check information system

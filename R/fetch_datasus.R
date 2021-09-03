@@ -36,6 +36,7 @@
 #'               uf = c("RJ", "MG", "SP", "ES"),
 #'               information_system = "SIH-RD")
 #' }
+#' @export
 
 fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all", information_system, vars=NULL){
   # Verify health information system

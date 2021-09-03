@@ -14,6 +14,7 @@
 #' df_a <- process_sinasc(df)
 #' df_b <- process_sinasc(df, municipality_data = FALSE)
 #' }
+#' @export
 
 process_sinasc <- function(data, municipality_data = TRUE) {
   # Variables names
