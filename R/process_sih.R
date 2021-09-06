@@ -972,10 +972,6 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     }
 
     # CBOR
-    if("CBOR" %in% variables_names){
-      data$CBOR <- as.character(data$CBOR)
-    }
-
     if ("CBOR" %in% variables_names) {
       data$CBOR <- as.character(data$CBOR)
       colnames(tabCBO)[1] <- "CBOR"
