@@ -45,14 +45,15 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
   sisSINASC <- c("SINASC")
   sisCNES <- c("CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB","CNES-PF","CNES-EP","CNES-RC","CNES-IN","CNES-EE","CNES-EF","CNES-GM")
   sisSIA <- c("SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD")
-  available_information_system <- c(sisSIH, sisSIM, sisSINASC, sisCNES, sisSIA)
+  sisSINAN <- c("SINAN-DENGUE-FINAL", "SINAN-DENGUE-PRELIMINAR")
+  available_information_system <- c(sisSIH, sisSIM, sisSINASC, sisCNES, sisSIA, sisSINAN)
   if(!(information_system %in% available_information_system)) stop("Health informaton system unknown.")
 
   # Create dates for verification
   if(substr(information_system,1,3) == "SIH" | substr(information_system,1,4) == "CNES" | substr(information_system,1,3) == "SIA"){
     date_start <- as.Date(paste0(year_start,"-",formatC(month_start, width = 2, format = "d", flag = "0"),"-","01"))
     date_end <- as.Date(paste0(year_end,"-",formatC(month_end, width = 2, format = "d", flag = "0"),"-","01"))
-  } else if(substr(information_system,1,3) == "SIM" | information_system == "SINASC"){
+  } else if(substr(information_system,1,3) == "SIM" | information_system == "SINASC" | information_system == "SINAN-DENGUE-FINAL" | information_system == "SINAN-DENGUE-PRELIMINAR"){
     date_start <- as.Date(paste0(year_start,"-01-01"))
     date_end <- as.Date(paste0(year_end,"-01-01"))
   }
@@ -67,6 +68,10 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
   } else if(substr(information_system,1,3) == "SIM" | information_system == "SINASC"){
     dates <- seq(date_start, date_end, by = "year")
     dates <- lubridate::year(dates)
+  } else if(information_system == "SINAN-DENGUE-FINAL" | information_system == "SINAN-DENGUE-PRELIMINAR"){
+    dates <- seq(date_start, date_end, by = "year")
+    dates <- lubridate::year(dates)
+    dates <- substr(dates, 3, 4)
   }
 
 
@@ -200,6 +205,12 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
   } else if(information_system == "SIA-SAD"){
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
     files_list <- paste0(url,"SAD", file_extension)
+  } else if(information_system == "SINAN-DENGUE-FINAL"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINAN/DADOS/FINAIS/"
+    files_list <- paste0(url,"DENG", file_extension)
+  } else if(information_system == "SINAN-DENGUE-PRELIMINAR"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINAN/DADOS/PRELIM/"
+    files_list <- paste0(url,"DENG", file_extension)
   }
 
   # Dowload files

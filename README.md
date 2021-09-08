@@ -25,7 +25,7 @@ O manual para a utilização do pacote encontra-se na [Wiki do projeto](https://
 
 ### Sistemas de Informação em Saúde suportados
 * Download: SIM, SINASC, SIH, CNES, SIA.
-* Pré-processamento: SIM, SINASC, SIH-RD, CNES-ST, CNES-PF.
+* Pré-processamento: SIM, SINASC, SIH-RD, CNES-ST, CNES-PF, SINAN-DENGUE.
 
 ## Agradecimento
 
