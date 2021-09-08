@@ -18,6 +18,7 @@
 #' df_a <- process_sih(df)
 #' df_b <- process_sih(df, municipality_data = FALSE)
 #' }
+#' @export
 
 process_sih <- function(data, information_system = "SIH-RD", municipality_data = TRUE) {
   # Check information system

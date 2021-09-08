@@ -17,6 +17,7 @@
 #' df_a <- process_cnes(df, information_system = "CNES-ST")
 #' df_b <- process_cnes(df, information_system = "CNES-ST", nomes = FALSE, municipality_data = FALSE)
 #' }
+#' @export
 
 process_cnes <- function(data, information_system = c("CNES-ST", "CNES-PF"), nomes = TRUE, municipality_data = TRUE) {
   # Check information system
