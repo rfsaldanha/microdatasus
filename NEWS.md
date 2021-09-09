@@ -1,4 +1,5 @@
 # microdatasus 1.1.2
+* Document and export process_sinan_dengue function.
 
 # microdatasus 1.1.1
 * Fix NAT_JUR field at CNES files.
