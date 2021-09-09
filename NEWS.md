@@ -1,4 +1,6 @@
 # microdatasus 1.1.1
+* SINAN DENGUE files download and processing.
+* Fix NAT_JUR field at CNES files.
 
 # microdatasus 1.1.0
 
