@@ -1,3 +1,5 @@
+# microdatasus 1.1.3
+
 # microdatasus 1.1.2
 * Document and export process_sinan_dengue function.
 
