@@ -1,3 +1,6 @@
+# microdatasus 1.1.4
+* Minor correctiont at process_sinan_dengue function.
+
 # microdatasus 1.1.3
 * Documentation correction process_sinan_dengue function.
 
