@@ -1,3 +1,20 @@
+#' Process SINAN Dengue variables from DataSUS
+#'
+#' \code{process_sinan_dengue} processes SINAN Dengue variables retrieved by \code{fetch_datasus()}.
+#'
+#' This function processes SINAN Dengue variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
+#'
+#' @param data \code{data.frame} created by \code{fetch_datasus()}.
+#' @param municipality_data optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.
+#'
+#' @examples \dontrun{
+#' df <- fetch_datasus(year_start = 2016, year_end = 2016, uf = "RJ", information_system = "SINAN-DENGUE-FINAL")
+#' df <- process_sinan_dengue(year_start = 2016, year_end = 2016, uf = "RJ")
+#' df_a <- process_sinan_dengue(df)
+#' df_b <- process_sinan_dengue(df, municipality_data = FALSE)
+#' }
+#' @export
+
 process_sinan_dengue <- function(data, municipality_data = TRUE){
   # Variables names
   variables_names <- names(data)
@@ -626,7 +643,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
   # CLINC_CHIK
   if ("CLINC_CHIK" %in% variables_names) {
     data$CLINC_CHIK <- as.numeric(levels(data$CLINC_CHIK))[data$CLINC_CHIK]
-    data$CLINC_CHIK[data$CLINC_CHIK == 1] <- "Aguga"
+    data$CLINC_CHIK[data$CLINC_CHIK == 1] <- "Aguda"
     data$CLINC_CHIK[data$CLINC_CHIK == 2] <- "Cr\u00f4nica"
     data$CLINC_CHIK <- factor(data$CLINC_CHIK)
   }

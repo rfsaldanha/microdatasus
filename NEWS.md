@@ -1,6 +1,15 @@
 # microdatasus 1.2.0
 * Download and preprocess SINAN Chikungunya files.
 
+# microdatasus 1.1.4
+* Minor correctiont at process_sinan_dengue function.
+
+# microdatasus 1.1.3
+* Documentation correction process_sinan_dengue function.
+
+# microdatasus 1.1.2
+* Document and export process_sinan_dengue function.
+
 # microdatasus 1.1.1
 * Fix NAT_JUR field at CNES files.
 
