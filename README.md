@@ -24,7 +24,7 @@ dados <- process_sim(dados)
 O manual para a utilização do pacote encontra-se na [Wiki do projeto](https://github.com/rfsaldanha/microdatasus/wiki).
 
 ### Sistemas de Informação em Saúde suportados
-* Download: SIM, SINASC, SIH, CNES, SIA.
+* Download: SIM, SINASC, SIH, CNES, SIA, SINAN-DENGUE.
 * Pré-processamento: SIM, SINASC, SIH-RD, CNES-ST, CNES-PF, SINAN-DENGUE.
 
 ## Agradecimento
