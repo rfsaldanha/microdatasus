@@ -1,3 +1,6 @@
+# microdatasus 1.2.0
+* Download and preprocess SINAN Chikungunya files.
+
 # microdatasus 1.1.1
 * Fix NAT_JUR field at CNES files.
 
