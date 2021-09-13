@@ -1,6 +1,6 @@
 #' Process SINAN Chikungunya variables from DataSUS
 #'
-#' \code{process_sinan_chikungunya} processes SINAN Dengue variables retrieved by \code{fetch_datasus()}.
+#' \code{process_sinan_chikungunya} processes SINAN Chikungunya variables retrieved by \code{fetch_datasus()}.
 #'
 #' This function processes SINAN Chikungunya variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
 #'
@@ -9,8 +9,8 @@
 #'
 #' @examples \dontrun{
 #' df <- fetch_datasus(year_start = 2016, year_end = 2016, uf = "RJ", information_system = "SINAN-CHIKUNGUNYA-FINAL")
-#' df_a <- process_sinan_dengue(df)
-#' df_b <- process_sinan_dengue(df, municipality_data = FALSE)
+#' df_a <- process_sinan_chikungunya(df)
+#' df_b <- process_sinan_chikungunya(df, municipality_data = FALSE)
 #' }
 #' @export
 
