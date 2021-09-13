@@ -1,6 +1,6 @@
 Package: microdatasus
 Title: Download and preprocess DataSUS files
-Version: 1.2.0
+Version: 1.3.0
 Authors@R: 
     person(given = "Raphael",
            family = "Saldanha",

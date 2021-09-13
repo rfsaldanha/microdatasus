@@ -1,3 +1,7 @@
+# microdatasus 1.3.0
+* Download and preprocess SINAN Zika files.
+* Minor error message corrections.
+
 # microdatasus 1.2.0
 * Download and preprocess SINAN Chikungunya files.
 
