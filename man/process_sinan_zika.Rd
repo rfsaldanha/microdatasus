@@ -19,7 +19,8 @@ This function processes SINAN Zika variables retrieved by \code{fetch_datasus()}
 }
 \examples{
 \dontrun{
-df <- fetch_datasus(year_start = 2016, year_end = 2016, uf = "RJ", information_system = "SINAN-ZIKA-FINAL")
+df <- fetch_datasus(year_start = 2016, year_end = 2016,
+uf = "RJ", information_system = "SINAN-ZIKA-FINAL")
 df_a <- process_sinan_zika(df)
 df_b <- process_sinan_zika(df, municipality_data = FALSE)
 }
