@@ -1,3 +1,6 @@
+# microdatasus 1.3.1
+* Update functions documentation.
+
 # microdatasus 1.3.0
 * Download and preprocess SINAN Zika files.
 * Minor error message corrections.
