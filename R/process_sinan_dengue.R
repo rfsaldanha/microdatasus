@@ -643,7 +643,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
   # CLINC_CHIK
   if ("CLINC_CHIK" %in% variables_names) {
     data$CLINC_CHIK <- as.numeric(levels(data$CLINC_CHIK))[data$CLINC_CHIK]
-    data$CLINC_CHIK[data$CLINC_CHIK == 1] <- "Aguga"
+    data$CLINC_CHIK[data$CLINC_CHIK == 1] <- "Aguda"
     data$CLINC_CHIK[data$CLINC_CHIK == 2] <- "Cr\u00f4nica"
     data$CLINC_CHIK <- factor(data$CLINC_CHIK)
   }
