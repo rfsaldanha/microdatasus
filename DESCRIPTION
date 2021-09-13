@@ -1,6 +1,6 @@
 Package: microdatasus
 Title: Download and preprocess DataSUS files
-Version: 1.2.0
+Version: 1.3.0
 Authors@R: 
     person(given = "Raphael",
            family = "Saldanha",
@@ -15,7 +15,7 @@ Encoding: UTF-8
 LazyData: true
 LazyDataCompression: bzip2
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Imports: 
     dplyr,
     lubridate,

@@ -6,7 +6,7 @@
 #'
 #' A specific UF or a vector of UFs can be informed using the following abbreviations: "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO".
 #'
-#' The following systems are implemented: "SIH-RD", "SIH-RJ", "SIH-SP", "SIH-ER", "SIM-DO", "SIM-DOFET", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT", "SINASC", "CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB", "CNES-PF", "CNES-EP", "CNES-RC", "CNES-IN", "CNES-EE", "CNES-EF", "CNES-GM", "SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD", "SINAN-DENGUE-FINAL", "SINAN-DENGUE-PRELIMINAR", "SINAN-CHIKUNGUNYA-FINAL", "SINAN-CHIKUNGUNYA-PRELIMINAR".
+#' The following systems are implemented: "SIH-RD", "SIH-RJ", "SIH-SP", "SIH-ER", "SIM-DO", "SIM-DOFET", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT", "SINASC", "CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB", "CNES-PF", "CNES-EP", "CNES-RC", "CNES-IN", "CNES-EE", "CNES-EF", "CNES-GM", "SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD", "SINAN-DENGUE-FINAL", "SINAN-DENGUE-PRELIMINAR", "SINAN-CHIKUNGUNYA-FINAL", "SINAN-CHIKUNGUNYA-PRELIMINAR", "SINAN-ZIKA-FINAL", "SINAN-ZIKA-PRELIMINAR".
 #'
 #' @param year_start,year_end numeric. Start and end year of files in the format yyyy.
 #' @param month_start,month_end Numeric. Start and end month in the format mm. Those parameters are only used with the healh information systems SIH, CNES and SIA. There parameter are ignored if the information health system is SIM or SINASC.
@@ -45,7 +45,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
   sisSINASC <- c("SINASC")
   sisCNES <- c("CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB","CNES-PF","CNES-EP","CNES-RC","CNES-IN","CNES-EE","CNES-EF","CNES-GM")
   sisSIA <- c("SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD")
-  sisSINAN <- c("SINAN-DENGUE-FINAL", "SINAN-DENGUE-PRELIMINAR", "SINAN-CHIKUNGUNYA-FINAL", "SINAN-CHIKUNGUNYA-PRELIMINAR")
+  sisSINAN <- c("SINAN-DENGUE-FINAL", "SINAN-DENGUE-PRELIMINAR", "SINAN-CHIKUNGUNYA-FINAL", "SINAN-CHIKUNGUNYA-PRELIMINAR", "SINAN-ZIKA-FINAL", "SINAN-ZIKA-PRELIMINAR")
   available_information_system <- c(sisSIH, sisSIM, sisSINASC, sisCNES, sisSIA, sisSINAN)
   if(!(information_system %in% available_information_system)) stop("Health informaton system unknown.")
 
@@ -53,13 +53,13 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
   if(substr(information_system,1,3) == "SIH" | substr(information_system,1,4) == "CNES" | substr(information_system,1,3) == "SIA"){
     date_start <- as.Date(paste0(year_start,"-",formatC(month_start, width = 2, format = "d", flag = "0"),"-","01"))
     date_end <- as.Date(paste0(year_end,"-",formatC(month_end, width = 2, format = "d", flag = "0"),"-","01"))
-  } else if(substr(information_system,1,3) == "SIM" | information_system == "SINASC" | information_system == "SINAN-DENGUE-FINAL" | information_system == "SINAN-DENGUE-PRELIMINAR" | information_system == "SINAN-CHIKUNGUNYA-FINAL" | information_system == "SINAN-CHIKUNGUNYA-PRELIMINAR"){
+  } else if(substr(information_system,1,3) == "SIM" | information_system == "SINASC" | information_system == "SINAN-DENGUE-FINAL" | information_system == "SINAN-DENGUE-PRELIMINAR" | information_system == "SINAN-CHIKUNGUNYA-FINAL" | information_system == "SINAN-CHIKUNGUNYA-PRELIMINAR" | information_system == "SINAN-ZIKA-FINAL" | information_system == "SINAN-ZIKA-PRELIMINAR"){
     date_start <- as.Date(paste0(year_start,"-01-01"))
     date_end <- as.Date(paste0(year_end,"-01-01"))
   }
 
   # Check dates
-  if(date_start > date_end) stop("Start date must be before end date.")
+  if(date_start > date_end) stop("Start date must be greather than end date.")
 
   # Create sequence of dates
   if(substr(information_system,1,3) == "SIH" | substr(information_system,1,4) == "CNES" | substr(information_system,1,3) == "SIA"){
@@ -68,7 +68,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
   } else if(substr(information_system,1,3) == "SIM" | information_system == "SINASC"){
     dates <- seq(date_start, date_end, by = "year")
     dates <- lubridate::year(dates)
-  } else if(information_system == "SINAN-DENGUE-FINAL" | information_system == "SINAN-DENGUE-PRELIMINAR" | information_system == "SINAN-CHIKUNGUNYA-FINAL" | information_system == "SINAN-CHIKUNGUNYA-PRELIMINAR"){
+  } else if(information_system == "SINAN-DENGUE-FINAL" | information_system == "SINAN-DENGUE-PRELIMINAR" | information_system == "SINAN-CHIKUNGUNYA-FINAL" | information_system == "SINAN-CHIKUNGUNYA-PRELIMINAR" | information_system == "SINAN-ZIKA-FINAL" | information_system == "SINAN-ZIKA-PRELIMINAR"){
     dates <- seq(date_start, date_end, by = "year")
     dates <- lubridate::year(dates)
     dates <- substr(dates, 3, 4)
@@ -77,7 +77,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
 
   # Check UF
   ufs <- c("AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO")
-  if(!all((uf %in% c("all",ufs)))) stop("UF unknow.")
+  if(!all((uf %in% c("all",ufs)))) stop("UF unknown.")
 
   # Create download sequence by system, UF and date
   if(information_system %in% sisSIM[2:length(sisSIM)]){
@@ -217,6 +217,12 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
   } else if(information_system == "SINAN-CHIKUNGUNYA-PRELIMINAR"){
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINAN/DADOS/PRELIM/"
     files_list <- paste0(url,"CHIK", file_extension)
+  } else if(information_system == "SINAN-ZIKA-FINAL"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINAN/DADOS/FINAIS/"
+    files_list <- paste0(url,"ZIKA", file_extension)
+  } else if(information_system == "SINAN-ZIKA-PRELIMINAR"){
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINAN/DADOS/PRELIM/"
+    files_list <- paste0(url,"ZIKA", file_extension)
   }
 
   # Dowload files
