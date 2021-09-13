@@ -59,7 +59,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
   }
 
   # Check dates
-  if(date_start > date_end) stop("Start date must be before end date.")
+  if(date_start > date_end) stop("Start date must be greather than end date.")
 
   # Create sequence of dates
   if(substr(information_system,1,3) == "SIH" | substr(information_system,1,4) == "CNES" | substr(information_system,1,3) == "SIA"){
