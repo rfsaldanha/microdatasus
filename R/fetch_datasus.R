@@ -77,7 +77,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
 
   # Check UF
   ufs <- c("AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO")
-  if(!all((uf %in% c("all",ufs)))) stop("UF unknow.")
+  if(!all((uf %in% c("all",ufs)))) stop("UF unknown.")
 
   # Create download sequence by system, UF and date
   if(information_system %in% sisSIM[2:length(sisSIM)]){
