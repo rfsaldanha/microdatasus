@@ -21,7 +21,6 @@ This function processes SINAN Dengue variables retrieved by \code{fetch_datasus(
 \dontrun{
 df <- fetch_datasus(year_start = 2016, year_end = 2016,
 uf = "RJ", information_system = "SINAN-DENGUE-FINAL")
-df <- process_sinan_dengue(year_start = 2016, year_end = 2016, uf = "RJ")
 df_a <- process_sinan_dengue(df)
 df_b <- process_sinan_dengue(df, municipality_data = FALSE)
 }

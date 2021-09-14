@@ -25,8 +25,8 @@ O manual para a utilização do pacote encontra-se na [Wiki do projeto](https://
 
 ### Sistemas de Informação em Saúde suportados
 
-* Download: SIM, SINASC, SIH, CNES, SIA, SINAN-DENGUE, SINAN-CHIKUNGUNYA, SINAN-ZIKA.
-* Pré-processamento: SIM, SINASC, SIH-RD, CNES-ST, CNES-PF, SINAN-DENGUE, SINAN-CHIKUNGUNYA, SINAN-ZIKA.
+* Download: SIM, SINASC, SIH, CNES, SIA, SINAN-DENGUE, SINAN-CHIKUNGUNYA, SINAN-ZIKA, SINAN-MALARIA.
+* Pré-processamento: SIM, SINASC, SIH-RD, CNES-ST, CNES-PF, SINAN-DENGUE, SINAN-CHIKUNGUNYA, SINAN-ZIKA, SINAN-MALARIA.
 
 ## Agradecimento
 
