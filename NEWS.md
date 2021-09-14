@@ -1,3 +1,6 @@
+# microdatasus 1.4.0
+* Download and preprocess SINAN Malaria files.
+
 # microdatasus 1.3.1
 * Update functions documentation.
 
