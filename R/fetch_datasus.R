@@ -231,6 +231,14 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
     files_list <- paste0(url,"MALA", file_extension)
   }
 
+  # Check local Internet connection
+  local_internet <- curl::has_internet()
+  if(local_internet == TRUE){
+    message("Your local Internet connection seems to be ok. Starting download...")
+  } else {
+    stop("It appears that your local Internet connection is not working. Can you check?")
+  }
+
   # Dowload files
   data <- NULL
   for(file in files_list){

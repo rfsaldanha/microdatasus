@@ -17,6 +17,7 @@ LazyDataCompression: bzip2
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 Imports: 
+    curl,
     dplyr,
     lubridate,
     read.dbc,
