@@ -234,18 +234,29 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
   # Check local Internet connection
   local_internet <- curl::has_internet()
   if(local_internet == TRUE){
-    message("Your local Internet connection seems to be ok. Starting download...")
+    message("Your local Internet connection seems to be ok.")
   } else {
     stop("It appears that your local Internet connection is not working. Can you check?")
+  }
+
+  # Check DataSUS FTP server
+  remote_file_is_availabe <- RCurl::url.exists("ftp.datasus.gov.br")
+  if(remote_file_is_availabe == TRUE){
+    message("DataSUS FTP server seems to be up. Starting download...")
+  } else {
+    message("It appears that DataSUS FTP is down. I will try to download the files anyway...")
   }
 
   # Dowload files
   data <- NULL
   for(file in files_list){
+    # Temporary file
     temp <- tempfile()
 
-    # Try to dowload and read files
+    # Empty data.frame
     partial <- data.frame()
+
+    # Try to download file
     tryCatch({
       utils::download.file(file, temp, mode = "wb")
       partial <- read.dbc::read.dbc(temp)
