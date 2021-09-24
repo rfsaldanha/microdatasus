@@ -1,6 +1,6 @@
 Package: microdatasus
 Title: Download and preprocess DataSUS files
-Version: 1.4.0
+Version: 1.4.1
 Authors@R: 
     person(given = "Raphael",
            family = "Saldanha",
@@ -17,8 +17,10 @@ LazyDataCompression: bzip2
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 Imports: 
+    curl,
     dplyr,
     lubridate,
+    RCurl,
     read.dbc,
     stringi,
     utils

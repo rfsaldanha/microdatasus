@@ -6,13 +6,14 @@
 #'
 #' A specific UF or a vector of UFs can be informed using the following abbreviations: "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO".
 #'
-#' The following systems are implemented: "SIH-RD", "SIH-RJ", "SIH-SP", "SIH-ER", "SIM-DO", "SIM-DOFET", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT", "SINASC", "CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB", "CNES-PF", "CNES-EP", "CNES-RC", "CNES-IN", "CNES-EE", "CNES-EF", "CNES-GM", "SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD", "SINAN-DENGUE-FINAL", "SINAN-DENGUE-PRELIMINAR", "SINAN-CHIKUNGUNYA-FINAL", "SINAN-CHIKUNGUNYA-PRELIMINAR", "SINAN-ZIKA-FINAL", "SINAN-ZIKA-PRELIMINAR", "SINAN-MALARIA-FINAL", "SINAN-MALARIA-PRELIMINAR".
+#' The following systems are implemented: "SIH-RD", "SIH-RJ", "SIH-SP", "SIH-ER", "SIM-DO", "SIM-DO-PRELIMINAR", "SIM-DOFET", "SIM-DOFET-PRELIMINAR", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT", "SINASC", "CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB", "CNES-PF", "CNES-EP", "CNES-RC", "CNES-IN", "CNES-EE", "CNES-EF", "CNES-GM", "SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD", "SINAN-DENGUE-FINAL", "SINAN-DENGUE-PRELIMINAR", "SINAN-CHIKUNGUNYA-FINAL", "SINAN-CHIKUNGUNYA-PRELIMINAR", "SINAN-ZIKA-FINAL", "SINAN-ZIKA-PRELIMINAR", "SINAN-MALARIA-FINAL", "SINAN-MALARIA-PRELIMINAR".
 #'
 #' @param year_start,year_end numeric. Start and end year of files in the format yyyy.
-#' @param month_start,month_end Numeric. Start and end month in the format mm. Those parameters are only used with the healh information systems SIH, CNES and SIA. There parameter are ignored if the information health system is SIM or SINASC.
+#' @param month_start,month_end numeric. Start and end month in the format mm. Those parameters are only used with the healh information systems SIH, CNES and SIA. There parameter are ignored if the information health system is SIM or SINASC.
 #' @param uf an optional string or a vector of strings. By default all UFs ("Unidades Federativas") are download. See \emph{Details}.
 #' @param information_system string. The abbreviation of the health information system to be accessed. See \emph{Details}.
 #' @param vars an optional string or a vector of strings. By default, all variables read and stored, unless a list of desired variables is informed by this parameter.
+#' @param stop_on_error logical. If TRUE, the download process will be stopped if an error occurs.
 #'
 #' @section Warning:
 #' A Internet connection is needed to use this function.
@@ -38,10 +39,10 @@
 #' }
 #' @export
 
-fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all", information_system, vars=NULL){
+fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all", information_system, vars=NULL, stop_on_error = FALSE){
   # Verify health information system
   sisSIH <- c("SIH-RD","SIH-RJ","SIH-SP","SIH-ER")
-  sisSIM <- c("SIM-DO","SIM-DOFET","SIM-DOEXT","SIM-DOINF","SIM-DOMAT")
+  sisSIM <- c("SIM-DO", "SIM-DO-PRELIMINAR","SIM-DOFET", "SIM-DOFET-PRELIMINAR","SIM-DOEXT","SIM-DOINF","SIM-DOMAT")
   sisSINASC <- c("SINASC")
   sisCNES <- c("CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB","CNES-PF","CNES-EP","CNES-RC","CNES-IN","CNES-EE","CNES-EF","CNES-GM")
   sisSIA <- c("SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD")
@@ -80,7 +81,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
   if(!all((uf %in% c("all",ufs)))) stop("UF unknown.")
 
   # Create download sequence by system, UF and date
-  if(information_system %in% sisSIM[2:length(sisSIM)]){
+  if(information_system %in% sisSIM[3:length(sisSIM)]){
     file_extension <- as.vector(paste0(substr(dates, 3,4),".dbc"))
   } else if (all(uf == "all")) {
     file_extension <- as.vector(sapply(ufs, paste0, dates,".dbc"))
@@ -103,8 +104,14 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
   if(information_system == "SIM-DO") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DORES/"
     files_list <- paste0(url,"DO", file_extension)
+  } else if(information_system == "SIM-DO-PRELIMINAR") {
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/PRELIM/DORES/"
+    files_list <- paste0(url,"DO", file_extension)
   } else if (information_system == "SIM-DOFET") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
+    files_list <- paste0(url,"DOFET", file_extension)
+  } else if (information_system == "SIM-DOFET-PRELIMINAR") {
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/PRELIM/DOFET/"
     files_list <- paste0(url,"DOFET", file_extension)
   } else if (information_system == "SIM-DOEXT") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
@@ -231,13 +238,32 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
     files_list <- paste0(url,"MALA", file_extension)
   }
 
+  # Check local Internet connection
+  local_internet <- curl::has_internet()
+  if(local_internet == TRUE){
+    message("Your local Internet connection seems to be ok.")
+  } else {
+    stop("It appears that your local Internet connection is not working. Can you check?")
+  }
+
+  # Check DataSUS FTP server
+  remote_file_is_availabe <- RCurl::url.exists("ftp.datasus.gov.br")
+  if(remote_file_is_availabe == TRUE){
+    message("DataSUS FTP server seems to be up. Starting download...")
+  } else {
+    message("It appears that DataSUS FTP is down. I will try to download the files anyway...")
+  }
+
   # Dowload files
   data <- NULL
   for(file in files_list){
+    # Temporary file
     temp <- tempfile()
 
-    # Try to dowload and read files
+    # Empty data.frame
     partial <- data.frame()
+
+    # Try to download file
     tryCatch({
       utils::download.file(file, temp, mode = "wb")
       partial <- read.dbc::read.dbc(temp)
@@ -246,6 +272,10 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
     error=function(cond) {
       message(paste("Something went wrong with this URL:", file))
       message("This can be a problem with the Internet or the file does not exist yet.")
+
+      if(stop_on_error == TRUE){
+        stop("Stopping download.")
+      }
     })
 
     # Merge files
