@@ -1,3 +1,8 @@
+# microdatasus 1.4.1
+* Check local Internet connection and DataSUS FTP server availability before download.
+* Argument to fetch_datasus to stop download if there is an error.
+* Now is possible to download preliminar data from SIM-DO and SIM-DOFET with "SIM-DO-PRELIM" as information system at fetch_datasus.
+
 # microdatasus 1.4.0
 * Download and preprocess SINAN Malaria files.
 
