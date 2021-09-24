@@ -6,7 +6,7 @@
 #'
 #' A specific UF or a vector of UFs can be informed using the following abbreviations: "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO".
 #'
-#' The following systems are implemented: "SIH-RD", "SIH-RJ", "SIH-SP", "SIH-ER", "SIM-DO", "SIM-DOFET", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT", "SINASC", "CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB", "CNES-PF", "CNES-EP", "CNES-RC", "CNES-IN", "CNES-EE", "CNES-EF", "CNES-GM", "SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD", "SINAN-DENGUE-FINAL", "SINAN-DENGUE-PRELIMINAR", "SINAN-CHIKUNGUNYA-FINAL", "SINAN-CHIKUNGUNYA-PRELIMINAR", "SINAN-ZIKA-FINAL", "SINAN-ZIKA-PRELIMINAR", "SINAN-MALARIA-FINAL", "SINAN-MALARIA-PRELIMINAR".
+#' The following systems are implemented: "SIH-RD", "SIH-RJ", "SIH-SP", "SIH-ER", "SIM-DO", "SIM-DO-PRELIMINAR", "SIM-DOFET", "SIM-DOFET-PRELIMINAR", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT", "SINASC", "CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB", "CNES-PF", "CNES-EP", "CNES-RC", "CNES-IN", "CNES-EE", "CNES-EF", "CNES-GM", "SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD", "SINAN-DENGUE-FINAL", "SINAN-DENGUE-PRELIMINAR", "SINAN-CHIKUNGUNYA-FINAL", "SINAN-CHIKUNGUNYA-PRELIMINAR", "SINAN-ZIKA-FINAL", "SINAN-ZIKA-PRELIMINAR", "SINAN-MALARIA-FINAL", "SINAN-MALARIA-PRELIMINAR".
 #'
 #' @param year_start,year_end numeric. Start and end year of files in the format yyyy.
 #' @param month_start,month_end numeric. Start and end month in the format mm. Those parameters are only used with the healh information systems SIH, CNES and SIA. There parameter are ignored if the information health system is SIM or SINASC.
@@ -42,7 +42,7 @@
 fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all", information_system, vars=NULL, stop_on_error = FALSE){
   # Verify health information system
   sisSIH <- c("SIH-RD","SIH-RJ","SIH-SP","SIH-ER")
-  sisSIM <- c("SIM-DO","SIM-DOFET","SIM-DOEXT","SIM-DOINF","SIM-DOMAT")
+  sisSIM <- c("SIM-DO", "SIM-DO-PRELIMINAR","SIM-DOFET", "SIM-DOFET-PRELIMINAR","SIM-DOEXT","SIM-DOINF","SIM-DOMAT")
   sisSINASC <- c("SINASC")
   sisCNES <- c("CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB","CNES-PF","CNES-EP","CNES-RC","CNES-IN","CNES-EE","CNES-EF","CNES-GM")
   sisSIA <- c("SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD")
@@ -81,7 +81,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
   if(!all((uf %in% c("all",ufs)))) stop("UF unknown.")
 
   # Create download sequence by system, UF and date
-  if(information_system %in% sisSIM[2:length(sisSIM)]){
+  if(information_system %in% sisSIM[3:length(sisSIM)]){
     file_extension <- as.vector(paste0(substr(dates, 3,4),".dbc"))
   } else if (all(uf == "all")) {
     file_extension <- as.vector(sapply(ufs, paste0, dates,".dbc"))
@@ -104,8 +104,14 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
   if(information_system == "SIM-DO") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DORES/"
     files_list <- paste0(url,"DO", file_extension)
+  } else if(information_system == "SIM-DO-PRELIMINAR") {
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/PRELIM/DORES/"
+    files_list <- paste0(url,"DO", file_extension)
   } else if (information_system == "SIM-DOFET") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
+    files_list <- paste0(url,"DOFET", file_extension)
+  } else if (information_system == "SIM-DOFET-PRELIMINAR") {
+    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/PRELIM/DOFET/"
     files_list <- paste0(url,"DOFET", file_extension)
   } else if (information_system == "SIM-DOEXT") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
