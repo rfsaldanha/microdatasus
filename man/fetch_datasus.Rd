@@ -11,19 +11,22 @@ fetch_datasus(
   month_end,
   uf = "all",
   information_system,
-  vars = NULL
+  vars = NULL,
+  stop_on_error = FALSE
 )
 }
 \arguments{
 \item{year_start, year_end}{numeric. Start and end year of files in the format yyyy.}
 
-\item{month_start, month_end}{Numeric. Start and end month in the format mm. Those parameters are only used with the healh information systems SIH, CNES and SIA. There parameter are ignored if the information health system is SIM or SINASC.}
+\item{month_start, month_end}{numeric. Start and end month in the format mm. Those parameters are only used with the healh information systems SIH, CNES and SIA. There parameter are ignored if the information health system is SIM or SINASC.}
 
 \item{uf}{an optional string or a vector of strings. By default all UFs ("Unidades Federativas") are download. See \emph{Details}.}
 
 \item{information_system}{string. The abbreviation of the health information system to be accessed. See \emph{Details}.}
 
 \item{vars}{an optional string or a vector of strings. By default, all variables read and stored, unless a list of desired variables is informed by this parameter.}
+
+\item{stop_on_error}{logical. If TRUE, the download process will be stopped if an error occurs.}
 }
 \description{
 \code{fetch_datasus} downloads microdata (DBC) files from DataSUS and reads them.
