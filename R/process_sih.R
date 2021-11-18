@@ -37,12 +37,12 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # ANO_CMPT
     if("ANO_CMPT" %in% variables_names){
-      data$ANO_CMPT <- as.integer(data$ANO_CMPT)
+      data$ANO_CMPT <- as.integer(as.character(data$ANO_CMPT))
     }
 
     # MES_CMPT
     if("MES_CMPT" %in% variables_names){
-      data$MES_CMPT <- as.integer(data$MES_CMPT)
+      data$MES_CMPT <- as.integer(as.character(data$MES_CMPT))
     }
 
     # ESPEC
