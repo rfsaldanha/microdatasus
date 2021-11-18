@@ -44,9 +44,8 @@ process_cnes <- function(data, information_system = c("CNES-ST", "CNES-PF"), nom
 
     # CODUFMUN
     if ("CODUFMUN" %in% variables_names & municipality_data == TRUE) {
-      data$CODUFMUN <- as.character(data$CODUFMUN)
-      colnames(tabMun)[1] <- "CODUFMUN"
-      data <- dplyr::left_join(data, microdatasus::tabMun, by = c("CODUFMUN" = "munResUf"))
+      data$CODUFMUN <- as.numeric(levels(data$CODUFMUN))[data$CODUFMUN]
+      data <- dplyr::left_join(data, microdatasus::tabMun, by = c("CODUFMUN" = "munResCod"))
     } else {
       data$CODUFMUN <- as.character(data$CODUFMUN)
     }
