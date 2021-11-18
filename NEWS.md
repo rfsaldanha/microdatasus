@@ -1,3 +1,5 @@
+# microdatasus 1.4.2
+
 # microdatasus 1.4.1
 * Check local Internet connection and DataSUS FTP server availability before download.
 * Argument to fetch_datasus to stop download if there is an error.
