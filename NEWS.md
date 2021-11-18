@@ -1,4 +1,5 @@
 # microdatasus 1.4.2
+* Correct codmun handling for CNEST-ST data. Issue #38
 
 # microdatasus 1.4.1
 * Check local Internet connection and DataSUS FTP server availability before download.
