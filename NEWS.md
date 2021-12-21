@@ -1,4 +1,5 @@
 # microdatasus 1.4.4
+* Updates SINAN functions for DataSUS changes in file structures, from per UF basis to all data (BR).
 
 # microdatasus 1.4.3
 * Correct SIH COD_IDADE value 5 for ages above 100 years.
