@@ -80,9 +80,16 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
   ufs <- c("AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO")
   if(!all((uf %in% c("all",ufs)))) stop("UF unknown.")
 
+  # Check UF for SINAN files
+  if(information_system %in% sisSINAN & uf != "all"){
+    message("SINAN files are not available per UF. Ignoring argument 'uf' and downloading all data.")
+  }
+
   # Create download sequence by system, UF and date
   if(information_system %in% sisSIM[3:length(sisSIM)]){
     file_extension <- as.vector(paste0(substr(dates, 3,4),".dbc"))
+  } else if (information_system %in% sisSINAN){
+    file_extension <- as.vector(sapply("BR", paste0, dates,".dbc"))
   } else if (all(uf == "all")) {
     file_extension <- as.vector(sapply(ufs, paste0, dates,".dbc"))
   } else if(information_system %in% sisSIA & "SP" %in% uf){
