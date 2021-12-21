@@ -1,3 +1,6 @@
+# microdatasus 1.4.3
+* Correct SIH COD_IDADE value 5 for ages above 100 years.
+
 # microdatasus 1.4.2
 * Correct codmun handling for CNEST-ST data. Issue #38
 

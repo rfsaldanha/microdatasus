@@ -491,6 +491,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
       data$COD_IDADE[data$COD_IDADE==2] <- "Dias"
       data$COD_IDADE[data$COD_IDADE==3] <- "Meses"
       data$COD_IDADE[data$COD_IDADE==4] <- "Anos"
+      data$COD_IDADE[data$COD_IDADE==5] <- "Centena de anos (100 + idade)"
       data$COD_IDADE <- factor(data$COD_IDADE)
     }
 
