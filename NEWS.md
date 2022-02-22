@@ -1,3 +1,6 @@
+# microdatasus 1.4.5
+* Bug correction at process_sim function.
+
 # microdatasus 1.4.4
 * Updates SINAN functions for DataSUS changes in file structures, from per UF basis to all data (BR).
 
