@@ -191,10 +191,17 @@ process_sim <- function(data, municipality_data = TRUE) {
   if ("OCUP" %in% variables_names) {
     if (!("DTOBITO" %in% variables_names))
       stop("The variable DTOBITO is needed to preprocess the variable OCUP.")
+
     data$OCUP <- as.character(data$OCUP)
+
     colnames(tabOcupacao)[1] <- "OCUP"
+    tabOcupacao$OCUP = as.character(tabOcupacao$OCUP)
+
     colnames(tabCBO)[1] <- "OCUP"
+    tabCBO$OCUP = as.character(tabCBO$OCUP)
+
     ano <- lubridate::year(data$DTOBITO)
+
     data$OCUP <-
       factor(ifelse(
         ano <= 2005,
