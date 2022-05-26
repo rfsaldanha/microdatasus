@@ -49,7 +49,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
   sisSINAN <- c("SINAN-DENGUE-FINAL", "SINAN-DENGUE-PRELIMINAR", "SINAN-CHIKUNGUNYA-FINAL", "SINAN-CHIKUNGUNYA-PRELIMINAR", "SINAN-ZIKA-FINAL", "SINAN-ZIKA-PRELIMINAR", "SINAN-MALARIA-FINAL", "SINAN-MALARIA-PRELIMINAR")
   available_information_system <- c(sisSIH, sisSIM, sisSINASC, sisCNES, sisSIA, sisSINAN)
   if(!(information_system %in% available_information_system)) stop("Health informaton system unknown.")
-
+  
   # Create dates for verification
   if(substr(information_system,1,3) == "SIH" | substr(information_system,1,4) == "CNES" | substr(information_system,1,3) == "SIA"){
     date_start <- as.Date(paste0(year_start,"-",formatC(month_start, width = 2, format = "d", flag = "0"),"-","01"))
@@ -58,13 +58,14 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
     date_start <- as.Date(paste0(year_start,"-01-01"))
     date_end <- as.Date(paste0(year_end,"-01-01"))
   }
-
+  
   # Check dates
   if(date_start > date_end) stop("Start date must be greather than end date.")
-
+  
   # Create sequence of dates
   if(substr(information_system,1,3) == "SIH" | substr(information_system,1,4) == "CNES" | substr(information_system,1,3) == "SIA"){
     dates <- seq(date_start, date_end, by = "month")
+    years <- format(dates, "%Y") # find correct url
     dates <- paste0(substr(lubridate::year(dates),3,4),formatC(lubridate::month(dates), width = 2, format = "d", flag = "0"))
   } else if(substr(information_system,1,3) == "SIM" | information_system == "SINASC"){
     dates <- seq(date_start, date_end, by = "year")
@@ -74,17 +75,17 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
     dates <- lubridate::year(dates)
     dates <- substr(dates, 3, 4)
   }
-
-
+  
+  
   # Check UF
   ufs <- c("AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO")
   if(!all((uf %in% c("all",ufs)))) stop("UF unknown.")
-
+  
   # Check UF for SINAN files
   if(information_system %in% sisSINAN & uf != "all"){
     message("SINAN files are not available per UF. Ignoring argument 'uf' and downloading all data.")
   }
-
+  
   # Create download sequence by system, UF and date
   if(information_system %in% sisSIM[3:length(sisSIM)]){
     file_extension <- as.vector(paste0(substr(dates, 3,4),".dbc"))
@@ -95,18 +96,18 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
   } else if(information_system %in% sisSIA & "SP" %in% uf){
     uf_sia <- uf
     file_extension <- as.vector(sapply(uf_sia, paste0, dates,".dbc"))
-
+    
     file_extension_sp_a <- as.vector(sapply("SP", paste0, dates,"a.dbc"))
     file_extension_sp_b <- as.vector(sapply("SP", paste0, dates,"b.dbc"))
     file_extension_sp_c <- as.vector(sapply("SP", paste0, dates,"c.dbc"))
     file_extension_sp_d <- as.vector(sapply("SP", paste0, dates,"d.dbc"))
     file_extension_sp_e <- as.vector(sapply("SP", paste0, dates,"e.dbc"))
-
+    
     file_extension <- c(file_extension, file_extension_sp_a, file_extension_sp_b, file_extension_sp_c, file_extension_sp_d, file_extension_sp_e)
   } else {
     file_extension <- as.vector(sapply(uf, paste0, dates,".dbc"))
   }
-
+  
   # Create files list for download
   if(information_system == "SIM-DO") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DORES/"
@@ -130,7 +131,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
     files_list <- paste0(url,"DOMAT", file_extension)
   } else if(information_system == "SIH-RD"){
-    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/dados/"
+    url <- ifelse(years < 2008, "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/199201_200712/dados/", "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/dados/" )
     files_list <- paste0(url,"RD", file_extension)
   } else if(information_system == "SIH-RJ") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/dados/"
@@ -244,7 +245,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINAN/DADOS/PRELIM/"
     files_list <- paste0(url,"MALA", file_extension)
   }
-
+  
   # Check local Internet connection
   local_internet <- curl::has_internet()
   if(local_internet == TRUE){
@@ -252,7 +253,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
   } else {
     stop("It appears that your local Internet connection is not working. Can you check?")
   }
-
+  
   # Check DataSUS FTP server
   remote_file_is_availabe <- RCurl::url.exists("ftp.datasus.gov.br")
   if(remote_file_is_availabe == TRUE){
@@ -260,16 +261,16 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
   } else {
     message("It appears that DataSUS FTP is down. I will try to download the files anyway...")
   }
-
+  
   # Dowload files
   data <- NULL
   for(file in files_list){
     # Temporary file
     temp <- tempfile()
-
+    
     # Empty data.frame
     partial <- data.frame()
-
+    
     # Try to download file
     tryCatch({
       utils::download.file(file, temp, mode = "wb")
@@ -279,12 +280,12 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
     error=function(cond) {
       message(paste("Something went wrong with this URL:", file))
       message("This can be a problem with the Internet or the file does not exist yet.")
-
+      
       if(stop_on_error == TRUE){
         stop("Stopping download.")
       }
     })
-
+    
     # Merge files
     if(nrow(partial) > 0){
       if(!all(vars %in% names(partial))) stop("One or more variables names are unknown. Typo?")
@@ -294,9 +295,9 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
         data <- dplyr::bind_rows(data, subset(partial, select = vars))
       }
     }
-
+    
   }
-
+  
   # Return
   return(data)
 }
