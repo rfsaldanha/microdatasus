@@ -1,3 +1,6 @@
+# microdatasus 1.4.6
+* Bug correction at process_sia function.
+
 # microdatasus 1.4.5
 * Bug correction at process_sim function.
 
