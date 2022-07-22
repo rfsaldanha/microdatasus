@@ -216,7 +216,7 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
       data$PA_NIVCPL[data$PA_NIVCPL=="0"] <- "N\u00e3o se Aplica"
       data$PA_NIVCPL[data$PA_NIVCPL=="1"] <- "Aten\u00e7\u00e3o B\u00e1sica"
       data$PA_NIVCPL[data$PA_NIVCPL=="2"] <- "M\u00e9dia Complexidade"
-      data$PA_NIVCPL[data$PA_NIVCPL=="2"] <- "Alta Complexidade"
+      data$PA_NIVCPL[data$PA_NIVCPL=="3"] <- "Alta Complexidade"
       data$PA_NIVCPL <- factor(data$PA_NIVCPL)
     }
 
