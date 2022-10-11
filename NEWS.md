@@ -1,3 +1,7 @@
+# microdatasus 1.4.8
+* Tests correction
+* Typo correcntion
+
 # microdatasus 1.4.7
 * Bug correction for download with newer R versions.
 
