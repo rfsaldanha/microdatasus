@@ -1,3 +1,6 @@
+# microdatasus 1.4.7
+* Bug correction for download with newer R versions.
+
 # microdatasus 1.4.6
 * Bug correction at process_sia function.
 
