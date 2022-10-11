@@ -4,6 +4,6 @@ test_that("sinan-dengue-final at 2016", {
 })
 
 test_that("sinan-dengue-preliminar at 2020", {
-  sinan_dengue_preliminar <- fetch_datasus(year_start = 2020, year_end = 2020, information_system = "SINAN-DENGUE-PRELIMINAR")
+  sinan_dengue_preliminar <- fetch_datasus(year_start = 2021, year_end = 2021, information_system = "SINAN-DENGUE-PRELIMINAR")
   sinan_dengue_preliminar <- process_sinan_dengue(sinan_dengue_preliminar, municipality_data = TRUE)
 })
