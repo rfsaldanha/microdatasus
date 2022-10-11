@@ -272,7 +272,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all"
 
     # Try to download file
     tryCatch({
-      utils::download.file(file, temp, mode = "wb")
+      utils::download.file(file, temp, mode = "wb", method = "libcurl")
       partial <- read.dbc::read.dbc(temp)
       file.remove(temp)
     },
