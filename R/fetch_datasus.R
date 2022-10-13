@@ -381,8 +381,75 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
       no = paste0(antigo_url,"ER", file_extension)
     )
   } else if(information_system == "SINASC") {
-    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINASC/NOV/DNRES/"
-    files_list <- paste0(url,"DN", file_extension)
+    # Available dates
+    antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINASC/1994_1995/Dados/DNRES/"
+    atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINASC/1996_/Dados/DNRES/"
+    prelim_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINASC/PRELIM/DNRES/"
+    avail_antigo <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 6, stop = 9))
+    avail_atual <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 5, stop = 8))
+    avail_prelim <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = prelim_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 5, stop = 8))
+
+    # Check if required dates are available
+    if(!all(dates %in% c(avail_antigo, avail_atual, avail_prelim))){
+      message(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_antigo, avail_atual, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+    }
+    valid_dates <- dates[dates %in% c(avail_antigo, avail_atual, avail_prelim)]
+
+    # Message about preliminary data
+    if(any(valid_dates %in% avail_prelim)){
+      message(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+    }
+
+    # Message about old data
+    if(any(valid_dates %in% avail_antigo)){
+      message(paste0("The following dates are from old folders and and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+    }
+
+    # File list
+    files_list <- ifelse(
+      test = valid_dates %in% avail_atual,
+      yes = paste0(atual_url,"DO", file_extension),
+      no = ifelse(
+        test = valid_dates %in% avail_antigo,
+        yes = paste0(antigo_url,"DO", file_extension),
+        no = paste0(prelim_url,"DO", file_extension)
+      )
+    )
+  } else if (information_system == "SIM-DOFET") {
+    # Available dates
+    geral_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
+    prelim_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/PRELIM/DOFET/"
+
+    tmp <- unlist(strsplit(x = RCurl::getURL(url = geral_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- tmp[grep("DOFET", tmp)]
+    tmp <- unique(substr(x = tmp, start = 6, stop = 7))
+    avail_geral <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+
+    tmp <- unlist(strsplit(x = RCurl::getURL(url = prelim_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- tmp[grep("DOFET", tmp)]
+    tmp <- unique(substr(x = tmp, start = 6, stop = 7))
+    avail_prelim <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+
+    # Check if required dates are available
+    if(!all(dates %in% c(avail_geral, avail_prelim))){
+      message(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+    }
+    valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
+
+    # Message about preliminary data
+    if(any(valid_dates %in% avail_prelim)){
+      message(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+    }
+
+    # File list
+    files_list <- ifelse(
+      test = valid_dates %in% avail_geral,
+      yes = paste0(geral_url,"DOFET", file_extension),
+      no = paste0(prelim_url,"DOFET", file_extension)
+    )
+
+    # url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINASC/NOV/DNRES/"
+    # files_list <- paste0(url,"DN", file_extension)
   } else if(information_system == "CNES-LT"){
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/LT/"
     files_list <- paste0(url,"LT", file_extension)
