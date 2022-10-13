@@ -39,7 +39,7 @@
 #' }
 #' @export
 
-fetch_datasus <- function(year_start, month_start, year_end, month_end, uf="all", information_system, vars=NULL, stop_on_error = FALSE){
+fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "all", information_system, vars = NULL, stop_on_error = FALSE){
   # Verify health information system
   sisSIH <- c("SIH-RD","SIH-RJ","SIH-SP","SIH-ER")
   sisSIM <- c("SIM-DO", "SIM-DO-PRELIMINAR","SIM-DOFET", "SIM-DOFET-PRELIMINAR","SIM-DOEXT","SIM-DOINF","SIM-DOMAT")
