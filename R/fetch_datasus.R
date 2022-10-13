@@ -6,7 +6,7 @@
 #'
 #' A specific UF or a vector of UFs can be informed using the following abbreviations: "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO".
 #'
-#' The following systems are implemented: "SIH-RD", "SIH-RJ", "SIH-SP", "SIH-ER", "SIM-DO", "SIM-DO-PRELIMINAR", "SIM-DOFET", "SIM-DOFET-PRELIMINAR", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT", "SINASC", "CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB", "CNES-PF", "CNES-EP", "CNES-RC", "CNES-IN", "CNES-EE", "CNES-EF", "CNES-GM", "SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD", "SINAN-DENGUE-FINAL", "SINAN-DENGUE-PRELIMINAR", "SINAN-CHIKUNGUNYA-FINAL", "SINAN-CHIKUNGUNYA-PRELIMINAR", "SINAN-ZIKA-FINAL", "SINAN-ZIKA-PRELIMINAR", "SINAN-MALARIA-FINAL", "SINAN-MALARIA-PRELIMINAR".
+#' The following systems are implemented: "SIH-RD", "SIH-RJ", "SIH-SP", "SIH-ER", "SIM-DO", "SIM-DOFET", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT", "SINASC", "CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB", "CNES-PF", "CNES-EP", "CNES-RC", "CNES-IN", "CNES-EE", "CNES-EF", "CNES-GM", "SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD", "SINAN-DENGUE-FINAL", "SINAN-DENGUE-PRELIMINAR", "SINAN-CHIKUNGUNYA-FINAL", "SINAN-CHIKUNGUNYA-PRELIMINAR", "SINAN-ZIKA-FINAL", "SINAN-ZIKA-PRELIMINAR", "SINAN-MALARIA-FINAL", "SINAN-MALARIA-PRELIMINAR".
 #'
 #' @param year_start,year_end numeric. Start and end year of files in the format yyyy.
 #' @param month_start,month_end numeric. Start and end month in the format mm. Those parameters are only used with the healh information systems SIH, CNES and SIA. There parameter are ignored if the information health system is SIM or SINASC.
@@ -42,7 +42,7 @@
 fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "all", information_system, vars = NULL, stop_on_error = FALSE){
   # Verify health information system
   sisSIH <- c("SIH-RD","SIH-RJ","SIH-SP","SIH-ER")
-  sisSIM <- c("SIM-DO", "SIM-DO-PRELIMINAR","SIM-DOFET", "SIM-DOFET-PRELIMINAR","SIM-DOEXT","SIM-DOINF","SIM-DOMAT")
+  sisSIM <- c("SIM-DO", "SIM-DOFET","SIM-DOEXT","SIM-DOINF","SIM-DOMAT")
   sisSINASC <- c("SINASC")
   sisCNES <- c("CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB","CNES-PF","CNES-EP","CNES-RC","CNES-IN","CNES-EE","CNES-EF","CNES-GM")
   sisSIA <- c("SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD")
@@ -86,7 +86,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
   }
 
   # Create download sequence by system, UF and date
-  if(information_system %in% sisSIM[3:length(sisSIM)]){
+  if(information_system %in% sisSIM[2:length(sisSIM)]){
     file_extension <- as.vector(paste0(substr(dates, 3,4),".dbc"))
   } else if (information_system %in% sisSINAN){
     file_extension <- as.vector(sapply("BR", paste0, dates,".dbc"))
@@ -109,26 +109,157 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
   # Create files list for download
   if(information_system == "SIM-DO") {
-    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DORES/"
-    files_list <- paste0(url,"DO", file_extension)
-  } else if(information_system == "SIM-DO-PRELIMINAR") {
-    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/PRELIM/DORES/"
-    files_list <- paste0(url,"DO", file_extension)
+    # Available dates
+    geral_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DORES/"
+    prelim_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/PRELIM/DORES/"
+    avail_geral <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = geral_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 5, stop = 8))
+    avail_prelim <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = prelim_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 5, stop = 8))
+
+    # Check if required dates are available
+    if(!all(dates %in% c(avail_geral, avail_prelim))){
+      message(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+      valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
+    }
+
+    # Message about preliminary data
+    if(any(valid_dates %in% avail_prelim)){
+      message(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+    }
+
+    # File list
+    files_list <- ifelse(
+      test = valid_dates %in% avail_geral,
+      yes = paste0(geral_url,"DO", file_extension),
+      no = paste0(prelim_url,"DO", file_extension)
+    )
   } else if (information_system == "SIM-DOFET") {
-    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
-    files_list <- paste0(url,"DOFET", file_extension)
-  } else if (information_system == "SIM-DOFET-PRELIMINAR") {
-    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/PRELIM/DOFET/"
-    files_list <- paste0(url,"DOFET", file_extension)
+    # Available dates
+    geral_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
+    prelim_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/PRELIM/DOFET/"
+
+    tmp <- unlist(strsplit(x = RCurl::getURL(url = geral_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- tmp[grep("DOFET", tmp)]
+    tmp <- unique(substr(x = tmp, start = 6, stop = 7))
+    avail_geral <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+
+    tmp <- unlist(strsplit(x = RCurl::getURL(url = prelim_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- tmp[grep("DOFET", tmp)]
+    tmp <- unique(substr(x = tmp, start = 6, stop = 7))
+    avail_prelim <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+
+    # Check if required dates are available
+    if(!all(dates %in% c(avail_geral, avail_prelim))){
+      message(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+      valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
+    }
+
+    # Message about preliminary data
+    if(any(valid_dates %in% avail_prelim)){
+      message(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+    }
+
+    # File list
+    files_list <- ifelse(
+      test = valid_dates %in% avail_geral,
+      yes = paste0(geral_url,"DOFET", file_extension),
+      no = paste0(prelim_url,"DOFET", file_extension)
+    )
   } else if (information_system == "SIM-DOEXT") {
-    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
-    files_list <- paste0(url,"DOEXT", file_extension)
+    # Available dates
+    geral_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
+    prelim_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/PRELIM/DOFET/"
+
+    tmp <- unlist(strsplit(x = RCurl::getURL(url = geral_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- tmp[grep("DOEXT", tmp)]
+    tmp <- unique(substr(x = tmp, start = 6, stop = 7))
+    avail_geral <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+
+    tmp <- unlist(strsplit(x = RCurl::getURL(url = prelim_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- tmp[grep("DOEXT", tmp)]
+    tmp <- unique(substr(x = tmp, start = 6, stop = 7))
+    avail_prelim <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+
+    # Check if required dates are available
+    if(!all(dates %in% c(avail_geral, avail_prelim))){
+      message(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+      valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
+    }
+
+    # Message about preliminary data
+    if(any(valid_dates %in% avail_prelim)){
+      message(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+    }
+
+    # File list
+    files_list <- ifelse(
+      test = valid_dates %in% avail_geral,
+      yes = paste0(geral_url,"DOEXT", file_extension),
+      no = paste0(prelim_url,"DOEXT", file_extension)
+    )
   } else if (information_system == "SIM-DOINF") {
-    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
-    files_list <- paste0(url,"DOINF", file_extension)
+    # Available dates
+    geral_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
+    prelim_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/PRELIM/DOFET/"
+
+    tmp <- unlist(strsplit(x = RCurl::getURL(url = geral_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- tmp[grep("DOINF", tmp)]
+    tmp <- unique(substr(x = tmp, start = 6, stop = 7))
+    avail_geral <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+
+    tmp <- unlist(strsplit(x = RCurl::getURL(url = prelim_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- tmp[grep("DOINF", tmp)]
+    tmp <- unique(substr(x = tmp, start = 6, stop = 7))
+    avail_prelim <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+
+    # Check if required dates are available
+    if(!all(dates %in% c(avail_geral, avail_prelim))){
+      message(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+      valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
+    }
+
+    # Message about preliminary data
+    if(any(valid_dates %in% avail_prelim)){
+      message(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+    }
+
+    # File list
+    files_list <- ifelse(
+      test = valid_dates %in% avail_geral,
+      yes = paste0(geral_url,"DOINF", file_extension),
+      no = paste0(prelim_url,"DOINF", file_extension)
+    )
   } else if (information_system == "SIM-DOMAT") {
-    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
-    files_list <- paste0(url,"DOMAT", file_extension)
+    # Available dates
+    geral_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
+    prelim_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/PRELIM/DOFET/"
+
+    tmp <- unlist(strsplit(x = RCurl::getURL(url = geral_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- tmp[grep("DOMAT", tmp)]
+    tmp <- unique(substr(x = tmp, start = 6, stop = 7))
+    avail_geral <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+
+    tmp <- unlist(strsplit(x = RCurl::getURL(url = prelim_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- tmp[grep("DOMAT", tmp)]
+    tmp <- unique(substr(x = tmp, start = 6, stop = 7))
+    avail_prelim <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+
+    # Check if required dates are available
+    if(!all(dates %in% c(avail_geral, avail_prelim))){
+      message(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+      valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
+    }
+
+    # Message about preliminary data
+    if(any(valid_dates %in% avail_prelim)){
+      message(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+    }
+
+    # File list
+    files_list <- ifelse(
+      test = valid_dates %in% avail_geral,
+      yes = paste0(geral_url,"DOMAT", file_extension),
+      no = paste0(prelim_url,"DOMAT", file_extension)
+    )
   } else if(information_system == "SIH-RD"){
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/dados/"
     files_list <- paste0(url,"RD", file_extension)
