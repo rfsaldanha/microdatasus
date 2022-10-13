@@ -346,7 +346,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # File list
     files_list <- ifelse(
-      test = valid_dates %in% avail_geral,
+      test = valid_dates %in% avail_atual,
       yes = paste0(atual_url,"SP", file_extension),
       no = paste0(antigo_url,"SP", file_extension)
     )
@@ -376,7 +376,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # File list
     files_list <- ifelse(
-      test = valid_dates %in% avail_geral,
+      test = valid_dates %in% avail_atual,
       yes = paste0(atual_url,"ER", file_extension),
       no = paste0(antigo_url,"ER", file_extension)
     )
