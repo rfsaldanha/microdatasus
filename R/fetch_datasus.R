@@ -82,7 +82,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
   # Check UF for SINAN files
   if(information_system %in% sisSINAN & uf != "all"){
-    message("SINAN files are not available per UF. Ignoring argument 'uf' and downloading all data.")
+    message("SINAN files are not available per UF. Ignoring argument 'uf' and downloading data.")
   }
 
   # Create download sequence by system, UF and date
