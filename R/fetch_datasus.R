@@ -118,8 +118,8 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     # Check if required dates are available
     if(!all(dates %in% c(avail_geral, avail_prelim))){
       message(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
-      valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
     }
+    valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
 
     # Message about preliminary data
     if(any(valid_dates %in% avail_prelim)){
@@ -150,8 +150,8 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     # Check if required dates are available
     if(!all(dates %in% c(avail_geral, avail_prelim))){
       message(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
-      valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
     }
+    valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
 
     # Message about preliminary data
     if(any(valid_dates %in% avail_prelim)){
@@ -182,8 +182,8 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     # Check if required dates are available
     if(!all(dates %in% c(avail_geral, avail_prelim))){
       message(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
-      valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
     }
+    valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
 
     # Message about preliminary data
     if(any(valid_dates %in% avail_prelim)){
@@ -214,8 +214,8 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     # Check if required dates are available
     if(!all(dates %in% c(avail_geral, avail_prelim))){
       message(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
-      valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
     }
+    valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
 
     # Message about preliminary data
     if(any(valid_dates %in% avail_prelim)){
@@ -246,8 +246,8 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     # Check if required dates are available
     if(!all(dates %in% c(avail_geral, avail_prelim))){
       message(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
-      valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
     }
+    valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
 
     # Message about preliminary data
     if(any(valid_dates %in% avail_prelim)){
@@ -261,17 +261,125 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
       no = paste0(prelim_url,"DOMAT", file_extension)
     )
   } else if(information_system == "SIH-RD"){
-    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/dados/"
-    files_list <- paste0(url,"RD", file_extension)
+    # Available dates
+    atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/Dados/"
+    antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/199201_200712/Dados/"
+
+    tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- tmp[grep("RD", tmp)]
+    avail_atual <- unique(substr(x = tmp, start = 5, stop = 8))
+
+    tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- tmp[grep("RD", tmp)]
+    avail_antigo <- unique(substr(x = tmp, start = 5, stop = 8))
+
+    # Check if required dates are available
+    if(!all(dates %in% c(avail_atual, avail_antigo))){
+      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+    }
+    valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
+
+    # Message about preliminary data
+    if(any(valid_dates %in% avail_antigo)){
+      message(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+    }
+
+    # File list
+    files_list <- ifelse(
+      test = valid_dates %in% avail_geral,
+      yes = paste0(atual_url,"RD", file_extension),
+      no = paste0(antigo_url,"RD", file_extension)
+    )
   } else if(information_system == "SIH-RJ") {
-    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/dados/"
-    files_list <- paste0(url,"RJ", file_extension)
+    # Available dates
+    atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/Dados/"
+    antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/199201_200712/Dados/"
+
+    tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- tmp[grep("RJ", tmp)]
+    avail_atual <- unique(substr(x = tmp, start = 5, stop = 8))
+
+    tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- tmp[grep("RJ", tmp)]
+    avail_antigo <- unique(substr(x = tmp, start = 5, stop = 8))
+
+    # Check if required dates are available
+    if(!all(dates %in% c(avail_atual, avail_antigo))){
+      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+    }
+    valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
+
+    # Message about preliminary data
+    if(any(valid_dates %in% avail_antigo)){
+      message(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+    }
+
+    # File list
+    files_list <- ifelse(
+      test = valid_dates %in% avail_geral,
+      yes = paste0(atual_url,"RJ", file_extension),
+      no = paste0(antigo_url,"RJ", file_extension)
+    )
   } else if(information_system == "SIH-SP") {
-    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/dados/"
-    files_list <- paste0(url,"SP", file_extension)
+    # Available dates
+    atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/Dados/"
+    antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/199201_200712/Dados/"
+
+    tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- tmp[grep("SP", tmp)]
+    avail_atual <- unique(substr(x = tmp, start = 5, stop = 8))
+
+    tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- tmp[grep("SP", tmp)]
+    avail_antigo <- unique(substr(x = tmp, start = 5, stop = 8))
+
+    # Check if required dates are available
+    if(!all(dates %in% c(avail_atual, avail_antigo))){
+      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+    }
+    valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
+
+    # Message about preliminary data
+    if(any(valid_dates %in% avail_antigo)){
+      message(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+    }
+
+    # File list
+    files_list <- ifelse(
+      test = valid_dates %in% avail_geral,
+      yes = paste0(atual_url,"SP", file_extension),
+      no = paste0(antigo_url,"SP", file_extension)
+    )
   } else if(information_system == "SIH-ER") {
-    url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/dados/"
-    files_list <- paste0(url,"ER", file_extension)
+    # Available dates
+    atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/Dados/"
+    antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/199201_200712/Dados/"
+
+    tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- tmp[grep("ER", tmp)]
+    avail_atual <- unique(substr(x = tmp, start = 5, stop = 8))
+
+    tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- tmp[grep("ER", tmp)]
+    avail_antigo <- unique(substr(x = tmp, start = 5, stop = 8))
+
+    # Check if required dates are available
+    if(!all(dates %in% c(avail_atual, avail_antigo))){
+      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+    }
+    valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
+
+    # Message about preliminary data
+    if(any(valid_dates %in% avail_antigo)){
+      message(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+    }
+
+    # File list
+    files_list <- ifelse(
+      test = valid_dates %in% avail_geral,
+      yes = paste0(atual_url,"ER", file_extension),
+      no = paste0(antigo_url,"ER", file_extension)
+    )
   } else if(information_system == "SINASC") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINASC/NOV/DNRES/"
     files_list <- paste0(url,"DN", file_extension)
