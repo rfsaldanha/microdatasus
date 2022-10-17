@@ -4,5 +4,3 @@ test_that("sinasc works", {
   expect_true(class(sinasc) == "data.frame")
 })
 
-
-sinasc <- fetch_datasus(year_start = 1990, year_end = 2025, uf = "AC", information_system = "SINASC")
