@@ -1,3 +1,6 @@
+# microdatasus 2.0.0
+* Integrated download of old, current, and preliminar data.
+
 # microdatasus 1.4.8
 * Tests correction
 * Typo correcntion
