@@ -1,3 +1,6 @@
+# microdatasus 2.0.1
+* Ages in minute unit.
+
 # microdatasus 2.0.0
 * Integrated download of old, current, and preliminar data.
 
