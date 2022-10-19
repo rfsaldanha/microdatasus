@@ -78,6 +78,9 @@ process_sinan_malaria <- function(data, municipality_data = TRUE){
     data$NU_IDADE_N <- as.character(data$NU_IDADE_N)
     data$NU_IDADE_N[data$NU_IDADE_N == "000" | data$NU_IDADE_N == "999"] <- NA
     unidade <- substr(data$NU_IDADE_N, 1, 1)
+    # Minutos
+    data$IDADEminutos <-
+      as.numeric(ifelse(unidade == 0, substr(data$IDADE, 2, 3), NA))
     # Horas
     data$IDADEhoras <-
       as.numeric(ifelse(unidade == 1, substr(data$NU_IDADE_N, 2, 3), NA))

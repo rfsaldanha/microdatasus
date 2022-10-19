@@ -97,6 +97,9 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$IDADE <- as.character(data$IDADE)
     data$IDADE[data$IDADE == "000" | data$IDADE == "999"] <- NA
     unidade <- substr(data$IDADE, 1, 1)
+    # Minutos
+    data$IDADEminutos <-
+      as.numeric(ifelse(unidade == 0, substr(data$IDADE, 2, 3), NA))
     # Horas
     data$IDADEhoras <-
       as.numeric(ifelse(unidade == 1, substr(data$IDADE, 2, 3), NA))
