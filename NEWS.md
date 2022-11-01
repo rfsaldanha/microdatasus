@@ -1,3 +1,6 @@
+# microdatasus 2.0.2
+* SINASC bug correction (ESCMAE2010).
+
 # microdatasus 2.0.1
 * Ages in minute unit.
 
