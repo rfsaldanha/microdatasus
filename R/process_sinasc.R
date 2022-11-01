@@ -333,8 +333,8 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   }
 
   # ESCMAE2010
-  if("CODUFNATU" %in% variables_names){
-    data$CODUFNATU <- as.integer(data$CODUFNATU)
+  if ("ESCMAE2010" %in% variables_names){
+    data$ESCMAE2010 <- as.character(data$ESCMAE2010)
   }
 
   # SERIESCMAE
