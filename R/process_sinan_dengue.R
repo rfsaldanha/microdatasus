@@ -138,6 +138,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
   # CS_ESCOL_N
   if ("CS_ESCOL_N" %in% variables_names) {
     data$CS_ESCOL_N <- as.numeric(levels(data$CS_ESCOL_N))[data$CS_ESCOL_N]
+    data$CS_ESCOL_N[data$CS_ESCOL_N == 0] <- "Analfabeto"
     data$CS_ESCOL_N[data$CS_ESCOL_N == 1] <- "1a a 4a s\u00e9rie incompleta do EF"
     data$CS_ESCOL_N[data$CS_ESCOL_N == 2] <- "4a s\u00e9rie completa do EF (antigo 1o grau)"
     data$CS_ESCOL_N[data$CS_ESCOL_N == 3] <- "5a \u00e0 8a s\u00e9rie incompleta do EF (antigo gin\u00e1sio ou 1o grau)"
@@ -616,6 +617,10 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
   # CLASSI_FIN
   if ("CLASSI_FIN" %in% variables_names) {
     data$CLASSI_FIN <- as.numeric(levels(data$CLASSI_FIN))[data$CLASSI_FIN]
+    data$CLASSI_FIN[data$CLASSI_FIN == 1] <- "Dengue cl\u00e1ssico"
+    data$CLASSI_FIN[data$CLASSI_FIN == 2] <- "Dengue com complica\u00e7\u00f5es"
+    data$CLASSI_FIN[data$CLASSI_FIN == 3] <- "Febre hemorr\u00e1gica do dengue"
+    data$CLASSI_FIN[data$CLASSI_FIN == 4] <- "S\u00edndrome do choque do dengue"
     data$CLASSI_FIN[data$CLASSI_FIN == 5] <- "Descartado"
     data$CLASSI_FIN[data$CLASSI_FIN == 8] <- "Inconclusivo"
     data$CLASSI_FIN[data$CLASSI_FIN == 10] <- "Dengue"
