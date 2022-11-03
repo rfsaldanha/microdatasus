@@ -1,3 +1,6 @@
+# microdatasus 2.0.3
+* SINAN-Dengue bug correction.
+
 # microdatasus 2.0.2
 * SINASC bug correction (ESCMAE2010).
 
