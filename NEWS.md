@@ -1,3 +1,6 @@
+# microdatasus 2.0.4
+* Bug correction to download all UFs.
+
 # microdatasus 2.0.3
 * SINAN-Dengue bug correction.
 
