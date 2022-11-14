@@ -443,7 +443,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # File list
     lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
-    files_list <- paste0(url,"RD", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
+    files_list <- paste0(url,"LT", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
   } else if(information_system == "CNES-ST"){
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/ST/"
     avail <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 5, stop = 8))
