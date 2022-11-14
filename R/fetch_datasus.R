@@ -100,7 +100,12 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     }
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+    lista_uf <- vector()
+    if(uf == "all"){
+      lista_uf <- ufs
+    } else {
+      lista_uf = uf
+    }
     files_list_1 <- if(any(valid_dates %in% avail_geral)){
       paste0(geral_url,"DO", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_geral],".dbc")))
     }
