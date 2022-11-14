@@ -1,3 +1,6 @@
+# microdatasus 2.0.5
+* Bug correction to download CNES-LT files.
+
 # microdatasus 2.0.4
 * Bug correction to download all UFs.
 
