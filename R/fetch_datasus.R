@@ -902,19 +902,26 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/199407_200712/Dados/"
 
+    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
-    tmp <- tmp[grep("PA", tmp)]
-    avail_atual <- unique(substr(x = tmp, start = 5, stop = 8))
+    tmp <- tmp[grep("^PA", tmp)]
+    tmp <- tmp[substr(x = tmp, start = 3, stop = 4) %in% lista_uf]
+    avail_atual <- unique(substr(x = tmp, start = 5, stop = 9))
+    avail_atual <- gsub(pattern = "\\.", replacement = "", x = avail_atual)
 
     tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
-    tmp <- tmp[grep("PA", tmp)]
-    avail_antigo <- unique(substr(x = tmp, start = 5, stop = 8))
+    tmp <- tmp[grep("^PA", tmp)]
+    tmp <- tmp[substr(x = tmp, start = 3, stop = 4) %in% lista_uf]
+    avail_antigo <- unique(substr(x = tmp, start = 5, stop = 9))
+    avail_antigo <- gsub(pattern = "\\.", replacement = "", x = avail_antigo)
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_atual, avail_antigo))){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if(!all(dates %in% c(substr(x = avail_atual, start = 0, stop = 4), substr(x = avail_antigo, start = 0, stop = 4)))){
+      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(substr(x = avail_atual, start = 0, stop = 4), substr(x = avail_antigo, start = 0, stop = 4))], collapse = ", "), ". Only the available dates will be downloaded."))
     }
-    valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
+    valid_dates <- c(avail_atual, avail_antigo)[substr(x = c(avail_atual, avail_antigo), start = 0, stop = 4) %in% dates]
+
 
     # Message about old data
     if(any(valid_dates %in% avail_antigo)){
@@ -922,7 +929,6 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     }
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
     files_list_1 <- if(any(valid_dates %in% avail_antigo)){
       paste0(antigo_url,"PA", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
     }
@@ -935,13 +941,19 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/199407_200712/Dados/"
 
+    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
-    tmp <- tmp[grep("PS", tmp)]
-    avail_atual <- unique(substr(x = tmp, start = 5, stop = 8))
+    tmp <- tmp[grep("^PS", tmp)]
+    tmp <- tmp[substr(x = tmp, start = 3, stop = 4) %in% lista_uf]
+    avail_atual <- unique(substr(x = tmp, start = 5, stop = 9))
+    avail_atual <- gsub(pattern = "\\.", replacement = "", x = avail_atual)
 
     tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
-    tmp <- tmp[grep("PS", tmp)]
-    avail_antigo <- unique(substr(x = tmp, start = 5, stop = 8))
+    tmp <- tmp[grep("^PS", tmp)]
+    tmp <- tmp[substr(x = tmp, start = 3, stop = 4) %in% lista_uf]
+    avail_antigo <- unique(substr(x = tmp, start = 5, stop = 9))
+    avail_antigo <- gsub(pattern = "\\.", replacement = "", x = avail_antigo)
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_atual, avail_antigo))){
@@ -955,7 +967,6 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     }
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
     files_list_1 <- if(any(valid_dates %in% avail_antigo)){
       paste0(antigo_url,"PS", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
     }
@@ -968,13 +979,19 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/199407_200712/Dados/"
 
+    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
-    tmp <- tmp[grep("SAD", tmp)]
-    avail_atual <- unique(substr(x = tmp, start = 5, stop = 8))
+    tmp <- tmp[grep("^SAD", tmp)]
+    tmp <- tmp[substr(x = tmp, start = 3, stop = 4) %in% lista_uf]
+    avail_atual <- unique(substr(x = tmp, start = 5, stop = 9))
+    avail_atual <- gsub(pattern = "\\.", replacement = "", x = avail_atual)
 
     tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
-    tmp <- tmp[grep("SAD", tmp)]
-    avail_antigo <- unique(substr(x = tmp, start = 5, stop = 8))
+    tmp <- tmp[grep("^SAD", tmp)]
+    tmp <- tmp[substr(x = tmp, start = 3, stop = 4) %in% lista_uf]
+    avail_antigo <- unique(substr(x = tmp, start = 5, stop = 9))
+    avail_antigo <- gsub(pattern = "\\.", replacement = "", x = avail_antigo)
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_atual, avail_antigo))){
@@ -988,7 +1005,6 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     }
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
     files_list_1 <- if(any(valid_dates %in% avail_antigo)){
       paste0(antigo_url,"SAD", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
     }
