@@ -1,3 +1,7 @@
+# microdatasus 2.0.6
+* Updated codes of tabNaturalidade
+* SIA-PA fetch files bug corrected.
+
 # microdatasus 2.0.5
 * Bug correction to download CNES-LT files.
 
