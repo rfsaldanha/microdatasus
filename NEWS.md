@@ -1,3 +1,6 @@
+# microdatasus 2.1.0
+* Bug correction that impacted download of all UFs from monthly data health systems.
+
 # microdatasus 2.0.6
 * Updated codes of tabNaturalidade
 * SIA-PA fetch files bug corrected.
