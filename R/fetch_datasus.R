@@ -74,6 +74,12 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
   # Check UF
   ufs <- c("AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO")
   if(!all((uf %in% c("all",ufs)))) stop("UF unknown.")
+  lista_uf <- vector()
+  if(uf == "all"){
+    lista_uf <- ufs
+  } else {
+    lista_uf = uf
+  }
 
   # Check UF for SINAN files
   if(information_system %in% sisSINAN & uf != "all"){
@@ -100,12 +106,6 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     }
 
     # File list
-    lista_uf <- vector()
-    if(uf == "all"){
-      lista_uf <- ufs
-    } else {
-      lista_uf = uf
-    }
     files_list_1 <- if(any(valid_dates %in% avail_geral)){
       paste0(geral_url,"DO", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_geral],".dbc")))
     }
@@ -286,7 +286,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     }
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list_1 <- if(any(valid_dates %in% avail_antigo)){
       paste0(antigo_url,"RD", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
     }
@@ -319,7 +319,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     }
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list_1 <- if(any(valid_dates %in% avail_antigo)){
       paste0(antigo_url,"RJ", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
     }
@@ -352,7 +352,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     }
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list_1 <- if(any(valid_dates %in% avail_antigo)){
       paste0(antigo_url,"SP", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
     }
@@ -385,7 +385,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     }
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list_1 <- if(any(valid_dates %in% avail_antigo)){
       paste0(antigo_url,"ER", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
     }
@@ -419,7 +419,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     }
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list_1 <- if(any(valid_dates %in% avail_antigo)){
       paste0(antigo_url,"DNR", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
     }
@@ -442,7 +442,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     valid_dates <- dates[dates %in% avail]
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list <- paste0(url,"LT", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
   } else if(information_system == "CNES-ST"){
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/ST/"
@@ -455,7 +455,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     valid_dates <- dates[dates %in% avail]
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list <- paste0(url,"ST", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
   } else if(information_system == "CNES-DC"){
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/DC/"
@@ -468,7 +468,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     valid_dates <- dates[dates %in% avail]
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list <- paste0(url,"DC", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
   } else if(information_system == "CNES-EQ"){
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/EQ/"
@@ -481,7 +481,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     valid_dates <- dates[dates %in% avail]
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list <- paste0(url,"EQ", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
   } else if(information_system == "CNES-SR"){
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/SR/"
@@ -494,7 +494,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     valid_dates <- dates[dates %in% avail]
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list <- paste0(url,"SR", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
   } else if(information_system == "CNES-HB"){
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/HB/"
@@ -507,7 +507,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     valid_dates <- dates[dates %in% avail]
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list <- paste0(url,"HB", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
   } else if(information_system == "CNES-PF"){
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/PF/"
@@ -520,7 +520,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     valid_dates <- dates[dates %in% avail]
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list <- paste0(url,"PF", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
   } else if(information_system == "CNES-EP"){
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/EP/"
@@ -533,7 +533,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     valid_dates <- dates[dates %in% avail]
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list <- paste0(url,"EP", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
   } else if(information_system == "CNES-RC"){
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/RC/"
@@ -546,7 +546,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     valid_dates <- dates[dates %in% avail]
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list <- paste0(url,"RC", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
   } else if(information_system == "CNES-IN"){
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/IN/"
@@ -559,7 +559,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     valid_dates <- dates[dates %in% avail]
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list <- paste0(url,"IN", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
   } else if(information_system == "CNES-EE"){
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/EE/"
@@ -572,7 +572,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     valid_dates <- dates[dates %in% avail]
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list <- paste0(url,"EE", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
   } else if(information_system == "CNES-EF"){
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/EF/"
@@ -585,7 +585,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     valid_dates <- dates[dates %in% avail]
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list <- paste0(url,"EF", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
   } else if(information_system == "CNES-GM"){
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/GM/"
@@ -598,7 +598,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     valid_dates <- dates[dates %in% avail]
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list <- paste0(url,"GM", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
   } else if(information_system == "SIA-AB"){
     # Available dates
@@ -625,7 +625,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     }
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list_1 <- if(any(valid_dates %in% avail_antigo)){
       paste0(antigo_url,"AB", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
     }
@@ -658,7 +658,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     }
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list_1 <- if(any(valid_dates %in% avail_antigo)){
       paste0(antigo_url,"ABO", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
     }
@@ -691,7 +691,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     }
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list_1 <- if(any(valid_dates %in% avail_antigo)){
       paste0(antigo_url,"ACF", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
     }
@@ -724,7 +724,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     }
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list_1 <- if(any(valid_dates %in% avail_antigo)){
       paste0(antigo_url,"AD", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
     }
@@ -757,7 +757,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     }
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list_1 <- if(any(valid_dates %in% avail_antigo)){
       paste0(antigo_url,"AN", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
     }
@@ -790,7 +790,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     }
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list_1 <- if(any(valid_dates %in% avail_antigo)){
       paste0(antigo_url,"AM", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
     }
@@ -823,7 +823,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     }
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list_1 <- if(any(valid_dates %in% avail_antigo)){
       paste0(antigo_url,"AQ", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
     }
@@ -856,7 +856,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     }
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list_1 <- if(any(valid_dates %in% avail_antigo)){
       paste0(antigo_url,"AR", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
     }
@@ -889,7 +889,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     }
 
     # File list
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
     files_list_1 <- if(any(valid_dates %in% avail_antigo)){
       paste0(antigo_url,"ATD", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
     }
@@ -902,7 +902,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/199407_200712/Dados/"
 
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
 
     tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
     tmp <- tmp[grep("^PA", tmp)]
@@ -941,7 +941,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/199407_200712/Dados/"
 
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
 
     tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
     tmp <- tmp[grep("^PS", tmp)]
@@ -979,7 +979,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/199407_200712/Dados/"
 
-    lista_uf <- ifelse(test = uf == "all", yes = ufs, no = uf)
+
 
     tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
     tmp <- tmp[grep("^SAD", tmp)]
