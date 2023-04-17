@@ -1,3 +1,6 @@
+# microdatasus 2.1.1
+* Patch to use development version of read.dbc package.
+
 # microdatasus 2.1.0
 * Bug correction that impacted download of all UFs from monthly data health systems.
 
