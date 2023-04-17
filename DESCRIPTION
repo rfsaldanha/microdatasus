@@ -21,6 +21,7 @@ Imports:
     dplyr,
     lubridate,
     RCurl,
+    read.dbc,
     stringi,
     utils
 Remotes:
