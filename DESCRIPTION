@@ -21,9 +21,10 @@ Imports:
     dplyr,
     lubridate,
     RCurl,
-    read.dbc,
     stringi,
     utils
+Remotes:
+    danicat/read.dbc
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
