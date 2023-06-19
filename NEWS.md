@@ -1,3 +1,6 @@
+# microdatasus 2.1.2
+* read.dbc is back on CRAN
+
 # microdatasus 2.1.1
 * Patch to use development version of read.dbc package.
 
