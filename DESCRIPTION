@@ -15,9 +15,10 @@ Encoding: UTF-8
 LazyData: true
 LazyDataCompression: bzip2
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Imports: 
     curl,
+    data.table,
     dplyr,
     lubridate,
     RCurl,
