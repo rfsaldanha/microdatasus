@@ -1,3 +1,6 @@
+# microdatasus 2.1.3
+* process_cnes uses {data.table} backend for performance
+
 # microdatasus 2.1.2
 * read.dbc is back on CRAN
 
