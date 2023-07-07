@@ -20,11 +20,6 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   # Variables names
   variables_names <- names(data)
 
-  # NUMERODN
-  if("NUMERODN" %in% variables_names){
-    data$NUMERODN <- as.character(levels(data$NUMERODN))[data$NUMERODN]
-  }
-
   # CODINST
   if("CODINST" %in% variables_names){
     data$CODINST <- as.integer(data$CODINST)
@@ -45,19 +40,9 @@ process_sinasc <- function(data, municipality_data = TRUE) {
     data$PREFIXODN <- as.integer(data$PREFIXODN)
   }
 
-  # CODESTAB
-  if("CODESTAB" %in% variables_names){
-    data$CODESTAB <- as.character(data$CODESTAB)
-  }
-
-  # CODMUNNASC
-  if("CODMUNNASC" %in% variables_names){
-    data$CODMUNNASC <- as.character(data$CODMUNNASC)
-  }
-
   # LOCNASC
   if("LOCNASC" %in% variables_names){
-    data$LOCNASC <- as.numeric(levels(data$LOCNASC))[data$LOCNASC]
+    data$LOCNASC <- as.numeric(data$LOCNASC)
     data$LOCNASC[data$LOCNASC==0] <- NA
     data$LOCNASC[data$LOCNASC==1] <- "Hospital"
     data$LOCNASC[data$LOCNASC==2] <- "Outro estabelecimento de sa\\u00fade"
@@ -73,14 +58,14 @@ process_sinasc <- function(data, municipality_data = TRUE) {
 
   # IDADEMAE
   if("IDADEMAE" %in% variables_names){
-    data$IDADEMAE <- as.numeric(levels(data$IDADEMAE))[data$IDADEMAE]
+    data$IDADEMAE <- as.numeric(data$IDADEMAE)
     data$IDADEMAE[data$IDADEMAE==0] <- NA
     data$IDADEMAE[data$IDADEMAE==99] <- NA
   }
 
   # ESTCIVMAE
   if("ESTCIVMAE" %in% variables_names){
-    data$ESTCIVMAE <- as.numeric(levels(data$ESTCIVMAE))[data$ESTCIVMAE]
+    data$ESTCIVMAE <- as.numeric(data$ESTCIVMAE)
     data$ESTCIVMAE[data$ESTCIVMAE==0] <- NA
     data$ESTCIVMAE[data$ESTCIVMAE==1] <- "Solteira"
     data$ESTCIVMAE[data$ESTCIVMAE==2] <- "Casada"
@@ -96,7 +81,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
 
   # ESCMAE
   if("ESCMAE" %in% variables_names){
-    data$ESCMAE <- as.numeric(levels(data$ESCMAE))[data$ESCMAE]
+    data$ESCMAE <- as.numeric(data$ESCMAE)
     data$ESCMAE[data$ESCMAE==1] <- "Nenhum"
     data$ESCMAE[data$ESCMAE==2] <- "1 a 3 anos"
     data$ESCMAE[data$ESCMAE==3] <- "4 a 7 anos"
@@ -111,7 +96,6 @@ process_sinasc <- function(data, municipality_data = TRUE) {
 
   # DTNASC
   if("DTNASC" %in% variables_names){
-    data$DTNASC <- as.character(data$DTNASC)
     data$DTNASC <- as.Date(data$DTNASC, format = "%d%m%Y")
   }
 
@@ -119,7 +103,6 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   if ("CODOCUPMAE" %in% variables_names) {
     if (!("DTNASC" %in% variables_names))
       stop("The variable DTNASC is needed to preprocess the variable CODOCUPMAE")
-    data$CODOCUPMAE <- as.character(data$CODOCUPMAE)
     colnames(tabOcupacao)[1] <- "CODOCUPMAE"
     colnames(tabCBO)[1] <- "CODOCUPMAE"
     ano <- lubridate::year(data$DTNASC)
@@ -134,29 +117,26 @@ process_sinasc <- function(data, municipality_data = TRUE) {
 
   # QTDFILVIVO
   if("QTDFILVIVO" %in% variables_names){
-    data$QTDFILVIVO <- as.integer(levels(data$QTDFILVIVO))[data$QTDFILVIVO]
+    data$QTDFILVIVO <- as.numeric(data$QTDFILVIVO)
     data$QTDFILVIVO[data$QTDFILVIVO==99] <- NA
   }
 
   # QTDFILMORT
   if("QTDFILMORT" %in% variables_names){
-    data$QTDFILMORT <- as.integer(levels(data$QTDFILMORT))[data$QTDFILMORT]
+    data$QTDFILMORT <- as.numeric(data$QTDFILMORT)
     data$QTDFILMORT[data$QTDFILMORT==99] <- NA
   }
 
   # CODMUNRES
   if("CODMUNRES" %in% variables_names & municipality_data == TRUE){
-    data$CODMUNRES <- as.character(data$CODMUNRES)
     colnames(tabMun)[1] <- "CODMUNRES"
     tabMun$CODMUNRES <- as.character(tabMun$CODMUNRES)
     data <- dplyr::left_join(data, tabMun, by = "CODMUNRES")
-  } else {
-    data$CODMUNRES <- as.character(data$CODMUNRES)
   }
 
   # GESTACAO
   if("GESTACAO" %in% variables_names){
-    data$GESTACAO <- as.numeric(levels(data$GESTACAO))[data$GESTACAO]
+    data$GESTACAO <- as.numeric(data$GESTACAO)
     data$GESTACAO[data$GESTACAO==0] <- NA
     data$GESTACAO[data$GESTACAO==1] <- "Menos de 22 semanas"
     data$GESTACAO[data$GESTACAO==2] <- "22 a 27 semanas"
@@ -172,7 +152,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
 
   # GRAVIDEZ
   if("GRAVIDEZ" %in% variables_names){
-    data$GRAVIDEZ <- as.numeric(levels(data$GRAVIDEZ))[data$GRAVIDEZ]
+    data$GRAVIDEZ <- as.numeric(data$GRAVIDEZ)
     data$GRAVIDEZ[data$GRAVIDEZ==0] <- NA
     data$GRAVIDEZ[data$GRAVIDEZ==1] <- "\\u00fanica"
     data$GRAVIDEZ[data$GRAVIDEZ==2] <- "Dupla"
@@ -188,7 +168,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
 
   # PARTO
   if("PARTO" %in% variables_names){
-    data$PARTO <- as.numeric(levels(data$PARTO))[data$PARTO]
+    data$PARTO <- as.numeric(data$PARTO)
     data$PARTO[data$PARTO==0] <- NA
     data$PARTO[data$PARTO==1] <- "Vaginal"
     data$PARTO[data$PARTO==2] <- "Ces\\u00e1reo"
@@ -204,7 +184,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
 
   # CONSULTAS
   if("CONSULTAS" %in% variables_names){
-    data$CONSULTAS <- as.numeric(levels(data$CONSULTAS))[data$CONSULTAS]
+    data$CONSULTAS <- as.numeric(data$CONSULTAS)
     data$CONSULTAS[data$CONSULTAS==0] <- NA
     data$CONSULTAS[data$CONSULTAS==1] <- "Nenhuma"
     data$CONSULTAS[data$CONSULTAS==2] <- "1 a 3 vezes"
@@ -218,14 +198,9 @@ process_sinasc <- function(data, municipality_data = TRUE) {
     data$CONSULTAS <- factor(data$CONSULTAS)
   }
 
-  # HORANASC
-  if("HORANASC" %in% variables_names){
-    data$HORANASC <- as.character(data$HORANASC)
-  }
-
   # SEXO
   if("SEXO" %in% variables_names){
-    data$SEXO <- as.numeric(levels(data$SEXO))[data$SEXO]
+    data$SEXO <- as.numeric(data$SEXO)
     data$SEXO[data$SEXO==0] <- NA
     data$SEXO[data$SEXO==1] <- "Masculino"
     data$SEXO[data$SEXO==2] <- "Feminino"
@@ -235,19 +210,19 @@ process_sinasc <- function(data, municipality_data = TRUE) {
 
   # APGAR1
   if("APGAR1" %in% variables_names){
-    data$APGAR1 <- as.numeric(levels(data$APGAR1))[data$APGAR1]
+    data$APGAR1 <- as.numeric(data$APGAR1)
     data$APGAR1[data$APGAR1==99] <- NA
   }
 
   # APGAR5
   if("APGAR5" %in% variables_names){
-    data$APGAR5 <- as.numeric(levels(data$APGAR5))[data$APGAR5]
+    data$APGAR5 <- as.numeric(data$APGAR5)
     data$APGAR5[data$APGAR5==99] <- NA
   }
 
   # RACACOR
   if("RACACOR" %in% variables_names){
-    data$RACACOR <- as.numeric(levels(data$RACACOR))[data$RACACOR]
+    data$RACACOR <- as.numeric(data$RACACOR)
     data$RACACOR[data$RACACOR==1] <- "Branca"
     data$RACACOR[data$RACACOR==2] <- "Preta"
     data$RACACOR[data$RACACOR==3] <- "Amarela"
@@ -259,14 +234,14 @@ process_sinasc <- function(data, municipality_data = TRUE) {
 
   # PESO
   if("PESO" %in% variables_names){
-    data$PESO <- as.numeric(levels(data$PESO))[data$PESO]
+    data$PESO <- as.numeric(data$PESO)
     data$PESO[data$PESO==0] <- NA
     data$PESO[data$PESO==9999] <- NA
   }
 
   # IDANOMAL
   if("IDANOMAL" %in% variables_names){
-    data$IDANOMAL <- as.numeric(levels(data$IDANOMAL))[data$IDANOMAL]
+    data$IDANOMAL <- as.numeric(data$IDANOMAL)
     data$IDANOMAL[data$IDANOMAL==1] <- "Sim"
     data$IDANOMAL[data$IDANOMAL==2] <- "N\\u00e3o"
     data$IDANOMAL[data$IDANOMAL==3] <- NA
@@ -281,76 +256,47 @@ process_sinasc <- function(data, municipality_data = TRUE) {
 
   # DTCADASTRO
   if("DTCADASTRO" %in% variables_names){
-    data$DTCADASTRO <- as.character(data$DTCADASTRO)
     data$DTCADASTRO <- as.Date(data$DTCADASTRO, format = "%d%m%Y")
-  }
-
-  # CODANOMAL
-  if("CODANOMAL" %in% variables_names){
-    data$CODANOMAL <- as.character(data$CODANOMAL)
-  }
-
-  # NUMEROLOTE
-  if("NUMEROLOTE" %in% variables_names){
-    data$NUMEROLOTE <- as.character(data$NUMEROLOTE)
-  }
-
-  # VERSAOSIST
-  if("VERSAOSIST" %in% variables_names){
-    data$VERSAOSIST <- as.character(data$VERSAOSIST)
   }
 
   # DTRECEBIM
   if("DTRECEBIM" %in% variables_names){
-    data$DTRECEBIM <- as.character(data$DTRECEBIM)
     data$DTRECEBIM <- as.Date(data$DTRECEBIM, format = "%d%m%Y")
   }
 
   # DIFDATA
   if("DIFDATA" %in% variables_names){
-    data$DIFDATA <- as.integer(data$DIFDATA)
+    data$DIFDATA <- as.numeric(data$DIFDATA)
   }
 
   # DTRECORIG
   if("DTRECORIG" %in% variables_names){
-    data$DTRECORIG <- as.character(data$DTRECORIG)
     data$DTRECORIG <- as.Date(data$DTRECORIG, format = "%d%m%Y")
   }
 
   # NATURALMAE
   if("NATURALMAE" %in% variables_names){
-    data$NATURALMAE <- as.integer(data$NATURALMAE)
-  }
-
-  # CODMUNNATU
-  if("CODMUNNATU" %in% variables_names){
-    data$CODMUNNATU <- as.character(data$CODMUNNATU)
+    data$NATURALMAE <- as.numeric(data$NATURALMAE)
   }
 
   # CODUFNATU
   if("CODUFNATU" %in% variables_names){
-    data$CODUFNATU <- as.integer(data$CODUFNATU)
-  }
-
-  # ESCMAE2010
-  if ("ESCMAE2010" %in% variables_names){
-    data$ESCMAE2010 <- as.character(data$ESCMAE2010)
+    data$CODUFNATU <- as.numeric(data$CODUFNATU)
   }
 
   # SERIESCMAE
   if("SERIESCMAE" %in% variables_names){
-    data$SERIESCMAE <- as.integer(data$SERIESCMAE)
+    data$SERIESCMAE <- as.numeric(data$SERIESCMAE)
   }
 
   # DTNASCMAE
   if("DTNASCMAE" %in% variables_names){
-    data$DTNASCMAE <- as.character(data$DTNASCMAE)
     data$DTNASCMAE <- as.Date(data$DTNASCMAE, format = "%d%m%Y")
   }
 
   # RACACORMAE
   if("RACACORMAE" %in% variables_names){
-    data$RACACORMAE <- as.numeric(levels(data$RACACORMAE))[data$RACACORMAE]
+    data$RACACORMAE <- as.numeric(data$RACACORMAE)
     data$RACACORMAE[data$RACACORMAE==1] <- "Branca"
     data$RACACORMAE[data$RACACORMAE==2] <- "Preta"
     data$RACACORMAE[data$RACACORMAE==3] <- "Amarela"
@@ -361,29 +307,28 @@ process_sinasc <- function(data, municipality_data = TRUE) {
 
   # QTDGESTANT
   if("QTDGESTANT" %in% variables_names){
-    data$QTDGESTANT <- as.integer(data$QTDGESTANT)
+    data$QTDGESTANT <- as.numeric(data$QTDGESTANT)
   }
 
   # QTDPARTNOR
   if("QTDPARTNOR" %in% variables_names){
-    data$QTDPARTNOR <- as.integer(data$QTDPARTNOR)
+    data$QTDPARTNOR <- as.numeric(data$QTDPARTNOR)
   }
 
   # QTDPARTCES
   if("QTDPARTCES" %in% variables_names){
-    data$QTDPARTCES <- as.integer(data$QTDPARTCES)
+    data$QTDPARTCES <- as.numeric(data$QTDPARTCES)
   }
 
   # IDADEPAI
   if("IDADEPAI" %in% variables_names){
-    data$IDADEPAI <- as.numeric(levels(data$IDADEPAI))[data$IDADEPAI]
+    data$IDADEPAI <- as.numeric(data$IDADEPAI)
     data$IDADEPAI[data$IDADEPAI==0] <- NA
     data$IDADEPAI[data$IDADEPAI==99] <- NA
   }
 
   # DTULTMENST
   if("DTULTMENST" %in% variables_names){
-    data$DTULTMENST <- as.character(data$DTULTMENST)
     data$DTULTMENST <- as.Date(data$DTULTMENST, format = "%d%m%Y")
   }
 
@@ -394,83 +339,82 @@ process_sinasc <- function(data, municipality_data = TRUE) {
 
   # TPMETESTIM
   if("TPMETESTIM" %in% variables_names){
-    data$TPMETESTIM <- as.integer(data$TPMETESTIM)
+    data$TPMETESTIM <- as.numeric(data$TPMETESTIM)
   }
 
   # CONSPRENAT
   if("CONSPRENAT" %in% variables_names){
-    data$CONSPRENAT <- as.integer(data$CONSPRENAT)
+    data$CONSPRENAT <- as.numeric(data$CONSPRENAT)
   }
 
   # MESPRENAT
   if("MESPRENAT" %in% variables_names){
-    data$MESPRENAT <- as.integer(data$MESPRENAT)
+    data$MESPRENAT <- as.numeric(data$MESPRENAT)
   }
 
   # TPAPRESENT
   if("TPAPRESENT" %in% variables_names){
-    data$TPAPRESENT <- as.integer(data$TPAPRESENT)
+    data$TPAPRESENT <- as.numeric(data$TPAPRESENT)
   }
 
   # STTRABPART
   if("STTRABPART" %in% variables_names){
-    data$STTRABPART <- as.integer(data$STTRABPART)
+    data$STTRABPART <- as.numeric(data$STTRABPART)
   }
 
   # STCESPARTO
   if("STCESPARTO" %in% variables_names){
-    data$STCESPARTO <- as.integer(data$STCESPARTO)
+    data$STCESPARTO <- as.numeric(data$STCESPARTO)
   }
 
   # TPNASCASSI
   if("TPNASCASSI" %in% variables_names){
-    data$TPNASCASSI <- as.integer(data$TPNASCASSI)
+    data$TPNASCASSI <- as.numeric(data$TPNASCASSI)
   }
 
   # TPFUNCRESP
   if("TPFUNCRESP" %in% variables_names){
-    data$TPFUNCRESP <- as.integer(data$TPFUNCRESP)
+    data$TPFUNCRESP <- as.numeric(data$TPFUNCRESP)
   }
 
   # TPDOCRESP
   if("TPDOCRESP" %in% variables_names){
-    data$TPDOCRESP <- as.integer(data$TPDOCRESP)
+    data$TPDOCRESP <- as.numeric(data$TPDOCRESP)
   }
 
   # DTDECLARAC
   if("DTDECLARAC" %in% variables_names){
-    data$DTDECLARAC <- as.character(data$DTDECLARAC)
     data$DTDECLARAC <- as.Date(data$DTDECLARAC, format = "%d%m%Y")
   }
 
   # ESCMAEAGR1
   if("ESCMAEAGR1" %in% variables_names){
-    data$ESCMAEAGR1 <- as.integer(data$ESCMAEAGR1)
+    data$ESCMAEAGR1 <- as.numeric(data$ESCMAEAGR1)
   }
 
   # TPROBSON
   if("TPROBSON" %in% variables_names){
-    data$TPROBSON <- as.integer(data$TPROBSON)
+    data$TPROBSON <- as.numeric(data$TPROBSON)
   }
 
   # STDNEPIDEM
   if("STDNEPIDEM" %in% variables_names){
-    data$STDNEPIDEM <- as.integer(data$STDNEPIDEM)
+    data$STDNEPIDEM <- as.numeric(data$STDNEPIDEM)
   }
 
   # STDNNOVA
   if("STDNNOVA" %in% variables_names){
-    data$STDNNOVA <- as.integer(data$STDNNOVA)
+    data$STDNNOVA <- as.numeric(data$STDNNOVA)
   }
 
   # CODPAISRES
   if("CODPAISRES" %in% variables_names){
-    data$CODPAISRES <- as.integer(data$CODPAISRES)
+    data$CODPAISRES <- as.numeric(data$CODPAISRES)
   }
 
   # PARIDADE
   if("PARIDADE" %in% variables_names){
-    data$PARIDADE <- as.integer(data$PARIDADE)
+    data$PARIDADE <- as.numeric(data$PARIDADE)
   }
 
   # Purge levels
