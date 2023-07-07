@@ -25,7 +25,7 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
 
   # TP_NOT
   if ("TP_NOT" %in% variables_names) {
-    data$TP_NOT <- as.numeric(levels(data$TP_NOT))[data$TP_NOT]
+    data$TP_NOT <- as.numeric(data$TP_NOT)
     data$TP_NOT[data$TP_NOT == 1] <- "Negativa"
     data$TP_NOT[data$TP_NOT == 2] <- "Individual"
     data$TP_NOT[data$TP_NOT == 3] <- "Surto"
@@ -40,7 +40,7 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
 
   # SG_UF_NOT
   if ("SG_UF_NOT" %in% variables_names) {
-    data$SG_UF_NOT <- as.numeric(levels(data$SG_UF_NOT))[data$SG_UF_NOT]
+    data$SG_UF_NOT <- as.numeric(data$SG_UF_NOT)
     data$SG_UF_NOT[data$SG_UF_NOT == 0] <- "Ignorado"
     data$SG_UF_NOT[data$SG_UF_NOT == 99] <- "Ignorado"
     data$SG_UF_NOT[data$SG_UF_NOT == 11] <- "Rond\u00f4nia"
@@ -75,7 +75,6 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
 
   # IDADE
   if ("NU_IDADE_N" %in% variables_names) {
-    data$NU_IDADE_N <- as.character(data$NU_IDADE_N)
     data$NU_IDADE_N[data$NU_IDADE_N == "000" | data$NU_IDADE_N == "999"] <- NA
     unidade <- substr(data$NU_IDADE_N, 1, 1)
     # Minutos
@@ -103,7 +102,7 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
 
   # CS_SEXO
   if ("CS_SEXO" %in% variables_names) {
-    data$CS_SEXO <- as.character(levels(data$CS_SEXO))[data$CS_SEXO]
+    data$CS_SEXO <- as.character(data$CS_SEXO)
     data$CS_SEXO[data$CS_SEXO == "M"] <- "Masculino"
     data$CS_SEXO[data$CS_SEXO == "F"] <- "Feminino"
     data$CS_SEXO[data$CS_SEXO == "I"] <- "Ignorado"
@@ -112,7 +111,7 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
 
   # CS_GESTANT
   if ("CS_GESTANT" %in% variables_names) {
-    data$CS_GESTANT <- as.numeric(levels(data$CS_GESTANT))[data$CS_GESTANT]
+    data$CS_GESTANT <- as.numeric(data$CS_GESTANT)
     data$CS_GESTANT[data$CS_GESTANT == 1] <- "1o trimestre"
     data$CS_GESTANT[data$CS_GESTANT == 2] <- "2o trimestre"
     data$CS_GESTANT[data$CS_GESTANT == 3] <- "3o trimestre"
@@ -125,7 +124,7 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
 
   # CS_RACA
   if ("CS_RACA" %in% variables_names) {
-    data$CS_RACA <- as.numeric(levels(data$CS_RACA))[data$CS_RACA]
+    data$CS_RACA <- as.numeric(data$CS_RACA)
     data$CS_RACA[data$CS_RACA == 1] <- "Branca"
     data$CS_RACA[data$CS_RACA == 2] <- "Preta"
     data$CS_RACA[data$CS_RACA == 3] <- "Amarela"
@@ -137,7 +136,7 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
 
   # CS_ESCOL_N
   if ("CS_ESCOL_N" %in% variables_names) {
-    data$CS_ESCOL_N <- as.numeric(levels(data$CS_ESCOL_N))[data$CS_ESCOL_N]
+    data$CS_ESCOL_N <- as.numeric(data$CS_ESCOL_N)
     data$CS_ESCOL_N[data$CS_ESCOL_N == 1] <- "1a a 4a s\u00e9rie incompleta do EF"
     data$CS_ESCOL_N[data$CS_ESCOL_N == 2] <- "4a s\u00e9rie completa do EF (antigo 1o grau)"
     data$CS_ESCOL_N[data$CS_ESCOL_N == 3] <- "5a \u00e0 8a s\u00e9rie incompleta do EF (antigo gin\u00e1sio ou 1o grau)"
@@ -153,7 +152,7 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
 
   # SG_UF
   if ("SG_UF" %in% variables_names) {
-    data$SG_UF <- as.numeric(levels(data$SG_UF))[data$SG_UF]
+    data$SG_UF <- as.numeric(data$SG_UF)
     data$SG_UF[data$SG_UF == 0] <- "Ignorado"
     data$SG_UF[data$SG_UF == 99] <- "Ignorado"
     data$SG_UF[data$SG_UF == 11] <- "Rond\u00f4nia"
@@ -188,19 +187,17 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
 
   # ID_PAIS
   if ("ID_PAIS" %in% variables_names) {
-    data$ID_PAIS <- as.character(levels(data$ID_PAIS))[data$ID_PAIS]
     data$ID_PAIS <- dplyr::left_join(data, microdatasus::paisnet, by = c("ID_PAIS" = "ID_PAIS"))$NM_PAIS
   }
 
   # ID_OCUPA_N
   if ("ID_OCUPA_N" %in% variables_names) {
-    data$ID_OCUPA_N <- as.character(levels(data$ID_OCUPA_N))[data$ID_OCUPA_N]
     data$ID_OCUPA_N <- factor(dplyr::left_join(data, microdatasus::tabCBO, by = c("ID_OCUPA_N" = "cod"))$nome)
   }
 
   # CLASSI_FIN
   if ("CLASSI_FIN" %in% variables_names) {
-    data$CLASSI_FIN <- as.numeric(levels(data$CLASSI_FIN))[data$CLASSI_FIN]
+    data$CLASSI_FIN <- as.numeric(data$CLASSI_FIN)
     data$CLASSI_FIN[data$CLASSI_FIN == 5] <- "Descartado"
     data$CLASSI_FIN[data$CLASSI_FIN == 8] <- "Inconclusivo"
     data$CLASSI_FIN[data$CLASSI_FIN == 10] <- "Dengue"
@@ -212,7 +209,7 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
 
   # CRITERIO
   if ("CRITERIO" %in% variables_names) {
-    data$CRITERIO <- as.numeric(levels(data$CRITERIO))[data$CRITERIO]
+    data$CRITERIO <- as.numeric(data$CRITERIO)
     data$CRITERIO[data$CRITERIO == 1] <- "Laborat\u00f3rio"
     data$CRITERIO[data$CRITERIO == 2] <- "Cl\u00ednico epidemiol\u00f3gico"
     data$CRITERIO[data$CRITERIO == 3] <- "Em investiga\u00e7\u00e3o"
@@ -221,7 +218,7 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
 
   # TPAUTOCTO
   if ("TPAUTOCTO" %in% variables_names) {
-    data$TPAUTOCTO <- as.numeric(levels(data$TPAUTOCTO))[data$TPAUTOCTO]
+    data$TPAUTOCTO <- as.numeric(data$TPAUTOCTO)
     data$TPAUTOCTO[data$TPAUTOCTO == 1] <- "Sim"
     data$TPAUTOCTO[data$TPAUTOCTO == 2] <- "N\u00e3o"
     data$TPAUTOCTO[data$TPAUTOCTO == 3] <- "Indeterminado"
@@ -230,7 +227,7 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
 
   # COUFINF
   if ("COUFINF" %in% variables_names) {
-    data$COUFINF <- as.numeric(levels(data$COUFINF))[data$COUFINF]
+    data$COUFINF <- as.numeric(data$COUFINF)
     data$COUFINF[data$COUFINF == 0] <- "Ignorado"
     data$COUFINF[data$COUFINF == 99] <- "Ignorado"
     data$COUFINF[data$COUFINF == 11] <- "Rond\u00f4nia"
@@ -265,13 +262,12 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
 
   # COPAISINF
   if ("COPAISINF" %in% variables_names) {
-    data$COPAISINF <- as.character(levels(data$COPAISINF))[data$COPAISINF]
     data$COPAISINF <- dplyr::left_join(data, microdatasus::paisnet, by = c("COPAISINF" = "COPAISINF"))$NM_PAIS
   }
 
   # DOENCA_TRA
   if ("DOENCA_TRA" %in% variables_names) {
-    data$DOENCA_TRA <- as.numeric(levels(data$DOENCA_TRA))[data$DOENCA_TRA]
+    data$DOENCA_TRA <- as.numeric(data$DOENCA_TRA)
     data$DOENCA_TRA[data$DOENCA_TRA == 1] <- "Sim"
     data$DOENCA_TRA[data$DOENCA_TRA == 2] <- "N\u00e3o"
     data$DOENCA_TRA[data$DOENCA_TRA == 9] <- "Ignorado"
@@ -280,7 +276,7 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
 
   # EVOLUCAO
   if ("EVOLUCAO" %in% variables_names) {
-    data$EVOLUCAO <- as.numeric(levels(data$EVOLUCAO))[data$EVOLUCAO]
+    data$EVOLUCAO <- as.numeric(data$EVOLUCAO)
     data$EVOLUCAO[data$EVOLUCAO == 1] <- "Cura"
     data$EVOLUCAO[data$EVOLUCAO == 2] <- "\u00d3bito por dengue"
     data$EVOLUCAO[data$EVOLUCAO == 3] <- "\u00d3bito por outras causas"
@@ -301,7 +297,7 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
 
   # CS_FLXRET
   if ("CS_FLXRET" %in% variables_names) {
-    data$CS_FLXRET <- as.numeric(levels(data$CS_FLXRET))[data$CS_FLXRET]
+    data$CS_FLXRET <- as.numeric(data$CS_FLXRET)
     data$CS_FLXRET[data$CS_FLXRET == 0] <- "N\u00e3o"
     data$CS_FLXRET[data$CS_FLXRET == 1] <- "Habilitado para envio"
     data$CS_FLXRET[data$CS_FLXRET == 2] <- "Enviado"
