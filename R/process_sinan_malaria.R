@@ -25,7 +25,7 @@ process_sinan_malaria <- function(data, municipality_data = TRUE){
 
   # TP_NOT
   if ("TP_NOT" %in% variables_names) {
-    data$TP_NOT <- as.numeric(levels(data$TP_NOT))[data$TP_NOT]
+    data$TP_NOT <- as.numeric(data$TP_NOT)
     data$TP_NOT[data$TP_NOT == 1] <- "Negativa"
     data$TP_NOT[data$TP_NOT == 2] <- "Individual"
     data$TP_NOT[data$TP_NOT == 3] <- "Surto"
@@ -40,7 +40,7 @@ process_sinan_malaria <- function(data, municipality_data = TRUE){
 
   # SG_UF_NOT
   if ("SG_UF_NOT" %in% variables_names) {
-    data$SG_UF_NOT <- as.numeric(levels(data$SG_UF_NOT))[data$SG_UF_NOT]
+    data$SG_UF_NOT <- as.numeric(data$SG_UF_NOT)
     data$SG_UF_NOT[data$SG_UF_NOT == 0] <- "Ignorado"
     data$SG_UF_NOT[data$SG_UF_NOT == 99] <- "Ignorado"
     data$SG_UF_NOT[data$SG_UF_NOT == 11] <- "Rond\u00f4nia"
@@ -75,7 +75,6 @@ process_sinan_malaria <- function(data, municipality_data = TRUE){
 
   # IDADE
   if ("NU_IDADE_N" %in% variables_names) {
-    data$NU_IDADE_N <- as.character(data$NU_IDADE_N)
     data$NU_IDADE_N[data$NU_IDADE_N == "000" | data$NU_IDADE_N == "999"] <- NA
     unidade <- substr(data$NU_IDADE_N, 1, 1)
     # Minutos
@@ -103,7 +102,6 @@ process_sinan_malaria <- function(data, municipality_data = TRUE){
 
   # CS_SEXO
   if ("CS_SEXO" %in% variables_names) {
-    data$CS_SEXO <- as.character(levels(data$CS_SEXO))[data$CS_SEXO]
     data$CS_SEXO[data$CS_SEXO == "M"] <- "Masculino"
     data$CS_SEXO[data$CS_SEXO == "F"] <- "Feminino"
     data$CS_SEXO[data$CS_SEXO == "I"] <- "Ignorado"
@@ -112,7 +110,7 @@ process_sinan_malaria <- function(data, municipality_data = TRUE){
 
   # CS_GESTANT
   if ("CS_GESTANT" %in% variables_names) {
-    data$CS_GESTANT <- as.numeric(levels(data$CS_GESTANT))[data$CS_GESTANT]
+    data$CS_GESTANT <- as.numeric(data$CS_GESTANT)
     data$CS_GESTANT[data$CS_GESTANT == 1] <- "1o trimestre"
     data$CS_GESTANT[data$CS_GESTANT == 2] <- "2o trimestre"
     data$CS_GESTANT[data$CS_GESTANT == 3] <- "3o trimestre"
@@ -125,7 +123,7 @@ process_sinan_malaria <- function(data, municipality_data = TRUE){
 
   # CS_RACA
   if ("CS_RACA" %in% variables_names) {
-    data$CS_RACA <- as.numeric(levels(data$CS_RACA))[data$CS_RACA]
+    data$CS_RACA <- as.numeric(data$CS_RACA)
     data$CS_RACA[data$CS_RACA == 1] <- "Branca"
     data$CS_RACA[data$CS_RACA == 2] <- "Preta"
     data$CS_RACA[data$CS_RACA == 3] <- "Amarela"
@@ -137,7 +135,7 @@ process_sinan_malaria <- function(data, municipality_data = TRUE){
 
   # CS_ESCOL_N
   if ("CS_ESCOL_N" %in% variables_names) {
-    data$CS_ESCOL_N <- as.numeric(levels(data$CS_ESCOL_N))[data$CS_ESCOL_N]
+    data$CS_ESCOL_N <- as.numeric(data$CS_ESCOL_N)
     data$CS_ESCOL_N[data$CS_ESCOL_N == 1] <- "1a a 4a s\u00e9rie incompleta do EF"
     data$CS_ESCOL_N[data$CS_ESCOL_N == 2] <- "4a s\u00e9rie completa do EF (antigo 1o grau)"
     data$CS_ESCOL_N[data$CS_ESCOL_N == 3] <- "5a \u00e0 8a s\u00e9rie incompleta do EF (antigo gin\u00e1sio ou 1o grau)"
@@ -153,7 +151,7 @@ process_sinan_malaria <- function(data, municipality_data = TRUE){
 
   # SG_UF
   if ("SG_UF" %in% variables_names) {
-    data$SG_UF <- as.numeric(levels(data$SG_UF))[data$SG_UF]
+    data$SG_UF <- as.numeric(data$SG_UF)
     data$SG_UF[data$SG_UF == 0] <- "Ignorado"
     data$SG_UF[data$SG_UF == 99] <- "Ignorado"
     data$SG_UF[data$SG_UF == 11] <- "Rond\u00f4nia"
@@ -188,19 +186,17 @@ process_sinan_malaria <- function(data, municipality_data = TRUE){
 
   # ID_PAIS
   if ("ID_PAIS" %in% variables_names) {
-    data$ID_PAIS <- as.character(levels(data$ID_PAIS))[data$ID_PAIS]
     data$ID_PAIS <- dplyr::left_join(data, microdatasus::paisnet, by = c("ID_PAIS" = "ID_PAIS"))$NM_PAIS
   }
 
   # ID_OCUPA_N
   if ("ID_OCUPA_N" %in% variables_names) {
-    data$ID_OCUPA_N <- as.character(levels(data$ID_OCUPA_N))[data$ID_OCUPA_N]
     data$ID_OCUPA_N <- factor(dplyr::left_join(data, microdatasus::tabCBO, by = c("ID_OCUPA_N" = "cod"))$nome)
   }
 
   # CLASSI_FIN
   if ("CLASSI_FIN" %in% variables_names) {
-    data$CLASSI_FIN <- as.numeric(levels(data$CLASSI_FIN))[data$CLASSI_FIN]
+    data$CLASSI_FIN <- as.numeric(data$CLASSI_FIN)
     data$CLASSI_FIN[data$CLASSI_FIN == 1] <- "Confirmado"
     data$CLASSI_FIN[data$CLASSI_FIN == 2] <- "Descartado"
     data$CLASSI_FIN <- factor(data$CLASSI_FIN)
@@ -208,7 +204,7 @@ process_sinan_malaria <- function(data, municipality_data = TRUE){
 
   # AT_ATIVIDA
   if ("AT_ATIVIDA" %in% variables_names) {
-    data$AT_ATIVIDA <- as.numeric(levels(data$AT_ATIVIDA))[data$AT_ATIVIDA]
+    data$AT_ATIVIDA <- as.numeric(data$AT_ATIVIDA)
     data$AT_ATIVIDA[data$AT_ATIVIDA == 1] <- "Agricultura"
     data$AT_ATIVIDA[data$AT_ATIVIDA == 2] <- "Pecu\u00e1ria"
     data$AT_ATIVIDA[data$AT_ATIVIDA == 3] <- "Dom\u00e9stica"
@@ -226,7 +222,7 @@ process_sinan_malaria <- function(data, municipality_data = TRUE){
 
   # AT_LAMINA
   if ("AT_LAMINA" %in% variables_names) {
-    data$AT_LAMINA <- as.numeric(levels(data$AT_LAMINA))[data$AT_LAMINA]
+    data$AT_LAMINA <- as.numeric(data$AT_LAMINA)
     data$AT_LAMINA[data$AT_LAMINA == 1] <- "BP"
     data$AT_LAMINA[data$AT_LAMINA == 2] <- "BA"
     data$AT_LAMINA[data$AT_LAMINA == 3] <- "LVC"
@@ -235,7 +231,7 @@ process_sinan_malaria <- function(data, municipality_data = TRUE){
 
   # AT_SINTOMA
   if ("AT_SINTOMA" %in% variables_names) {
-    data$AT_SINTOMA <- as.numeric(levels(data$AT_SINTOMA))[data$AT_SINTOMA]
+    data$AT_SINTOMA <- as.numeric(data$AT_SINTOMA)
     data$AT_SINTOMA[data$AT_SINTOMA == 1] <- "Com sintomas"
     data$AT_SINTOMA[data$AT_SINTOMA == 2] <- "Sem sintomas"
     data$AT_SINTOMA <- factor(data$AT_SINTOMA)
@@ -243,7 +239,7 @@ process_sinan_malaria <- function(data, municipality_data = TRUE){
 
   # TPAUTOCTO
   if ("TPAUTOCTO" %in% variables_names) {
-    data$TPAUTOCTO <- as.numeric(levels(data$TPAUTOCTO))[data$TPAUTOCTO]
+    data$TPAUTOCTO <- as.numeric(data$TPAUTOCTO)
     data$TPAUTOCTO[data$TPAUTOCTO == 1] <- "Sim"
     data$TPAUTOCTO[data$TPAUTOCTO == 2] <- "N\u00e3o"
     data$TPAUTOCTO[data$TPAUTOCTO == 3] <- "Indeterminado"
@@ -252,7 +248,7 @@ process_sinan_malaria <- function(data, municipality_data = TRUE){
 
   # COUFINF
   if ("COUFINF" %in% variables_names) {
-    data$COUFINF <- as.numeric(levels(data$COUFINF))[data$COUFINF]
+    data$COUFINF <- as.numeric(data$COUFINF)
     data$COUFINF[data$COUFINF == 0] <- "Ignorado"
     data$COUFINF[data$COUFINF == 99] <- "Ignorado"
     data$COUFINF[data$COUFINF == 11] <- "Rond\u00f4nia"
@@ -287,13 +283,12 @@ process_sinan_malaria <- function(data, municipality_data = TRUE){
 
   # COPAISINF
   if ("COPAISINF" %in% variables_names) {
-    data$COPAISINF <- as.character(levels(data$COPAISINF))[data$COPAISINF]
     data$COPAISINF <- dplyr::left_join(data, microdatasus::paisnet, by = c("COPAISINF" = "COPAISINF"))$NM_PAIS
   }
 
   # RESULT
   if ("RESULT" %in% variables_names) {
-    data$RESULT <- as.numeric(levels(data$RESULT))[data$RESULT]
+    data$RESULT <- as.numeric(data$RESULT)
     data$RESULT[data$RESULT == 1] <- "Negativo"
     data$RESULT[data$RESULT == 2] <- "F"
     data$RESULT[data$RESULT == 3] <- "F + FG"
@@ -309,7 +304,7 @@ process_sinan_malaria <- function(data, municipality_data = TRUE){
 
   # PCRUZ
   if ("PCRUZ" %in% variables_names) {
-    data$PCRUZ <- as.numeric(levels(data$PCRUZ))[data$PCRUZ]
+    data$PCRUZ <- as.numeric(data$PCRUZ)
     data$PCRUZ[data$PCRUZ == 1] <- "Menor que meia cruz"
     data$PCRUZ[data$PCRUZ == 2] <- "Meia cruz"
     data$PCRUZ[data$PCRUZ == 3] <- "Uma cruz"
@@ -321,7 +316,7 @@ process_sinan_malaria <- function(data, municipality_data = TRUE){
 
   # TRA_ESQUEM
   if ("TRA_ESQUEM" %in% variables_names) {
-    data$TRA_ESQUEM <- as.numeric(levels(data$TRA_ESQUEM))[data$TRA_ESQUEM]
+    data$TRA_ESQUEM <- as.numeric(data$TRA_ESQUEM)
     data$TRA_ESQUEM[data$TRA_ESQUEM == 1] <- "Infec\u00e7\u00f5es por Pv com Cloroquina em 3 dias e Primaquina em 7 dias"
     data$TRA_ESQUEM[data$TRA_ESQUEM == 2] <- "Infec\u00e7\u00f5es por Pf com Quinina em 3 dias + Doxiciclina em 5 dias + primaquina no 6o dia"
     data$TRA_ESQUEM[data$TRA_ESQUEM == 3] <- "Infec\u00e7\u00f5es mistas por Pv + Pf com Mefloquina em dose \u00fanica e primaquina em 7 dias"
