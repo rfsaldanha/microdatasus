@@ -7,7 +7,7 @@ Authors@R:
            role = c("aut", "cre"),
            email = "raphael.saldanha@icict.fiocruz.br",
            comment = c(ORCID = "0000-0003-0652-8466"))
-URL: https://github.com/rfsaldanha/microdatasus
+URL: https://github.com/rfsaldanha/microdatasus, https://rfsaldanha.github.io/microdatasus/
 BugReports: https://github.com/rfsaldanha/microdatasus/issues
 Description: Downloads microdata files (DBC format) from DataSUS and imports the files for use.
 License: MIT + file LICENSE

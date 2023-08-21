@@ -5,7 +5,7 @@ O pacote para o R *microdatasus* apresenta funções para download dos arquivos 
 ## Instalação
 
 ```r
-install.packages("remotes")
+# install.packages("remotes")
 remotes::install_github("rfsaldanha/microdatasus")
 ```
 
@@ -36,7 +36,7 @@ O desenvolvimento deste pacote não seria possível sem a função `read.dbc` cr
 
 Peço aos usuários que citem o pacote sempre que ele for utilizado.
 
-SALDANHA, Raphael de Freitas; BASTOS, Ronaldo Rocha; BARCELLOS, Christovam. Microdatasus: pacote para download e pré-processamento de microdados do Departamento de Informática do SUS (DATASUS). Cad. Saúde Pública,  Rio de Janeiro ,  v. 35, n. 9,  e00032419,    2019 .   Available from <http://ref.scielo.org/dhcq3y>.
+> SALDANHA, Raphael de Freitas; BASTOS, Ronaldo Rocha; BARCELLOS, Christovam. Microdatasus: pacote para download e pré-processamento de microdados do Departamento de Informática do SUS (DATASUS). Cad. Saúde Pública,  Rio de Janeiro ,  v. 35, n. 9,  e00032419,    2019.  Available from <http://ref.scielo.org/dhcq3y>.
 
 
 ## Dúvidas e sugestões

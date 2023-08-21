@@ -1,0 +1,7 @@
+url: https://rfsaldanha.github.io/microdatasus/
+template:
+  bootstrap: 5
+
+navbar:
+  structure:
+    right: [github]
