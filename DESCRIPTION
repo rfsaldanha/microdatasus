@@ -30,3 +30,4 @@ Suggests:
 Config/testthat/edition: 3
 Depends: 
     R (>= 2.10)
+Config/Needs/website: rmarkdown
