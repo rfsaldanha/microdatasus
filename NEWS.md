@@ -1,3 +1,5 @@
+# microdatasus 2.2.0
+
 # microdatasus 2.1.3
 * process_cnes uses {data.table} backend for performance
 
