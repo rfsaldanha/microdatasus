@@ -75,14 +75,14 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
   ufs <- c("AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO")
   if(!all((uf %in% c("all",ufs)))) stop("UF unknown.")
   lista_uf <- vector()
-  if(uf == "all"){
+  if(uf[1] == "all"){
     lista_uf <- ufs
   } else {
     lista_uf = uf
   }
 
   # Check UF for SINAN files
-  if(information_system %in% sisSINAN & uf != "all"){
+  if(information_system %in% sisSINAN & uf[1] != "all"){
     message("SINAN files are not available per UF. Ignoring argument 'uf' and downloading data.")
   }
 
