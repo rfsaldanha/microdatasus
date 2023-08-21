@@ -30,24 +30,19 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
   if(information_system == "SIH-RD"){
 
-    # UF_ZI
-    if("UF_ZI" %in% variables_names){
-      data$UF_ZI <- as.character(data$UF_ZI)
-    }
-
     # ANO_CMPT
     if("ANO_CMPT" %in% variables_names){
-      data$ANO_CMPT <- as.integer(as.character(data$ANO_CMPT))
+      data$ANO_CMPT <- as.numeric(data$ANO_CMPT)
     }
 
     # MES_CMPT
     if("MES_CMPT" %in% variables_names){
-      data$MES_CMPT <- as.integer(as.character(data$MES_CMPT))
+      data$MES_CMPT <- as.numeric(data$MES_CMPT)
     }
 
     # ESPEC
     if("ESPEC" %in% variables_names){
-      data$ESPEC <- as.numeric(levels(data$ESPEC))[data$ESPEC]
+      data$ESPEC <- as.numeric(data$ESPEC)
       data$ESPEC[data$ESPEC==1] <- "Cir\u00fargico"
       data$ESPEC[data$ESPEC==2] <- "Obst\u00e9tricos"
       data$ESPEC[data$ESPEC==3] <- "Cl\u00ednicos"
@@ -92,48 +87,29 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
       data$ESPEC <- factor(data$ESPEC)
     }
 
-    # CGC_HOSP
-    if("CGC_HOSP" %in% variables_names){
-      data$CGC_HOSP <- as.character(data$CGC_HOSP)
-    }
-
-    # N_AIH
-    if("N_AIH" %in% variables_names){
-      data$N_AIH <- as.character(data$N_AIH)
-    }
-
     # IDENT
     if("IDENT" %in% variables_names){
-      data$IDENT <- as.numeric(levels(data$IDENT))[data$IDENT]
+      data$IDENT <- as.numeric(data$IDENT)
       data$IDENT[data$IDENT==1] <- "Principal"
       data$IDENT[data$IDENT==3] <- "Continua\u00e7\u00e3o"
       data$IDENT[data$IDENT==5] <- "Longa perman\u00eancia"
       data$IDENT <- factor(data$IDENT)
     }
 
-    # CEP
-    if("CEP" %in% variables_names){
-      data$CEP <- as.character(data$CEP)
-    }
-
     # MUNIC_RES
     if("MUNIC_RES" %in% variables_names & municipality_data == TRUE){
-      data$MUNIC_RES <- as.integer(as.character(data$MUNIC_RES))
       colnames(tabMun)[1] <- "MUNIC_RES"
       data <- dplyr::left_join(data, tabMun, by = "MUNIC_RES")
-    } else {
-      data$MUNIC_RES <- as.integer(as.character(data$MUNIC_RES))
     }
 
     # NASC
     if("NASC" %in% variables_names){
-      data$NASC <- as.character(data$NASC)
       data$NASC <- as.Date(data$NASC, format = "%Y%m%d")
     }
 
     # SEXO
     if("SEXO" %in% variables_names){
-      data$SEXO <- as.numeric(levels(data$SEXO))[data$SEXO]
+      data$SEXO <- as.numeric(data$SEXO)
       data$SEXO[data$SEXO==1] <- "Masculino"
       data$SEXO[data$SEXO==2] <- "Feminino"
       data$SEXO[data$SEXO==3] <- "Feminino"
@@ -144,27 +120,27 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # UTI_MES_IN
     if("UTI_MES_IN" %in% variables_names){
-      data$UTI_MES_IN <- as.integer(data$UTI_MES_IN)
+      data$UTI_MES_IN <- as.numeric(data$UTI_MES_IN)
     }
 
     # UTI_MES_AN
     if("UTI_MES_AN" %in% variables_names){
-      data$UTI_MES_AN <- as.integer(data$UTI_MES_AN)
+      data$UTI_MES_AN <- as.numeric(data$UTI_MES_AN)
     }
 
     # UTI_MES_AL
     if("UTI_MES_AL" %in% variables_names){
-      data$UTI_MES_AL <- as.integer(data$UTI_MES_AL)
+      data$UTI_MES_AL <- as.numeric(data$UTI_MES_AL)
     }
 
     # UTI_MES_TO
     if("UTI_MES_TO" %in% variables_names){
-      data$UTI_MES_TO <- as.integer(data$UTI_MES_TO)
+      data$UTI_MES_TO <- as.numeric(data$UTI_MES_TO)
     }
 
     # MARCA_UTI
     if("MARCA_UTI" %in% variables_names){
-      data$MARCA_UTI <- as.numeric(levels(data$MARCA_UTI))[data$MARCA_UTI]
+      data$MARCA_UTI <- as.numeric(data$MARCA_UTI)
       data$MARCA_UTI[data$MARCA_UTI==0] <- "N\u00e3o utilizou UTI"
       data$MARCA_UTI[data$MARCA_UTI==51] <- "UTI adulto - tipo II COVID 19"
       data$MARCA_UTI[data$MARCA_UTI==52] <- "UTI pedi\u00e1trica - tipo II COVID 19"
@@ -187,42 +163,32 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # UTI_INT_IN
     if("UTI_INT_IN" %in% variables_names){
-      data$UTI_INT_IN <- as.integer(data$UTI_INT_IN)
+      data$UTI_INT_IN <- as.numeric(data$UTI_INT_IN)
     }
 
     # UTI_INT_AN
     if("UTI_INT_AN" %in% variables_names){
-      data$UTI_INT_AN <- as.integer(data$UTI_INT_AN)
+      data$UTI_INT_AN <- as.numeric(data$UTI_INT_AN)
     }
 
     # UTI_INT_AL
     if("UTI_INT_AL" %in% variables_names){
-      data$UTI_INT_AL <- as.integer(data$UTI_INT_AL)
+      data$UTI_INT_AL <- as.numeric(data$UTI_INT_AL)
     }
 
     # UTI_INT_TO
     if("UTI_INT_TO" %in% variables_names){
-      data$UTI_INT_TO <- as.integer(data$UTI_INT_TO)
+      data$UTI_INT_TO <- as.numeric(data$UTI_INT_TO)
     }
 
     # DIAR_ACOM
     if("DIAR_ACOM" %in% variables_names){
-      data$DIAR_ACOM <- as.integer(data$DIAR_ACOM)
+      data$DIAR_ACOM <- as.numeric(data$DIAR_ACOM)
     }
 
     # QT_DIARIAS
     if("QT_DIARIAS" %in% variables_names){
-      data$QT_DIARIAS <- as.integer(data$QT_DIARIAS)
-    }
-
-    # PROC_SOLIC
-    if("PROC_SOLIC" %in% variables_names){
-      data$PROC_SOLIC <- as.character(data$PROC_SOLIC)
-    }
-
-    # PROC_REA
-    if("PROC_REA" %in% variables_names){
-      data$PROC_REA <- as.character(data$PROC_REA)
+      data$QT_DIARIAS <- as.numeric(data$QT_DIARIAS)
     }
 
     # VAL_SH
@@ -297,29 +263,17 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # DT_INTER
     if("DT_INTER" %in% variables_names){
-      data$DT_INTER <- as.character(data$DT_INTER)
       data$DT_INTER <- as.Date(data$DT_INTER, format = "%Y%m%d")
     }
 
     # DT_SAIDA
     if("DT_SAIDA" %in% variables_names){
-      data$DT_SAIDA <- as.character(data$DT_SAIDA)
       data$DT_SAIDA <- as.Date(data$DT_SAIDA, format = "%Y%m%d")
-    }
-
-    # DIAG_PRINC
-    if("DIAG_PRINC" %in% variables_names){
-      data$DIAG_PRINC <- as.character(data$DIAG_PRINC)
-    }
-
-    # DIAG_SECUN
-    if("DIAG_SECUN" %in% variables_names){
-      data$DIAG_SECUN <- as.character(data$DIAG_SECUN)
     }
 
     # COBRANCA (motivo de saída/permanência, portaria SAS 719)
     if("COBRANCA" %in% variables_names){
-      data$COBRANCA <- as.numeric(levels(data$COBRANCA))[data$COBRANCA]
+      data$COBRANCA <- as.numeric(data$COBRANCA)
       data$COBRANCA[data$COBRANCA==11] <- "Alta curado"
       data$COBRANCA[data$COBRANCA==12] <- "Alta melhorado"
       data$COBRANCA[data$COBRANCA==14] <- "Alta a pedido"
@@ -356,7 +310,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # NATUREZA
     if("NATUREZA" %in% variables_names){
-      data$NATUREZA <- as.numeric(levels(data$NATUREZA))[data$NATUREZA]
+      data$NATUREZA <- as.numeric(data$NATUREZA)
       data$NATUREZA[data$NATUREZA==0] <- NA
       data$NATUREZA[data$NATUREZA==99] <- NA
       data$NATUREZA[data$NATUREZA==10] <- "Pr\u00f3prio"
@@ -382,7 +336,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # NAT_JUR
     if("NAT_JUR" %in% variables_names){
-      data$NAT_JUR <- as.numeric(levels(data$NAT_JUR))[data$NAT_JUR]
+      data$NAT_JUR <- as.numeric(data$NAT_JUR)
       data$NAT_JUR[data$NAT_JUR==1015] <- "\u00d3rg\u00e3o P\u00fablico do Poder Executivo Federal"
       data$NAT_JUR[data$NAT_JUR==1023] <- "\u00d3rg\u00e3o P\u00fablico do Poder Exec Estadual ou Distr Fed"
       data$NAT_JUR[data$NAT_JUR==1031] <- "\u00d3rg\u00e3o P\u00fablico do Poder Executivo Municipal"
@@ -457,7 +411,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # GESTAO
     if("GESTAO" %in% variables_names){
-      data$GESTAO <- as.numeric(levels(data$GESTAO))[data$GESTAO]
+      data$GESTAO <- as.numeric(data$GESTAO)
       data$GESTAO[data$GESTAO==0] <- "Estadual"
       data$GESTAO[data$GESTAO==2] <- "Estadual plena"
       data$GESTAO[data$GESTAO==1] <- "Municipal plena assist"
@@ -481,12 +435,12 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # MUNIC_MOV
     if("MUNIC_MOV" %in% variables_names){
-      data$MUNIC_MOV <- as.integer(data$MUNIC_MOV)
+      data$MUNIC_MOV <- as.numeric(data$MUNIC_MOV)
     }
 
     # COD_IDADE
     if("COD_IDADE" %in% variables_names){
-      data$COD_IDADE <- as.numeric(levels(data$COD_IDADE))[data$COD_IDADE]
+      data$COD_IDADE <- as.numeric(data$COD_IDADE)
       data$COD_IDADE[data$COD_IDADE==0] <- NA
       data$COD_IDADE[data$COD_IDADE==2] <- "Dias"
       data$COD_IDADE[data$COD_IDADE==3] <- "Meses"
@@ -497,16 +451,17 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # IDADE
     if("IDADE" %in% variables_names){
-      data$IDADE <- as.integer(data$IDADE)
+      data$IDADE <- as.numeric(data$IDADE)
     }
 
     # DIAS_PERM
     if("DIAS_PERM" %in% variables_names){
-      data$DIAS_PERM <- as.integer(data$DIAS_PERM)
+      data$DIAS_PERM <- as.numeric(data$DIAS_PERM)
     }
 
     # MORTE
     if("MORTE" %in% variables_names){
+      data$MORTE <- as.numeric(data$MORTE)
       data$MORTE[data$MORTE==0] <- "N\u00e3o"
       data$MORTE[data$MORTE==1] <- "Sim"
       data$MORTE <- factor(data$MORTE)
@@ -514,7 +469,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # NACIONAL
     if("NACIONAL" %in% variables_names){
-      data$NACIONAL <- as.numeric(levels(data$NACIONAL))[data$NACIONAL]
+      data$NACIONAL <- as.numeric(data$NACIONAL)
       data$NACIONAL[data$NACIONAL==170] <- "Abissinia"
       data$NACIONAL[data$NACIONAL==171] <- "Acores"
       data$NACIONAL[data$NACIONAL==172] <- "Afar frances"
@@ -853,12 +808,12 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # NUM_PROC
     if("NUM_PROC" %in% variables_names){
-      data$NUM_PROC <- as.integer(data$NUM_PROC)
+      data$NUM_PROC <- as.numeric(data$NUM_PROC)
     }
 
     # CAR_INT
     if("CAR_INT" %in% variables_names){
-      data$CAR_INT <- as.numeric(levels(data$CAR_INT))[data$CAR_INT]
+      data$CAR_INT <- as.numeric(data$CAR_INT)
       data$CAR_INT[data$CAR_INT==1] <- "Eletivo"
       data$CAR_INT[data$CAR_INT==2] <- "Urg\u00eancia"
       data$CAR_INT[data$CAR_INT==3] <- "Acidente no local trabalho ou a serv da empresa"
@@ -870,17 +825,17 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # TOT_PT_SP
     if("TOT_PT_SP" %in% variables_names){
-      data$TOT_PT_SP <- as.integer(data$TOT_PT_SP)
+      data$TOT_PT_SP <- as.numeric(data$TOT_PT_SP)
     }
 
     # CPF_AUT
     if("CPF_AUT" %in% variables_names){
-      data$CPF_AUT <- as.integer(data$CPF_AUT)
+      data$CPF_AUT <- as.numeric(data$CPF_AUT)
     }
 
     # HOMONIMO
     if("HOMONIMO" %in% variables_names){
-      data$HOMONIMO <- as.numeric(levels(data$HOMONIMO))[data$HOMONIMO]
+      data$HOMONIMO <- as.numeric(data$HOMONIMO)
       data$HOMONIMO[data$HOMONIMO==0] <- "N\u00e3o"
       data$HOMONIMO[data$HOMONIMO==1] <- "Sim"
       data$HOMONIMO <- factor(data$HOMONIMO)
@@ -888,12 +843,12 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # NUM_FILHOS
     if("NUM_FILHOS" %in% variables_names){
-      data$NUM_FILHOS <- as.integer(data$NUM_FILHOS)
+      data$NUM_FILHOS <- as.numeric(data$NUM_FILHOS)
     }
 
     # INSTRU
     if("INSTRU" %in% variables_names){
-      data$INSTRU <- as.numeric(levels(data$INSTRU))[data$INSTRU]
+      data$INSTRU <- as.numeric(data$INSTRU)
       data$INSTRU[data$INSTRU==1] <- "Analfabeto"
       data$INSTRU[data$INSTRU==2] <- "1\u00ba grau"
       data$INSTRU[data$INSTRU==3] <- "2\u00ba grau"
@@ -903,14 +858,9 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
       data$INSTRU <- factor(data$INSTRU)
     }
 
-    # CID_NOTIF
-    if("CID_NOTIF" %in% variables_names){
-      data$CID_NOTIF <- as.character(data$CID_NOTIF)
-    }
-
     # CONTRACEP1
     if("CONTRACEP1" %in% variables_names){
-      data$CONTRACEP1 <- as.numeric(levels(data$CONTRACEP1))[data$CONTRACEP1]
+      data$CONTRACEP1 <- as.numeric(data$CONTRACEP1)
       data$CONTRACEP1[data$CONTRACEP1==1] <- "LAM"
       data$CONTRACEP1[data$CONTRACEP1==2] <- "Ogino Kaus"
       data$CONTRACEP1[data$CONTRACEP1==3] <- "Temperatura basal"
@@ -930,7 +880,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # CONTRACEP2
     if("CONTRACEP2" %in% variables_names){
-      data$CONTRACEP2 <- as.numeric(levels(data$CONTRACEP2))[data$CONTRACEP2]
+      data$CONTRACEP2 <- as.numeric(data$CONTRACEP2)
       data$CONTRACEP2[data$CONTRACEP2==1] <- "LAM"
       data$CONTRACEP2[data$CONTRACEP2==2] <- "Ogino Kaus"
       data$CONTRACEP2[data$CONTRACEP2==3] <- "Temperatura basal"
@@ -950,20 +900,15 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # GESTRISCO
     if("GESTRISCO" %in% variables_names){
-      data$GESTRISCO <- as.numeric(levels(data$GESTRISCO))[data$GESTRISCO]
+      data$GESTRISCO <- as.numeric(data$GESTRISCO)
       data$GESTRISCO[data$GESTRISCO==0] <- "N\u00e3o"
       data$GESTRISCO[data$GESTRISCO==1] <- "Sim"
       data$GESTRISCO <- factor(data$GESTRISCO)
     }
 
-    # INSC_PN
-    if("INSC_PN" %in% variables_names){
-      data$INSC_PN <- as.character(data$INSC_PN)
-    }
-
     # SEQ_AIH5
     if("SEQ_AIH5" %in% variables_names){
-      data$SEQ_AIH5 <- as.numeric(levels(data$SEQ_AIH5))[data$SEQ_AIH5]
+      data$SEQ_AIH5 <- as.numeric(data$SEQ_AIH5)
       data$SEQ_AIH5[data$SEQ_AIH5==0] <- "Sequencial zerado"
       data$SEQ_AIH5[data$SEQ_AIH5==1] <- "Seq 1"
       data$SEQ_AIH5[data$SEQ_AIH5==2] <- "Seq 2"
@@ -975,19 +920,13 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # CBOR
     if ("CBOR" %in% variables_names) {
-      data$CBOR <- as.character(data$CBOR)
       colnames(tabCBO)[1] <- "CBOR"
       data$CBOR <- factor(dplyr::left_join(data, tabCBO, by = "CBOR")$nome)
     }
 
-    # CNAER
-    if("CNAER" %in% variables_names){
-      data$CNAER <- as.character(data$CNAER)
-    }
-
     # VINCPREV
     if("VINCPREV" %in% variables_names){
-      data$VINCPREV <- as.numeric(levels(data$VINCPREV))[data$VINCPREV]
+      data$VINCPREV <- as.numeric(data$VINCPREV)
       data$VINCPREV[data$VINCPREV==1] <- "Aut\u00f4nomo"
       data$VINCPREV[data$VINCPREV==2] <- "Desempregado"
       data$VINCPREV[data$VINCPREV==3] <- "Aposentado"
@@ -1001,7 +940,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # GESTOR_COD
     if("GESTOR_COD" %in% variables_names){
-      data$GESTOR_COD <- as.numeric(levels(data$GESTOR_COD))[data$GESTOR_COD]
+      data$GESTOR_COD <- as.numeric(data$GESTOR_COD)
       data$GESTOR_COD[data$GESTOR_COD==1] <- "TEMPO DE PERMANENCIA"
       data$GESTOR_COD[data$GESTOR_COD==2] <- "IDADE MENOR"
       data$GESTOR_COD[data$GESTOR_COD==3] <- "IDADE MAIOR"
@@ -1218,51 +1157,30 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # GESTOR_TP
     if("GESTOR_TP" %in% variables_names){
-      data$GESTOR_TP <- as.integer(data$GESTOR_TP)
+      data$GESTOR_TP <- as.numeric(data$GESTOR_TP)
     }
 
     # GESTOR_CPF
     if("GESTOR_CPF" %in% variables_names){
-      data$GESTOR_CPF <- as.integer(data$GESTOR_CPF)
+      data$GESTOR_CPF <- as.numeric(data$GESTOR_CPF)
     }
 
     # GESTOR_DT
     if("GESTOR_DT" %in% variables_names){
-      data$GESTOR_DT <- as.character(data$GESTOR_DT)
       data$GESTOR_DT <- as.Date(data$GESTOR_DT, format = "%Y%m%d")
-    }
-
-    # CNES
-    if("CNES" %in% variables_names){
-      data$CNES <- as.character(data$CNES)
-    }
-
-    # CNPJ_MANT
-    if("CNPJ_MANT" %in% variables_names){
-      data$CNPJ_MANT <- as.character(data$CNPJ_MANT)
     }
 
     # INFEHOSP
     if("INFEHOSP" %in% variables_names){
-      data$INFEHOSP <- as.numeric(levels(data$INFEHOSP))[data$INFEHOSP]
+      data$INFEHOSP <- as.numeric(data$INFEHOSP)
       data$INFEHOSP[data$INFEHOSP==0] <- "N\u00e3o"
       data$INFEHOSP[data$INFEHOSP==1] <- "Sim"
       data$INFEHOSP <- factor(data$INFEHOSP)
     }
 
-    # CID_ASSO
-    if("CID_ASSO" %in% variables_names){
-      data$CID_ASSO <- as.character(data$CID_ASSO)
-    }
-
-    # CID_MORTE
-    if("CID_MORTE" %in% variables_names){
-      data$CID_MORTE <- as.character(data$CID_MORTE)
-    }
-
     # COMPLEX
     if("COMPLEX" %in% variables_names){
-      data$COMPLEX <- as.numeric(levels(data$COMPLEX))[data$COMPLEX]
+      data$COMPLEX <- as.numeric(data$COMPLEX)
       data$COMPLEX[data$COMPLEX==1] <- "Aten\u00e7\u00e3o B\u00e1sica"
       data$COMPLEX[data$COMPLEX==2] <- "M\u00e9dia complexidade"
       data$COMPLEX[data$COMPLEX==3] <- "Alta complexidade"
@@ -1273,7 +1191,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # FINANC
     if("FINANC" %in% variables_names){
-      data$FINANC <- as.numeric(levels(data$FINANC))[data$FINANC]
+      data$FINANC <- as.numeric(data$FINANC)
       data$FINANC[data$FINANC==1] <- "Aten\u00e7\u00e3o B\u00e1sica (PAB)"
       data$FINANC[data$FINANC==2] <- "Assist\u00eancia Farmac\u00eautica"
       data$FINANC[data$FINANC==4] <- "Fundo de A\u00e7\u00f5es Estrat\u00e9gicas e Compensa\u00e7\u00f5es FAEC"
@@ -1287,7 +1205,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # FAEC_TP
     if("FAEC_TP" %in% variables_names){
-      data$FAEC_TP <- as.numeric(levels(data$FAEC_TP))[data$FAEC_TP]
+      data$FAEC_TP <- as.numeric(data$FAEC_TP)
       data$FAEC_TP[data$FAEC_TP==10000] <- "Aten\u00e7\u00e3o B\u00e1sica (PAB)"
       data$FAEC_TP[data$FAEC_TP==20000] <- "Assist\u00eancia Farmac\u00eautica"
       data$FAEC_TP[data$FAEC_TP==40001] <- "Coleta de material"
@@ -1369,7 +1287,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # REGCT
     if("REGCT" %in% variables_names){
-      data$REGCT <- as.numeric(levels(data$REGCT))[data$REGCT]
+      data$REGCT <- as.numeric(data$REGCT)
       data$REGCT[data$REGCT==7100] <- "TABELA DE NAO GERACAO DE CREDITO POR PRODUCAO NA INTERNACAO E/OU AMBULATORIO"
       data$REGCT[data$REGCT==7101] <- "ESTABELECIMENTO DE SAUDE SEM GERACAO DE CREDITO NA MEDIA COMPLEXIDADE AMBULATORIAL"
       data$REGCT[data$REGCT==7102] <- "ESTABELECIMENTO DE SAUDE SEM GERACAO DE CREDITO NA MEDIA COMPLEXIDADE HOSPITALAR"
@@ -1394,7 +1312,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # RACA_COR
     if("RACA_COR" %in% variables_names){
-      data$RACA_COR <- as.numeric(levels(data$RACA_COR))[data$RACA_COR]
+      data$RACA_COR <- as.numeric(data$RACA_COR)
       data$RACA_COR[data$RACA_COR==1] <- "Branca"
       data$RACA_COR[data$RACA_COR==2] <- "Preta"
       data$RACA_COR[data$RACA_COR==3] <- "Parda"
@@ -1407,7 +1325,6 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # ETNIA
     if("ETNIA" %in% variables_names){
-      data$ETNIA <- as.character(data$ETNIA)
       data$ETNIA[data$ETNIA == "0001"] <- "ACONA (WAKONAS, NACONAS, JAKONA, ACORANES)"
       data$ETNIA[data$ETNIA == "0002"] <-	"AIKANA (AIKANA, MAS SAKA,TUBARAO)"
       data$ETNIA[data$ETNIA == "0003"] <-	"AJURU"
@@ -1815,26 +1732,6 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
       data$ETNIA <- factor(data$ETNIA)
     }
 
-    # SEQUENCIA
-    if("SEQUENCIA" %in% variables_names){
-      data$SEQUENCIA <- as.character(data$SEQUENCIA)
-    }
-
-    # REMESSA
-    if("REMESSA" %in% variables_names){
-      data$REMESSA <- as.character(data$REMESSA)
-    }
-
-    # AUD_JUST
-    if("AUD_JUST" %in% variables_names){
-      data$AUD_JUST <- as.character(data$AUD_JUST)
-    }
-
-    # SIS_JUST
-    if("SIS_JUST" %in% variables_names){
-      data$SIS_JUST <- as.character(data$SIS_JUST)
-    }
-
     # VAL_SH_FED
     if("VAL_SH_FED" %in% variables_names){
       data$VAL_SH_FED <- as.numeric(data$VAL_SH_FED)
@@ -1862,7 +1759,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # MARCA_UCI
     if("MARCA_UCI" %in% variables_names){
-      data$MARCA_UCI <- as.numeric(levels(data$MARCA_UCI))[data$MARCA_UCI]
+      data$MARCA_UCI <- as.numeric(data$MARCA_UCI)
       data$MARCA_UCI[data$MARCA_UCI==0] <- "N\u00e3o utilizou UCI"
       data$MARCA_UCI[data$MARCA_UCI==1] <- "Unidade de cuidados intermed neonatal convencional"
       data$MARCA_UCI[data$MARCA_UCI==2] <- "Unidade de cuidados intermed neonatal canguru"
@@ -1871,54 +1768,9 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
       data$MARCA_UCI <- factor(data$MARCA_UCI)
     }
 
-    # DIAGSEC1
-    if("DIAGSEC1" %in% variables_names){
-      data$DIAGSEC1 <- as.character(data$DIAGSEC1)
-    }
-
-    # DIAGSEC2
-    if("DIAGSEC2" %in% variables_names){
-      data$DIAGSEC2 <- as.character(data$DIAGSEC2)
-    }
-
-    # DIAGSEC3
-    if("DIAGSEC3" %in% variables_names){
-      data$DIAGSEC3 <- as.character(data$DIAGSEC3)
-    }
-
-    # DIAGSEC4
-    if("DIAGSEC4" %in% variables_names){
-      data$DIAGSEC4 <- as.character(data$DIAGSEC4)
-    }
-
-    # DIAGSEC5
-    if("DIAGSEC5" %in% variables_names){
-      data$DIAGSEC5 <- as.character(data$DIAGSEC5)
-    }
-
-    # DIAGSEC6
-    if("DIAGSEC6" %in% variables_names){
-      data$DIAGSEC6 <- as.character(data$DIAGSEC6)
-    }
-
-    # DIAGSEC7
-    if("DIAGSEC7" %in% variables_names){
-      data$DIAGSEC7 <- as.character(data$DIAGSEC7)
-    }
-
-    # DIAGSEC8
-    if("DIAGSEC8" %in% variables_names){
-      data$DIAGSEC8 <- as.character(data$DIAGSEC8)
-    }
-
-    # DIAGSEC9
-    if("DIAGSEC9" %in% variables_names){
-      data$DIAGSEC9 <- as.character(data$DIAGSEC9)
-    }
-
     # TPDISEC1
     if("TPDISEC1" %in% variables_names){
-      data$TPDISEC1 <- as.numeric(levels(data$TPDISEC1))[data$TPDISEC1]
+      data$TPDISEC1 <- as.numeric(data$TPDISEC1)
       data$TPDISEC1[data$TPDISEC1==0] <- NA
       data$TPDISEC1[data$TPDISEC1==1] <- "Pr\u00e9-existente"
       data$TPDISEC1[data$TPDISEC1==2] <- "Adquirido"
@@ -1927,7 +1779,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # TPDISEC2
     if("TPDISEC2" %in% variables_names){
-      data$TPDISEC2 <- as.numeric(levels(data$TPDISEC2))[data$TPDISEC2]
+      data$TPDISEC2 <- as.numeric(data$TPDISEC2)
       data$TPDISEC2[data$TPDISEC2==0] <- NA
       data$TPDISEC2[data$TPDISEC2==1] <- "Pr\u00e9-existente"
       data$TPDISEC2[data$TPDISEC2==2] <- "Adquirido"
@@ -1936,7 +1788,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # TPDISEC3
     if("TPDISEC3" %in% variables_names){
-      data$TPDISEC3 <- as.numeric(levels(data$TPDISEC3))[data$TPDISEC3]
+      data$TPDISEC3 <- as.numeric(data$TPDISEC3)
       data$TPDISEC3[data$TPDISEC3==0] <- NA
       data$TPDISEC3[data$TPDISEC3==1] <- "Pr\u00e9-existente"
       data$TPDISEC3[data$TPDISEC3==2] <- "Adquirido"
@@ -1945,7 +1797,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # TPDISEC4
     if("TPDISEC4" %in% variables_names){
-      data$TPDISEC4 <- as.numeric(levels(data$TPDISEC4))[data$TPDISEC4]
+      data$TPDISEC4 <- as.numeric(data$TPDISEC4)
       data$TPDISEC4[data$TPDISEC4==0] <- NA
       data$TPDISEC4[data$TPDISEC4==1] <- "Pr\u00e9-existente"
       data$TPDISEC4[data$TPDISEC4==2] <- "Adquirido"
@@ -1954,7 +1806,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # TPDISEC5
     if("TPDISEC5" %in% variables_names){
-      data$TPDISEC5 <- as.numeric(levels(data$TPDISEC5))[data$TPDISEC5]
+      data$TPDISEC5 <- as.numeric(data$TPDISEC5)
       data$TPDISEC5[data$TPDISEC5==0] <- NA
       data$TPDISEC5[data$TPDISEC5==1] <- "Pr\u00e9-existente"
       data$TPDISEC5[data$TPDISEC5==2] <- "Adquirido"
@@ -1963,7 +1815,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # TPDISEC6
     if("TPDISEC6" %in% variables_names){
-      data$TPDISEC6 <- as.numeric(levels(data$TPDISEC6))[data$TPDISEC6]
+      data$TPDISEC6 <- as.numeric(data$TPDISEC6)
       data$TPDISEC6[data$TPDISEC6==0] <- NA
       data$TPDISEC6[data$TPDISEC6==1] <- "Pr\u00e9-existente"
       data$TPDISEC6[data$TPDISEC6==2] <- "Adquirido"
@@ -1972,7 +1824,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # TPDISEC7
     if("TPDISEC7" %in% variables_names){
-      data$TPDISEC7 <- as.numeric(levels(data$TPDISEC7))[data$TPDISEC7]
+      data$TPDISEC7 <- as.numeric(data$TPDISEC7)
       data$TPDISEC7[data$TPDISEC7==0] <- NA
       data$TPDISEC7[data$TPDISEC7==1] <- "Pr\u00e9-existente"
       data$TPDISEC7[data$TPDISEC7==2] <- "Adquirido"
@@ -1981,7 +1833,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # TPDISEC8
     if("TPDISEC8" %in% variables_names){
-      data$TPDISEC8 <- as.numeric(levels(data$TPDISEC8))[data$TPDISEC8]
+      data$TPDISEC8 <- as.numeric(data$TPDISEC8)
       data$TPDISEC8[data$TPDISEC8==0] <- NA
       data$TPDISEC8[data$TPDISEC8==1] <- "Pr\u00e9-existente"
       data$TPDISEC8[data$TPDISEC8==2] <- "Adquirido"
@@ -1990,7 +1842,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
 
     # TPDISEC9
     if("TPDISEC9" %in% variables_names){
-      data$TPDISEC9 <- as.numeric(levels(data$TPDISEC9))[data$TPDISEC9]
+      data$TPDISEC9 <- as.numeric(data$TPDISEC9)
       data$TPDISEC9[data$TPDISEC9==0] <- NA
       data$TPDISEC9[data$TPDISEC9==1] <- "Pr\u00e9-existente"
       data$TPDISEC9[data$TPDISEC9==2] <- "Adquirido"

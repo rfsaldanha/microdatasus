@@ -25,7 +25,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # TP_NOT
   if ("TP_NOT" %in% variables_names) {
-    data$TP_NOT <- as.numeric(levels(data$TP_NOT))[data$TP_NOT]
+    data$TP_NOT <- as.numeric(data$TP_NOT)
     data$TP_NOT[data$TP_NOT == 1] <- "Negativa"
     data$TP_NOT[data$TP_NOT == 2] <- "Individual"
     data$TP_NOT[data$TP_NOT == 3] <- "Surto"
@@ -40,7 +40,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # SG_UF_NOT
   if ("SG_UF_NOT" %in% variables_names) {
-    data$SG_UF_NOT <- as.numeric(levels(data$SG_UF_NOT))[data$SG_UF_NOT]
+    data$SG_UF_NOT <- as.numeric(data$SG_UF_NOT)
     data$SG_UF_NOT[data$SG_UF_NOT == 0] <- "Ignorado"
     data$SG_UF_NOT[data$SG_UF_NOT == 99] <- "Ignorado"
     data$SG_UF_NOT[data$SG_UF_NOT == 11] <- "Rond\u00f4nia"
@@ -75,7 +75,6 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # IDADE
   if ("NU_IDADE_N" %in% variables_names) {
-    data$NU_IDADE_N <- as.character(data$NU_IDADE_N)
     data$NU_IDADE_N[data$NU_IDADE_N == "000" | data$NU_IDADE_N == "999"] <- NA
     unidade <- substr(data$NU_IDADE_N, 1, 1)
     # Minutos
@@ -103,7 +102,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # CS_SEXO
   if ("CS_SEXO" %in% variables_names) {
-    data$CS_SEXO <- as.character(levels(data$CS_SEXO))[data$CS_SEXO]
+    data$CS_SEXO <- as.character(data$CS_SEXO)
     data$CS_SEXO[data$CS_SEXO == "M"] <- "Masculino"
     data$CS_SEXO[data$CS_SEXO == "F"] <- "Feminino"
     data$CS_SEXO[data$CS_SEXO == "I"] <- "Ignorado"
@@ -112,7 +111,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # CS_GESTANT
   if ("CS_GESTANT" %in% variables_names) {
-    data$CS_GESTANT <- as.numeric(levels(data$CS_GESTANT))[data$CS_GESTANT]
+    data$CS_GESTANT <- as.numeric(data$CS_GESTANT)
     data$CS_GESTANT[data$CS_GESTANT == 1] <- "1o trimestre"
     data$CS_GESTANT[data$CS_GESTANT == 2] <- "2o trimestre"
     data$CS_GESTANT[data$CS_GESTANT == 3] <- "3o trimestre"
@@ -125,7 +124,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # CS_RACA
   if ("CS_RACA" %in% variables_names) {
-    data$CS_RACA <- as.numeric(levels(data$CS_RACA))[data$CS_RACA]
+    data$CS_RACA <- as.numeric(data$CS_RACA)
     data$CS_RACA[data$CS_RACA == 1] <- "Branca"
     data$CS_RACA[data$CS_RACA == 2] <- "Preta"
     data$CS_RACA[data$CS_RACA == 3] <- "Amarela"
@@ -137,7 +136,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # CS_ESCOL_N
   if ("CS_ESCOL_N" %in% variables_names) {
-    data$CS_ESCOL_N <- as.numeric(levels(data$CS_ESCOL_N))[data$CS_ESCOL_N]
+    data$CS_ESCOL_N <- as.numeric(data$CS_ESCOL_N)
     data$CS_ESCOL_N[data$CS_ESCOL_N == 0] <- "Analfabeto"
     data$CS_ESCOL_N[data$CS_ESCOL_N == 1] <- "1a a 4a s\u00e9rie incompleta do EF"
     data$CS_ESCOL_N[data$CS_ESCOL_N == 2] <- "4a s\u00e9rie completa do EF (antigo 1o grau)"
@@ -154,7 +153,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # SG_UF
   if ("SG_UF" %in% variables_names) {
-    data$SG_UF <- as.numeric(levels(data$SG_UF))[data$SG_UF]
+    data$SG_UF <- as.numeric(data$SG_UF)
     data$SG_UF[data$SG_UF == 0] <- "Ignorado"
     data$SG_UF[data$SG_UF == 99] <- "Ignorado"
     data$SG_UF[data$SG_UF == 11] <- "Rond\u00f4nia"
@@ -189,19 +188,17 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # ID_PAIS
   if ("ID_PAIS" %in% variables_names) {
-    data$ID_PAIS <- as.character(levels(data$ID_PAIS))[data$ID_PAIS]
     data$ID_PAIS <- dplyr::left_join(data, microdatasus::paisnet, by = c("ID_PAIS" = "ID_PAIS"))$NM_PAIS
   }
 
   # ID_OCUPA_N
   if ("ID_OCUPA_N" %in% variables_names) {
-    data$ID_OCUPA_N <- as.character(levels(data$ID_OCUPA_N))[data$ID_OCUPA_N]
     data$ID_OCUPA_N <- factor(dplyr::left_join(data, microdatasus::tabCBO, by = c("ID_OCUPA_N" = "cod"))$nome)
   }
 
   # FEBRE
   if ("FEBRE" %in% variables_names) {
-    data$FEBRE <- as.numeric(levels(data$FEBRE))[data$FEBRE]
+    data$FEBRE <- as.numeric(data$FEBRE)
     data$FEBRE[data$FEBRE == 1] <- "Sim"
     data$FEBRE[data$FEBRE == 2] <- "N\u00e3o"
     data$FEBRE <- factor(data$FEBRE)
@@ -209,7 +206,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # MIALGIA
   if ("MIALGIA" %in% variables_names) {
-    data$MIALGIA <- as.numeric(levels(data$MIALGIA))[data$MIALGIA]
+    data$MIALGIA <- as.numeric(data$MIALGIA)
     data$MIALGIA[data$MIALGIA == 1] <- "Sim"
     data$MIALGIA[data$MIALGIA == 2] <- "N\u00e3o"
     data$MIALGIA <- factor(data$MIALGIA)
@@ -217,7 +214,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # CEFALEIA
   if ("CEFALEIA" %in% variables_names) {
-    data$CEFALEIA <- as.numeric(levels(data$CEFALEIA))[data$CEFALEIA]
+    data$CEFALEIA <- as.numeric(data$CEFALEIA)
     data$CEFALEIA[data$CEFALEIA == 1] <- "Sim"
     data$CEFALEIA[data$CEFALEIA == 2] <- "N\u00e3o"
     data$CEFALEIA <- factor(data$CEFALEIA)
@@ -225,7 +222,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # EXANTEMA
   if ("EXANTEMA" %in% variables_names) {
-    data$EXANTEMA <- as.numeric(levels(data$EXANTEMA))[data$EXANTEMA]
+    data$EXANTEMA <- as.numeric(data$EXANTEMA)
     data$EXANTEMA[data$EXANTEMA == 1] <- "Sim"
     data$EXANTEMA[data$EXANTEMA == 2] <- "N\u00e3o"
     data$EXANTEMA <- factor(data$EXANTEMA)
@@ -233,7 +230,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # VOMITO
   if ("VOMITO" %in% variables_names) {
-    data$VOMITO <- as.numeric(levels(data$VOMITO))[data$VOMITO]
+    data$VOMITO <- as.numeric(data$VOMITO)
     data$VOMITO[data$VOMITO == 1] <- "Sim"
     data$VOMITO[data$VOMITO == 2] <- "N\u00e3o"
     data$VOMITO <- factor(data$VOMITO)
@@ -241,7 +238,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # NAUSEA
   if ("NAUSEA" %in% variables_names) {
-    data$NAUSEA <- as.numeric(levels(data$NAUSEA))[data$NAUSEA]
+    data$NAUSEA <- as.numeric(data$NAUSEA)
     data$NAUSEA[data$NAUSEA == 1] <- "Sim"
     data$NAUSEA[data$NAUSEA == 2] <- "N\u00e3o"
     data$NAUSEA <- factor(data$NAUSEA)
@@ -249,7 +246,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # DOR_COSTAS
   if ("DOR_COSTAS" %in% variables_names) {
-    data$DOR_COSTAS <- as.numeric(levels(data$DOR_COSTAS))[data$DOR_COSTAS]
+    data$DOR_COSTAS <- as.numeric(data$DOR_COSTAS)
     data$DOR_COSTAS[data$DOR_COSTAS == 1] <- "Sim"
     data$DOR_COSTAS[data$DOR_COSTAS == 2] <- "N\u00e3o"
     data$DOR_COSTAS <- factor(data$DOR_COSTAS)
@@ -257,7 +254,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # CONJUNTVIT
   if ("CONJUNTVIT" %in% variables_names) {
-    data$CONJUNTVIT <- as.numeric(levels(data$CONJUNTVIT))[data$CONJUNTVIT]
+    data$CONJUNTVIT <- as.numeric(data$CONJUNTVIT)
     data$CONJUNTVIT[data$CONJUNTVIT == 1] <- "Sim"
     data$CONJUNTVIT[data$CONJUNTVIT == 2] <- "N\u00e3o"
     data$CONJUNTVIT <- factor(data$CONJUNTVIT)
@@ -265,7 +262,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # ARTRITE
   if ("ARTRITE" %in% variables_names) {
-    data$ARTRITE <- as.numeric(levels(data$ARTRITE))[data$ARTRITE]
+    data$ARTRITE <- as.numeric(data$ARTRITE)
     data$ARTRITE[data$ARTRITE == 1] <- "Sim"
     data$ARTRITE[data$ARTRITE == 2] <- "N\u00e3o"
     data$ARTRITE <- factor(data$ARTRITE)
@@ -273,7 +270,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # ARTRALGIA
   if ("ARTRALGIA" %in% variables_names) {
-    data$ARTRALGIA <- as.numeric(levels(data$ARTRALGIA))[data$ARTRALGIA]
+    data$ARTRALGIA <- as.numeric(data$ARTRALGIA)
     data$ARTRALGIA[data$ARTRALGIA == 1] <- "Sim"
     data$ARTRALGIA[data$ARTRALGIA == 2] <- "N\u00e3o"
     data$ARTRALGIA <- factor(data$ARTRALGIA)
@@ -281,7 +278,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # PETEQUIA_N
   if ("PETEQUIA_N" %in% variables_names) {
-    data$PETEQUIA_N <- as.numeric(levels(data$PETEQUIA_N))[data$PETEQUIA_N]
+    data$PETEQUIA_N <- as.numeric(data$PETEQUIA_N)
     data$PETEQUIA_N[data$PETEQUIA_N == 1] <- "Sim"
     data$PETEQUIA_N[data$PETEQUIA_N == 2] <- "N\u00e3o"
     data$PETEQUIA_N <- factor(data$PETEQUIA_N)
@@ -289,7 +286,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # LEUCOPENIA
   if ("LEUCOPENIA" %in% variables_names) {
-    data$LEUCOPENIA <- as.numeric(levels(data$LEUCOPENIA))[data$LEUCOPENIA]
+    data$LEUCOPENIA <- as.numeric(data$LEUCOPENIA)
     data$LEUCOPENIA[data$LEUCOPENIA == 1] <- "Sim"
     data$LEUCOPENIA[data$LEUCOPENIA == 2] <- "N\u00e3o"
     data$LEUCOPENIA <- factor(data$LEUCOPENIA)
@@ -297,7 +294,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # LACO
   if ("LACO" %in% variables_names) {
-    data$LACO <- as.numeric(levels(data$LACO))[data$LACO]
+    data$LACO <- as.numeric(data$LACO)
     data$LACO[data$LACO == 1] <- "Sim"
     data$LACO[data$LACO == 2] <- "N\u00e3o"
     data$LACO <- factor(data$LACO)
@@ -305,7 +302,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # DOR_RETRO
   if ("DOR_RETRO" %in% variables_names) {
-    data$DOR_RETRO <- as.numeric(levels(data$DOR_RETRO))[data$DOR_RETRO]
+    data$DOR_RETRO <- as.numeric(data$DOR_RETRO)
     data$DOR_RETRO[data$DOR_RETRO == 1] <- "Sim"
     data$DOR_RETRO[data$DOR_RETRO == 2] <- "N\u00e3o"
     data$DOR_RETRO <- factor(data$DOR_RETRO)
@@ -313,7 +310,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # DIABETES
   if ("DIABETES" %in% variables_names) {
-    data$DIABETES <- as.numeric(levels(data$DIABETES))[data$DIABETES]
+    data$DIABETES <- as.numeric(data$DIABETES)
     data$DIABETES[data$DIABETES == 1] <- "Sim"
     data$DIABETES[data$DIABETES == 2] <- "N\u00e3o"
     data$DIABETES <- factor(data$DIABETES)
@@ -321,7 +318,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # HEMATOLOG
   if ("HEMATOLOG" %in% variables_names) {
-    data$HEMATOLOG <- as.numeric(levels(data$HEMATOLOG))[data$HEMATOLOG]
+    data$HEMATOLOG <- as.numeric(data$HEMATOLOG)
     data$HEMATOLOG[data$HEMATOLOG == 1] <- "Sim"
     data$HEMATOLOG[data$HEMATOLOG == 2] <- "N\u00e3o"
     data$HEMATOLOG <- factor(data$HEMATOLOG)
@@ -329,7 +326,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # HEPATOPAT
   if ("HEPATOPAT" %in% variables_names) {
-    data$HEPATOPAT <- as.numeric(levels(data$HEPATOPAT))[data$HEPATOPAT]
+    data$HEPATOPAT <- as.numeric(data$HEPATOPAT)
     data$HEPATOPAT[data$HEPATOPAT == 1] <- "Sim"
     data$HEPATOPAT[data$HEPATOPAT == 2] <- "N\u00e3o"
     data$HEPATOPAT <- factor(data$HEPATOPAT)
@@ -337,7 +334,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # RENAL
   if ("RENAL" %in% variables_names) {
-    data$RENAL <- as.numeric(levels(data$RENAL))[data$RENAL]
+    data$RENAL <- as.numeric(data$RENAL)
     data$RENAL[data$RENAL == 1] <- "Sim"
     data$RENAL[data$RENAL == 2] <- "N\u00e3o"
     data$RENAL <- factor(data$RENAL)
@@ -345,7 +342,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # HIPERTENSA
   if ("HIPERTENSA" %in% variables_names) {
-    data$HIPERTENSA <- as.numeric(levels(data$HIPERTENSA))[data$HIPERTENSA]
+    data$HIPERTENSA <- as.numeric(data$HIPERTENSA)
     data$HIPERTENSA[data$HIPERTENSA == 1] <- "Sim"
     data$HIPERTENSA[data$HIPERTENSA == 2] <- "N\u00e3o"
     data$HIPERTENSA <- factor(data$HIPERTENSA)
@@ -353,7 +350,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # ACIDO_PEPT
   if ("ACIDO_PEPT" %in% variables_names) {
-    data$ACIDO_PEPT <- as.numeric(levels(data$ACIDO_PEPT))[data$ACIDO_PEPT]
+    data$ACIDO_PEPT <- as.numeric(data$ACIDO_PEPT)
     data$ACIDO_PEPT[data$ACIDO_PEPT == 1] <- "Sim"
     data$ACIDO_PEPT[data$ACIDO_PEPT == 2] <- "N\u00e3o"
     data$ACIDO_PEPT <- factor(data$ACIDO_PEPT)
@@ -361,7 +358,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # AUTO_IMUNE
   if ("AUTO_IMUNE" %in% variables_names) {
-    data$AUTO_IMUNE <- as.numeric(levels(data$AUTO_IMUNE))[data$AUTO_IMUNE]
+    data$AUTO_IMUNE <- as.numeric(data$AUTO_IMUNE)
     data$AUTO_IMUNE[data$AUTO_IMUNE == 1] <- "Sim"
     data$AUTO_IMUNE[data$AUTO_IMUNE == 2] <- "N\u00e3o"
     data$AUTO_IMUNE <- factor(data$AUTO_IMUNE)
@@ -384,7 +381,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # RES_CHIKS1
   if ("RES_CHIKS1" %in% variables_names) {
-    data$RES_CHIKS1 <- as.numeric(levels(data$RES_CHIKS1))[data$RES_CHIKS1]
+    data$RES_CHIKS1 <- as.numeric(data$RES_CHIKS1)
     data$RES_CHIKS1[data$RES_CHIKS1 == 1] <- "Reagente"
     data$RES_CHIKS1[data$RES_CHIKS1 == 2] <- "N\u00e3o reagente"
     data$RES_CHIKS1[data$RES_CHIKS1 == 3] <- "Inconclusivo"
@@ -394,7 +391,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # RES_CHIKS2
   if ("RES_CHIKS2" %in% variables_names) {
-    data$RES_CHIKS2 <- as.numeric(levels(data$RES_CHIKS2))[data$RES_CHIKS2]
+    data$RES_CHIKS2 <- as.numeric(data$RES_CHIKS2)
     data$RES_CHIKS2[data$RES_CHIKS2 == 1] <- "Reagente"
     data$RES_CHIKS2[data$RES_CHIKS2 == 2] <- "N\u00e3o reagente"
     data$RES_CHIKS2[data$RES_CHIKS2 == 3] <- "Inconclusivo"
@@ -404,7 +401,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # RESUL_PRNT
   if ("RESUL_PRNT" %in% variables_names) {
-    data$RESUL_PRNT <- as.numeric(levels(data$RESUL_PRNT))[data$RESUL_PRNT]
+    data$RESUL_PRNT <- as.numeric(data$RESUL_PRNT)
     data$RESUL_PRNT[data$RESUL_PRNT == 1] <- "Reagente"
     data$RESUL_PRNT[data$RESUL_PRNT == 2] <- "N\u00e3o reagente"
     data$RESUL_PRNT[data$RESUL_PRNT == 3] <- "Inconclusivo"
@@ -419,7 +416,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # RESUL_SORO
   if ("RESUL_SORO" %in% variables_names) {
-    data$RESUL_SORO <- as.numeric(levels(data$RESUL_SORO))[data$RESUL_SORO]
+    data$RESUL_SORO <- as.numeric(data$RESUL_SORO)
     data$RESUL_SORO[data$RESUL_SORO == 1] <- "Reagente"
     data$RESUL_SORO[data$RESUL_SORO == 2] <- "N\u00e3o reagente"
     data$RESUL_SORO[data$RESUL_SORO == 3] <- "Inconclusivo"
@@ -434,7 +431,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # RESUL_NS1
   if ("RESUL_NS1" %in% variables_names) {
-    data$RESUL_NS1 <- as.numeric(levels(data$RESUL_NS1))[data$RESUL_NS1]
+    data$RESUL_NS1 <- as.numeric(data$RESUL_NS1)
     data$RESUL_NS1[data$RESUL_NS1 == 1] <- "Positivo"
     data$RESUL_NS1[data$RESUL_NS1 == 2] <- "Negativo"
     data$RESUL_NS1[data$RESUL_NS1 == 3] <- "Inconclusivo"
@@ -449,7 +446,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # RESUL_VI_N
   if ("RESUL_VI_N" %in% variables_names) {
-    data$RESUL_VI_N <- as.numeric(levels(data$RESUL_VI_N))[data$RESUL_VI_N]
+    data$RESUL_VI_N <- as.numeric(data$RESUL_VI_N)
     data$RESUL_VI_N[data$RESUL_VI_N == 1] <- "Positivo"
     data$RESUL_VI_N[data$RESUL_VI_N == 2] <- "Negativo"
     data$RESUL_VI_N[data$RESUL_VI_N == 3] <- "Inconclusivo"
@@ -464,7 +461,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # RESUL_PCR_
   if ("RESUL_PCR_" %in% variables_names) {
-    data$RESUL_PCR_ <- as.numeric(levels(data$RESUL_PCR_))[data$RESUL_PCR_]
+    data$RESUL_PCR_ <- as.numeric(data$RESUL_PCR_)
     data$RESUL_PCR_[data$RESUL_PCR_ == 1] <- "Positivo"
     data$RESUL_PCR_[data$RESUL_PCR_ == 2] <- "Negativo"
     data$RESUL_PCR_[data$RESUL_PCR_ == 3] <- "Inconclusivo"
@@ -474,7 +471,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # SOROTIPO
   if ("SOROTIPO" %in% variables_names) {
-    data$SOROTIPO <- as.numeric(levels(data$SOROTIPO))[data$SOROTIPO]
+    data$SOROTIPO <- as.numeric(data$SOROTIPO)
     data$SOROTIPO[data$SOROTIPO == 1] <- "DEN 1"
     data$SOROTIPO[data$SOROTIPO == 2] <- "DEN 2"
     data$SOROTIPO[data$SOROTIPO == 3] <- "DEN 3"
@@ -484,7 +481,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # HISTOPA_N
   if ("HISTOPA_N" %in% variables_names) {
-    data$HISTOPA_N <- as.numeric(levels(data$HISTOPA_N))[data$HISTOPA_N]
+    data$HISTOPA_N <- as.numeric(data$HISTOPA_N)
     data$HISTOPA_N[data$HISTOPA_N == 1] <- "Positivo"
     data$HISTOPA_N[data$HISTOPA_N == 2] <- "Negativo"
     data$HISTOPA_N[data$HISTOPA_N == 3] <- "Inconclusivo"
@@ -494,7 +491,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # IMUNOH_N
   if ("IMUNOH_N" %in% variables_names) {
-    data$IMUNOH_N <- as.numeric(levels(data$IMUNOH_N))[data$IMUNOH_N]
+    data$IMUNOH_N <- as.numeric(data$IMUNOH_N)
     data$IMUNOH_N[data$IMUNOH_N == 1] <- "Positivo"
     data$IMUNOH_N[data$IMUNOH_N == 2] <- "Negativo"
     data$IMUNOH_N[data$IMUNOH_N == 3] <- "Inconclusivo"
@@ -504,7 +501,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # HOSPITALIZ
   if ("HOSPITALIZ" %in% variables_names) {
-    data$HOSPITALIZ <- as.numeric(levels(data$HOSPITALIZ))[data$HOSPITALIZ]
+    data$HOSPITALIZ <- as.numeric(data$HOSPITALIZ)
     data$HOSPITALIZ[data$HOSPITALIZ == 1] <- "Sim"
     data$HOSPITALIZ[data$HOSPITALIZ == 2] <- "N\u00e3o"
     data$HOSPITALIZ[data$HOSPITALIZ == 9] <- "Ignorado"
@@ -523,7 +520,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # UF
   if ("UF" %in% variables_names) {
-    data$UF <- as.numeric(levels(data$UF))[data$UF]
+    data$UF <- as.numeric(data$UF)
     data$UF[data$UF == 0] <- "Ignorado"
     data$UF[data$UF == 99] <- "Ignorado"
     data$UF[data$UF == 11] <- "Rond\u00f4nia"
@@ -558,7 +555,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # MUNICIPIO
   if("MUNICIPIO" %in% variables_names & municipality_data == TRUE){
-    data$MUNICIPIO <- as.numeric(levels(data$MUNICIPIO))[data$MUNICIPIO]
+    data$MUNICIPIO <- as.numeric(data$MUNICIPIO)
     data <- dplyr::left_join(data, microdatasus::tabMun, by = c("MUNICIPIO" = "munResCod"))
   } else {
     data$MUNICIPIO <- as.numeric(levels(data$MUNICIPIO))[data$MUNICIPIO]
@@ -566,7 +563,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # TPAUTOCTO
   if ("TPAUTOCTO" %in% variables_names) {
-    data$TPAUTOCTO <- as.numeric(levels(data$TPAUTOCTO))[data$TPAUTOCTO]
+    data$TPAUTOCTO <- as.numeric(data$TPAUTOCTO)
     data$TPAUTOCTO[data$TPAUTOCTO == 1] <- "Sim"
     data$TPAUTOCTO[data$TPAUTOCTO == 2] <- "N\u00e3o"
     data$TPAUTOCTO[data$TPAUTOCTO == 3] <- "Indeterminado"
@@ -575,7 +572,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # COUFINF
   if ("COUFINF" %in% variables_names) {
-    data$COUFINF <- as.numeric(levels(data$COUFINF))[data$COUFINF]
+    data$COUFINF <- as.numeric(data$COUFINF)
     data$COUFINF[data$COUFINF == 0] <- "Ignorado"
     data$COUFINF[data$COUFINF == 99] <- "Ignorado"
     data$COUFINF[data$COUFINF == 11] <- "Rond\u00f4nia"
@@ -610,13 +607,12 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # COPAISINF
   if ("COPAISINF" %in% variables_names) {
-    data$COPAISINF <- as.character(levels(data$COPAISINF))[data$COPAISINF]
     data$COPAISINF <- dplyr::left_join(data, microdatasus::paisnet, by = c("COPAISINF" = "COPAISINF"))$NM_PAIS
   }
 
   # CLASSI_FIN
   if ("CLASSI_FIN" %in% variables_names) {
-    data$CLASSI_FIN <- as.numeric(levels(data$CLASSI_FIN))[data$CLASSI_FIN]
+    data$CLASSI_FIN <- as.numeric(data$CLASSI_FIN)
     data$CLASSI_FIN[data$CLASSI_FIN == 1] <- "Dengue cl\u00e1ssico"
     data$CLASSI_FIN[data$CLASSI_FIN == 2] <- "Dengue com complica\u00e7\u00f5es"
     data$CLASSI_FIN[data$CLASSI_FIN == 3] <- "Febre hemorr\u00e1gica do dengue"
@@ -632,7 +628,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # CRITERIO
   if ("CRITERIO" %in% variables_names) {
-    data$CRITERIO <- as.numeric(levels(data$CRITERIO))[data$CRITERIO]
+    data$CRITERIO <- as.numeric(data$CRITERIO)
     data$CRITERIO[data$CRITERIO == 1] <- "Laborat\u00f3rio"
     data$CRITERIO[data$CRITERIO == 2] <- "Cl\u00ednico epidemiol\u00f3gico"
     data$CRITERIO[data$CRITERIO == 3] <- "Em investiga\u00e7\u00e3o"
@@ -641,7 +637,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # DOENCA_TRA
   if ("DOENCA_TRA" %in% variables_names) {
-    data$DOENCA_TRA <- as.numeric(levels(data$DOENCA_TRA))[data$DOENCA_TRA]
+    data$DOENCA_TRA <- as.numeric(data$DOENCA_TRA)
     data$DOENCA_TRA[data$DOENCA_TRA == 1] <- "Sim"
     data$DOENCA_TRA[data$DOENCA_TRA == 2] <- "N\u00e3o"
     data$DOENCA_TRA[data$DOENCA_TRA == 9] <- "Ignorado"
@@ -650,7 +646,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # CLINC_CHIK
   if ("CLINC_CHIK" %in% variables_names) {
-    data$CLINC_CHIK <- as.numeric(levels(data$CLINC_CHIK))[data$CLINC_CHIK]
+    data$CLINC_CHIK <- as.numeric(data$CLINC_CHIK)
     data$CLINC_CHIK[data$CLINC_CHIK == 1] <- "Aguda"
     data$CLINC_CHIK[data$CLINC_CHIK == 2] <- "Cr\u00f4nica"
     data$CLINC_CHIK <- factor(data$CLINC_CHIK)
@@ -658,7 +654,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # EVOLUCAO
   if ("EVOLUCAO" %in% variables_names) {
-    data$EVOLUCAO <- as.numeric(levels(data$EVOLUCAO))[data$EVOLUCAO]
+    data$EVOLUCAO <- as.numeric(data$EVOLUCAO)
     data$EVOLUCAO[data$EVOLUCAO == 1] <- "Cura"
     data$EVOLUCAO[data$EVOLUCAO == 2] <- "\u00d3bito por dengue"
     data$EVOLUCAO[data$EVOLUCAO == 3] <- "\u00d3bito por outras causas"
@@ -679,7 +675,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # ALRM_HIPOT
   if ("ALRM_HIPOT" %in% variables_names) {
-    data$ALRM_HIPOT <- as.numeric(levels(data$ALRM_HIPOT))[data$ALRM_HIPOT]
+    data$ALRM_HIPOT <- as.numeric(data$ALRM_HIPOT)
     data$ALRM_HIPOT[data$ALRM_HIPOT == 1] <- "Sim"
     data$ALRM_HIPOT[data$ALRM_HIPOT == 2] <- "N\u00e3o"
     data$ALRM_HIPOT <- factor(data$ALRM_HIPOT)
@@ -687,7 +683,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # ALRM_PLAQ
   if ("ALRM_PLAQ" %in% variables_names) {
-    data$ALRM_PLAQ <- as.numeric(levels(data$ALRM_PLAQ))[data$ALRM_PLAQ]
+    data$ALRM_PLAQ <- as.numeric(data$ALRM_PLAQ)
     data$ALRM_PLAQ[data$ALRM_PLAQ == 1] <- "Sim"
     data$ALRM_PLAQ[data$ALRM_PLAQ == 2] <- "N\u00e3o"
     data$ALRM_PLAQ <- factor(data$ALRM_PLAQ)
@@ -695,7 +691,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # ALRM_VOM
   if ("ALRM_VOM" %in% variables_names) {
-    data$ALRM_VOM <- as.numeric(levels(data$ALRM_VOM))[data$ALRM_VOM]
+    data$ALRM_VOM <- as.numeric(data$ALRM_VOM)
     data$ALRM_VOM[data$ALRM_VOM == 1] <- "Sim"
     data$ALRM_VOM[data$ALRM_VOM == 2] <- "N\u00e3o"
     data$ALRM_VOM <- factor(data$ALRM_VOM)
@@ -703,7 +699,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # ALRM_SANG
   if ("ALRM_SANG" %in% variables_names) {
-    data$ALRM_SANG <- as.numeric(levels(data$ALRM_SANG))[data$ALRM_SANG]
+    data$ALRM_SANG <- as.numeric(data$ALRM_SANG)
     data$ALRM_SANG[data$ALRM_SANG == 1] <- "Sim"
     data$ALRM_SANG[data$ALRM_SANG == 2] <- "N\u00e3o"
     data$ALRM_SANG <- factor(data$ALRM_SANG)
@@ -711,7 +707,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # ALRM_HEMAT
   if ("ALRM_HEMAT" %in% variables_names) {
-    data$ALRM_HEMAT <- as.numeric(levels(data$ALRM_HEMAT))[data$ALRM_HEMAT]
+    data$ALRM_HEMAT <- as.numeric(data$ALRM_HEMAT)
     data$ALRM_HEMAT[data$ALRM_HEMAT == 1] <- "Sim"
     data$ALRM_HEMAT[data$ALRM_HEMAT == 2] <- "N\u00e3o"
     data$ALRM_HEMAT <- factor(data$ALRM_HEMAT)
@@ -719,7 +715,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # ALRM_ABDOM
   if ("ALRM_ABDOM" %in% variables_names) {
-    data$ALRM_ABDOM <- as.numeric(levels(data$ALRM_ABDOM))[data$ALRM_ABDOM]
+    data$ALRM_ABDOM <- as.numeric(data$ALRM_ABDOM)
     data$ALRM_ABDOM[data$ALRM_ABDOM == 1] <- "Sim"
     data$ALRM_ABDOM[data$ALRM_ABDOM == 2] <- "N\u00e3o"
     data$ALRM_ABDOM <- factor(data$ALRM_ABDOM)
@@ -727,7 +723,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # ALRM_LETAR
   if ("ALRM_LETAR" %in% variables_names) {
-    data$ALRM_LETAR <- as.numeric(levels(data$ALRM_LETAR))[data$ALRM_LETAR]
+    data$ALRM_LETAR <- as.numeric(data$ALRM_LETAR)
     data$ALRM_LETAR[data$ALRM_LETAR == 1] <- "Sim"
     data$ALRM_LETAR[data$ALRM_LETAR == 2] <- "N\u00e3o"
     data$ALRM_LETAR <- factor(data$ALRM_LETAR)
@@ -735,7 +731,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # ALRM_HEPAT
   if ("ALRM_HEPAT" %in% variables_names) {
-    data$ALRM_HEPAT <- as.numeric(levels(data$ALRM_HEPAT))[data$ALRM_HEPAT]
+    data$ALRM_HEPAT <- as.numeric(data$ALRM_HEPAT)
     data$ALRM_HEPAT[data$ALRM_HEPAT == 1] <- "Sim"
     data$ALRM_HEPAT[data$ALRM_HEPAT == 2] <- "N\u00e3o"
     data$ALRM_HEPAT <- factor(data$ALRM_HEPAT)
@@ -743,7 +739,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # ALRM_LIQ
   if ("ALRM_LIQ" %in% variables_names) {
-    data$ALRM_LIQ <- as.numeric(levels(data$ALRM_LIQ))[data$ALRM_LIQ]
+    data$ALRM_LIQ <- as.numeric(data$ALRM_LIQ)
     data$ALRM_LIQ[data$ALRM_LIQ == 1] <- "Sim"
     data$ALRM_LIQ[data$ALRM_LIQ == 2] <- "N\u00e3o"
     data$ALRM_LIQ <- factor(data$ALRM_LIQ)
@@ -756,7 +752,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # GRAV_PULSO
   if ("GRAV_PULSO" %in% variables_names) {
-    data$GRAV_PULSO <- as.numeric(levels(data$GRAV_PULSO))[data$GRAV_PULSO]
+    data$GRAV_PULSO <- as.numeric(data$GRAV_PULSO)
     data$GRAV_PULSO[data$GRAV_PULSO == 1] <- "Sim"
     data$GRAV_PULSO[data$GRAV_PULSO == 2] <- "N\u00e3o"
     data$GRAV_PULSO <- factor(data$GRAV_PULSO)
@@ -764,7 +760,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # GRAV_CONV
   if ("GRAV_CONV" %in% variables_names) {
-    data$GRAV_CONV <- as.numeric(levels(data$GRAV_CONV))[data$GRAV_CONV]
+    data$GRAV_CONV <- as.numeric(data$GRAV_CONV)
     data$GRAV_CONV[data$GRAV_CONV == 1] <- "Sim"
     data$GRAV_CONV[data$GRAV_CONV == 2] <- "N\u00e3o"
     data$GRAV_CONV <- factor(data$GRAV_CONV)
@@ -772,7 +768,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # GRAV_ENCH
   if ("GRAV_ENCH" %in% variables_names) {
-    data$GRAV_ENCH <- as.numeric(levels(data$GRAV_ENCH))[data$GRAV_ENCH]
+    data$GRAV_ENCH <- as.numeric(data$GRAV_ENCH)
     data$GRAV_ENCH[data$GRAV_ENCH == 1] <- "Sim"
     data$GRAV_ENCH[data$GRAV_ENCH == 2] <- "N\u00e3o"
     data$GRAV_ENCH <- factor(data$GRAV_ENCH)
@@ -780,7 +776,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # GRAV_INSUF
   if ("GRAV_INSUF" %in% variables_names) {
-    data$GRAV_INSUF <- as.numeric(levels(data$GRAV_INSUF))[data$GRAV_INSUF]
+    data$GRAV_INSUF <- as.numeric(data$GRAV_INSUF)
     data$GRAV_INSUF[data$GRAV_INSUF == 1] <- "Sim"
     data$GRAV_INSUF[data$GRAV_INSUF == 2] <- "N\u00e3o"
     data$GRAV_INSUF <- factor(data$GRAV_INSUF)
@@ -788,7 +784,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # GRAV_TAQUI
   if ("GRAV_TAQUI" %in% variables_names) {
-    data$GRAV_TAQUI <- as.numeric(levels(data$GRAV_TAQUI))[data$GRAV_TAQUI]
+    data$GRAV_TAQUI <- as.numeric(data$GRAV_TAQUI)
     data$GRAV_TAQUI[data$GRAV_TAQUI == 1] <- "Sim"
     data$GRAV_TAQUI[data$GRAV_TAQUI == 2] <- "N\u00e3o"
     data$GRAV_TAQUI <- factor(data$GRAV_TAQUI)
@@ -796,7 +792,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # GRAV_EXTRE
   if ("GRAV_EXTRE" %in% variables_names) {
-    data$GRAV_EXTRE <- as.numeric(levels(data$GRAV_EXTRE))[data$GRAV_EXTRE]
+    data$GRAV_EXTRE <- as.numeric(data$GRAV_EXTRE)
     data$GRAV_EXTRE[data$GRAV_EXTRE == 1] <- "Sim"
     data$GRAV_EXTRE[data$GRAV_EXTRE == 2] <- "N\u00e3o"
     data$GRAV_EXTRE <- factor(data$GRAV_EXTRE)
@@ -804,7 +800,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # GRAV_HIPOT
   if ("GRAV_HIPOT" %in% variables_names) {
-    data$GRAV_HIPOT <- as.numeric(levels(data$GRAV_HIPOT))[data$GRAV_HIPOT]
+    data$GRAV_HIPOT <- as.numeric(data$GRAV_HIPOT)
     data$GRAV_HIPOT[data$GRAV_HIPOT == 1] <- "Sim"
     data$GRAV_HIPOT[data$GRAV_HIPOT == 2] <- "N\u00e3o"
     data$GRAV_HIPOT <- factor(data$GRAV_HIPOT)
@@ -812,7 +808,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # GRAV_HEMAT
   if ("GRAV_HEMAT" %in% variables_names) {
-    data$GRAV_HEMAT <- as.numeric(levels(data$GRAV_HEMAT))[data$GRAV_HEMAT]
+    data$GRAV_HEMAT <- as.numeric(data$GRAV_HEMAT)
     data$GRAV_HEMAT[data$GRAV_HEMAT == 1] <- "Sim"
     data$GRAV_HEMAT[data$GRAV_HEMAT == 2] <- "N\u00e3o"
     data$GRAV_HEMAT <- factor(data$GRAV_HEMAT)
@@ -820,7 +816,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # GRAV_MELEN
   if ("GRAV_MELEN" %in% variables_names) {
-    data$GRAV_MELEN <- as.numeric(levels(data$GRAV_MELEN))[data$GRAV_MELEN]
+    data$GRAV_MELEN <- as.numeric(data$GRAV_MELEN)
     data$GRAV_MELEN[data$GRAV_MELEN == 1] <- "Sim"
     data$GRAV_MELEN[data$GRAV_MELEN == 2] <- "N\u00e3o"
     data$GRAV_MELEN <- factor(data$GRAV_MELEN)
@@ -828,7 +824,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # GRAV_METRO
   if ("GRAV_METRO" %in% variables_names) {
-    data$GRAV_METRO <- as.numeric(levels(data$GRAV_METRO))[data$GRAV_METRO]
+    data$GRAV_METRO <- as.numeric(data$GRAV_METRO)
     data$GRAV_METRO[data$GRAV_METRO == 1] <- "Sim"
     data$GRAV_METRO[data$GRAV_METRO == 2] <- "N\u00e3o"
     data$GRAV_METRO <- factor(data$GRAV_METRO)
@@ -836,7 +832,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # GRAV_SANG
   if ("GRAV_SANG" %in% variables_names) {
-    data$GRAV_SANG <- as.numeric(levels(data$GRAV_SANG))[data$GRAV_SANG]
+    data$GRAV_SANG <- as.numeric(data$GRAV_SANG)
     data$GRAV_SANG[data$GRAV_SANG == 1] <- "Sim"
     data$GRAV_SANG[data$GRAV_SANG == 2] <- "N\u00e3o"
     data$GRAV_SANG <- factor(data$GRAV_SANG)
@@ -844,7 +840,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # GRAV_AST
   if ("GRAV_AST" %in% variables_names) {
-    data$GRAV_AST <- as.numeric(levels(data$GRAV_AST))[data$GRAV_AST]
+    data$GRAV_AST <- as.numeric(data$GRAV_AST)
     data$GRAV_AST[data$GRAV_AST == 1] <- "Sim"
     data$GRAV_AST[data$GRAV_AST == 2] <- "N\u00e3o"
     data$GRAV_AST <- factor(data$GRAV_AST)
@@ -852,7 +848,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # GRAV_MIOC
   if ("GRAV_MIOC" %in% variables_names) {
-    data$GRAV_MIOC <- as.numeric(levels(data$GRAV_MIOC))[data$GRAV_MIOC]
+    data$GRAV_MIOC <- as.numeric(data$GRAV_MIOC)
     data$GRAV_MIOC[data$GRAV_MIOC == 1] <- "Sim"
     data$GRAV_MIOC[data$GRAV_MIOC == 2] <- "N\u00e3o"
     data$GRAV_MIOC <- factor(data$GRAV_MIOC)
@@ -860,7 +856,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # GRAV_CONSC
   if ("GRAV_CONSC" %in% variables_names) {
-    data$GRAV_CONSC <- as.numeric(levels(data$GRAV_CONSC))[data$GRAV_CONSC]
+    data$GRAV_CONSC <- as.numeric(data$GRAV_CONSC)
     data$GRAV_CONSC[data$GRAV_CONSC == 1] <- "Sim"
     data$GRAV_CONSC[data$GRAV_CONSC == 2] <- "N\u00e3o"
     data$GRAV_CONSC <- factor(data$GRAV_CONSC)
@@ -868,7 +864,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # GRAV_ORGAO
   if ("GRAV_ORGAO" %in% variables_names) {
-    data$GRAV_ORGAO <- as.numeric(levels(data$GRAV_ORGAO))[data$GRAV_ORGAO]
+    data$GRAV_ORGAO <- as.numeric(data$GRAV_ORGAO)
     data$GRAV_ORGAO[data$GRAV_ORGAO == 1] <- "Sim"
     data$GRAV_ORGAO[data$GRAV_ORGAO == 2] <- "N\u00e3o"
     data$GRAV_ORGAO <- factor(data$GRAV_ORGAO)
@@ -881,7 +877,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # MANI_HEMOR
   if ("MANI_HEMOR" %in% variables_names) {
-    data$MANI_HEMOR <- as.numeric(levels(data$MANI_HEMOR))[data$MANI_HEMOR]
+    data$MANI_HEMOR <- as.numeric(data$MANI_HEMOR)
     data$MANI_HEMOR[data$MANI_HEMOR == 1] <- "Sim"
     data$MANI_HEMOR[data$MANI_HEMOR == 2] <- "N\u00e3o"
     data$MANI_HEMOR[data$MANI_HEMOR == 9] <- "Ignorado"
@@ -890,7 +886,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # EPISTAXE
   if ("EPISTAXE" %in% variables_names) {
-    data$EPISTAXE <- as.numeric(levels(data$EPISTAXE))[data$EPISTAXE]
+    data$EPISTAXE <- as.numeric(data$EPISTAXE)
     data$EPISTAXE[data$EPISTAXE == 1] <- "Sim"
     data$EPISTAXE[data$EPISTAXE == 2] <- "N\u00e3o"
     data$EPISTAXE[data$EPISTAXE == 9] <- "Ignorado"
@@ -899,7 +895,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # GENGIVO
   if ("GENGIVO" %in% variables_names) {
-    data$GENGIVO <- as.numeric(levels(data$GENGIVO))[data$GENGIVO]
+    data$GENGIVO <- as.numeric(data$GENGIVO)
     data$GENGIVO[data$GENGIVO == 1] <- "Sim"
     data$GENGIVO[data$GENGIVO == 2] <- "N\u00e3o"
     data$GENGIVO[data$GENGIVO == 9] <- "Ignorado"
@@ -908,7 +904,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # METRO
   if ("METRO" %in% variables_names) {
-    data$METRO <- as.numeric(levels(data$METRO))[data$METRO]
+    data$METRO <- as.numeric(data$METRO)
     data$METRO[data$METRO == 1] <- "Sim"
     data$METRO[data$METRO == 2] <- "N\u00e3o"
     data$METRO[data$METRO == 9] <- "Ignorado"
@@ -917,7 +913,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # PETEQUIAS
   if ("PETEQUIAS" %in% variables_names) {
-    data$PETEQUIAS <- as.numeric(levels(data$PETEQUIAS))[data$PETEQUIAS]
+    data$PETEQUIAS <- as.numeric(data$PETEQUIAS)
     data$PETEQUIAS[data$PETEQUIAS == 1] <- "Sim"
     data$PETEQUIAS[data$PETEQUIAS == 2] <- "N\u00e3o"
     data$PETEQUIAS[data$PETEQUIAS == 9] <- "Ignorado"
@@ -926,7 +922,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # HEMATURA
   if ("HEMATURA" %in% variables_names) {
-    data$HEMATURA <- as.numeric(levels(data$HEMATURA))[data$HEMATURA]
+    data$HEMATURA <- as.numeric(data$HEMATURA)
     data$HEMATURA[data$HEMATURA == 1] <- "Sim"
     data$HEMATURA[data$HEMATURA == 2] <- "N\u00e3o"
     data$HEMATURA[data$HEMATURA == 9] <- "Ignorado"
@@ -935,7 +931,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # SANGRAM
   if ("SANGRAM" %in% variables_names) {
-    data$SANGRAM <- as.numeric(levels(data$SANGRAM))[data$SANGRAM]
+    data$SANGRAM <- as.numeric(data$SANGRAM)
     data$SANGRAM[data$SANGRAM == 1] <- "Sim"
     data$SANGRAM[data$SANGRAM == 2] <- "N\u00e3o"
     data$SANGRAM[data$SANGRAM == 9] <- "Ignorado"
@@ -944,7 +940,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # LACO_N
   if ("LACO_N" %in% variables_names) {
-    data$LACO_N <- as.numeric(levels(data$LACO_N))[data$LACO_N]
+    data$LACO_N <- as.numeric(data$LACO_N)
     data$LACO_N[data$LACO_N == 1] <- "Sim"
     data$LACO_N[data$LACO_N == 2] <- "N\u00e3o"
     data$LACO_N[data$LACO_N == 9] <- "Ignorado"
@@ -953,7 +949,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # PLASMATICO
   if ("PLASMATICO" %in% variables_names) {
-    data$PLASMATICO <- as.numeric(levels(data$PLASMATICO))[data$PLASMATICO]
+    data$PLASMATICO <- as.numeric(data$PLASMATICO)
     data$PLASMATICO[data$PLASMATICO == 1] <- "Sim"
     data$PLASMATICO[data$PLASMATICO == 2] <- "N\u00e3o"
     data$PLASMATICO[data$PLASMATICO == 9] <- "Ignorado"
@@ -962,7 +958,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # EVIDENCIA
   if ("EVIDENCIA" %in% variables_names) {
-    data$EVIDENCIA <- as.numeric(levels(data$EVIDENCIA))[data$EVIDENCIA]
+    data$EVIDENCIA <- as.numeric(data$EVIDENCIA)
     data$EVIDENCIA[data$EVIDENCIA == 1] <- "Hemoconcentra\u00e7\u00e3o"
     data$EVIDENCIA[data$EVIDENCIA == 2] <- "Derrames cavit\u00e1rios"
     data$EVIDENCIA[data$EVIDENCIA == 3] <- "Hipoproteinemia"
@@ -971,7 +967,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # CON_FHD
   if ("CON_FHD" %in% variables_names) {
-    data$CON_FHD <- as.numeric(levels(data$CON_FHD))[data$CON_FHD]
+    data$CON_FHD <- as.numeric(data$CON_FHD)
     data$CON_FHD[data$CON_FHD == 1] <- "Grau I"
     data$CON_FHD[data$CON_FHD == 2] <- "Grau II"
     data$CON_FHD[data$CON_FHD == 3] <- "Grau III"
@@ -981,7 +977,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # COMPLICA
   if ("COMPLICA" %in% variables_names) {
-    data$COMPLICA <- as.numeric(levels(data$COMPLICA))[data$COMPLICA]
+    data$COMPLICA <- as.numeric(data$COMPLICA)
     data$COMPLICA[data$COMPLICA == 1] <- "Altera\u00e7\u00f5es neurol\u00f3gicas"
     data$COMPLICA[data$COMPLICA == 2] <- "Disfun\u00e7\u00e3o cardiorespirat\u00f3ria"
     data$COMPLICA[data$COMPLICA == 3] <- "Insufici\u00eancia hep\u00e1tica"
@@ -995,7 +991,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # NDUPLIC_N
   if ("NDUPLIC_N" %in% variables_names) {
-    data$NDUPLIC_N <- as.numeric(levels(data$NDUPLIC_N))[data$NDUPLIC_N]
+    data$NDUPLIC_N <- as.numeric(data$NDUPLIC_N)
     data$NDUPLIC_N[data$NDUPLIC_N == 0] <- "N\u00e3o identificado"
     data$NDUPLIC_N[data$NDUPLIC_N == ""] <- "N\u00e3o identificado"
     data$NDUPLIC_N[data$NDUPLIC_N == 1] <- "N\u00e3o \u00e9 duplicidade (n\u00e3o listar)"
@@ -1005,7 +1001,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # CS_FLXRET
   if ("CS_FLXRET" %in% variables_names) {
-    data$CS_FLXRET <- as.numeric(levels(data$CS_FLXRET))[data$CS_FLXRET]
+    data$CS_FLXRET <- as.numeric(data$CS_FLXRET)
     data$CS_FLXRET[data$CS_FLXRET == 0] <- "N\u00e3o"
     data$CS_FLXRET[data$CS_FLXRET == 1] <- "Habilitado para envio"
     data$CS_FLXRET[data$CS_FLXRET == 2] <- "Enviado"

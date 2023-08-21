@@ -33,29 +33,8 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
   if(information_system == "SIA-PA"){
 
-    # PA_CODUNI
-    if("PA_CODUNI" %in% variables_names){
-      data$PA_CODUNI <- as.character(data$PA_CODUNI)
-    }
-
-    # PA_GESTAO
-    if("PA_GESTAO" %in% variables_names){
-      data$PA_GESTAO <- as.character(data$PA_GESTAO)
-    }
-
-    # PA_CONDIC
-    if("PA_CONDIC" %in% variables_names){
-      data$PA_CONDIC <- as.character(data$PA_CONDIC)
-    }
-
-    # PA_UFMUN
-    if("PA_UFMUN" %in% variables_names){
-      data$PA_UFMUN <- as.character(data$PA_UFMUN)
-    }
-
     # PA_REGCT
     if("PA_REGCT" %in% variables_names){
-      data$PA_REGCT <- as.character(data$PA_REGCT)
       data$PA_REGCT[data$PA_REGCT=="7100"] <- "TAB.DE N\u00c3O GERA\u00c7\u00c3O CR\u00c9DITO P/PROD.INTERN./AMBULAT."
       data$PA_REGCT[data$PA_REGCT=="7101"] <- "ESTAB.S/CR\u00c9DITO NA MEDIA COMPLEXIDADE AMBULATORIAL"
       data$PA_REGCT[data$PA_REGCT=="7102"] <- "ESTAB.S/CR\u00c9DITO NA MEDIA COMPLEXIDADE HOSPITALAR"
@@ -77,21 +56,18 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
     # PA_INCOUT
     if("PA_INCOUT" %in% variables_names){
-      data$PA_INCOUT <- as.character(data$PA_INCOUT)
       data$PA_INCOUT[data$PA_INCOUT!="0000"] <- "Com incremento"
       data$PA_INCOUT[data$PA_INCOUT=="0000"] <- "Sem incremento"
     }
 
     # PA_INCURG
     if("PA_INCURG" %in% variables_names){
-      data$PA_INCURG <- as.character(data$PA_INCURG)
       data$PA_INCURG[data$PA_INCURG!="0000"] <- "Com incremento"
       data$PA_INCURG[data$PA_INCURG=="0000"] <- "Sem incremento"
     }
 
     # PA_TPUPS
     if("PA_TPUPS" %in% variables_names){
-      data$PA_TPUPS <- as.character(data$PA_TPUPS)
       data$PA_TPUPS[data$PA_TPUPS=="74"] <- "ACADEMIA DA SA\u00daDE"
       data$PA_TPUPS[data$PA_TPUPS=="81"] <- "CENTRAL DE REGULA\u00c7\u00c3O"
       data$PA_TPUPS[data$PA_TPUPS=="76"] <- "CENTRAL DE REGULA\u00c7\u00c3O M\u00c9DICA DAS URG\u00caNCIAS"
@@ -138,7 +114,6 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
     # PA_TIPPRE
     if("PA_TIPPRE" %in% variables_names){
-      data$PA_TIPPRE <- as.character(data$PA_TIPPRE)
       data$PA_TIPPRE[data$PA_TIPPRE=="20"] <- "PRIVADO COM FINS LUCRATIVOS"
       data$PA_TIPPRE[data$PA_TIPPRE=="22"] <- "PRIVADO OPTANTE PELO SIMPLES"
       data$PA_TIPPRE[data$PA_TIPPRE=="30"] <- "PUBLICO FEDERAL"
@@ -152,40 +127,9 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
     # PA_MN_IND
     if("PA_MN_IND" %in% variables_names){
-      data$PA_MN_IND <- as.character(data$PA_MN_IND)
       data$PA_MN_IND[data$PA_MN_IND=="M"] <- "Mantida"
       data$PA_MN_IND[data$PA_MN_IND=="I"] <- "Individual"
       data$PA_MN_IND <- factor(data$PA_MN_IND)
-    }
-
-    # PA_CNPJCPF
-    if("PA_CNPJCPF" %in% variables_names){
-      data$PA_CNPJCPF <- as.character(data$PA_CNPJCPF)
-    }
-
-    # PA_CNPJMNT
-    if("PA_CNPJMNT" %in% variables_names){
-      data$PA_CNPJMNT <- as.character(data$PA_CNPJMNT)
-    }
-
-    # PA_CNPJ_CC
-    if("PA_CNPJ_CC" %in% variables_names){
-      data$PA_CNPJ_CC <- as.character(data$PA_CNPJ_CC)
-    }
-
-    # PA_MVM
-    if("PA_MVM" %in% variables_names){
-      data$PA_MVM <- as.character(data$PA_MVM)
-    }
-
-    # PA_CMP
-    if("PA_CMP" %in% variables_names){
-      data$PA_CMP <- as.character(data$PA_CMP)
-    }
-
-    # PA_PROC_ID
-    if("PA_PROC_ID" %in% variables_names){
-      data$PA_PROC_ID <- as.character(data$PA_PROC_ID)
     }
 
     # PA_PROC_NOME
@@ -195,7 +139,6 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
     # PA_TPFIN
     if("PA_TPFIN" %in% variables_names){
-      data$PA_TPFIN <- as.character(data$PA_TPFIN)
       data$PA_TPFIN[data$PA_TPFIN=="01"] <- "Aten\u00e7\u00e3o B\u00e1sica (PAB)"
       data$PA_TPFIN[data$PA_TPFIN=="02"] <- "Assist\u00eancia Farmac\u00eautica"
       data$PA_TPFIN[data$PA_TPFIN=="04"] <- "Fundo de A\u00e7\u00f5es Estrat\u00e9gicas e Compensa\u00e7\u00f5es FAEC"
@@ -205,14 +148,8 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
       data$PA_TPFIN <- factor(data$PA_TPFIN)
     }
 
-    # PA_SUBFIN
-    if("PA_SUBFIN" %in% variables_names){
-      data$PA_SUBFIN <- as.character(data$PA_SUBFIN)
-    }
-
     # PA_NIVCPL
     if("PA_NIVCPL" %in% variables_names){
-      data$PA_NIVCPL <- as.character(data$PA_NIVCPL)
       data$PA_NIVCPL[data$PA_NIVCPL=="0"] <- "N\u00e3o se Aplica"
       data$PA_NIVCPL[data$PA_NIVCPL=="1"] <- "Aten\u00e7\u00e3o B\u00e1sica"
       data$PA_NIVCPL[data$PA_NIVCPL=="2"] <- "M\u00e9dia Complexidade"
@@ -222,7 +159,6 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
     # PA_DOCORIG
     if("PA_DOCORIG" %in% variables_names){
-      data$PA_DOCORIG <- as.character(data$PA_DOCORIG)
       data$PA_DOCORIG[data$PA_DOCORIG=="C"] <- "BPA-C"
       data$PA_DOCORIG[data$PA_DOCORIG=="I"] <- "BPA-I"
       data$PA_DOCORIG[data$PA_DOCORIG=="P"] <- "APAC - Procedimento Principal"
@@ -230,21 +166,6 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
       data$PA_DOCORIG[data$PA_DOCORIG=="A"] <- "RAAS - Aten\u00e7\u00e3o Domiciliar"
       data$PA_DOCORIG[data$PA_DOCORIG=="B"] <- "RAAS - Psicossocial"
       data$PA_DOCORIG <- factor(data$PA_DOCORIG)
-    }
-
-    # PA_AUTORIZ
-    if("PA_AUTORIZ" %in% variables_names){
-      data$PA_AUTORIZ <- as.character(data$PA_AUTORIZ)
-    }
-
-    # PA_CNSMED
-    if("PA_CNSMED" %in% variables_names){
-      data$PA_CNSMED <- as.character(data$PA_CNSMED)
-    }
-
-    # PA_CBOCOD
-    if("PA_CBOCOD" %in% variables_names){
-      data$PA_CBOCOD <- as.character(data$PA_CBOCOD)
     }
 
     # Nome OCUPACAO
@@ -255,7 +176,6 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
     # PA_MOTSAI
     if("PA_MOTSAI" %in% variables_names){
-      data$PA_MOTSAI <- as.character(data$PA_MOTSAI)
       data$PA_MOTSAI[data$PA_MOTSAI=="11"] <- "ALTA CURADO"
       data$PA_MOTSAI[data$PA_MOTSAI=="12"] <- "ALTA MELHORADO"
       data$PA_MOTSAI[data$PA_MOTSAI=="13"] <- "ALTA DA PU\u00c9RPERA E PERMAN\u00caNCIA DO REC\u00c9M NASCIDO"
@@ -283,7 +203,6 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
     # PA_OBITO
     if("PA_OBITO" %in% variables_names){
-      data$PA_OBITO <- as.character(data$PA_OBITO)
       data$PA_OBITO[data$PA_OBITO=="1"] <- "Sim (motivo de sa\u00edda-\u00d3BITO)"
       data$PA_OBITO[data$PA_OBITO=="0"] <- "Nao houve \u00d3BITO"
       data$PA_OBITO <- factor(data$PA_OBITO)
@@ -291,7 +210,6 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
     # PA_ENCERR
     if("PA_ENCERR" %in% variables_names){
-      data$PA_ENCERR <- as.character(data$PA_ENCERR)
       data$PA_ENCERR[data$PA_ENCERR=="1"] <- "Sim (motivo de sa\u00edda-ENCERRAMENTO)"
       data$PA_ENCERR[data$PA_ENCERR=="0"] <- "Nao houve ENCERRAMENTO"
       data$PA_ENCERR <- factor(data$PA_ENCERR)
@@ -299,7 +217,6 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
     # PA_PERMAN
     if("PA_PERMAN" %in% variables_names){
-      data$PA_PERMAN <- as.character(data$PA_PERMAN)
       data$PA_PERMAN[data$PA_PERMAN=="1"] <- "Sim (motivo de sa\u00edda-PERMAN\u00caNCIA)"
       data$PA_PERMAN[data$PA_PERMAN=="0"] <- "Nao houve a PERMAN\u00caNCIA do paciente na unidade"
       data$PA_PERMAN <- factor(data$PA_PERMAN)
@@ -307,7 +224,6 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
     # PA_ALTA
     if("PA_ALTA" %in% variables_names){
-      data$PA_ALTA <- as.character(data$PA_ALTA)
       data$PA_ALTA[data$PA_ALTA=="1"] <- "Sim (motivo de sa\u00edda-PERMAN\u00caNCIA)"
       data$PA_ALTA[data$PA_ALTA=="0"] <- "Nao houve a PERMAN\u00caNCIA do paciente na unidade"
       data$PA_ALTA <- factor(data$PA_ALTA)
@@ -315,30 +231,13 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
     # PA_TRANSF
     if("PA_TRANSF" %in% variables_names){
-      data$PA_TRANSF <- as.character(data$PA_TRANSF)
       data$PA_TRANSF[data$PA_TRANSF=="1"] <- "Sim (motivo de sa\u00edda-TRANSFER\u00caNCIA)"
       data$PA_TRANSF[data$PA_TRANSF=="0"] <- "Nao houve TRANSFER\u00caNCIA do paciente"
       data$PA_TRANSF <- factor(data$PA_TRANSF)
     }
 
-    # PA_CIDPRI
-    if("PA_CIDPRI" %in% variables_names){
-      data$PA_CIDPRI <- as.character(data$PA_CIDPRI)
-    }
-
-    # PA_CIDSEC
-    if("PA_CIDSEC" %in% variables_names){
-      data$PA_CIDSEC <- as.character(data$PA_CIDSEC)
-    }
-
-    # PA_CIDCAS
-    if("PA_CIDCAS" %in% variables_names){
-      data$PA_CIDCAS <- as.character(data$PA_CIDCAS)
-    }
-
     # PA_CATEND
     if("PA_CATEND" %in% variables_names){
-      data$PA_CATEND <- as.character(data$PA_CATEND)
       data$PA_CATEND[data$PA_CATEND=="01"] <- "ELETIVO"
       data$PA_CATEND[data$PA_CATEND=="02"] <- "URG\u00caNCIA"
       data$PA_CATEND[data$PA_CATEND=="03"] <- "ACIDENTE NO LOCAL TRABALHO OU A SERVi\u00c7O DA EMPRESA"
@@ -359,23 +258,22 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
     # PA_IDADE
     if("PA_IDADE" %in% variables_names){
-      data$PA_IDADE <- as.numeric(levels(data$PA_IDADE))[data$PA_IDADE]
+      data$PA_IDADE <- as.numeric(data$PA_IDADE)
       data$PA_IDADE[data$PA_IDADE==999] <- NA
     }
 
     # IDADEMIN
     if("IDADEMIN" %in% variables_names){
-      data$IDADEMIN <- as.numeric(levels(data$IDADEMIN))[data$IDADEMIN]
+      data$IDADEMIN <- as.numeric(data$IDADEMIN)
     }
 
     # IDADEMAX
     if("IDADEMAX" %in% variables_names){
-      data$IDADEMAX <- as.numeric(levels(data$IDADEMAX))[data$IDADEMAX]
+      data$IDADEMAX <- as.numeric(data$IDADEMAX)
     }
 
     # PA_FLIDADE
     if("PA_FLIDADE" %in% variables_names){
-      data$PA_FLIDADE <- as.character(data$PA_FLIDADE)
       data$PA_FLIDADE[data$PA_FLIDADE=="0"] <- "IDADE N\u00c3O EXIGIDA"
       data$PA_FLIDADE[data$PA_FLIDADE=="1"] <- "IDADE COMPATIVEL COM O SIGTAP"
       data$PA_FLIDADE[data$PA_FLIDADE=="2"] <- "IDADE FORA DA FAIXA DO SIGTAP"
@@ -386,7 +284,6 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
     # PA_SEXO
     if("PA_SEXO" %in% variables_names){
-      data$PA_SEXO <- as.character(data$PA_SEXO)
       data$PA_SEXO[data$PA_SEXO=="0"] <- "N\u00e3o exigido"
       data$PA_SEXO[data$PA_SEXO=="M"] <- "Masculino"
       data$PA_SEXO[data$PA_SEXO=="F"] <- "Feminino"
@@ -395,7 +292,6 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
     # PA_RACACOR
     if("PA_RACACOR" %in% variables_names){
-      data$PA_RACACOR <- as.character(data$PA_RACACOR)
       data$PA_RACACOR[data$PA_RACACOR=="00"] <- "RA\u00c7A/COR N\u00c3O EXIGIDO"
       data$PA_RACACOR[data$PA_RACACOR=="01"] <- "BRANCA"
       data$PA_RACACOR[data$PA_RACACOR=="02"] <- "PRETA"
@@ -416,11 +312,9 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
     # PA_MUNPCN
     if("PA_MUNPCN" %in% variables_names & municipality_data == TRUE){
-      data$PA_MUNPCN <- as.integer(as.character(data$PA_MUNPCN))
       colnames(tabMun)[1] <- "PA_MUNPCN"
+      data$PA_MUNPCN <- as.integer(data$PA_MUNPCN)
       data <- dplyr::left_join(data, tabMun, by = "PA_MUNPCN")
-    } else {
-      data$PA_MUNPCN <- as.integer(as.character(data$PA_MUNPCN))
     }
 
     # PA_QTDPRO
@@ -430,12 +324,12 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
     # PA_QTDAPR
     if("PA_QTDAPR" %in% variables_names){
-      data$PA_QTDAPR <- as.integer(data$PA_QTDAPR)
+      data$PA_QTDAPR <- as.numeric(data$PA_QTDAPR)
     }
 
     # PA_VALPRO
     if("PA_VALPRO" %in% variables_names){
-      data$PA_VALPRO <- as.integer(data$PA_VALPRO)
+      data$PA_VALPRO <- as.numeric(data$PA_VALPRO)
     }
 
     # PA_VALPRO
@@ -450,7 +344,6 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
     # PA_UFDIF
     if("PA_UFDIF" %in% variables_names){
-      data$PA_UFDIF <- as.character(data$PA_UFDIF)
       data$PA_UFDIF[data$PA_UFDIF=="1"] <- "Sim (houve invas\u00e3o)"
       data$PA_UFDIF[data$PA_UFDIF=="0"] <- "N\u00e3o houve invas\u00e3o"
       data$PA_UFDIF <- factor(data$PA_UFDIF)
@@ -458,7 +351,6 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
     # PA_MNDIF
     if("PA_MNDIF" %in% variables_names){
-      data$PA_MNDIF <- as.character(data$PA_MNDIF)
       data$PA_MNDIF[data$PA_MNDIF=="1"] <- "Sim (houve invas\u00e3o)"
       data$PA_MNDIF[data$PA_MNDIF=="0"] <- "N\u00e3o houve invas\u00e3o"
       data$PA_MNDIF <- factor(data$PA_MNDIF)
@@ -481,31 +373,14 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
     # PA_INDICA
     if("PA_INDICA" %in% variables_names){
-      data$PA_INDICA <- as.character(data$PA_INDICA)
       data$PA_INDICA[data$PA_INDICA=="5"] <- "Aprovado totalmente"
       data$PA_INDICA[data$PA_INDICA=="6"] <- "Aprovado parcialmente"
       data$PA_INDICA[data$PA_INDICA=="0"] <- "N\u00e3o aprovado"
       data$PA_INDICA <- factor(data$PA_INDICA)
     }
 
-    # PA_CODOCO
-    if("PA_CODOCO" %in% variables_names){
-      data$PA_CODOCO <- as.character(data$PA_CODOCO)
-    }
-
-    # PA_FLQT
-    if("PA_FLQT" %in% variables_names){
-      data$PA_FLQT <- as.character(data$PA_FLQT)
-    }
-
-    # PA_FLER
-    if("PA_FLER" %in% variables_names){
-      data$PA_FLER <- as.character(data$PA_FLER)
-    }
-
     # PA_ETNIA
     if("PA_ETNIA" %in% variables_names){
-      data$PA_ETNIA <- as.character(data$PA_ETNIA)
       data$PA_ETNIA[data$PA_ETNIA == "0001"] <- "ACONA (WAKONAS, NACONAS, JAKONA, ACORANES)"
       data$PA_ETNIA[data$PA_ETNIA == "0002"] <-	"AIKANA (AIKANA, MAS SAKA,TUBARAO)"
       data$PA_ETNIA[data$PA_ETNIA == "0003"] <-	"AJURU"
@@ -926,11 +801,6 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
     # PA_VL_INC
     if("PA_VL_INC" %in% variables_names){
       data$PA_VL_INC <- as.numeric(data$PA_VL_INC)
-    }
-
-    # PA_SRC_C
-    if("PA_VL_INC" %in% variables_names){
-      data$PA_VL_INC <- as.character(data$PA_VL_INC)
     }
 
     # PA_INE
