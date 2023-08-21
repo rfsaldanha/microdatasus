@@ -313,6 +313,7 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
     # PA_MUNPCN
     if("PA_MUNPCN" %in% variables_names & municipality_data == TRUE){
       colnames(tabMun)[1] <- "PA_MUNPCN"
+      data$PA_MUNPCN <- as.integer(data$PA_MUNPCN)
       data <- dplyr::left_join(data, tabMun, by = "PA_MUNPCN")
     }
 
