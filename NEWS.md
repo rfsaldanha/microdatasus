@@ -1,5 +1,6 @@
 # microdatasus 2.2.0
 * fetch_datasus function uses read.dbc function with as.is set to TRUE for better performance.
+* Minor bugs corrections.
 
 # microdatasus 2.1.3
 * process_cnes uses {data.table} backend for performance
