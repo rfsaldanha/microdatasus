@@ -3,7 +3,7 @@ pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   FAQ: FAQ.html
-last_built: 2023-08-21T13:37Z
+last_built: 2023-09-19T12:32Z
 urls:
   reference: https://rfsaldanha.github.io/microdatasus/reference
   article: https://rfsaldanha.github.io/microdatasus/articles
