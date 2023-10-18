@@ -12,6 +12,7 @@ Downloads microdata files (DBC format) from DataSUS and imports the files for us
 Useful links:
 \itemize{
   \item \url{https://github.com/rfsaldanha/microdatasus}
+  \item \url{https://rfsaldanha.github.io/microdatasus/}
   \item Report bugs at \url{https://github.com/rfsaldanha/microdatasus/issues}
 }
 
