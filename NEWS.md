@@ -1,6 +1,7 @@
 # microdatasus 2.2.1
 * process_sinasc with new codes to process sex variable, avoiding missing results.
 * process_cnes corrections to avoid NA introduction by coercion.
+* process_sih corrects MUNIC_RES type
 
 # microdatasus 2.2.0
 * fetch_datasus function uses read.dbc function with as.is set to TRUE for better performance.
