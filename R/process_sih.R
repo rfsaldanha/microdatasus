@@ -99,6 +99,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     # MUNIC_RES
     if("MUNIC_RES" %in% variables_names & municipality_data == TRUE){
       colnames(tabMun)[1] <- "MUNIC_RES"
+      data$MUNIC_RES <- as.numeric(data$MUNIC_RES)
       data <- dplyr::left_join(data, tabMun, by = "MUNIC_RES")
     }
 
