@@ -1,3 +1,7 @@
+# microdatasus 2.2.1
+* process_sinasc with new codes to process sex variable, avoiding missing results.
+
+
 # microdatasus 2.2.0
 * fetch_datasus function uses read.dbc function with as.is set to TRUE for better performance.
 * Minor bugs corrections.
