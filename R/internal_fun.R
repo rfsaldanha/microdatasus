@@ -5,11 +5,11 @@ convert_dummy_to_sim_nao <- function(data, column_names) {
 
   for (col in column_names) {
     if (col %in% names(data)) {
-      data[, (col) := as.numeric(as.character(get(col)))]
+      #data[, (col) := as.numeric(as.character(get(col)))]
 
       data[, (col) := data.table::fcase(
-        get(col) >= 1, "Sim",
-        get(col) <= 0, "N\u00e3o",
+        get(col) == "1", "Sim",
+        get(col) == "0", "N\u00e3o",
         is.na(get(col)), as.character(NA)
         )]
 

@@ -34,26 +34,15 @@ process_cnes <- function(data,
   # convert to data.table
   data.table::setDT(data)
 
-
-  # Convert cols to integer
-  cols_to_integer <- c("MICR_REG", "CPF_CNPJ", "CNPJ_MAN", "DISTRSAN")
-
-  convert_to_integer(data = data, column_names = cols_to_integer)
-  # lapply( X = cols_to_integer,  FUN = convert_to_integer)
-
-
   # Convert cols to numeric
-  cols_to_numeric <- c("CLIENTEL", "TP_UNID", "TURNO_AT", "NIV_HIER",
+  cols_to_numeric <- c("MICR_REG", "CPF_CNPJ", "CNPJ_MAN", "DISTRSAN",
+                       "CLIENTEL", "TP_UNID", "TURNO_AT", "NIV_HIER",
                        "TP_PREST", "ORGEXPED", "PF_PJ", "NIV_DEP", "COD_IR",
                        "ESFERA_A", "RETENCAO", "ATIVIDAD", "NATUREZA",
-                       "NAT_JUR", "CLASAVAL", "TERCEIRO"
-                       )
+                       "NAT_JUR", "CLASAVAL", "TERCEIRO")
 
   # Convert cols to numeric
   convert_to_numeric(data = data, column_names = cols_to_numeric)
-
-  convert_to_numeric(data = data, column_names = cols_to_numeric)
-  # lapply( X = cols_to_numeric,  FUN = convert_to_numeric)
 
 
   # ATIVIDAD
@@ -383,13 +372,12 @@ process_cnes <- function(data,
     convert_to_character(data = data, column_name = cols_to_character)
 
 
-    # Convert cols to integer
-    cols_to_integer <- c("COD_CEP", "CPF_CNPJ", "CNPJ_MAN", "DISTRSAN",
-                         "CO_BANCO", "CO_AGENC", "C_CORREN", "CONTRATM",
-                         "DT_PUBLM", "CONTRATE", "DT_PUBLE", "ALVARA",
-                         "DT_EXPED", "DT_ACRED", "DT_PNASS"
-                         )
-    convert_to_integer(data = data, column_name = cols_to_integer)
+    # Convert cols to numeric
+    cols_to_numeric <- c("COD_CEP", "CPF_CNPJ", "CNPJ_MAN", "DISTRSAN", "CONTRATM", "DT_PUBLM", "CONTRATE", "DT_PUBLE", "DT_EXPED", "DT_ACRED", "DT_PNASS")
+
+    # "CO_BANCO", "CO_AGENC", "C_CORREN", "ALVARA"
+
+    convert_to_numeric(data = data, column_name = cols_to_numeric)
 
     # Convert cols to Sim ou Nao
     cols_to_sim_nao <- c("AV_ACRED", "AV_PNASS", "GESPRG1E", "GESPRG1M",
