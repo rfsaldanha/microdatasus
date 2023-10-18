@@ -35,7 +35,7 @@ process_cnes <- function(data,
   data.table::setDT(data)
 
   # Convert cols to numeric
-  cols_to_numeric <- c("MICR_REG", "CPF_CNPJ", "CNPJ_MAN", "DISTRSAN",
+  cols_to_numeric <- c("CPF_CNPJ", "CNPJ_MAN",
                        "CLIENTEL", "TP_UNID", "TURNO_AT", "NIV_HIER",
                        "TP_PREST", "ORGEXPED", "PF_PJ", "NIV_DEP", "COD_IR",
                        "ESFERA_A", "RETENCAO", "ATIVIDAD", "NATUREZA",
@@ -373,9 +373,9 @@ process_cnes <- function(data,
 
 
     # Convert cols to numeric
-    cols_to_numeric <- c("COD_CEP", "CPF_CNPJ", "CNPJ_MAN", "DISTRSAN", "CONTRATM", "DT_PUBLM", "CONTRATE", "DT_PUBLE", "DT_EXPED", "DT_ACRED", "DT_PNASS")
+    cols_to_numeric <- c("COD_CEP", "CPF_CNPJ", "CNPJ_MAN", "CONTRATM", "DT_PUBLM", "CONTRATE", "DT_PUBLE", "DT_EXPED", "DT_ACRED", "DT_PNASS")
 
-    # "CO_BANCO", "CO_AGENC", "C_CORREN", "ALVARA"
+    # "CO_BANCO", "CO_AGENC", "C_CORREN", "ALVARA", "DISTRSAN"
 
     convert_to_numeric(data = data, column_name = cols_to_numeric)
 
@@ -480,12 +480,6 @@ process_cnes <- function(data,
     cols_to_character <- c("CNES", "REGSAUDE", "NOMEPROF", "UFMUNRES",
                            "CBO", "CPF_PROF")
     convert_to_character(data = data, column_names = cols_to_character)
-
-
-    # Convert cols to integer
-    cols_to_integer <- c("DISTRADM")
-    convert_to_integer(data = data, column_names = cols_to_integer)
-
 
     # UFMUNRES
     if ("UFMUNRES" %in% variables_names & municipality_data == TRUE) {
