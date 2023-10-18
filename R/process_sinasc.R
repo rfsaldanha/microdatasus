@@ -200,11 +200,13 @@ process_sinasc <- function(data, municipality_data = TRUE) {
 
   # SEXO
   if("SEXO" %in% variables_names){
-    data$SEXO <- as.numeric(data$SEXO)
-    data$SEXO[data$SEXO==0] <- NA
-    data$SEXO[data$SEXO==1] <- "Masculino"
-    data$SEXO[data$SEXO==2] <- "Feminino"
-    data$SEXO[data$SEXO==9] <- NA
+    data$SEXO[data$SEXO=="0"] <- NA
+    data$SEXO[data$SEXO=="1"] <- "Masculino"
+    data$SEXO[data$SEXO=="M"] <- "Masculino"
+    data$SEXO[data$SEXO=="2"] <- "Feminino"
+    data$SEXO[data$SEXO=="F"] <- "Feminino"
+    data$SEXO[data$SEXO=="9"] <- NA
+    data$SEXO[data$SEXO=="I"] <- NA
     data$SEXO <- factor(data$SEXO)
   }
 
