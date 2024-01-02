@@ -1,3 +1,6 @@
+# microdatasus 2.2.2
+* process_sinasc correct old code for missing on ESCMAE
+
 # microdatasus 2.2.1
 * process_sinasc with new codes to process sex variable, avoiding missing results.
 * process_cnes corrections to avoid NA introduction by coercion.
