@@ -89,7 +89,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
     data$ESCMAE[data$ESCMAE==5] <- "12 anos ou mais"
     data$ESCMAE[data$ESCMAE==6] <- NA
     data$ESCMAE[data$ESCMAE==7] <- NA
-    data$ESCMAE[data$ESCMAE==8] <- "9 a 11 anos"
+    data$ESCMAE[data$ESCMAE==8] <- NA
     data$ESCMAE[data$ESCMAE==9] <- NA
     data$ESCMAE <- factor(data$ESCMAE)
   }
