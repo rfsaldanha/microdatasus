@@ -45,6 +45,9 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
   original_time_option <- getOption("timeout")
   on.exit(options(timeout = original_time_option))
 
+  # Set new timeout
+  options(timeout = timeout)
+
   # Verify health information system
   sisSIH <- c("SIH-RD","SIH-RJ","SIH-SP","SIH-ER")
   sisSIM <- c("SIM-DO", "SIM-DOFET","SIM-DOEXT","SIM-DOINF","SIM-DOMAT")
