@@ -23,6 +23,7 @@ Imports:
     dtplyr,
     foreign,
     lubridate,
+    magrittr,
     RCurl,
     read.dbc,
     stringi,
