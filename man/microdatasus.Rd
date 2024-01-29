@@ -2,8 +2,8 @@
 % Please edit documentation in R/microdatasus.R
 \docType{package}
 \name{microdatasus}
+\alias{microdatasus-package}
 \alias{microdatasus}
-\alias{_PACKAGE}
 \title{microdatasus: Download and preprocess DataSUS files}
 \description{
 Downloads microdata files (DBC format) from DataSUS and imports the files for use.
