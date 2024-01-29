@@ -1,3 +1,10 @@
+# microdatasus 2.2.3
+* As the package {read.dbc} is not available on CRAN, this patch uses the Github version.
+* Issue #89 points out that files from SIM-EXT older than 2006 present 7-digits variable lengths for CODMUNRES and CODMUNOCOR. Those codes are now truncated to 6-digits standard by process_sim function.
+* Related to #66, #84 and #86. Some files are very big to download, especially those from SIA and SIH. A timeout argument was added to the fetch_datasus with a default of 240 seconds.
+* process_sinasc pull request #91 fixes issue #90, related to CODOCUPMAE variable
+* Related to #79, now the function process_sia downloads an updated version from the SIGTAB table from DataSUS when nome_proced is TRUE. 
+
 # microdatasus 2.2.2
 * process_sinasc correct old code for missing on ESCMAE
 
