@@ -42,10 +42,6 @@ fetch_sigtab <- function(timeout = 240){
   },
   error=function(cond) {
     message(paste("Something went wrong while trying to download SIGTAB table. URL:", file))
-
-    if(stop_on_error == TRUE){
-      stop("Stopping download.")
-    }
   })
 
   # sigtab file address
