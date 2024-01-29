@@ -104,7 +104,9 @@ process_sinasc <- function(data, municipality_data = TRUE) {
     if (!("DTNASC" %in% variables_names))
       stop("The variable DTNASC is needed to preprocess the variable CODOCUPMAE")
     colnames(tabOcupacao)[1] <- "CODOCUPMAE"
+    tabOcupacao$CODOCUPMAE = as.character(tabOcupacao$CODOCUPMAE) 
     colnames(tabCBO)[1] <- "CODOCUPMAE"
+    tabCBO$CODOCUPMAE = as.character(tabCBO$CODOCUPMAE) 
     ano <- lubridate::year(data$DTNASC)
     data$CODOCUPMAE <-
       factor(ifelse(
