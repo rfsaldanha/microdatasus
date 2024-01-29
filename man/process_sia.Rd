@@ -18,7 +18,7 @@ process_sia(
 
 \item{information_system}{string. The abbreviation of the health information system. See \emph{Details}.}
 
-\item{nome_proced}{optional logical. \code{TRUE} by default, add  \code{PA_PROCED_NOME} to the dataset.}
+\item{nome_proced}{optional logical. \code{TRUE} by default, add  \code{PA_PROCED_NOME} to the dataset. This setting will start to download a file from DataSUS to retrive the updates list of procesures (SIGTAB).}
 
 \item{nome_ocupacao}{optional logical. \code{TRUE} by default, add  \code{OCUPACAO} name to the dataset.}
 

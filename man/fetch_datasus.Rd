@@ -12,7 +12,8 @@ fetch_datasus(
   uf = "all",
   information_system,
   vars = NULL,
-  stop_on_error = FALSE
+  stop_on_error = FALSE,
+  timeout = 240
 )
 }
 \arguments{
@@ -27,6 +28,8 @@ fetch_datasus(
 \item{vars}{an optional string or a vector of strings. By default, all variables read and stored, unless a list of desired variables is informed by this parameter.}
 
 \item{stop_on_error}{logical. If TRUE, the download process will be stopped if an error occurs.}
+
+\item{timeout}{numeric (seconds). Sets a timeout tolerance for downloads, usefull on large files and/or slow connections. Defaults to 240 seconds.}
 }
 \description{
 \code{fetch_datasus} downloads microdata (DBC) files from DataSUS and reads them.

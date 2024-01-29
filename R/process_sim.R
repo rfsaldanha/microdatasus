@@ -176,10 +176,21 @@ process_sim <- function(data, municipality_data = TRUE) {
   }
 
   # CODMUNRES
-  if ("CODMUNRES" %in% variables_names & municipality_data == TRUE) {
+  if ("CODMUNRES" %in% variables_names){
+    if(nchar(data$CODMUNRES[1]) == 7){
+      data$CODMUNRES <- substr(data$CODMUNRES, 0, 6)
+    }
+  } else if ("CODMUNRES" %in% variables_names & municipality_data == TRUE) {
     colnames(tabMun)[1] <- "CODMUNRES"
     tabMun$CODMUNRES <- as.character(tabMun$CODMUNRES)
     data <- dplyr::left_join(data, tabMun, by = "CODMUNRES")
+  }
+
+  # CODMUNOCOR
+  if ("CODMUNOCOR" %in% variables_names){
+    if(nchar(data$CODMUNOCOR[1]) == 7){
+      data$CODMUNOCOR <- substr(data$CODMUNOCOR, 0, 6)
+    }
   }
 
   # LOCOCOR

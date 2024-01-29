@@ -14,6 +14,7 @@
 #' @param information_system string. The abbreviation of the health information system to be accessed. See \emph{Details}.
 #' @param vars an optional string or a vector of strings. By default, all variables read and stored, unless a list of desired variables is informed by this parameter.
 #' @param stop_on_error logical. If TRUE, the download process will be stopped if an error occurs.
+#' @param timeout numeric (seconds). Sets a timeout tolerance for downloads, usefull on large files and/or slow connections. Defaults to 240 seconds.
 #'
 #' @section Warning:
 #' A Internet connection is needed to use this function.
@@ -39,7 +40,14 @@
 #' }
 #' @export
 
-fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "all", information_system, vars = NULL, stop_on_error = FALSE){
+fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "all", information_system, vars = NULL, stop_on_error = FALSE, timeout = 240){
+  # Resets original timeout option on function exit
+  original_time_option <- getOption("timeout")
+  on.exit(options(timeout = original_time_option))
+
+  # Set new timeout
+  options(timeout = timeout)
+
   # Verify health information system
   sisSIH <- c("SIH-RD","SIH-RJ","SIH-SP","SIH-ER")
   sisSIM <- c("SIM-DO", "SIM-DOFET","SIM-DOEXT","SIM-DOINF","SIM-DOMAT")
@@ -1196,6 +1204,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     error=function(cond) {
       message(paste("Something went wrong with this URL:", file))
       message("This can be a problem with the Internet or the file does not exist yet.")
+      message("If the file is too big, try to increase the timeout argument value.")
 
       if(stop_on_error == TRUE){
         stop("Stopping download.")

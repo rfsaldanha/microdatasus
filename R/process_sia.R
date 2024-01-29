@@ -8,7 +8,7 @@
 #'
 #' @param data \code{data.frame} created by \code{fetch_datasus()}.
 #' @param information_system string. The abbreviation of the health information system. See \emph{Details}.
-#' @param nome_proced optional logical. \code{TRUE} by default, add  \code{PA_PROCED_NOME} to the dataset.
+#' @param nome_proced optional logical. \code{TRUE} by default, add  \code{PA_PROCED_NOME} to the dataset. This setting will start to download a file from DataSUS to retrive the updates list of procesures (SIGTAB).
 #' @param nome_ocupacao optional logical. \code{TRUE} by default, add  \code{OCUPACAO} name to the dataset.
 #' @param nome_equipe optional logical. \code{TRUE} by default, add  \code{EQUIPE} name to the dataset.
 #' @param municipality_data optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.
@@ -134,7 +134,8 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
 
     # PA_PROC_NOME
     if(nome_proced == TRUE){
-      data <- dplyr::left_join(data, microdatasus::sigtab, by = c("PA_PROC_ID" = "COD"))
+      sigtab_temp <- microdatasus::fetch_sigtab()
+      data <- dplyr::left_join(data, sigtab_temp, by = c("PA_PROC_ID" = "COD"))
     }
 
     # PA_TPFIN
