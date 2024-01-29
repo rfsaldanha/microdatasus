@@ -1204,7 +1204,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     error=function(cond) {
       message(paste("Something went wrong with this URL:", file))
       message("This can be a problem with the Internet or the file does not exist yet.")
-      message("If the file is too big, try to increase the timeout tolerance with options(timeout = 120)")
+      message("If the file is too big, try to increase the timeout argument value.")
 
       if(stop_on_error == TRUE){
         stop("Stopping download.")
