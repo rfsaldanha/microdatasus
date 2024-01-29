@@ -20,11 +20,15 @@ Imports:
     curl,
     data.table,
     dplyr,
+    dtplyr,
+    foreign,
     lubridate,
     RCurl,
     read.dbc,
     stringi,
-    utils
+    tibble,
+    utils,
+    zip
 Remotes:
     danicat/read.dbc
 Suggests: 
