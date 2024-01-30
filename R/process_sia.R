@@ -224,7 +224,7 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
     if("PA_MOTSAI" %in% variables_names){
       data <- data %>%
         dplyr::mutate(PA_MOTSAI = dplyr::case_match(
-          .data$A_MOTSAI,
+          .data$PA_MOTSAI,
           "11" ~ "ALTA CURADO",
           "12" ~ "ALTA MELHORADO",
           "13" ~ "ALTA DA PU\u00c9RPERA E PERMAN\u00caNCIA DO REC\u00c9M NASCIDO",
@@ -370,7 +370,7 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
           "2" ~ "IDADE FORA DA FAIXA DO SIGTAP",
           "3" ~ "IDADE INEXISTENTE",
           "4" ~ "IDADE EM BRANCO",
-          .default = .data$A_FLIDADE
+          .default = .data$PA_FLIDADE
         )) %>%
         dplyr::mutate(as.factor(.data$PA_FLIDADE))
     }
