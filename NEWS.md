@@ -1,3 +1,6 @@
+# microdatasus 2.2.4
+* process_sia and process_sih internally uses now data.table and dtplyr
+
 # microdatasus 2.2.3
 * As the package {read.dbc} is not available on CRAN, this patch uses the Github version.
 * Issue #89 points out that files from SIM-EXT older than 2006 present 7-digits variable lengths for CODMUNRES and CODMUNOCOR. Those codes are now truncated to 6-digits standard by process_sim function.
