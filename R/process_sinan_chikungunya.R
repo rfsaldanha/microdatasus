@@ -111,14 +111,13 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
 
   # CS_GESTANT
   if ("CS_GESTANT" %in% variables_names) {
-    data$CS_GESTANT <- as.numeric(data$CS_GESTANT)
-    data$CS_GESTANT[data$CS_GESTANT == 1] <- "1o trimestre"
-    data$CS_GESTANT[data$CS_GESTANT == 2] <- "2o trimestre"
-    data$CS_GESTANT[data$CS_GESTANT == 3] <- "3o trimestre"
-    data$CS_GESTANT[data$CS_GESTANT == 4] <- "Idade gestacional ignorada"
-    data$CS_GESTANT[data$CS_GESTANT == 5] <- "N\u00e3o"
-    data$CS_GESTANT[data$CS_GESTANT == 6] <- "N\u00e3o se aplica"
-    data$CS_GESTANT[data$CS_GESTANT == 9] <- "Ignorado"
+    data$CS_GESTANT[data$CS_GESTANT == "1"] <- "1o trimestre"
+    data$CS_GESTANT[data$CS_GESTANT == "2"] <- "2o trimestre"
+    data$CS_GESTANT[data$CS_GESTANT == "3"] <- "3o trimestre"
+    data$CS_GESTANT[data$CS_GESTANT == "4"] <- "Idade gestacional ignorada"
+    data$CS_GESTANT[data$CS_GESTANT == "5"] <- "N\u00e3o"
+    data$CS_GESTANT[data$CS_GESTANT == "6"] <- "N\u00e3o se aplica"
+    data$CS_GESTANT[data$CS_GESTANT == "9"] <- "Ignorado"
     data$CS_GESTANT <- factor(data$CS_GESTANT)
   }
 
