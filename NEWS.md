@@ -1,3 +1,6 @@
+# microdatasus 2.2.5
+* Patch to correct Invalid multibyte string error on chikungunya processing. 
+
 # microdatasus 2.2.4
 * process_sia and process_sih internally uses now data.table and dtplyr
 
