@@ -123,64 +123,61 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
 
   # CS_RACA
   if ("CS_RACA" %in% variables_names) {
-    data$CS_RACA <- as.numeric(data$CS_RACA)
-    data$CS_RACA[data$CS_RACA == 1] <- "Branca"
-    data$CS_RACA[data$CS_RACA == 2] <- "Preta"
-    data$CS_RACA[data$CS_RACA == 3] <- "Amarela"
-    data$CS_RACA[data$CS_RACA == 4] <- "Parda"
-    data$CS_RACA[data$CS_RACA == 5] <- "Ind\u00edgena"
-    data$CS_RACA[data$CS_RACA == 9] <- "Ignorado"
+    data$CS_RACA[data$CS_RACA == "1"] <- "Branca"
+    data$CS_RACA[data$CS_RACA == "2"] <- "Preta"
+    data$CS_RACA[data$CS_RACA == "3"] <- "Amarela"
+    data$CS_RACA[data$CS_RACA == "4"] <- "Parda"
+    data$CS_RACA[data$CS_RACA == "5"] <- "Ind\u00edgena"
+    data$CS_RACA[data$CS_RACA == "9"] <- "Ignorado"
     data$CS_RACA <- factor(data$CS_RACA)
   }
 
   # CS_ESCOL_N
   if ("CS_ESCOL_N" %in% variables_names) {
-    data$CS_ESCOL_N <- as.numeric(data$CS_ESCOL_N)
-    data$CS_ESCOL_N[data$CS_ESCOL_N == 1] <- "1a a 4a s\u00e9rie incompleta do EF"
-    data$CS_ESCOL_N[data$CS_ESCOL_N == 2] <- "4a s\u00e9rie completa do EF (antigo 1o grau)"
-    data$CS_ESCOL_N[data$CS_ESCOL_N == 3] <- "5a \u00e0 8a s\u00e9rie incompleta do EF (antigo gin\u00e1sio ou 1o grau)"
-    data$CS_ESCOL_N[data$CS_ESCOL_N == 4] <- "Ensino fundamental completo (antigo gin\u00e1sio ou 1o grau)"
-    data$CS_ESCOL_N[data$CS_ESCOL_N == 5] <- "Ensino m\u00e9dio incompleto (antigo colegial ou 2o grau)"
-    data$CS_ESCOL_N[data$CS_ESCOL_N == 6] <- "Ensino m\u00e9dio completo (antigo colegial ou 2o grau)"
-    data$CS_ESCOL_N[data$CS_ESCOL_N == 7] <- "Educa\u00e7\u00e3o superior incompleta"
-    data$CS_ESCOL_N[data$CS_ESCOL_N == 8] <- "Educa\u00e7\u00e3o superior completa"
-    data$CS_ESCOL_N[data$CS_ESCOL_N == 9] <- "Ignorado"
-    data$CS_ESCOL_N[data$CS_ESCOL_N == 10] <- "N\u00e3o se aplica"
+    data$CS_ESCOL_N[data$CS_ESCOL_N == "1"] <- "1a a 4a s\u00e9rie incompleta do EF"
+    data$CS_ESCOL_N[data$CS_ESCOL_N == "2"] <- "4a s\u00e9rie completa do EF (antigo 1o grau)"
+    data$CS_ESCOL_N[data$CS_ESCOL_N == "3"] <- "5a \u00e0 8a s\u00e9rie incompleta do EF (antigo gin\u00e1sio ou 1o grau)"
+    data$CS_ESCOL_N[data$CS_ESCOL_N == "4"] <- "Ensino fundamental completo (antigo gin\u00e1sio ou 1o grau)"
+    data$CS_ESCOL_N[data$CS_ESCOL_N == "5"] <- "Ensino m\u00e9dio incompleto (antigo colegial ou 2o grau)"
+    data$CS_ESCOL_N[data$CS_ESCOL_N == "6"] <- "Ensino m\u00e9dio completo (antigo colegial ou 2o grau)"
+    data$CS_ESCOL_N[data$CS_ESCOL_N == "7"] <- "Educa\u00e7\u00e3o superior incompleta"
+    data$CS_ESCOL_N[data$CS_ESCOL_N == "8"] <- "Educa\u00e7\u00e3o superior completa"
+    data$CS_ESCOL_N[data$CS_ESCOL_N == "9"] <- "Ignorado"
+    data$CS_ESCOL_N[data$CS_ESCOL_N == "10"] <- "N\u00e3o se aplica"
     data$CS_ESCOL_N <- factor(data$CS_ESCOL_N)
   }
 
   # SG_UF
   if ("SG_UF" %in% variables_names) {
-    data$SG_UF <- as.numeric(data$SG_UF)
-    data$SG_UF[data$SG_UF == 0] <- "Ignorado"
-    data$SG_UF[data$SG_UF == 99] <- "Ignorado"
-    data$SG_UF[data$SG_UF == 11] <- "Rond\u00f4nia"
-    data$SG_UF[data$SG_UF == 12] <- "Acre"
-    data$SG_UF[data$SG_UF == 13] <- "Amazonas"
-    data$SG_UF[data$SG_UF == 14] <- "Roraima"
-    data$SG_UF[data$SG_UF == 15] <- "Par\u00e1"
-    data$SG_UF[data$SG_UF == 16] <- "Amap\u00e1"
-    data$SG_UF[data$SG_UF == 17] <- "Tocantins"
-    data$SG_UF[data$SG_UF == 21] <- "Maranh\u00e3o"
-    data$SG_UF[data$SG_UF == 22] <- "Piau\u00ed"
-    data$SG_UF[data$SG_UF == 23] <- "Cear\u00e1"
-    data$SG_UF[data$SG_UF == 24] <- "Rio Grande do Norte"
-    data$SG_UF[data$SG_UF == 25] <- "Para\u00edba"
-    data$SG_UF[data$SG_UF == 26] <- "Pernambuco"
-    data$SG_UF[data$SG_UF == 27] <- "Alagoas"
-    data$SG_UF[data$SG_UF == 28] <- "Sergipe"
-    data$SG_UF[data$SG_UF == 29] <- "Bahia"
-    data$SG_UF[data$SG_UF == 31] <- "Minas Gerais"
-    data$SG_UF[data$SG_UF == 32] <- "Esp\u00edrito Santo"
-    data$SG_UF[data$SG_UF == 33] <- "Rio de Janeiro"
-    data$SG_UF[data$SG_UF == 35] <- "S\u00e3o Paulo"
-    data$SG_UF[data$SG_UF == 41] <- "Paran\u00e1"
-    data$SG_UF[data$SG_UF == 42] <- "Santa Catarina"
-    data$SG_UF[data$SG_UF == 43] <- "Rio Grande do Sul"
-    data$SG_UF[data$SG_UF == 50] <- "Mato Grosso do Sul"
-    data$SG_UF[data$SG_UF == 51] <- "Mato Grosso"
-    data$SG_UF[data$SG_UF == 52] <- "Goi\u00e1s"
-    data$SG_UF[data$SG_UF == 53] <- "Distrito Federal"
+    data$SG_UF[data$SG_UF == "0"] <- "Ignorado"
+    data$SG_UF[data$SG_UF == "99"] <- "Ignorado"
+    data$SG_UF[data$SG_UF == "11"] <- "Rond\u00f4nia"
+    data$SG_UF[data$SG_UF == "12"] <- "Acre"
+    data$SG_UF[data$SG_UF == "13"] <- "Amazonas"
+    data$SG_UF[data$SG_UF == "14"] <- "Roraima"
+    data$SG_UF[data$SG_UF == "15"] <- "Par\u00e1"
+    data$SG_UF[data$SG_UF == "16"] <- "Amap\u00e1"
+    data$SG_UF[data$SG_UF == "17"] <- "Tocantins"
+    data$SG_UF[data$SG_UF == "21"] <- "Maranh\u00e3o"
+    data$SG_UF[data$SG_UF == "22"] <- "Piau\u00ed"
+    data$SG_UF[data$SG_UF == "23"] <- "Cear\u00e1"
+    data$SG_UF[data$SG_UF == "24"] <- "Rio Grande do Norte"
+    data$SG_UF[data$SG_UF == "25"] <- "Para\u00edba"
+    data$SG_UF[data$SG_UF == "26"] <- "Pernambuco"
+    data$SG_UF[data$SG_UF == "27"] <- "Alagoas"
+    data$SG_UF[data$SG_UF == "28"] <- "Sergipe"
+    data$SG_UF[data$SG_UF == "29"] <- "Bahia"
+    data$SG_UF[data$SG_UF == "31"] <- "Minas Gerais"
+    data$SG_UF[data$SG_UF == "32"] <- "Esp\u00edrito Santo"
+    data$SG_UF[data$SG_UF == "33"] <- "Rio de Janeiro"
+    data$SG_UF[data$SG_UF == "35"] <- "S\u00e3o Paulo"
+    data$SG_UF[data$SG_UF == "41"] <- "Paran\u00e1"
+    data$SG_UF[data$SG_UF == "42"] <- "Santa Catarina"
+    data$SG_UF[data$SG_UF == "43"] <- "Rio Grande do Sul"
+    data$SG_UF[data$SG_UF == "50"] <- "Mato Grosso do Sul"
+    data$SG_UF[data$SG_UF == "51"] <- "Mato Grosso"
+    data$SG_UF[data$SG_UF == "52"] <- "Goi\u00e1s"
+    data$SG_UF[data$SG_UF == "53"] <- "Distrito Federal"
     data$SG_UF <- factor(data$SG_UF)
   }
 
@@ -196,22 +193,20 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
 
   # CLASSI_FIN
   if ("CLASSI_FIN" %in% variables_names) {
-    data$CLASSI_FIN <- as.numeric(data$CLASSI_FIN)
-    data$CLASSI_FIN[data$CLASSI_FIN == 5] <- "Descartado"
-    data$CLASSI_FIN[data$CLASSI_FIN == 8] <- "Inconclusivo"
-    data$CLASSI_FIN[data$CLASSI_FIN == 10] <- "Dengue"
-    data$CLASSI_FIN[data$CLASSI_FIN == 11] <- "Dengue com sinais de alarme"
-    data$CLASSI_FIN[data$CLASSI_FIN == 12] <- "Dengue grave"
-    data$CLASSI_FIN[data$CLASSI_FIN == 13] <- "Chikungunya"
+    data$CLASSI_FIN[data$CLASSI_FIN == "5"] <- "Descartado"
+    data$CLASSI_FIN[data$CLASSI_FIN == "8"] <- "Inconclusivo"
+    data$CLASSI_FIN[data$CLASSI_FIN == "10"] <- "Dengue"
+    data$CLASSI_FIN[data$CLASSI_FIN == "11"] <- "Dengue com sinais de alarme"
+    data$CLASSI_FIN[data$CLASSI_FIN == "12"] <- "Dengue grave"
+    data$CLASSI_FIN[data$CLASSI_FIN == "13"] <- "Chikungunya"
     data$CLASSI_FIN <- factor(data$CLASSI_FIN)
   }
 
   # CRITERIO
   if ("CRITERIO" %in% variables_names) {
-    data$CRITERIO <- as.numeric(data$CRITERIO)
-    data$CRITERIO[data$CRITERIO == 1] <- "Laborat\u00f3rio"
-    data$CRITERIO[data$CRITERIO == 2] <- "Cl\u00ednico epidemiol\u00f3gico"
-    data$CRITERIO[data$CRITERIO == 3] <- "Em investiga\u00e7\u00e3o"
+    data$CRITERIO[data$CRITERIO == "1"] <- "Laborat\u00f3rio"
+    data$CRITERIO[data$CRITERIO == "2"] <- "Cl\u00ednico epidemiol\u00f3gico"
+    data$CRITERIO[data$CRITERIO == "3"] <- "Em investiga\u00e7\u00e3o"
     data$CRITERIO <- factor(data$CRITERIO)
   }
 
@@ -266,21 +261,19 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
 
   # DOENCA_TRA
   if ("DOENCA_TRA" %in% variables_names) {
-    data$DOENCA_TRA <- as.numeric(data$DOENCA_TRA)
-    data$DOENCA_TRA[data$DOENCA_TRA == 1] <- "Sim"
-    data$DOENCA_TRA[data$DOENCA_TRA == 2] <- "N\u00e3o"
-    data$DOENCA_TRA[data$DOENCA_TRA == 9] <- "Ignorado"
+    data$DOENCA_TRA[data$DOENCA_TRA == "1"] <- "Sim"
+    data$DOENCA_TRA[data$DOENCA_TRA == "2"] <- "N\u00e3o"
+    data$DOENCA_TRA[data$DOENCA_TRA == "9"] <- "Ignorado"
     data$DOENCA_TRA <- factor(data$DOENCA_TRA)
   }
 
   # EVOLUCAO
   if ("EVOLUCAO" %in% variables_names) {
-    data$EVOLUCAO <- as.numeric(data$EVOLUCAO)
-    data$EVOLUCAO[data$EVOLUCAO == 1] <- "Cura"
-    data$EVOLUCAO[data$EVOLUCAO == 2] <- "\u00d3bito por dengue"
-    data$EVOLUCAO[data$EVOLUCAO == 3] <- "\u00d3bito por outras causas"
-    data$EVOLUCAO[data$EVOLUCAO == 4] <- "\u00d3bito em investiga\u00e7\u00e3o"
-    data$EVOLUCAO[data$EVOLUCAO == 9] <- "Ignorado"
+    data$EVOLUCAO[data$EVOLUCAO == "1"] <- "Cura"
+    data$EVOLUCAO[data$EVOLUCAO == "2"] <- "\u00d3bito por dengue"
+    data$EVOLUCAO[data$EVOLUCAO == "3"] <- "\u00d3bito por outras causas"
+    data$EVOLUCAO[data$EVOLUCAO == "4"] <- "\u00d3bito em investiga\u00e7\u00e3o"
+    data$EVOLUCAO[data$EVOLUCAO == "9"] <- "Ignorado"
     data$EVOLUCAO <- factor(data$EVOLUCAO)
   }
 
