@@ -76,28 +76,28 @@ process_sinan_zika <- function(data, municipality_data = TRUE){
   # IDADE
   if ("NU_IDADE_N" %in% variables_names) {
     data$NU_IDADE_N[data$NU_IDADE_N == "000" | data$NU_IDADE_N == "999"] <- NA
+    data$NU_IDADE_N[nchar(data$NU_IDADE_N) != 4] <- NA
+
     unidade <- substr(data$NU_IDADE_N, 1, 1)
     # Minutos
     data$IDADEminutos <-
-      as.numeric(ifelse(unidade == 0, substr(data$IDADE, 2, 3), NA))
+      as.numeric(ifelse(unidade == 0, substr(data$NU_IDADE_N, 2, 4), NA))
     # Horas
     data$IDADEhoras <-
-      as.numeric(ifelse(unidade == 1, substr(data$NU_IDADE_N, 2, 3), NA))
+      as.numeric(ifelse(unidade == 1, substr(data$NU_IDADE_N, 2, 4), NA))
     # Dias
     data$IDADEdias <-
-      as.numeric(ifelse(unidade == 2, substr(data$NU_IDADE_N, 2, 3), NA))
+      as.numeric(ifelse(unidade == 2, substr(data$NU_IDADE_N, 2, 4), NA))
     # Meses
     data$IDADEmeses <-
-      as.numeric(ifelse(unidade == 3, substr(data$NU_IDADE_N, 2, 3), NA))
+      as.numeric(ifelse(unidade == 3, substr(data$NU_IDADE_N, 2, 4), NA))
     # Anos
     data$IDADEanos <-
       as.numeric(ifelse(
         unidade == 4,
-        substr(data$NU_IDADE_N, 2, 3),
-        ifelse(unidade == 5, 100 + as.numeric(substr(data$NU_IDADE_N, 2, 3)), NA)
+        substr(data$NU_IDADE_N, 2, 4),
+        ifelse(unidade == 5, 100 + as.numeric(substr(data$NU_IDADE_N, 2, 4)), NA)
       ))
-    # Apaga campo original
-    data$NU_IDADE_N <- NULL
   }
 
   # CS_SEXO
