@@ -1,3 +1,6 @@
+# microdatasus 2.2.6
+* Age correction for SINAN data.
+
 # microdatasus 2.2.5
 * Patch to correct Invalid multibyte string error on chikungunya processing. 
 
