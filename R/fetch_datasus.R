@@ -53,7 +53,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
   sisSIM <- c("SIM-DO", "SIM-DOFET","SIM-DOEXT","SIM-DOINF","SIM-DOMAT")
   sisSINASC <- c("SINASC")
   sisCNES <- c("CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB","CNES-PF","CNES-EP","CNES-RC","CNES-IN","CNES-EE","CNES-EF","CNES-GM")
-  sisSIA <- c("SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD")
+  sisSIA <- c("SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD", "SIA-BI")
   sisSINAN <- c("SINAN-DENGUE", "SINAN-CHIKUNGUNYA", "SINAN-ZIKA", "SINAN-MALARIA")
   available_information_system <- c(sisSIH, sisSIM, sisSINASC, sisCNES, sisSIA, sisSINAN)
   if(!(information_system %in% available_information_system)) stop("Health informaton system unknown.")
@@ -944,7 +944,46 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
       paste0(atual_url,"PA", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_atual],".dbc")))
     }
     files_list <- c(files_list_1, files_list_2)
-  } else if(information_system == "SIA-PS"){
+  }else if(information_system == "SIA-BI"){
+    # Available dates
+    atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
+    antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/199407_200712/Dados/"
+
+
+
+    tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- tmp[grep("^BI", tmp)]
+    tmp <- tmp[substr(x = tmp, start = 3, stop = 4) %in% lista_uf]
+    avail_atual <- unique(substr(x = tmp, start = 5, stop = 9))
+    avail_atual <- gsub(pattern = "\\.", replacement = "", x = avail_atual)
+
+    tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- tmp[grep("^BI", tmp)]
+    tmp <- tmp[substr(x = tmp, start = 3, stop = 4) %in% lista_uf]
+    avail_antigo <- unique(substr(x = tmp, start = 5, stop = 9))
+    avail_antigo <- gsub(pattern = "\\.", replacement = "", x = avail_antigo)
+
+    # Check if required dates are available
+    if(!all(dates %in% c(avail_atual, avail_antigo))){
+      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+    }
+    valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
+
+    # Message about old data
+    if(any(valid_dates %in% avail_antigo)){
+      message(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+    }
+
+    # File list
+    files_list_1 <- if(any(valid_dates %in% avail_antigo)){
+      paste0(antigo_url,"BI", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
+    }
+    files_list_2 <- if(any(valid_dates %in% avail_atual)){
+      paste0(atual_url,"BI", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_atual],".dbc")))
+    }
+    files_list <- c(files_list_1, files_list_2)
+  } 
+  else if(information_system == "SIA-PS"){
     # Available dates
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/199407_200712/Dados/"
