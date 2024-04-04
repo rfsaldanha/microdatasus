@@ -99,7 +99,7 @@ fetch_datasus <- function(year_start, month_start = NULL, year_end, month_end = 
   }
 
   # Check DataSUS FTP server
-  datasus_ftp_connection <- RCurl::url.exists("ftp.datasus.gov.br")
+  datasus_ftp_connection <- RCurl::url.exists("ftp.datasus.gov.br", timeout.ms = 5000)
   if(datasus_ftp_connection == TRUE){
     cli::cli_alert_info("DataSUS FTP server seems to be up and reachable.")
     cli::cli_alert_info("Starting download...")
