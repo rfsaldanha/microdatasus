@@ -48,7 +48,9 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
   # Set new timeout
   options(timeout = timeout)
 
-  # Verify health information system
+  # Assert arguments
+
+  # Health information system
   sisSIH <- c("SIH-RD","SIH-RJ","SIH-SP","SIH-ER")
   sisSIM <- c("SIM-DO", "SIM-DOFET","SIM-DOEXT","SIM-DOINF","SIM-DOMAT")
   sisSINASC <- c("SINASC")
@@ -56,7 +58,13 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
   sisSIA <- c("SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD")
   sisSINAN <- c("SINAN-DENGUE", "SINAN-CHIKUNGUNYA", "SINAN-ZIKA", "SINAN-MALARIA")
   available_information_system <- c(sisSIH, sisSIM, sisSINASC, sisCNES, sisSIA, sisSINAN)
-  if(!(information_system %in% available_information_system)) stop("Health informaton system unknown.")
+  checkmate::assert_choice(x = information_system, choices = available_information_system)
+
+  # Year and month
+  checkmate::assert_integer(x = year_start, len = 4, null.ok = FALSE)
+  checkmate::assert_integer(x = year_end, len = 4, null.ok = FALSE)
+  checkmate::assert_integer(x = month_start, lower = 1, upper = 12, null.ok = TRUE)
+  checkmate::assert_integer(x = month_end, lower = 1, upper = 12, null.ok = TRUE)
 
   # Create dates for verification
   if(substr(information_system,1,3) == "SIH" | substr(information_system,1,4) == "CNES" | substr(information_system,1,3) == "SIA"){
@@ -68,9 +76,11 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
   }
 
   # Check dates
-  if(date_start > date_end) stop("Start date must be greather than end date.")
+  if(date_start > date_end){
+    cli::cli_abort(message = "Start date must be greather than end date.")
+  }
 
-  # Create sequence of dates
+  # Prepare sequence of dates
   if(substr(information_system,1,3) == "SIH" | substr(information_system,1,4) == "CNES" | substr(information_system,1,3) == "SIA"){
     dates <- seq(date_start, date_end, by = "month")
     dates <- paste0(substr(lubridate::year(dates),3,4),formatC(lubridate::month(dates), width = 2, format = "d", flag = "0"))
@@ -81,7 +91,9 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
   # Check UF
   ufs <- c("AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO")
-  if(!all((uf %in% c("all",ufs)))) stop("UF unknown.")
+  checkmate::assert_choice(x = uf, choices = c("all",ufs))
+
+  # Prepate ufs
   lista_uf <- vector()
   if(uf[1] == "all"){
     lista_uf <- ufs
@@ -91,7 +103,25 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
   # Check UF for SINAN files
   if(information_system %in% sisSINAN & uf[1] != "all"){
-    message("SINAN files are not available per UF. Ignoring argument 'uf' and downloading data.")
+    cli::cli_alert_info("SINAN files are not available per UF. Ignoring argument 'uf' and downloading data.")
+  }
+
+  # Check local Internet connection
+  local_internet <- curl::has_internet()
+  if(local_internet == TRUE){
+    cli::cli_alert_info("Your local Internet connection seems to be ok.")
+  } else {
+    cli::cli_alert_warning("It appears that your local Internet connection is not working. Can you check?")
+    return(NULL)
+  }
+
+  # Check DataSUS FTP server
+  datasus_ftp_connection <- RCurl::url.exists("ftp.datasus.gov.br")
+  if(datasus_ftp_connection == TRUE){
+    cli::cli_alert_info("DataSUS FTP server seems to be up and reachable. Starting download...")
+  } else {
+    cli::cli_alert_warning("It appears that DataSUS FTP is down or not reachable.")
+    return(NULL)
   }
 
   # Create files list for download
@@ -1168,22 +1198,6 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
       paste0(prelim_url,"MALABR", substr(valid_dates[valid_dates %in% avail_prelim], 3, 4),".dbc")
     }
     files_list <- c(files_list_1, files_list_2)
-  }
-
-  # Check local Internet connection
-  local_internet <- curl::has_internet()
-  if(local_internet == TRUE){
-    message("Your local Internet connection seems to be ok.")
-  } else {
-    stop("It appears that your local Internet connection is not working. Can you check?")
-  }
-
-  # Check DataSUS FTP server
-  remote_file_is_availabe <- RCurl::url.exists("ftp.datasus.gov.br")
-  if(remote_file_is_availabe == TRUE){
-    message("DataSUS FTP server seems to be up. Starting download...")
-  } else {
-    message("It appears that DataSUS FTP is down. I will try to download the files anyway...")
   }
 
   # Dowload files
