@@ -1,3 +1,8 @@
+# microdatasus 2.2.7
+* Enhance messages of `fetch_datasus`
+* Timeout the connection check when DataSUS FTP is down or not reachable.
+* If there is no Internet or the DataSUS FTP is down or not reachable, the `fetch_datasus` will return `NULL`.
+
 # microdatasus 2.2.6
 * Age correction for SINAN data.
 
