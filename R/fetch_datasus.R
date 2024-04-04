@@ -80,26 +80,9 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     cli::cli_abort(message = "Start date must be greather than end date.")
   }
 
-  # Prepare sequence of dates
-  if(substr(information_system,1,3) == "SIH" | substr(information_system,1,4) == "CNES" | substr(information_system,1,3) == "SIA"){
-    dates <- seq(date_start, date_end, by = "month")
-    dates <- paste0(substr(lubridate::year(dates),3,4),formatC(lubridate::month(dates), width = 2, format = "d", flag = "0"))
-  } else if(substr(information_system,1,3) == "SIM" | information_system == "SINASC" | information_system == "SINAN-DENGUE" | information_system == "SINAN-CHIKUNGUNYA" | information_system == "SINAN-ZIKA" | information_system == "SINAN-MALARIA"){
-    dates <- seq(date_start, date_end, by = "year")
-    dates <- lubridate::year(dates)
-  }
-
   # Check UF
   ufs <- c("AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO")
   checkmate::assert_choice(x = uf, choices = c("all",ufs))
-
-  # Prepate ufs
-  lista_uf <- vector()
-  if(uf[1] == "all"){
-    lista_uf <- ufs
-  } else {
-    lista_uf = uf
-  }
 
   # Check UF for SINAN files
   if(information_system %in% sisSINAN & uf[1] != "all"){
@@ -122,6 +105,23 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
   } else {
     cli::cli_alert_warning("It appears that DataSUS FTP is down or not reachable.")
     return(NULL)
+  }
+
+  # Prepare sequence of dates
+  if(substr(information_system,1,3) == "SIH" | substr(information_system,1,4) == "CNES" | substr(information_system,1,3) == "SIA"){
+    dates <- seq(date_start, date_end, by = "month")
+    dates <- paste0(substr(lubridate::year(dates),3,4),formatC(lubridate::month(dates), width = 2, format = "d", flag = "0"))
+  } else if(substr(information_system,1,3) == "SIM" | information_system == "SINASC" | information_system == "SINAN-DENGUE" | information_system == "SINAN-CHIKUNGUNYA" | information_system == "SINAN-ZIKA" | information_system == "SINAN-MALARIA"){
+    dates <- seq(date_start, date_end, by = "year")
+    dates <- lubridate::year(dates)
+  }
+
+  # Prepare ufs
+  lista_uf <- vector()
+  if(uf[1] == "all"){
+    lista_uf <- ufs
+  } else {
+    lista_uf = uf
   }
 
   # Create files list for download
