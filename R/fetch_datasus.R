@@ -1033,7 +1033,7 @@ fetch_datasus <- function(year_start, month_start = NULL, year_end, month_end = 
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_atual, avail_antigo))){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
@@ -1044,7 +1044,7 @@ fetch_datasus <- function(year_start, month_start = NULL, year_end, month_end = 
 
     # File list
     files_list_1 <- if(any(valid_dates %in% avail_antigo)){
-      cli::cli_alert(antigo_url,"SAD", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
+      paste0(antigo_url,"SAD", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
     }
     files_list_2 <- if(any(valid_dates %in% avail_atual)){
       paste0(atual_url,"SAD", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_atual],".dbc")))
@@ -1078,7 +1078,7 @@ fetch_datasus <- function(year_start, month_start = NULL, year_end, month_end = 
 
     # File list
     if(uf != "Any"){
-      message(paste0("DENGUE data is not available by UF. Downloading all data available instead. "))
+      cli::cli_alert(paste0("DENGUE data is not available by UF. Downloading all data available instead. "))
     }
     files_list_1 <- if(any(valid_dates %in% avail_geral)){
       paste0(geral_url,"DENGBR", substr(valid_dates[valid_dates %in% avail_geral], 3, 4),".dbc")
@@ -1152,7 +1152,7 @@ fetch_datasus <- function(year_start, month_start = NULL, year_end, month_end = 
 
     # File list
     if(uf != "Any"){
-      message(paste0("ZIKA data is not available by UF. Downloading all data available instead. "))
+      cli::cli_alert(paste0("ZIKA data is not available by UF. Downloading all data available instead. "))
     }
     files_list_1 <- if(any(valid_dates %in% avail_geral)){
       paste0(geral_url,"ZIKABR", substr(valid_dates[valid_dates %in% avail_geral], 3, 4),".dbc")
