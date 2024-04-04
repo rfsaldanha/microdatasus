@@ -20,6 +20,24 @@ process_sim <- function(data, municipality_data = TRUE) {
   # Variables names
   variables_names <- names(data)
 
+  # Process variables
+  process_variables <- c("CODINST","TIPOBITO","DTOBITO","NATURAL",
+                         "DTNASC","IDADE","SEXO","RACACOR","ESTCIV",
+                         "ESC","ESC2010","SERIESCFAL","OCUP","CODMUNRES",
+                         "CODMUNOCOR","LOCOCOR","IDADEMAE","ESCMAE",
+                         "OCUPMAE","QTDFILVIVO","QTDFILMORT","GRAVIDEZ",
+                         "GESTACAO","PARTO","OBITOPARTO","PESO","OBITOGRAV",
+                         "OBITOPUERP","ASSISTMED","EXAME","CIRURGIA",
+                         "NECROPSIA","DTATESTADO","CIRCOBITO","ACIDTRAB",
+                         "FONTE","TPPOS","DTINVESTIG","DTCADASTRO","ATESTANTE",
+                         "FONTEINV","DTRECEBIM","DTRECORIGA")
+
+  to_process <- variables_names[variables_names %in% process_variables]
+
+  # Progress bar
+  p <- progress::progress_bar$new(total = length(to_process), format = "[:bar] :percent eta: :eta", clear = FALSE)
+  p$tick(0)
+
   # Declara objetos
   ano <- NULL
   unidade <- NULL
@@ -30,6 +48,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$CODINST[data$CODINST == "R"] <- "Regional"
     data$CODINST[data$CODINST == "M"] <- "Municipal"
     data$CODINST <- factor(data$CODINST)
+    p$tick()
   }
 
   # TIPOBITO
@@ -40,22 +59,26 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$TIPOBITO[data$TIPOBITO == 1] <- "Fetal"
     data$TIPOBITO[data$TIPOBITO == 2] <- "N\\u00e3o Fetal"
     data$TIPOBITO <- factor(data$TIPOBITO)
+    p$tick()
   }
 
   # DTOBITO
   if ("DTOBITO" %in% variables_names) {
     data$DTOBITO <- as.Date(data$DTOBITO, format = "%d%m%Y")
+    p$tick()
   }
 
   # NATURAL
   if ("NATURAL" %in% variables_names) {
     colnames(tabNaturalidade)[1] <- "NATURAL"
     data$NATURAL <- factor(dplyr::left_join(data, tabNaturalidade, by = "NATURAL")$nome)
+    p$tick()
   }
 
   # DTNASC
   if ("DTNASC" %in% variables_names) {
     data$DTNASC <- as.Date(data$DTNASC, format = "%d%m%Y")
+    p$tick()
   }
 
   # IDADE
@@ -83,6 +106,7 @@ process_sim <- function(data, municipality_data = TRUE) {
       ))
     # Apaga campo original
     data$IDADE <- NULL
+    p$tick()
   }
 
   # SEXO
@@ -93,6 +117,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$SEXO[data$SEXO == 1] <- "Masculino"
     data$SEXO[data$SEXO == 2] <- "Feminino"
     data$SEXO <- factor(data$SEXO)
+    p$tick()
   }
 
   # RACACOR
@@ -109,6 +134,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$RACACOR[data$RACACOR == 8] <- NA
     data$RACACOR[data$RACACOR == 9] <- NA
     data$RACACOR <- factor(data$RACACOR)
+    p$tick()
   }
 
   # ESTCIV
@@ -125,6 +151,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$ESTCIV[data$ESTCIV == 8] <- NA
     data$ESTCIV[data$ESTCIV == 9] <- NA
     data$ESTCIV <- factor(data$ESTCIV)
+    p$tick()
   }
 
   # ESC
@@ -142,16 +169,19 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$ESC[data$ESC == "8"] <- "9 a 11 anos"
     data$ESC[data$ESC == "9"] <- NA
     data$ESC <- factor(data$ESC)
+    p$tick()
   }
 
   # ESC2010
   if ("ESC2010" %in% variables_names) {
     data$ESC2010 <- as.character(data$ESC2010)
+    p$tick()
   }
 
   # SERIESCFAL
   if ("SERIESCFAL" %in% variables_names) {
     data$SERIESCFAL <- as.character(data$SERIESCFAL)
+    p$tick()
   }
 
   # OCUP
@@ -173,6 +203,7 @@ process_sim <- function(data, municipality_data = TRUE) {
         dplyr::left_join(data, tabOcupacao, by = "OCUP")$nome,
         dplyr::left_join(data, tabCBO, by = "OCUP")$nome
       ))
+    p$tick()
   }
 
   # CODMUNRES
@@ -180,10 +211,12 @@ process_sim <- function(data, municipality_data = TRUE) {
     if(nchar(data$CODMUNRES[1]) == 7){
       data$CODMUNRES <- substr(data$CODMUNRES, 0, 6)
     }
+    p$tick()
   } else if ("CODMUNRES" %in% variables_names & municipality_data == TRUE) {
     colnames(tabMun)[1] <- "CODMUNRES"
     tabMun$CODMUNRES <- as.character(tabMun$CODMUNRES)
     data <- dplyr::left_join(data, tabMun, by = "CODMUNRES")
+    p$tick()
   }
 
   # CODMUNOCOR
@@ -191,6 +224,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     if(nchar(data$CODMUNOCOR[1]) == 7){
       data$CODMUNOCOR <- substr(data$CODMUNOCOR, 0, 6)
     }
+    p$tick()
   }
 
   # LOCOCOR
@@ -203,12 +237,14 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$LOCOCOR[data$LOCOCOR == 5] <- "Outros"
     data$LOCOCOR[data$LOCOCOR == 9] <- NA
     data$LOCOCOR <- factor(data$LOCOCOR)
+    p$tick()
   }
 
   # IDADEMAE
   if ("IDADEMAE" %in% variables_names) {
     data$IDADEMAE <- as.numeric(data$IDADEMAE)
     data$IDADEMAE[data$IDADEMAE == 0] <- NA
+    p$tick()
   }
 
   # ESCMAE
@@ -226,6 +262,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$ESCMAE[data$ESCMAE == "8"] <- "9 a 11 anos"
     data$ESCMAE[data$ESCMAE == "9"] <- NA
     data$ESCMAE <- factor(data$ESCMAE)
+    p$tick()
   }
 
   # OCUPMAE
@@ -242,16 +279,19 @@ process_sim <- function(data, municipality_data = TRUE) {
         dplyr::left_join(data, tabOcupacao, by = "OCUPMAE")$nome,
         dplyr::left_join(data, tabCBO, by = "OCUPMAE")$nome
       ))
+    p$tick()
   }
 
   # QTDFILVIVO
   if ("QTDFILVIVO" %in% variables_names) {
     data$QTDFILVIVO <- as.numeric(data$QTDFILVIVO)
+    p$tick()
   }
 
   # QTDFILMORT
   if ("QTDFILMORT" %in% variables_names) {
     data$QTDFILMORT <- as.numeric(data$QTDFILMORT)
+    p$tick()
   }
 
   # GRAVIDEZ
@@ -262,6 +302,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$GRAVIDEZ[data$GRAVIDEZ == 3] <- "Tr\\u00edplice e mais"
     data$GRAVIDEZ[data$GRAVIDEZ == 9] <- NA
     data$GRAVIDEZ <- factor(data$GRAVIDEZ)
+    p$tick()
   }
 
   # GESTACAO
@@ -278,6 +319,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$GESTACAO[data$GESTACAO == "8"] <- "28 a 36 semanas"
     data$GESTACAO[data$GESTACAO == "9"] <- NA
     data$GESTACAO <- factor(data$GESTACAO)
+    p$tick()
   }
 
   # PARTO
@@ -294,6 +336,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$PARTO[data$PARTO == 8] <- NA
     data$PARTO[data$PARTO == 9] <- NA
     data$PARTO <- factor(data$PARTO)
+    p$tick()
   }
 
   # OBITOPARTO
@@ -310,12 +353,14 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$OBITOPARTO[data$OBITOPARTO == 8] <- NA
     data$OBITOPARTO[data$OBITOPARTO == 9] <- NA
     data$OBITOPARTO <- factor(data$OBITOPARTO)
+    p$tick()
   }
 
   # PESO
   if ("PESO" %in% variables_names) {
     data$PESO <- as.numeric(data$PESO)
     data$PESO[data$PESO == 0] <- NA
+    p$tick()
   }
 
   # OBITOGRAV
@@ -331,6 +376,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$OBITOGRAV[data$OBITOGRAV == 8] <- NA
     data$OBITOGRAV[data$OBITOGRAV == 9] <- NA
     data$OBITOGRAV <- factor(data$OBITOGRAV)
+    p$tick()
   }
 
   # OBITOPUERP
@@ -346,6 +392,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$OBITOPUERP[data$OBITOPUERP == 8] <- NA
     data$OBITOPUERP[data$OBITOPUERP == 9] <- NA
     data$OBITOPUERP <- factor(data$OBITOPUERP)
+    p$tick()
   }
 
   # ASSISTMED
@@ -355,6 +402,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$ASSISTMED[data$ASSISTMED == 2] <- "N\\u00e3o"
     data$ASSISTMED[data$ASSISTMED == 9] <- NA
     data$ASSISTMED <- factor(data$ASSISTMED)
+    p$tick()
   }
 
   # EXAME
@@ -364,6 +412,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$EXAME[data$EXAME == 2] <- "N\\u00e3o"
     data$EXAME[data$EXAME == 9] <- NA
     data$EXAME <- factor(data$EXAME)
+    p$tick()
   }
 
   # CIRURGIA
@@ -373,6 +422,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$CIRURGIA[data$CIRURGIA == 2] <- "N\\u00e3o"
     data$CIRURGIA[data$CIRURGIA == 9] <- NA
     data$CIRURGIA <- factor(data$CIRURGIA)
+    p$tick()
   }
 
   # NECROPSIA
@@ -382,11 +432,13 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$NECROPSIA[data$NECROPSIA == 2] <- "N\\u00e3o"
     data$NECROPSIA[data$NECROPSIA == 9] <- NA
     data$NECROPSIA <- factor(data$NECROPSIA)
+    p$tick()
   }
 
   # DTATESTADO
   if ("DTATESTADO" %in% variables_names) {
     data$DTATESTADO <- as.Date(data$DTATESTADO, format = "%d%m%Y")
+    p$tick()
   }
 
   # CIRCOBITO
@@ -403,6 +455,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$CIRCOBITO[data$CIRCOBITO == 8] <- NA
     data$CIRCOBITO[data$CIRCOBITO == 9] <- NA
     data$CIRCOBITO <- factor(data$CIRCOBITO)
+    p$tick()
   }
 
   # ACIDTRAB
@@ -412,6 +465,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$ACIDTRAB[data$ACIDTRAB == 2] <- "N\\u00e3o"
     data$ACIDTRAB[data$ACIDTRAB == 9] <- NA
     data$ACIDTRAB <- factor(data$ACIDTRAB)
+    p$tick()
   }
 
   # FONTE
@@ -423,22 +477,26 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$FONTE[data$FONTE == 4] <- "Outro"
     data$FONTE[data$FONTE == 9] <- NA
     data$FONTE <- factor(data$FONTE)
+    p$tick()
   }
 
   # TPPOS
   if ("TPPOS" %in% variables_names) {
     data$TPPOS[data$TPPOS == "N"] <- "N\\u00e3o investigado"
     data$TPPOS[data$TPPOS == "S"] <- "Investigado"
+    p$tick()
   }
 
   # DTINVESTIG
   if ("DTINVESTIG" %in% variables_names) {
     data$DTINVESTIG <- as.Date(data$DTINVESTIG, format = "%d%m%Y")
+    p$tick()
   }
 
   # DTCADASTRO
   if ("DTCADASTRO" %in% variables_names) {
     data$DTCADASTRO <- as.Date(data$DTCADASTRO, format = "%d%m%Y")
+    p$tick()
   }
 
   # ATESTANTE
@@ -455,6 +513,7 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$ATESTANTE[data$ATESTANTE == 8] <- NA
     data$ATESTANTE[data$ATESTANTE == 9] <- NA
     data$ATESTANTE <- factor(data$ATESTANTE)
+    p$tick()
   }
 
   # FONTEINV
@@ -470,16 +529,19 @@ process_sim <- function(data, municipality_data = TRUE) {
     data$FONTEINV[data$FONTEINV == 8] <- "M\\u00faltiplas fontes"
     data$FONTEINV[data$FONTEINV == 9] <- NA
     data$FONTEINV <- factor(data$FONTEINV)
+    p$tick()
   }
 
   # DTRECEBIM
   if ("DTRECEBIM" %in% variables_names) {
     data$DTRECEBIM <- as.Date(data$DTRECEBIM, format = "%d%m%Y")
+    p$tick()
   }
 
   # DTRECORIGA
   if ("DTRECORIGA" %in% variables_names) {
     data$DTRECORIGA <- as.Date(data$DTRECORIGA, format = "%d%m%Y")
+    p$tick()
   }
 
   # Purge levels
