@@ -40,7 +40,7 @@
 #' }
 #' @export
 
-fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "all", information_system, vars = NULL, stop_on_error = FALSE, timeout = 240){
+fetch_datasus <- function(year_start, month_start = NULL, year_end, month_end = NULL, uf = "all", information_system, vars = NULL, stop_on_error = FALSE, timeout = 240){
   # Resets original timeout option on function exit
   original_time_option <- getOption("timeout")
   on.exit(options(timeout = original_time_option))
@@ -48,7 +48,9 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
   # Set new timeout
   options(timeout = timeout)
 
-  # Verify health information system
+  # Assert arguments
+
+  # Health information system
   sisSIH <- c("SIH-RD","SIH-RJ","SIH-SP","SIH-ER")
   sisSIM <- c("SIM-DO", "SIM-DOFET","SIM-DOEXT","SIM-DOINF","SIM-DOMAT")
   sisSINASC <- c("SINASC")
@@ -56,7 +58,13 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
   sisSIA <- c("SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD")
   sisSINAN <- c("SINAN-DENGUE", "SINAN-CHIKUNGUNYA", "SINAN-ZIKA", "SINAN-MALARIA")
   available_information_system <- c(sisSIH, sisSIM, sisSINASC, sisCNES, sisSIA, sisSINAN)
-  if(!(information_system %in% available_information_system)) stop("Health informaton system unknown.")
+  checkmate::assert_choice(x = information_system, choices = available_information_system)
+
+  # Year and month
+  checkmate::assert_numeric(x = year_start, lower = 1996, null.ok = FALSE)
+  checkmate::assert_numeric(x = year_end, lower = 1996, null.ok = FALSE)
+  checkmate::assert_numeric(x = month_start, lower = 1, upper = 12, null.ok = TRUE)
+  checkmate::assert_numeric(x = month_end, lower = 1, upper = 12, null.ok = TRUE)
 
   # Create dates for verification
   if(substr(information_system,1,3) == "SIH" | substr(information_system,1,4) == "CNES" | substr(information_system,1,3) == "SIA"){
@@ -68,9 +76,39 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
   }
 
   # Check dates
-  if(date_start > date_end) stop("Start date must be greather than end date.")
+  if(date_start > date_end){
+    cli::cli_abort(message = "Start date must be greather than end date.")
+  }
 
-  # Create sequence of dates
+  # Check UF
+  ufs <- c("AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO")
+  checkmate::assert_choice(x = uf, choices = c("all",ufs))
+
+  # Check UF for SINAN files
+  if(information_system %in% sisSINAN & uf[1] != "all"){
+    cli::cli_alert_info("SINAN files are not available per UF. Ignoring argument 'uf' and downloading data.")
+  }
+
+  # Check local Internet connection
+  local_internet <- curl::has_internet()
+  if(local_internet == TRUE){
+    cli::cli_alert_info("Your local Internet connection seems to be ok.")
+  } else {
+    cli::cli_alert_warning("It appears that your local Internet connection is not working. Can you check?")
+    return(NULL)
+  }
+
+  # Check DataSUS FTP server
+  datasus_ftp_connection <- RCurl::url.exists("ftp.datasus.gov.br", timeout.ms = 5000)
+  if(datasus_ftp_connection == TRUE){
+    cli::cli_alert_info("DataSUS FTP server seems to be up and reachable.")
+    cli::cli_alert_info("Starting download...")
+  } else {
+    cli::cli_alert_warning("It appears that DataSUS FTP is down or not reachable.")
+    return(NULL)
+  }
+
+  # Prepare sequence of dates
   if(substr(information_system,1,3) == "SIH" | substr(information_system,1,4) == "CNES" | substr(information_system,1,3) == "SIA"){
     dates <- seq(date_start, date_end, by = "month")
     dates <- paste0(substr(lubridate::year(dates),3,4),formatC(lubridate::month(dates), width = 2, format = "d", flag = "0"))
@@ -79,19 +117,12 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
     dates <- lubridate::year(dates)
   }
 
-  # Check UF
-  ufs <- c("AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO")
-  if(!all((uf %in% c("all",ufs)))) stop("UF unknown.")
+  # Prepare ufs
   lista_uf <- vector()
   if(uf[1] == "all"){
     lista_uf <- ufs
   } else {
     lista_uf = uf
-  }
-
-  # Check UF for SINAN files
-  if(information_system %in% sisSINAN & uf[1] != "all"){
-    message("SINAN files are not available per UF. Ignoring argument 'uf' and downloading data.")
   }
 
   # Create files list for download
@@ -104,13 +135,13 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_geral, avail_prelim))){
-      message(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
 
     # Message about preliminary data
     if(any(valid_dates %in% avail_prelim)){
-      message(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
     }
 
     # File list
@@ -138,18 +169,18 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_geral, avail_prelim))){
-      message(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
 
     # Message about preliminary data
     if(any(valid_dates %in% avail_prelim)){
-      message(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
     }
 
     # File list
     if(uf != "Any"){
-      message(paste0("DOFET data is not available by UF. Downloading all data available instead. "))
+      cli::cli_alert(paste0("DOFET data is not available by UF. Downloading all data available instead. "))
     }
     files_list_1 <- if(any(valid_dates %in% avail_geral)){
       paste0(geral_url,"DOFET", substr(valid_dates[valid_dates %in% avail_geral], 3, 4),".dbc")
@@ -175,18 +206,18 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_geral, avail_prelim))){
-      message(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
 
     # Message about preliminary data
     if(any(valid_dates %in% avail_prelim)){
-      message(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
     }
 
     # File list
     if(uf != "Any"){
-      message(paste0("DOEXT data is not available by UF. Downloading all data available instead. "))
+      cli::cli_alert(paste0("DOEXT data is not available by UF. Downloading all data available instead. "))
     }
     files_list_1 <- if(any(valid_dates %in% avail_geral)){
       paste0(geral_url,"DOEXT", substr(valid_dates[valid_dates %in% avail_geral], 3, 4),".dbc")
@@ -212,18 +243,18 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_geral, avail_prelim))){
-      message(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
 
     # Message about preliminary data
     if(any(valid_dates %in% avail_prelim)){
-      message(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
     }
 
     # File list
     if(uf != "Any"){
-      message(paste0("DOINF data is not available by UF. Downloading all data available instead. "))
+      cli::cli_alert(paste0("DOINF data is not available by UF. Downloading all data available instead. "))
     }
     files_list_1 <- if(any(valid_dates %in% avail_geral)){
       paste0(geral_url,"DOINF", substr(valid_dates[valid_dates %in% avail_geral], 3, 4),".dbc")
@@ -249,18 +280,18 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_geral, avail_prelim))){
-      message(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
 
     # Message about preliminary data
     if(any(valid_dates %in% avail_prelim)){
-      message(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
     }
 
     # File list
     if(uf != "Any"){
-      message(paste0("DOMAT data is not available by UF. Downloading all data available instead. "))
+      cli::cli_alert(paste0("DOMAT data is not available by UF. Downloading all data available instead. "))
     }
     files_list_1 <- if(any(valid_dates %in% avail_geral)){
       paste0(geral_url,"DOMAT", substr(valid_dates[valid_dates %in% avail_geral], 3, 4),".dbc")
@@ -284,13 +315,13 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_atual, avail_antigo))){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
     if(any(valid_dates %in% avail_antigo)){
-      message(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
     }
 
     # File list
@@ -317,13 +348,13 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_atual, avail_antigo))){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about preliminary data
     if(any(valid_dates %in% avail_antigo)){
-      message(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
     }
 
     # File list
@@ -350,13 +381,13 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_atual, avail_antigo))){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about preliminary data
     if(any(valid_dates %in% avail_antigo)){
-      message(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
     }
 
     # File list
@@ -383,13 +414,13 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_atual, avail_antigo))){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about preliminary data
     if(any(valid_dates %in% avail_antigo)){
-      message(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
     }
 
     # File list
@@ -412,18 +443,18 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_antigo, avail_atual, avail_prelim))){
-      message(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_antigo, avail_atual, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_antigo, avail_atual, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_antigo, avail_atual, avail_prelim)]
 
     # Message about preliminary data
     if(any(valid_dates %in% avail_prelim)){
-      message(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
     }
 
     # Message about old data
     if(any(valid_dates %in% avail_antigo)){
-      message(paste0("The following dates are from old folders and and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates are from old folders and and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
     }
 
     # File list
@@ -445,7 +476,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% avail)){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% avail]
 
@@ -458,7 +489,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% avail)){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% avail]
 
@@ -471,7 +502,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% avail)){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% avail]
 
@@ -484,7 +515,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% avail)){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% avail]
 
@@ -497,7 +528,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% avail)){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% avail]
 
@@ -510,7 +541,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% avail)){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% avail]
 
@@ -523,7 +554,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% avail)){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% avail]
 
@@ -536,7 +567,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% avail)){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% avail]
 
@@ -549,7 +580,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% avail)){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% avail]
 
@@ -562,7 +593,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% avail)){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% avail]
 
@@ -575,7 +606,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% avail)){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% avail]
 
@@ -588,7 +619,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% avail)){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% avail]
 
@@ -601,7 +632,7 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% avail)){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% avail]
 
@@ -623,13 +654,13 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_atual, avail_antigo))){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
     if(any(valid_dates %in% avail_antigo)){
-      message(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
     }
 
     # File list
@@ -656,13 +687,13 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_atual, avail_antigo))){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
     if(any(valid_dates %in% avail_antigo)){
-      message(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
     }
 
     # File list
@@ -689,13 +720,13 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_atual, avail_antigo))){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
     if(any(valid_dates %in% avail_antigo)){
-      message(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
     }
 
     # File list
@@ -722,13 +753,13 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_atual, avail_antigo))){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
     if(any(valid_dates %in% avail_antigo)){
-      message(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
     }
 
     # File list
@@ -755,13 +786,13 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_atual, avail_antigo))){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
     if(any(valid_dates %in% avail_antigo)){
-      message(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
     }
 
     # File list
@@ -788,13 +819,13 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_atual, avail_antigo))){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
     if(any(valid_dates %in% avail_antigo)){
-      message(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
     }
 
     # File list
@@ -821,13 +852,13 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_atual, avail_antigo))){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
     if(any(valid_dates %in% avail_antigo)){
-      message(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
     }
 
     # File list
@@ -854,13 +885,13 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_atual, avail_antigo))){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
     if(any(valid_dates %in% avail_antigo)){
-      message(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
     }
 
     # File list
@@ -887,13 +918,13 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_atual, avail_antigo))){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
     if(any(valid_dates %in% avail_antigo)){
-      message(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
     }
 
     # File list
@@ -926,14 +957,14 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(substr(x = avail_atual, start = 0, stop = 4), substr(x = avail_antigo, start = 0, stop = 4)))){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(substr(x = avail_atual, start = 0, stop = 4), substr(x = avail_antigo, start = 0, stop = 4))], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(substr(x = avail_atual, start = 0, stop = 4), substr(x = avail_antigo, start = 0, stop = 4))], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- c(avail_atual, avail_antigo)[substr(x = c(avail_atual, avail_antigo), start = 0, stop = 4) %in% dates]
 
 
     # Message about old data
     if(any(valid_dates %in% avail_antigo)){
-      message(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
     }
 
     # File list
@@ -965,13 +996,13 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_atual, avail_antigo))){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
     if(any(valid_dates %in% avail_antigo)){
-      message(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
     }
 
     # File list
@@ -1003,13 +1034,13 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_atual, avail_antigo))){
-      message(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
     if(any(valid_dates %in% avail_antigo)){
-      message(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
     }
 
     # File list
@@ -1037,18 +1068,18 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_geral, avail_prelim))){
-      message(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
 
     # Message about preliminary data
     if(any(valid_dates %in% avail_prelim)){
-      message(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
     }
 
     # File list
     if(uf != "Any"){
-      message(paste0("DENGUE data is not available by UF. Downloading all data available instead. "))
+      cli::cli_alert(paste0("DENGUE data is not available by UF. Downloading all data available instead. "))
     }
     files_list_1 <- if(any(valid_dates %in% avail_geral)){
       paste0(geral_url,"DENGBR", substr(valid_dates[valid_dates %in% avail_geral], 3, 4),".dbc")
@@ -1074,18 +1105,18 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_geral, avail_prelim))){
-      message(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
 
     # Message about preliminary data
     if(any(valid_dates %in% avail_prelim)){
-      message(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
     }
 
     # File list
     if(uf != "Any"){
-      message(paste0("CHIKUNGUNYA data is not available by UF. Downloading all data available instead. "))
+      cli::cli_alert(paste0("CHIKUNGUNYA data is not available by UF. Downloading all data available instead. "))
     }
     files_list_1 <- if(any(valid_dates %in% avail_geral)){
       paste0(geral_url,"CHIKBR", substr(valid_dates[valid_dates %in% avail_geral], 3, 4),".dbc")
@@ -1111,18 +1142,18 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_geral, avail_prelim))){
-      message(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
 
     # Message about preliminary data
     if(any(valid_dates %in% avail_prelim)){
-      message(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
     }
 
     # File list
     if(uf != "Any"){
-      message(paste0("ZIKA data is not available by UF. Downloading all data available instead. "))
+      cli::cli_alert(paste0("ZIKA data is not available by UF. Downloading all data available instead. "))
     }
     files_list_1 <- if(any(valid_dates %in% avail_geral)){
       paste0(geral_url,"ZIKABR", substr(valid_dates[valid_dates %in% avail_geral], 3, 4),".dbc")
@@ -1148,18 +1179,18 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
 
     # Check if required dates are available
     if(!all(dates %in% c(avail_geral, avail_prelim))){
-      message(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+      cli::cli_alert(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
     }
     valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
 
     # Message about preliminary data
     if(any(valid_dates %in% avail_prelim)){
-      message(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+      cli::cli_alert(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
     }
 
     # File list
     if(uf != "Any"){
-      message(paste0("MALARIA data is not available by UF. Downloading all data available instead. "))
+      cli::cli_alert(paste0("MALARIA data is not available by UF. Downloading all data available instead. "))
     }
     files_list_1 <- if(any(valid_dates %in% avail_geral)){
       paste0(geral_url,"MALABR", substr(valid_dates[valid_dates %in% avail_geral], 3, 4),".dbc")
@@ -1168,22 +1199,6 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
       paste0(prelim_url,"MALABR", substr(valid_dates[valid_dates %in% avail_prelim], 3, 4),".dbc")
     }
     files_list <- c(files_list_1, files_list_2)
-  }
-
-  # Check local Internet connection
-  local_internet <- curl::has_internet()
-  if(local_internet == TRUE){
-    message("Your local Internet connection seems to be ok.")
-  } else {
-    stop("It appears that your local Internet connection is not working. Can you check?")
-  }
-
-  # Check DataSUS FTP server
-  remote_file_is_availabe <- RCurl::url.exists("ftp.datasus.gov.br")
-  if(remote_file_is_availabe == TRUE){
-    message("DataSUS FTP server seems to be up. Starting download...")
-  } else {
-    message("It appears that DataSUS FTP is down. I will try to download the files anyway...")
   }
 
   # Dowload files
@@ -1202,18 +1217,18 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
       file.remove(temp)
     },
     error=function(cond) {
-      message(paste("Something went wrong with this URL:", file))
-      message("This can be a problem with the Internet or the file does not exist yet.")
-      message("If the file is too big, try to increase the timeout argument value.")
+      cli::cli_alert_info(paste("Something went wrong with this URL:", file))
+      cli::cli_alert("This can be a problem with the Internet or the file does not exist yet.")
+      cli::cli_alert("If the file is too big, try to increase the timeout argument value.")
 
       if(stop_on_error == TRUE){
-        stop("Stopping download.")
+        cli::cli_abort("Stopping download.")
       }
     })
 
     # Merge files
     if(nrow(partial) > 0){
-      if(!all(vars %in% names(partial))) stop("One or more variables names are unknown. Typo?")
+      if(!all(vars %in% names(partial))) cli::cli_abort("One or more variables names are unknown. Typo?")
       if(is.null(vars)){
         data <- dplyr::bind_rows(data, partial)
       } else {
