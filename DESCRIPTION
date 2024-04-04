@@ -26,6 +26,7 @@ Imports:
     foreign,
     lubridate,
     magrittr,
+    progress,
     RCurl,
     read.dbc,
     rlang,
