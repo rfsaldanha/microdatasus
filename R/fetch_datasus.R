@@ -40,7 +40,7 @@
 #' }
 #' @export
 
-fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "all", information_system, vars = NULL, stop_on_error = FALSE, timeout = 240){
+fetch_datasus <- function(year_start, month_start = NULL, year_end, month_end = NULL, uf = "all", information_system, vars = NULL, stop_on_error = FALSE, timeout = 240){
   # Resets original timeout option on function exit
   original_time_option <- getOption("timeout")
   on.exit(options(timeout = original_time_option))
@@ -61,10 +61,10 @@ fetch_datasus <- function(year_start, month_start, year_end, month_end, uf = "al
   checkmate::assert_choice(x = information_system, choices = available_information_system)
 
   # Year and month
-  checkmate::assert_integer(x = year_start, len = 4, null.ok = FALSE)
-  checkmate::assert_integer(x = year_end, len = 4, null.ok = FALSE)
-  checkmate::assert_integer(x = month_start, lower = 1, upper = 12, null.ok = TRUE)
-  checkmate::assert_integer(x = month_end, lower = 1, upper = 12, null.ok = TRUE)
+  checkmate::assert_numeric(x = year_start, lower = 1996, null.ok = FALSE)
+  checkmate::assert_numeric(x = year_end, lower = 1996, null.ok = FALSE)
+  checkmate::assert_numeric(x = month_start, lower = 1, upper = 12, null.ok = TRUE)
+  checkmate::assert_numeric(x = month_end, lower = 1, upper = 12, null.ok = TRUE)
 
   # Create dates for verification
   if(substr(information_system,1,3) == "SIH" | substr(information_system,1,4) == "CNES" | substr(information_system,1,3) == "SIA"){
