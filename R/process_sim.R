@@ -34,524 +34,699 @@ process_sim <- function(data, municipality_data = TRUE) {
 
   to_process <- variables_names[variables_names %in% process_variables]
 
-  # Progress bar
-  p <- progress::progress_bar$new(total = length(to_process), format = "[:bar] :percent eta: :eta", clear = FALSE)
-  p$tick(0)
-
-  # Declara objetos
-  ano <- NULL
-  unidade <- NULL
+  # Use dtplyr
+  data <- dtplyr::lazy_dt(data)
 
   # CODINST
   if ("CODINST" %in% variables_names) {
-    data$CODINST[data$CODINST == "E"] <- "Estadual"
-    data$CODINST[data$CODINST == "R"] <- "Regional"
-    data$CODINST[data$CODINST == "M"] <- "Municipal"
-    data$CODINST <- factor(data$CODINST)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(CODINST = dplyr::case_match(
+        .data$CODINST,
+        "E" ~ "Estadual",
+        "R" ~ "Regional",
+        "M" ~ "Municipal",
+        .default = .data$CODINST
+      )) %>%
+      dplyr::mutate(CODINST = as.factor(.data$CODINST))
+
+
   }
 
   # TIPOBITO
   if ("TIPOBITO" %in% variables_names) {
-    data$TIPOBITO <- as.numeric(data$TIPOBITO)
-    data$TIPOBITO[data$TIPOBITO == 0] <- NA
-    data$TIPOBITO[data$TIPOBITO == 9] <- NA
-    data$TIPOBITO[data$TIPOBITO == 1] <- "Fetal"
-    data$TIPOBITO[data$TIPOBITO == 2] <- "N\\u00e3o Fetal"
-    data$TIPOBITO <- factor(data$TIPOBITO)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(TIPOBITO = dplyr::case_match(
+        .data$TIPOBITO,
+        "0" ~ NA,
+        "9" ~ NA,
+        "1" ~ "Fetal",
+        "2" ~ "N\\u00e3o Fetal",
+        .default = .data$TIPOBITO
+      )) %>%
+      dplyr::mutate(TIPOBITO <- as.factor(data$TIPOBITO))
+
+
   }
 
   # DTOBITO
   if ("DTOBITO" %in% variables_names) {
-    data$DTOBITO <- as.Date(data$DTOBITO, format = "%d%m%Y")
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(DTOBITO = as.Date(.data$DTOBITO, format = "%d%m%Y"))
+
+
   }
 
   # NATURAL
   if ("NATURAL" %in% variables_names) {
     colnames(tabNaturalidade)[1] <- "NATURAL"
-    data$NATURAL <- factor(dplyr::left_join(data, tabNaturalidade, by = "NATURAL")$nome)
-    p$tick()
+    data <- data %>%
+      dplyr::left_join(tabNaturalidade, by = "NATURAL") %>%
+      dplyr::select(-"NATURAL") %>%
+      dplyr::rename("NATURAL" = "nome") %>%
+      dplyr::mutate(NATURAL = as.factor(.data$NATURAL))
+
+
   }
 
   # DTNASC
   if ("DTNASC" %in% variables_names) {
-    data$DTNASC <- as.Date(data$DTNASC, format = "%d%m%Y")
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(DTNASC = as.Date(.data$DTNASC, format = "%d%m%Y"))
+
+
   }
 
   # IDADE
   if ("IDADE" %in% variables_names) {
-    data$IDADE[data$IDADE == "000" | data$IDADE == "999"] <- NA
-    unidade <- substr(data$IDADE, 1, 1)
-    # Minutos
-    data$IDADEminutos <-
-      as.numeric(ifelse(unidade == 0, substr(data$IDADE, 2, 3), NA))
-    # Horas
-    data$IDADEhoras <-
-      as.numeric(ifelse(unidade == 1, substr(data$IDADE, 2, 3), NA))
-    # Dias
-    data$IDADEdias <-
-      as.numeric(ifelse(unidade == 2, substr(data$IDADE, 2, 3), NA))
-    # Meses
-    data$IDADEmeses <-
-      as.numeric(ifelse(unidade == 3, substr(data$IDADE, 2, 3), NA))
-    # Anos
-    data$IDADEanos <-
-      as.numeric(ifelse(
-        unidade == 4,
-        substr(data$IDADE, 2, 3),
-        ifelse(unidade == 5, 100 + as.numeric(substr(data$IDADE, 2, 3)), NA)
-      ))
-    # Apaga campo original
-    data$IDADE <- NULL
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(IDADE = dplyr::case_match(
+        .data$IDADE,
+        "000" ~ NA,
+        "999" ~ NA,
+        .default = .data$IDADE
+      )) %>%
+      # Codigo e valor
+      dplyr::mutate(
+        idade_cod = substr(.data$IDADE, 1, 1),
+        idade_value = as.numeric(substr(.data$IDADE, 2, 3)),
+      ) %>%
+      dplyr::mutate(IDADEminutos = dplyr::case_match(
+        .data$idade_cod,
+        "0" ~ idade_value,
+        .default = NA
+      )) %>%
+      dplyr::mutate(IDADEhoras = dplyr::case_match(
+        .data$idade_cod,
+        "1" ~ idade_value,
+        .default = NA
+      )) %>%
+      dplyr::mutate(IDADEdias = dplyr::case_match(
+        .data$idade_cod,
+        "2" ~ idade_value,
+        .default = NA
+      )) %>%
+      dplyr::mutate(IDADEmeses = dplyr::case_match(
+        .data$idade_cod,
+        "3" ~ idade_value,
+        .default = NA
+      )) %>%
+      dplyr::mutate(IDADEanos = dplyr::case_match(
+        .data$idade_cod,
+        "4" ~ idade_value,
+        "5" ~ idade_value+100,
+        .default = NA
+      )) %>%
+      dplyr::select(-"idade_cod",-"idade_value")
+
+
   }
 
   # SEXO
   if ("SEXO" %in% variables_names) {
-    data$SEXO <- as.numeric(data$SEXO)
-    data$SEXO[data$SEXO == 0] <- NA
-    data$SEXO[data$SEXO == 9] <- NA
-    data$SEXO[data$SEXO == 1] <- "Masculino"
-    data$SEXO[data$SEXO == 2] <- "Feminino"
-    data$SEXO <- factor(data$SEXO)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(SEXO = dplyr::case_match(
+        .data$SEXO,
+        "0"~ NA,
+        "9" ~ NA,
+        "1"~ "Masculino",
+        "2" ~ "Feminino",
+        .default = .data$SEXO
+      )) %>%
+      dplyr::mutate(SEXO = as.factor(.data$SEXO))
+
+
   }
 
   # RACACOR
   if ("RACACOR" %in% variables_names) {
-    data$RACACOR <- as.numeric(data$RACACOR)
-    data$RACACOR[data$RACACOR == 0] <- NA
-    data$RACACOR[data$RACACOR == 1] <- "Branca"
-    data$RACACOR[data$RACACOR == 2] <- "Preta"
-    data$RACACOR[data$RACACOR == 3] <- "Amarela"
-    data$RACACOR[data$RACACOR == 4] <- "Parda"
-    data$RACACOR[data$RACACOR == 5] <- "Ind\\u00edgena"
-    data$RACACOR[data$RACACOR == 6] <- NA
-    data$RACACOR[data$RACACOR == 7] <- NA
-    data$RACACOR[data$RACACOR == 8] <- NA
-    data$RACACOR[data$RACACOR == 9] <- NA
-    data$RACACOR <- factor(data$RACACOR)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(RACACOR = dplyr::case_match(
+        .data$RACACOR,
+        "0" ~ NA,
+        "1" ~ "Branca",
+        "2" ~ "Preta",
+        "3" ~ "Amarela",
+        "4" ~ "Parda",
+        "5" ~ "Ind\\u00edgena",
+        "6" ~ NA,
+        "7" ~ NA,
+        "8" ~ NA,
+        "9" ~ NA,
+        .default = .data$RACACOR
+      )) %>%
+      dplyr::mutate(RACACOR = as.factor(.data$RACACOR))
+
+
   }
 
   # ESTCIV
   if ("ESTCIV" %in% variables_names) {
-    data$ESTCIV <- as.numeric(data$ESTCIV)
-    data$ESTCIV[data$ESTCIV == 0] <- NA
-    data$ESTCIV[data$ESTCIV == 1] <- "Solteiro"
-    data$ESTCIV[data$ESTCIV == 2] <- "Casado"
-    data$ESTCIV[data$ESTCIV == 3] <- "Vi\\u00favo"
-    data$ESTCIV[data$ESTCIV == 4] <- "Separado judicialmente"
-    data$ESTCIV[data$ESTCIV == 5] <- "Uni\\u00e3o consensual"
-    data$ESTCIV[data$ESTCIV == 6] <- NA
-    data$ESTCIV[data$ESTCIV == 7] <- NA
-    data$ESTCIV[data$ESTCIV == 8] <- NA
-    data$ESTCIV[data$ESTCIV == 9] <- NA
-    data$ESTCIV <- factor(data$ESTCIV)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(ESTCIV = dplyr::case_match(
+        .data$ESTCIV,
+        "0" ~ NA,
+        "1" ~ "Solteiro",
+        "2" ~ "Casado",
+        "3" ~ "Vi\\u00favo",
+        "4" ~ "Separado judicialmente",
+        "5" ~ "Uni\\u00e3o consensual",
+        "6" ~ NA,
+        "7" ~ NA,
+        "8" ~ NA,
+        "9" ~ NA,
+        .default = .data$ESTCIV
+      )) %>%
+      dplyr::mutate(ESTCIV <- as.factor(.data$ESTCIV))
+
+
   }
 
   # ESC
   if ("ESC" %in% variables_names) {
-    data$ESC[data$ESC == "0"] <- NA
-    data$ESC[data$ESC == "6"] <- NA
-    data$ESC[data$ESC == "7"] <- NA
-    data$ESC[data$ESC == "9"] <- NA
-    data$ESC[data$ESC == "A"] <- NA
-    data$ESC[data$ESC == "1"] <- "Nenhuma"
-    data$ESC[data$ESC == "2"] <- "1 a 3 anos"
-    data$ESC[data$ESC == "3"] <- "4 a 7 anos"
-    data$ESC[data$ESC == "4"] <- "8 a 11 anos"
-    data$ESC[data$ESC == "5"] <- "12 anos ou mais"
-    data$ESC[data$ESC == "8"] <- "9 a 11 anos"
-    data$ESC[data$ESC == "9"] <- NA
-    data$ESC <- factor(data$ESC)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(ESC = dplyr::case_match(
+        .data$ESC,
+        "0" ~ NA,
+        "6" ~ NA,
+        "7" ~ NA,
+        "9" ~ NA,
+        "A" ~ NA,
+        "1" ~ "Nenhuma",
+        "2" ~ "1 a 3 anos",
+        "3" ~ "4 a 7 anos",
+        "4" ~ "8 a 11 anos",
+        "5" ~ "12 anos ou mais",
+        "8" ~ "9 a 11 anos",
+        "9" ~ NA,
+        .default = .data$ESC
+      )) %>%
+      dplyr::mutate(ESC <- as.factor(.data$ESC))
+
+
   }
 
   # ESC2010
   if ("ESC2010" %in% variables_names) {
-    data$ESC2010 <- as.character(data$ESC2010)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(ESC2010 = as.character(.data$ESC2010))
+
+
   }
 
   # SERIESCFAL
   if ("SERIESCFAL" %in% variables_names) {
-    data$SERIESCFAL <- as.character(data$SERIESCFAL)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(SERIESCFAL = as.character(.data$SERIESCFAL))
+
+
   }
 
   # OCUP
   if ("OCUP" %in% variables_names) {
     if (!("DTOBITO" %in% variables_names))
-      stop("The variable DTOBITO is needed to preprocess the variable OCUP.")
-
-    colnames(tabOcupacao)[1] <- "OCUP"
-    tabOcupacao$OCUP = as.character(tabOcupacao$OCUP)
+      cli::cli_abort("The variable DTOBITO is needed to preprocess the variable OCUP.")
 
     colnames(tabCBO)[1] <- "OCUP"
     tabCBO$OCUP = as.character(tabCBO$OCUP)
 
-    ano <- lubridate::year(data$DTOBITO)
+    data <- data %>%
+      dplyr::left_join(tabCBO, by = "OCUP") %>%
+      dplyr::select(-"OCUP") %>%
+      dplyr::rename("OCUP" = "nome")
 
-    data$OCUP <-
-      factor(ifelse(
-        ano <= 2005,
-        dplyr::left_join(data, tabOcupacao, by = "OCUP")$nome,
-        dplyr::left_join(data, tabCBO, by = "OCUP")$nome
-      ))
-    p$tick()
+
   }
 
   # CODMUNRES
   if ("CODMUNRES" %in% variables_names){
-    if(nchar(data$CODMUNRES[1]) == 7){
-      data$CODMUNRES <- substr(data$CODMUNRES, 0, 6)
+    data <- data %>%
+      dplyr::mutate(CODMUNRES = substr(.data$CODMUNRES, 0, 6))
+
+    if(municipality_data == TRUE){
+      colnames(tabMun)[1] <- "CODMUNRES"
+      tabMun$CODMUNRES <- as.character(tabMun$CODMUNRES)
+
+      data <- data %>%
+        dplyr::left_join(tabMun, by = "CODMUNRES")
     }
-    p$tick()
-  } else if ("CODMUNRES" %in% variables_names & municipality_data == TRUE) {
-    colnames(tabMun)[1] <- "CODMUNRES"
-    tabMun$CODMUNRES <- as.character(tabMun$CODMUNRES)
-    data <- dplyr::left_join(data, tabMun, by = "CODMUNRES")
-    p$tick()
+
+
   }
 
   # CODMUNOCOR
   if ("CODMUNOCOR" %in% variables_names){
-    if(nchar(data$CODMUNOCOR[1]) == 7){
-      data$CODMUNOCOR <- substr(data$CODMUNOCOR, 0, 6)
-    }
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(CODMUNOCOR = substr(.data$CODMUNOCOR, 0, 6))
+
+
   }
 
   # LOCOCOR
   if ("LOCOCOR" %in% variables_names) {
-    data$LOCOCOR <- as.numeric(data$LOCOCOR)
-    data$LOCOCOR[data$LOCOCOR == 1] <- "Hospital"
-    data$LOCOCOR[data$LOCOCOR == 2] <- "Outro estabelecimento de sa\\u00fade"
-    data$LOCOCOR[data$LOCOCOR == 3] <- "Domic\\u00edlio"
-    data$LOCOCOR[data$LOCOCOR == 4] <- "Via p\\u00fablica"
-    data$LOCOCOR[data$LOCOCOR == 5] <- "Outros"
-    data$LOCOCOR[data$LOCOCOR == 9] <- NA
-    data$LOCOCOR <- factor(data$LOCOCOR)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(LOCOCOR = dplyr::case_match(
+        .data$LOCOCOR,
+        "1" ~ "Hospital",
+        "2" ~ "Outro estabelecimento de sa\\u00fade",
+        "3" ~ "Domic\\u00edlio",
+        "4" ~ "Via p\\u00fablica",
+        "5" ~ "Outros",
+        "9" ~ NA,
+        .default = .data$LOCOCOR
+      )) %>%
+      dplyr::mutate(LOCOCOR = as.factor(.data$LOCOCOR))
+
+
   }
 
   # IDADEMAE
   if ("IDADEMAE" %in% variables_names) {
-    data$IDADEMAE <- as.numeric(data$IDADEMAE)
-    data$IDADEMAE[data$IDADEMAE == 0] <- NA
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(IDADEMAE = dplyr::case_match(
+        .data$IDADEMAE,
+        "0" ~ NA,
+        .default = .data$IDADEMAE
+      )) %>%
+      dplyr::mutate(IDADEMAE = as.numeric(.data$IDADEMAE))
+
+
   }
 
   # ESCMAE
   if ("ESCMAE" %in% variables_names) {
-    data$ESCMAE[data$ESCMAE == "0"] <- NA
-    data$ESCMAE[data$ESCMAE == "6"] <- NA
-    data$ESCMAE[data$ESCMAE == "7"] <- NA
-    data$ESCMAE[data$ESCMAE == "9"] <- NA
-    data$ESCMAE[data$ESCMAE == "A"] <- NA
-    data$ESCMAE[data$ESCMAE == "1"] <- "Nenhuma"
-    data$ESCMAE[data$ESCMAE == "2"] <- "1 a 3 anos"
-    data$ESCMAE[data$ESCMAE == "3"] <- "4 a 7 anos"
-    data$ESCMAE[data$ESCMAE == "4"] <- "8 a 11 anos"
-    data$ESCMAE[data$ESCMAE == "5"] <- "12 anos ou mais"
-    data$ESCMAE[data$ESCMAE == "8"] <- "9 a 11 anos"
-    data$ESCMAE[data$ESCMAE == "9"] <- NA
-    data$ESCMAE <- factor(data$ESCMAE)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(ESCMAE = dplyr::case_match(
+        .data$ESCMAE,
+        "0" ~ NA,
+        "6" ~ NA,
+        "7" ~ NA,
+        "9" ~ NA,
+        "A" ~ NA,
+        "1" ~ "Nenhuma",
+        "2" ~ "1 a 3 anos",
+        "3" ~ "4 a 7 anos",
+        "4" ~ "8 a 11 anos",
+        "5" ~ "12 anos ou mais",
+        "8" ~ "9 a 11 anos",
+        "9" ~ NA,
+        .default = .data$ESCMAE
+      )) %>%
+      dplyr::mutate(ESCMAE = as.factor(.data$ESCMAE))
+
+
   }
 
   # OCUPMAE
   if ("OCUPMAE" %in% variables_names) {
     if (!("DTOBITO" %in% variables_names))
-      stop("The variable DTOBITO is needed to preprocess the variable OCUPMAE.")
+      cli::cli_abort("The variable DTOBITO is needed to preprocess the variable OCUPMAE.")
 
     colnames(tabOcupacao)[1] <- "OCUPMAE"
     colnames(tabCBO)[1] <- "OCUPMAE"
-    ano <- lubridate::year(data$DTOBITO)
-    data$OCUPMAE <-
-      factor(ifelse(
-        ano <= 2005,
-        dplyr::left_join(data, tabOcupacao, by = "OCUPMAE")$nome,
-        dplyr::left_join(data, tabCBO, by = "OCUPMAE")$nome
-      ))
-    p$tick()
+
+    data <- data %>%
+      dplyr::left_join(tabCBO, by = "OCUPMAE") %>%
+      dplyr::select(-"OCUPMAE") %>%
+      dplyr::rename("OCUPMAE" = "nome")
+
+
   }
 
   # QTDFILVIVO
   if ("QTDFILVIVO" %in% variables_names) {
-    data$QTDFILVIVO <- as.numeric(data$QTDFILVIVO)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(QTDFILVIVO = as.numeric(.data$QTDFILVIVO))
+
+
   }
 
   # QTDFILMORT
   if ("QTDFILMORT" %in% variables_names) {
-    data$QTDFILMORT <- as.numeric(data$QTDFILMORT)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(QTDFILMORT = as.numeric(.data$QTDFILMORT))
+
+
   }
 
   # GRAVIDEZ
   if ("GRAVIDEZ" %in% variables_names) {
-    data$GRAVIDEZ <- as.numeric(data$GRAVIDEZ)
-    data$GRAVIDEZ[data$GRAVIDEZ == 1] <- "\\u00fanica"
-    data$GRAVIDEZ[data$GRAVIDEZ == 2] <- "Dupla"
-    data$GRAVIDEZ[data$GRAVIDEZ == 3] <- "Tr\\u00edplice e mais"
-    data$GRAVIDEZ[data$GRAVIDEZ == 9] <- NA
-    data$GRAVIDEZ <- factor(data$GRAVIDEZ)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(GRAVIDEZ = dplyr::case_match(
+        .data$GRAVIDEZ,
+        "1" ~ "\\u00fanica",
+        "2" ~ "Dupla",
+        "3" ~ "Tr\\u00edplice e mais",
+        "9" ~ NA,
+        .default = .data$GRAVIDEZ
+      )) %>%
+      dplyr::mutate(GRAVIDEZ = as.factor(.data$GRAVIDEZ))
+
+
   }
 
   # GESTACAO
   if ("GESTACAO" %in% variables_names) {
-    data$GESTACAO[data$GESTACAO == "0"] <- NA
-    data$GESTACAO[data$GESTACAO == "A"] <- "21 a 27 semanas"
-    data$GESTACAO[data$GESTACAO == "1"] <- "Menos de 22 semanas"
-    data$GESTACAO[data$GESTACAO == "2"] <- "22 a 27 semanas"
-    data$GESTACAO[data$GESTACAO == "3"] <- "28 a 31 semanas"
-    data$GESTACAO[data$GESTACAO == "4"] <- "32 a 36 semanas"
-    data$GESTACAO[data$GESTACAO == "5"] <- "37 a 41 semanas"
-    data$GESTACAO[data$GESTACAO == "6"] <- "42 semanas e mais"
-    data$GESTACAO[data$GESTACAO == "7"] <- "28 semanas e mais"
-    data$GESTACAO[data$GESTACAO == "8"] <- "28 a 36 semanas"
-    data$GESTACAO[data$GESTACAO == "9"] <- NA
-    data$GESTACAO <- factor(data$GESTACAO)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(GESTACAO = dplyr::case_match(
+        .data$GESTACAO,
+        "0" ~ NA,
+        "A" ~ "21 a 27 semanas",
+        "1" ~ "Menos de 22 semanas",
+        "2" ~ "22 a 27 semanas",
+        "3" ~ "28 a 31 semanas",
+        "4" ~ "32 a 36 semanas",
+        "5" ~ "37 a 41 semanas",
+        "6" ~ "42 semanas e mais",
+        "7" ~ "28 semanas e mais",
+        "8" ~ "28 a 36 semanas",
+        "9" ~ NA,
+        .default = .data$GESTACAO
+      )) %>%
+      dplyr::mutate(GESTACAO = as.factor(.data$GESTACAO))
+
+
   }
 
   # PARTO
   if ("PARTO" %in% variables_names) {
-    data$PARTO <- as.numeric(data$PARTO)
-    data$PARTO[data$PARTO == 0] <- NA
-    data$PARTO[data$PARTO == 1] <- "Vaginal"
-    data$PARTO[data$PARTO == 2] <- "Ces\\u00e1reo"
-    data$PARTO[data$PARTO == 3] <- NA
-    data$PARTO[data$PARTO == 4] <- NA
-    data$PARTO[data$PARTO == 5] <- NA
-    data$PARTO[data$PARTO == 6] <- NA
-    data$PARTO[data$PARTO == 7] <- NA
-    data$PARTO[data$PARTO == 8] <- NA
-    data$PARTO[data$PARTO == 9] <- NA
-    data$PARTO <- factor(data$PARTO)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(PARTO = dplyr::case_match(
+        .data$PARTO,
+        "0" ~ NA,
+        "1" ~ "Vaginal",
+        "2" ~ "Ces\\u00e1reo",
+        "3" ~ NA,
+        "4" ~ NA,
+        "5" ~ NA,
+        "6" ~ NA,
+        "7" ~ NA,
+        "8" ~ NA,
+        "9" ~ NA,
+        .default = .data$PARTO
+      )) %>%
+      dplyr::mutate(PARTO <- as.factor(.data$PARTO))
+
+
   }
 
   # OBITOPARTO
   if ("OBITOPARTO" %in% variables_names) {
-    data$OBITOPARTO <- as.numeric(data$OBITOPARTO)
-    data$OBITOPARTO[data$OBITOPARTO == 0] <- NA
-    data$OBITOPARTO[data$OBITOPARTO == 1] <- "Antes"
-    data$OBITOPARTO[data$OBITOPARTO == 2] <- "Durante"
-    data$OBITOPARTO[data$OBITOPARTO == 3] <- "Depois"
-    data$OBITOPARTO[data$OBITOPARTO == 4] <- NA
-    data$OBITOPARTO[data$OBITOPARTO == 5] <- NA
-    data$OBITOPARTO[data$OBITOPARTO == 6] <- NA
-    data$OBITOPARTO[data$OBITOPARTO == 7] <- NA
-    data$OBITOPARTO[data$OBITOPARTO == 8] <- NA
-    data$OBITOPARTO[data$OBITOPARTO == 9] <- NA
-    data$OBITOPARTO <- factor(data$OBITOPARTO)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(OBITOPARTO = dplyr::case_match(
+        .data$OBITOPARTO,
+        "0" ~ NA,
+        "1" ~ "Antes",
+        "2" ~ "Durante",
+        "3" ~ "Depois",
+        "4" ~ NA,
+        "5" ~ NA,
+        "6" ~ NA,
+        "7" ~ NA,
+        "8" ~ NA,
+        "9" ~ NA,
+        .default = .data$OBITOPARTO
+      )) %>%
+      dplyr::mutate(OBITOPARTO <- as.factor(.data$OBITOPARTO))
+
+
   }
 
   # PESO
   if ("PESO" %in% variables_names) {
-    data$PESO <- as.numeric(data$PESO)
-    data$PESO[data$PESO == 0] <- NA
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(PESO = dplyr::case_match(
+        .data$PESO,
+        "0" ~ NA,
+        .default = .data$PESO
+      )) %>%
+      dplyr::mutate(PESO = as.numeric(.data$PESO))
+
+
   }
 
   # OBITOGRAV
   if ("OBITOGRAV" %in% variables_names) {
-    data$OBITOGRAV <- as.numeric(data$OBITOGRAV)
-    data$OBITOGRAV[data$OBITOGRAV == 1] <- "Sim"
-    data$OBITOGRAV[data$OBITOGRAV == 2] <- "N\\u00e3o"
-    data$OBITOGRAV[data$OBITOGRAV == 3] <- NA
-    data$OBITOGRAV[data$OBITOGRAV == 4] <- NA
-    data$OBITOGRAV[data$OBITOGRAV == 5] <- NA
-    data$OBITOGRAV[data$OBITOGRAV == 6] <- NA
-    data$OBITOGRAV[data$OBITOGRAV == 7] <- NA
-    data$OBITOGRAV[data$OBITOGRAV == 8] <- NA
-    data$OBITOGRAV[data$OBITOGRAV == 9] <- NA
-    data$OBITOGRAV <- factor(data$OBITOGRAV)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(OBITOGRAV = dplyr::case_match(
+        .data$OBITOGRAV,
+        "1" ~ "Sim",
+        "2" ~ "N\\u00e3o",
+        "3" ~ NA,
+        "4" ~ NA,
+        "5" ~ NA,
+        "6" ~ NA,
+        "7" ~ NA,
+        "8" ~ NA,
+        "9" ~ NA,
+        .default = .data$OBITOGRAV
+      )) %>%
+      dplyr::mutate(OBITOGRAV <- as.factor(.data$OBITOGRAV))
+
+
   }
 
   # OBITOPUERP
   if ("OBITOPUERP" %in% variables_names) {
-    data$OBITOPUERP <- as.numeric(data$OBITOPUERP)
-    data$OBITOPUERP[data$OBITOPUERP == 1] <- "De 0 a 42 dias"
-    data$OBITOPUERP[data$OBITOPUERP == 2] <- "De 43 dias a 1 ano"
-    data$OBITOPUERP[data$OBITOPUERP == 3] <- "N\\u00e3o"
-    data$OBITOPUERP[data$OBITOPUERP == 4] <- NA
-    data$OBITOPUERP[data$OBITOPUERP == 5] <- NA
-    data$OBITOPUERP[data$OBITOPUERP == 6] <- NA
-    data$OBITOPUERP[data$OBITOPUERP == 7] <- NA
-    data$OBITOPUERP[data$OBITOPUERP == 8] <- NA
-    data$OBITOPUERP[data$OBITOPUERP == 9] <- NA
-    data$OBITOPUERP <- factor(data$OBITOPUERP)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(OBITOPUERP = dplyr::case_match(
+        .data$OBITOPUERP,
+        "1" ~ "De 0 a 42 dias",
+        "2" ~ "De 43 dias a 1 ano",
+        "3" ~ "N\\u00e3o",
+        "4" ~ NA,
+        "5" ~ NA,
+        "6" ~ NA,
+        "7" ~ NA,
+        "8" ~ NA,
+        "9" ~ NA,
+        .default = .data$OBITOPUERP
+      )) %>%
+      dplyr::mutate(OBITOPUERP <- as.factor(.data$OBITOPUERP))
+
+
   }
 
   # ASSISTMED
   if ("ASSISTMED" %in% variables_names) {
-    data$ASSISTMED <- as.numeric(data$ASSISTMED)
-    data$ASSISTMED[data$ASSISTMED == 1] <- "Sim"
-    data$ASSISTMED[data$ASSISTMED == 2] <- "N\\u00e3o"
-    data$ASSISTMED[data$ASSISTMED == 9] <- NA
-    data$ASSISTMED <- factor(data$ASSISTMED)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(ASSISTMED = dplyr::case_match(
+        .data$ASSISTMED,
+        "1" ~ "Sim",
+        "2" ~ "N\\u00e3o",
+        "9" ~ NA,
+        .default = .data$ASSISTMED
+      )) %>%
+      dplyr::mutate(ASSISTMED = as.factor(.data$ASSISTMED))
+
+
   }
 
   # EXAME
   if ("EXAME" %in% variables_names) {
-    data$EXAME <- as.numeric(data$EXAME)
-    data$EXAME[data$EXAME == 1] <- "Sim"
-    data$EXAME[data$EXAME == 2] <- "N\\u00e3o"
-    data$EXAME[data$EXAME == 9] <- NA
-    data$EXAME <- factor(data$EXAME)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(EXAME = dplyr::case_match(
+        .data$EXAME,
+        "1" ~ "Sim",
+        "2" ~ "N\\u00e3o",
+        "9" ~ NA,
+        .default = .data$EXAME
+      )) %>%
+      dplyr::mutate(EXAME = as.factor(.data$EXAME))
+
+
   }
 
   # CIRURGIA
   if ("CIRURGIA" %in% variables_names) {
-    data$CIRURGIA <- as.numeric(data$CIRURGIA)
-    data$CIRURGIA[data$CIRURGIA == 1] <- "Sim"
-    data$CIRURGIA[data$CIRURGIA == 2] <- "N\\u00e3o"
-    data$CIRURGIA[data$CIRURGIA == 9] <- NA
-    data$CIRURGIA <- factor(data$CIRURGIA)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(CIRURGIA = dplyr::case_match(
+        .data$CIRURGIA,
+        "1" ~ "Sim",
+        "2" ~ "N\\u00e3o",
+        "9" ~ NA,
+        .default = .data$CIRURGIA
+      )) %>%
+      dplyr::mutate(CIRURGIA = as.factor(.data$CIRURGIA))
+
+
   }
 
   # NECROPSIA
   if ("NECROPSIA" %in% variables_names) {
-    data$NECROPSIA <- as.numeric(data$NECROPSIA)
-    data$NECROPSIA[data$NECROPSIA == 1] <- "Sim"
-    data$NECROPSIA[data$NECROPSIA == 2] <- "N\\u00e3o"
-    data$NECROPSIA[data$NECROPSIA == 9] <- NA
-    data$NECROPSIA <- factor(data$NECROPSIA)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(NECROPSIA = dplyr::case_match(
+        .data$NECROPSIA,
+        "1" ~ "Sim",
+        "2" ~ "N\\u00e3o",
+        "9" ~ NA,
+        .default = .data$NECROPSIA
+      )) %>%
+      dplyr::mutate(NECROPSIA = as.factor(.data$NECROPSIA))
+
+
   }
 
   # DTATESTADO
   if ("DTATESTADO" %in% variables_names) {
-    data$DTATESTADO <- as.Date(data$DTATESTADO, format = "%d%m%Y")
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(DTATESTADO = as.Date(.data$DTATESTADO, format = "%d%m%Y"))
+
+
   }
 
   # CIRCOBITO
   if ("CIRCOBITO" %in% variables_names) {
-    data$CIRCOBITO <- as.numeric(data$CIRCOBITO)
-    data$CIRCOBITO[data$CIRCOBITO == 0] <- NA
-    data$CIRCOBITO[data$CIRCOBITO == 1] <- "Acidente"
-    data$CIRCOBITO[data$CIRCOBITO == 2] <- "Suic\\u00eddio"
-    data$CIRCOBITO[data$CIRCOBITO == 3] <- "Homic\\u00eddio"
-    data$CIRCOBITO[data$CIRCOBITO == 4] <- "Outro"
-    data$CIRCOBITO[data$CIRCOBITO == 5] <- NA
-    data$CIRCOBITO[data$CIRCOBITO == 6] <- NA
-    data$CIRCOBITO[data$CIRCOBITO == 7] <- NA
-    data$CIRCOBITO[data$CIRCOBITO == 8] <- NA
-    data$CIRCOBITO[data$CIRCOBITO == 9] <- NA
-    data$CIRCOBITO <- factor(data$CIRCOBITO)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(CIRCOBITO = dplyr::case_match(
+        .data$CIRCOBITO,
+        "0" ~ NA,
+        "1" ~ "Acidente",
+        "2" ~ "Suic\\u00eddio",
+        "3" ~ "Homic\\u00eddio",
+        "4" ~ "Outro",
+        "5" ~ NA,
+        "6" ~ NA,
+        "7" ~ NA,
+        "8" ~ NA,
+        "9" ~ NA,
+        .default = .data$CIRCOBITO
+      )) %>%
+      dplyr::mutate(CIRCOBITO <- as.factor(.data$CIRCOBITO))
+
+
   }
 
   # ACIDTRAB
   if ("ACIDTRAB" %in% variables_names) {
-    data$ACIDTRAB <- as.numeric(data$ACIDTRAB)
-    data$ACIDTRAB[data$ACIDTRAB == 1] <- "Sim"
-    data$ACIDTRAB[data$ACIDTRAB == 2] <- "N\\u00e3o"
-    data$ACIDTRAB[data$ACIDTRAB == 9] <- NA
-    data$ACIDTRAB <- factor(data$ACIDTRAB)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(ACIDTRAB = dplyr::case_match(
+        .data$ACIDTRAB,
+        "1" ~ "Sim",
+        "2" ~ "N\\u00e3o",
+        "9" ~ NA,
+        .default = .data$ACIDTRAB
+      )) %>%
+      dplyr::mutate(ACIDTRAB = as.factor(.data$ACIDTRAB))
+
+
   }
 
   # FONTE
   if ("FONTE" %in% variables_names) {
-    data$FONTE <- as.numeric(data$FONTE)
-    data$FONTE[data$FONTE == 1] <- "Boletim de Ocorr\\u00eancia"
-    data$FONTE[data$FONTE == 2] <- "Hospital"
-    data$FONTE[data$FONTE == 3] <- "Fam\\u00edlia"
-    data$FONTE[data$FONTE == 4] <- "Outro"
-    data$FONTE[data$FONTE == 9] <- NA
-    data$FONTE <- factor(data$FONTE)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(FONTE = dplyr::case_match(
+        .data$FONTE,
+        "1"~ "Boletim de Ocorr\\u00eancia",
+        "2"~ "Hospital",
+        "3"~ "Fam\\u00edlia",
+        "4"~ "Outro",
+        "9"~ NA,
+        .default = .data$FONTE
+      )) %>%
+      dplyr::mutate(FONTE <- as.factor(.data$FONTE))
+
+
   }
 
   # TPPOS
   if ("TPPOS" %in% variables_names) {
-    data$TPPOS[data$TPPOS == "N"] <- "N\\u00e3o investigado"
-    data$TPPOS[data$TPPOS == "S"] <- "Investigado"
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(TPPOS = dplyr::case_match(
+        .data$TPPOS,
+        "N" ~ "N\\u00e3o investigado",
+        "S" ~ "Investigado",
+        .default = .data$TPPOS
+      )) %>%
+      dplyr::mutate(TPPOS = as.factor(.data$TPPOS))
+
+
   }
 
   # DTINVESTIG
   if ("DTINVESTIG" %in% variables_names) {
-    data$DTINVESTIG <- as.Date(data$DTINVESTIG, format = "%d%m%Y")
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(DTINVESTIG = as.Date(.data$DTINVESTIG, format = "%d%m%Y"))
+
+
   }
 
   # DTCADASTRO
   if ("DTCADASTRO" %in% variables_names) {
-    data$DTCADASTRO <- as.Date(data$DTCADASTRO, format = "%d%m%Y")
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(DTCADASTRO = as.Date(.data$DTCADASTRO, format = "%d%m%Y"))
+
+
   }
 
   # ATESTANTE
   if ("ATESTANTE" %in% variables_names) {
-    data$ATESTANTE <- as.numeric(data$ATESTANTE)
-    data$ATESTANTE[data$ATESTANTE == 0] <- NA
-    data$ATESTANTE[data$ATESTANTE == 1] <- "Sim"
-    data$ATESTANTE[data$ATESTANTE == 2] <- "Substituto"
-    data$ATESTANTE[data$ATESTANTE == 3] <- "IML"
-    data$ATESTANTE[data$ATESTANTE == 4] <- "SVO"
-    data$ATESTANTE[data$ATESTANTE == 5] <- "Outro"
-    data$ATESTANTE[data$ATESTANTE == 6] <- NA
-    data$ATESTANTE[data$ATESTANTE == 7] <- NA
-    data$ATESTANTE[data$ATESTANTE == 8] <- NA
-    data$ATESTANTE[data$ATESTANTE == 9] <- NA
-    data$ATESTANTE <- factor(data$ATESTANTE)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(ATESTANTE = dplyr::case_match(
+        .data$ATESTANTE,
+        "0" ~ NA,
+        "1" ~ "Sim",
+        "2" ~ "Substituto",
+        "3" ~ "IML",
+        "4" ~ "SVO",
+        "5" ~ "Outro",
+        "6" ~ NA,
+        "7" ~ NA,
+        "8" ~ NA,
+        "9" ~ NA,
+        .default = .data$ATESTANTE
+      )) %>%
+      dplyr::mutate(ATESTANTE <- as.factor(.data$ATESTANTE))
+
+
   }
 
   # FONTEINV
   if ("FONTEINV" %in% variables_names) {
-    data$FONTEINV <- as.numeric(data$FONTEINV)
-    data$FONTEINV[data$FONTEINV == 1] <- "Comit\\u00ea de Mortalidade Materna e/ou Infantil"
-    data$FONTEINV[data$FONTEINV == 2] <- "Visita familiar / Entrevista fam\\u00edlia"
-    data$FONTEINV[data$FONTEINV == 3] <- "Estabelecimento de sa\\u00fade / Prontu\\u00e1rio"
-    data$FONTEINV[data$FONTEINV == 4] <- "Relacionamento com outros bancos de dados"
-    data$FONTEINV[data$FONTEINV == 5] <- "SVO"
-    data$FONTEINV[data$FONTEINV == 6] <- "IML"
-    data$FONTEINV[data$FONTEINV == 7] <- "Outra fonte"
-    data$FONTEINV[data$FONTEINV == 8] <- "M\\u00faltiplas fontes"
-    data$FONTEINV[data$FONTEINV == 9] <- NA
-    data$FONTEINV <- factor(data$FONTEINV)
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(FONTEINV = dplyr::case_match(
+        .data$FONTEINV,
+        "1" ~ "Comit\\u00ea de Mortalidade Materna e/ou Infantil",
+        "2" ~ "Visita familiar / Entrevista fam\\u00edlia",
+        "3" ~ "Estabelecimento de sa\\u00fade / Prontu\\u00e1rio",
+        "4" ~ "Relacionamento com outros bancos de dados",
+        "5" ~ "SVO",
+        "6" ~ "IML",
+        "7" ~ "Outra fonte",
+        "8" ~ "M\\u00faltiplas fontes",
+        "9" ~ NA,
+        .default = .data$FONTEINV
+      )) %>%
+      dplyr::mutate(FONTEINV <- as.factor(.data$FONTEINV))
+
+
   }
 
   # DTRECEBIM
   if ("DTRECEBIM" %in% variables_names) {
-    data$DTRECEBIM <- as.Date(data$DTRECEBIM, format = "%d%m%Y")
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(DTRECEBIM = as.Date(.data$DTRECEBIM, format = "%d%m%Y"))
+
+
   }
 
   # DTRECORIGA
   if ("DTRECORIGA" %in% variables_names) {
-    data$DTRECORIGA <- as.Date(data$DTRECORIGA, format = "%d%m%Y")
-    p$tick()
+    data <- data %>%
+      dplyr::mutate(DTRECORIGA = as.Date(.data$DTRECORIGA, format = "%d%m%Y"))
+
+
   }
+
+  # From data.table to tibble
+  data <- tibble::as_tibble(data)
 
   # Purge levels
   data <- droplevels(data)
 
-  # Remove objects
-  rm(ano, unidade)
-
   # Unescape unicode characters
-  data <- as.data.frame(lapply(X = data, FUN = stringi::stri_unescape_unicode))
+  suppressWarnings(
+    data <- as.data.frame(lapply(X = data, FUN = stringi::stri_unescape_unicode))
+  )
 
   # Return
   return(data)

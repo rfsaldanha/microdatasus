@@ -6,9 +6,9 @@
 \usage{
 fetch_datasus(
   year_start,
-  month_start,
+  month_start = NULL,
   year_end,
-  month_end,
+  month_end = NULL,
   uf = "all",
   information_system,
   vars = NULL,
