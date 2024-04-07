@@ -1989,7 +1989,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
   data <- droplevels(data.table::as.data.table(data))
 
   # Unescape unicode characters
-  data <- tibble::as_tibble(lapply(X = data, FUN = stringi::stri_unescape_unicode))
+  data <- suppressWarnings(tibble::as_tibble(lapply(X = data, FUN = stringi::stri_unescape_unicode)))
 
   # Return
   return(data)
