@@ -20,20 +20,6 @@ process_sim <- function(data, municipality_data = TRUE) {
   # Variables names
   variables_names <- names(data)
 
-  # Process variables
-  process_variables <- c("CODINST","TIPOBITO","DTOBITO","NATURAL",
-                         "DTNASC","IDADE","SEXO","RACACOR","ESTCIV",
-                         "ESC","ESC2010","SERIESCFAL","OCUP","CODMUNRES",
-                         "CODMUNOCOR","LOCOCOR","IDADEMAE","ESCMAE",
-                         "OCUPMAE","QTDFILVIVO","QTDFILMORT","GRAVIDEZ",
-                         "GESTACAO","PARTO","OBITOPARTO","PESO","OBITOGRAV",
-                         "OBITOPUERP","ASSISTMED","EXAME","CIRURGIA",
-                         "NECROPSIA","DTATESTADO","CIRCOBITO","ACIDTRAB",
-                         "FONTE","TPPOS","DTINVESTIG","DTCADASTRO","ATESTANTE",
-                         "FONTEINV","DTRECEBIM","DTRECORIGA")
-
-  to_process <- variables_names[variables_names %in% process_variables]
-
   # Use dtplyr
   data <- dtplyr::lazy_dt(data)
 
