@@ -1,3 +1,8 @@
+# microdatasus 2.3.0
+* Process functions uses dplyr verbs and dtplyr for fast processing.
+* Process functions returns a tibble.
+* Progress bar removed due increased processing time.
+
 # microdatasus 2.2.7
 * Enhance messages of `fetch_datasus`.
 * Timeout the connection check when DataSUS FTP is down or not reachable.
