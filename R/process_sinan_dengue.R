@@ -19,171 +19,203 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
   # Variables names
   variables_names <- names(data)
 
-  # Declara objetos
-  ano <- NULL
-  unidade <- NULL
+  # Use dtplyr
+  data <- dtplyr::lazy_dt(data)
 
   # TP_NOT
   if ("TP_NOT" %in% variables_names) {
-    data$TP_NOT <- as.numeric(data$TP_NOT)
-    data$TP_NOT[data$TP_NOT == 1] <- "Negativa"
-    data$TP_NOT[data$TP_NOT == 2] <- "Individual"
-    data$TP_NOT[data$TP_NOT == 3] <- "Surto"
-    data$TP_NOT[data$TP_NOT == 4] <- "Agregado"
-    data$TP_NOT <- factor(data$TP_NOT)
+    data <- data %>%
+      dplyr::mutate(TP_NOT = dplyr::case_match(
+        .data$TP_NOT,
+        "1" ~ "Negativa",
+        "2" ~ "Individual",
+        "3" ~ "Surto",
+        "4" ~ "Agregado",
+        .default = .data$TP_NOT
+      )) %>%
+      dplyr::mutate(TP_NOT = as.factor(.data$TP_NOT))
   }
 
   # DT_NOTIFIC
   if ("DT_NOTIFIC" %in% variables_names) {
-    data$DT_NOTIFIC <- as.Date(data$DT_NOTIFIC)
+    data <- data %>%
+      dplyr::mutate(DT_NOTIFIC = as.Date(.data$DT_NOTIFIC))
   }
 
   # SG_UF_NOT
   if ("SG_UF_NOT" %in% variables_names) {
-    data$SG_UF_NOT <- as.numeric(data$SG_UF_NOT)
-    data$SG_UF_NOT[data$SG_UF_NOT == 0] <- "Ignorado"
-    data$SG_UF_NOT[data$SG_UF_NOT == 99] <- "Ignorado"
-    data$SG_UF_NOT[data$SG_UF_NOT == 11] <- "Rond\u00f4nia"
-    data$SG_UF_NOT[data$SG_UF_NOT == 12] <- "Acre"
-    data$SG_UF_NOT[data$SG_UF_NOT == 13] <- "Amazonas"
-    data$SG_UF_NOT[data$SG_UF_NOT == 14] <- "Roraima"
-    data$SG_UF_NOT[data$SG_UF_NOT == 15] <- "Par\u00e1"
-    data$SG_UF_NOT[data$SG_UF_NOT == 16] <- "Amap\u00e1"
-    data$SG_UF_NOT[data$SG_UF_NOT == 17] <- "Tocantis"
-    data$SG_UF_NOT[data$SG_UF_NOT == 21] <- "Maranh\u00e3o"
-    data$SG_UF_NOT[data$SG_UF_NOT == 22] <- "Piau\u00ed"
-    data$SG_UF_NOT[data$SG_UF_NOT == 23] <- "Cear\u00e1"
-    data$SG_UF_NOT[data$SG_UF_NOT == 24] <- "Rio Grande do Norte"
-    data$SG_UF_NOT[data$SG_UF_NOT == 25] <- "Para\u00edba"
-    data$SG_UF_NOT[data$SG_UF_NOT == 26] <- "Pernambuco"
-    data$SG_UF_NOT[data$SG_UF_NOT == 27] <- "Alagoas"
-    data$SG_UF_NOT[data$SG_UF_NOT == 28] <- "Sergipe"
-    data$SG_UF_NOT[data$SG_UF_NOT == 29] <- "Bahia"
-    data$SG_UF_NOT[data$SG_UF_NOT == 31] <- "Minas Gerais"
-    data$SG_UF_NOT[data$SG_UF_NOT == 32] <- "Esp\u00edrito Santo"
-    data$SG_UF_NOT[data$SG_UF_NOT == 33] <- "Rio de Janeiro"
-    data$SG_UF_NOT[data$SG_UF_NOT == 35] <- "S\u00e3o Paulo"
-    data$SG_UF_NOT[data$SG_UF_NOT == 41] <- "Paran\u00e1"
-    data$SG_UF_NOT[data$SG_UF_NOT == 42] <- "Santa Catarina"
-    data$SG_UF_NOT[data$SG_UF_NOT == 43] <- "Rio Grande do Sul"
-    data$SG_UF_NOT[data$SG_UF_NOT == 50] <- "Mato Grosso do Sul"
-    data$SG_UF_NOT[data$SG_UF_NOT == 51] <- "Mato Grosso"
-    data$SG_UF_NOT[data$SG_UF_NOT == 52] <- "Goi\u00e1s"
-    data$SG_UF_NOT[data$SG_UF_NOT == 53] <- "Distrito Federal"
-    data$SG_UF_NOT <- factor(data$SG_UF_NOT)
+    data <- data %>%
+      dplyr::mutate(SG_UF_NOT = dplyr::case_match(
+        .data$SG_UF_NOT,
+        "0" ~ "Ignorado",
+        "99" ~ "Ignorado",
+        "11" ~ "Rond\u00f4nia",
+        "12" ~ "Acre",
+        "13" ~ "Amazonas",
+        "14" ~ "Roraima",
+        "15" ~ "Par\u00e1",
+        "16" ~ "Amap\u00e1",
+        "17" ~ "Tocantins",
+        "21" ~ "Maranh\u00e3o",
+        "22" ~ "Piau\u00ed",
+        "23" ~ "Cear\u00e1",
+        "24" ~ "Rio Grande do Norte",
+        "25" ~ "Para\u00edba",
+        "26" ~ "Pernambuco",
+        "27" ~ "Alagoas",
+        "28" ~ "Sergipe",
+        "29" ~ "Bahia",
+        "31" ~ "Minas Gerais",
+        "32" ~ "Esp\u00edrito Santo",
+        "33" ~ "Rio de Janeiro",
+        "35" ~ "S\u00e3o Paulo",
+        "41" ~ "Paran\u00e1",
+        "42" ~ "Santa Catarina",
+        "43" ~ "Rio Grande do Sul",
+        "50" ~ "Mato Grosso do Sul",
+        "51" ~ "Mato Grosso",
+        "52" ~ "Goi\u00e1s",
+        "53" ~ "Distrito Federal",
+        .default = .data$SG_UF_NOT
+      )) %>%
+      dplyr::mutate(SG_UF_NOT = as.factor(.data$SG_UF_NOT))
   }
 
   # IDADE
   if ("NU_IDADE_N" %in% variables_names) {
-    data$NU_IDADE_N[data$NU_IDADE_N == "000" | data$NU_IDADE_N == "999"] <- NA
-    data$NU_IDADE_N[nchar(data$NU_IDADE_N) != 4] <- NA
-
-    unidade <- substr(data$NU_IDADE_N, 1, 1)
-    # Minutos
-    data$IDADEminutos <-
-      as.numeric(ifelse(unidade == 0, substr(data$NU_IDADE_N, 2, 4), NA))
-    # Horas
-    data$IDADEhoras <-
-      as.numeric(ifelse(unidade == 1, substr(data$NU_IDADE_N, 2, 4), NA))
-    # Dias
-    data$IDADEdias <-
-      as.numeric(ifelse(unidade == 2, substr(data$NU_IDADE_N, 2, 4), NA))
-    # Meses
-    data$IDADEmeses <-
-      as.numeric(ifelse(unidade == 3, substr(data$NU_IDADE_N, 2, 4), NA))
-    # Anos
-    data$IDADEanos <-
-      as.numeric(ifelse(
-        unidade == 4,
-        substr(data$NU_IDADE_N, 2, 4),
-        ifelse(unidade == 5, 100 + as.numeric(substr(data$NU_IDADE_N, 2, 4)), NA)
-      ))
+    data <- data %>%
+      dplyr::mutate(NU_IDADE_N = dplyr::case_match(.data$NU_IDADE_N,
+                                                   999 ~ NA,
+                                                   .default = .data$NU_IDADE_N)) %>%
+      # Codigo e valor
+      dplyr::mutate(idade_cod = substr(.data$NU_IDADE_N, 1, 1),
+                    idade_value = as.numeric(substr(.data$NU_IDADE_N, 2, 3)),) %>%
+      dplyr::mutate(IDADEminutos = dplyr::case_match(.data$idade_cod,
+                                                     "0" ~ idade_value,
+                                                     .default = NA)) %>%
+      dplyr::mutate(IDADEhoras = dplyr::case_match(.data$idade_cod,
+                                                   "1" ~ idade_value,
+                                                   .default = NA)) %>%
+      dplyr::mutate(IDADEdias = dplyr::case_match(.data$idade_cod,
+                                                  "2" ~ idade_value,
+                                                  .default = NA)) %>%
+      dplyr::mutate(IDADEmeses = dplyr::case_match(.data$idade_cod,
+                                                   "3" ~ idade_value,
+                                                   .default = NA)) %>%
+      dplyr::mutate(
+        IDADEanos = dplyr::case_match(
+          .data$idade_cod,
+          "4" ~ idade_value,
+          "5" ~ idade_value + 100,
+          .default = NA
+        )
+      ) %>%
+      dplyr::select(-"idade_cod", -"idade_value")
   }
 
   # CS_SEXO
   if ("CS_SEXO" %in% variables_names) {
-    data$CS_SEXO <- as.character(data$CS_SEXO)
-    data$CS_SEXO[data$CS_SEXO == "M"] <- "Masculino"
-    data$CS_SEXO[data$CS_SEXO == "F"] <- "Feminino"
-    data$CS_SEXO[data$CS_SEXO == "I"] <- "Ignorado"
-    data$CS_SEXO <- factor(data$CS_SEXO)
+    data <- data %>%
+      dplyr::mutate(CS_SEXO = dplyr::case_match(
+        .data$CS_SEXO,
+        "M" ~ "Masculino",
+        "F" ~ "Feminino",
+        "I" ~ "Ignorado",
+        .default = .data$CS_SEXO
+      )) %>%
+      dplyr::mutate(CS_SEXO = as.factor(.data$CS_SEXO))
   }
 
   # CS_GESTANT
   if ("CS_GESTANT" %in% variables_names) {
-    data$CS_GESTANT <- as.numeric(data$CS_GESTANT)
-    data$CS_GESTANT[data$CS_GESTANT == 1] <- "1o trimestre"
-    data$CS_GESTANT[data$CS_GESTANT == 2] <- "2o trimestre"
-    data$CS_GESTANT[data$CS_GESTANT == 3] <- "3o trimestre"
-    data$CS_GESTANT[data$CS_GESTANT == 4] <- "Idade gestacional ignorada"
-    data$CS_GESTANT[data$CS_GESTANT == 5] <- "N\u00e3o"
-    data$CS_GESTANT[data$CS_GESTANT == 6] <- "N\u00e3o se aplica"
-    data$CS_GESTANT[data$CS_GESTANT == 9] <- "Ignorado"
-    data$CS_GESTANT <- factor(data$CS_GESTANT)
+    data <- data %>%
+      dplyr::mutate(CS_GESTANT = dplyr::case_match(
+        .data$CS_GESTANT,
+        "1" ~ "1o trimestre",
+        "2" ~ "2o trimestre",
+        "3" ~ "3o trimestre",
+        "4" ~ "Idade gestacional ignorada",
+        "5" ~ "N\u00e3o",
+        "6" ~ "N\u00e3o se aplica",
+        "9" ~ "Ignorado",
+        .default = .data$CS_GESTANT
+      )) %>%
+      dplyr::mutate(CS_GESTANT = as.factor(.data$CS_GESTANT))
   }
 
   # CS_RACA
   if ("CS_RACA" %in% variables_names) {
-    data$CS_RACA <- as.numeric(data$CS_RACA)
-    data$CS_RACA[data$CS_RACA == 1] <- "Branca"
-    data$CS_RACA[data$CS_RACA == 2] <- "Preta"
-    data$CS_RACA[data$CS_RACA == 3] <- "Amarela"
-    data$CS_RACA[data$CS_RACA == 4] <- "Parda"
-    data$CS_RACA[data$CS_RACA == 5] <- "Ind\u00edgena"
-    data$CS_RACA[data$CS_RACA == 9] <- "Ignorado"
-    data$CS_RACA <- factor(data$CS_RACA)
+    data <- data %>%
+      dplyr::mutate(CS_RACA = dplyr::case_match(
+        .data$CS_RACA,
+        "1" ~ "Branca",
+        "2" ~ "Preta",
+        "3" ~ "Amarela",
+        "4" ~ "Parda",
+        "5" ~ "Ind\u00edgena",
+        "9" ~ "Ignorado",
+        .default = .data$CS_RACA
+      )) %>%
+      dplyr::mutate(CS_RACA = as.factor(.data$CS_RACA))
   }
 
   # CS_ESCOL_N
   if ("CS_ESCOL_N" %in% variables_names) {
-    data$CS_ESCOL_N <- as.numeric(data$CS_ESCOL_N)
-    data$CS_ESCOL_N[data$CS_ESCOL_N == 0] <- "Analfabeto"
-    data$CS_ESCOL_N[data$CS_ESCOL_N == 1] <- "1a a 4a s\u00e9rie incompleta do EF"
-    data$CS_ESCOL_N[data$CS_ESCOL_N == 2] <- "4a s\u00e9rie completa do EF (antigo 1o grau)"
-    data$CS_ESCOL_N[data$CS_ESCOL_N == 3] <- "5a \u00e0 8a s\u00e9rie incompleta do EF (antigo gin\u00e1sio ou 1o grau)"
-    data$CS_ESCOL_N[data$CS_ESCOL_N == 4] <- "Ensino fundamental completo (antigo gin\u00e1sio ou 1o grau)"
-    data$CS_ESCOL_N[data$CS_ESCOL_N == 5] <- "Ensino m\u00e9dio incompleto (antigo colegial ou 2o grau)"
-    data$CS_ESCOL_N[data$CS_ESCOL_N == 6] <- "Ensino m\u00e9dio completo (antigo colegial ou 2o grau)"
-    data$CS_ESCOL_N[data$CS_ESCOL_N == 7] <- "Educa\u00e7\u00e3o superior incompleta"
-    data$CS_ESCOL_N[data$CS_ESCOL_N == 8] <- "Educa\u00e7\u00e3o superior completa"
-    data$CS_ESCOL_N[data$CS_ESCOL_N == 9] <- "Ignorado"
-    data$CS_ESCOL_N[data$CS_ESCOL_N == 10] <- "N\u00e3o se aplica"
-    data$CS_ESCOL_N <- factor(data$CS_ESCOL_N)
+    data <- data %>%
+      dplyr::mutate(CS_ESCOL_N = dplyr::case_match(
+        .data$CS_ESCOL_N,
+        "1" ~ "1a a 4a s\u00e9rie incompleta do EF",
+        "2" ~ "4a s\u00e9rie completa do EF (antigo 1o grau)",
+        "3" ~ "5a \u00e0 8a s\u00e9rie incompleta do EF (antigo gin\u00e1sio ou 1o grau)",
+        "4" ~ "Ensino fundamental completo (antigo gin\u00e1sio ou 1o grau)",
+        "5" ~ "Ensino m\u00e9dio incompleto (antigo colegial ou 2o grau)",
+        "6" ~ "Ensino m\u00e9dio completo (antigo colegial ou 2o grau)",
+        "7" ~ "Educa\u00e7\u00e3o superior incompleta",
+        "8" ~ "Educa\u00e7\u00e3o superior completa",
+        "9" ~ "Ignorado",
+        "10" ~  "N\u00e3o se aplica",
+        .default = .data$CS_ESCOL_N
+      )) %>%
+      dplyr::mutate(CS_ESCOL_N <- as.factor(.data$CS_ESCOL_N))
   }
 
   # SG_UF
   if ("SG_UF" %in% variables_names) {
-    data$SG_UF <- as.numeric(data$SG_UF)
-    data$SG_UF[data$SG_UF == 0] <- "Ignorado"
-    data$SG_UF[data$SG_UF == 99] <- "Ignorado"
-    data$SG_UF[data$SG_UF == 11] <- "Rond\u00f4nia"
-    data$SG_UF[data$SG_UF == 12] <- "Acre"
-    data$SG_UF[data$SG_UF == 13] <- "Amazonas"
-    data$SG_UF[data$SG_UF == 14] <- "Roraima"
-    data$SG_UF[data$SG_UF == 15] <- "Par\u00e1"
-    data$SG_UF[data$SG_UF == 16] <- "Amap\u00e1"
-    data$SG_UF[data$SG_UF == 17] <- "Tocantis"
-    data$SG_UF[data$SG_UF == 21] <- "Maranh\u00e3o"
-    data$SG_UF[data$SG_UF == 22] <- "Piau\u00ed"
-    data$SG_UF[data$SG_UF == 23] <- "Cear\u00e1"
-    data$SG_UF[data$SG_UF == 24] <- "Rio Grande do Norte"
-    data$SG_UF[data$SG_UF == 25] <- "Para\u00edba"
-    data$SG_UF[data$SG_UF == 26] <- "Pernambuco"
-    data$SG_UF[data$SG_UF == 27] <- "Alagoas"
-    data$SG_UF[data$SG_UF == 28] <- "Sergipe"
-    data$SG_UF[data$SG_UF == 29] <- "Bahia"
-    data$SG_UF[data$SG_UF == 31] <- "Minas Gerais"
-    data$SG_UF[data$SG_UF == 32] <- "Esp\u00edrito Santo"
-    data$SG_UF[data$SG_UF == 33] <- "Rio de Janeiro"
-    data$SG_UF[data$SG_UF == 35] <- "S\u00e3o Paulo"
-    data$SG_UF[data$SG_UF == 41] <- "Paran\u00e1"
-    data$SG_UF[data$SG_UF == 42] <- "Santa Catarina"
-    data$SG_UF[data$SG_UF == 43] <- "Rio Grande do Sul"
-    data$SG_UF[data$SG_UF == 50] <- "Mato Grosso do Sul"
-    data$SG_UF[data$SG_UF == 51] <- "Mato Grosso"
-    data$SG_UF[data$SG_UF == 52] <- "Goi\u00e1s"
-    data$SG_UF[data$SG_UF == 53] <- "Distrito Federal"
-    data$SG_UF <- factor(data$SG_UF)
+    data <- data %>%
+      dplyr::mutate(SG_UF = dplyr::case_match(
+        .data$SG_UF,
+        "0" ~ "Ignorado",
+        "99" ~ "Ignorado",
+        "11" ~ "Rond\u00f4nia",
+        "12" ~ "Acre",
+        "13" ~ "Amazonas",
+        "14" ~ "Roraima",
+        "15" ~ "Par\u00e1",
+        "16" ~ "Amap\u00e1",
+        "17" ~ "Tocantins",
+        "21" ~ "Maranh\u00e3o",
+        "22" ~ "Piau\u00ed",
+        "23" ~ "Cear\u00e1",
+        "24" ~ "Rio Grande do Norte",
+        "25" ~ "Para\u00edba",
+        "26" ~ "Pernambuco",
+        "27" ~ "Alagoas",
+        "28" ~ "Sergipe",
+        "29" ~ "Bahia",
+        "31" ~ "Minas Gerais",
+        "32" ~ "Esp\u00edrito Santo",
+        "33" ~ "Rio de Janeiro",
+        "35" ~ "S\u00e3o Paulo",
+        "41" ~ "Paran\u00e1",
+        "42" ~ "Santa Catarina",
+        "43" ~ "Rio Grande do Sul",
+        "50" ~ "Mato Grosso do Sul",
+        "51" ~ "Mato Grosso",
+        "52" ~ "Goi\u00e1s",
+        "53" ~ "Distrito Federal",
+        .default = .data$SG_UF
+      )) %>%
+      dplyr::mutate(SG_UF = as.factor(.data$SG_UF))
   }
 
   # ID_PAIS
@@ -198,411 +230,556 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # FEBRE
   if ("FEBRE" %in% variables_names) {
-    data$FEBRE <- as.numeric(data$FEBRE)
-    data$FEBRE[data$FEBRE == 1] <- "Sim"
-    data$FEBRE[data$FEBRE == 2] <- "N\u00e3o"
-    data$FEBRE <- factor(data$FEBRE)
+    data <- data %>%
+      dplyr::mutate(FEBRE = dplyr::case_match(
+        .data$FEBRE,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$FEBRE
+      )) %>%
+      dplyr::mutate(FEBRE  = as.factor(.data$FEBRE))
   }
 
   # MIALGIA
   if ("MIALGIA" %in% variables_names) {
-    data$MIALGIA <- as.numeric(data$MIALGIA)
-    data$MIALGIA[data$MIALGIA == 1] <- "Sim"
-    data$MIALGIA[data$MIALGIA == 2] <- "N\u00e3o"
-    data$MIALGIA <- factor(data$MIALGIA)
+    data <- data %>%
+      dplyr::mutate(MIALGIA = dplyr::case_match(
+        .data$MIALGIA,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$MIALGIA
+      )) %>%
+      dplyr::mutate(MIALGIA  = as.factor(.data$MIALGIA))
   }
 
   # CEFALEIA
   if ("CEFALEIA" %in% variables_names) {
-    data$CEFALEIA <- as.numeric(data$CEFALEIA)
-    data$CEFALEIA[data$CEFALEIA == 1] <- "Sim"
-    data$CEFALEIA[data$CEFALEIA == 2] <- "N\u00e3o"
-    data$CEFALEIA <- factor(data$CEFALEIA)
+    data <- data %>%
+      dplyr::mutate(CEFALEIA = dplyr::case_match(
+        .data$CEFALEIA,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$CEFALEIA
+      )) %>%
+      dplyr::mutate(CEFALEIA  = as.factor(.data$CEFALEIA))
   }
 
   # EXANTEMA
   if ("EXANTEMA" %in% variables_names) {
-    data$EXANTEMA <- as.numeric(data$EXANTEMA)
-    data$EXANTEMA[data$EXANTEMA == 1] <- "Sim"
-    data$EXANTEMA[data$EXANTEMA == 2] <- "N\u00e3o"
-    data$EXANTEMA <- factor(data$EXANTEMA)
+    data <- data %>%
+      dplyr::mutate(EXANTEMA = dplyr::case_match(
+        .data$EXANTEMA,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$EXANTEMA
+      )) %>%
+      dplyr::mutate(EXANTEMA  = as.factor(.data$EXANTEMA))
   }
 
   # VOMITO
   if ("VOMITO" %in% variables_names) {
-    data$VOMITO <- as.numeric(data$VOMITO)
-    data$VOMITO[data$VOMITO == 1] <- "Sim"
-    data$VOMITO[data$VOMITO == 2] <- "N\u00e3o"
-    data$VOMITO <- factor(data$VOMITO)
+    data <- data %>%
+      dplyr::mutate(VOMITO = dplyr::case_match(
+        .data$VOMITO,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$VOMITO
+      )) %>%
+      dplyr::mutate(VOMITO  = as.factor(.data$VOMITO))
   }
 
   # NAUSEA
   if ("NAUSEA" %in% variables_names) {
-    data$NAUSEA <- as.numeric(data$NAUSEA)
-    data$NAUSEA[data$NAUSEA == 1] <- "Sim"
-    data$NAUSEA[data$NAUSEA == 2] <- "N\u00e3o"
-    data$NAUSEA <- factor(data$NAUSEA)
+    data <- data %>%
+      dplyr::mutate(NAUSEA = dplyr::case_match(
+        .data$NAUSEA,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$NAUSEA
+      )) %>%
+      dplyr::mutate(NAUSEA  = as.factor(.data$NAUSEA))
   }
 
   # DOR_COSTAS
   if ("DOR_COSTAS" %in% variables_names) {
-    data$DOR_COSTAS <- as.numeric(data$DOR_COSTAS)
-    data$DOR_COSTAS[data$DOR_COSTAS == 1] <- "Sim"
-    data$DOR_COSTAS[data$DOR_COSTAS == 2] <- "N\u00e3o"
-    data$DOR_COSTAS <- factor(data$DOR_COSTAS)
+    data <- data %>%
+      dplyr::mutate(DOR_COSTAS = dplyr::case_match(
+        .data$DOR_COSTAS,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$DOR_COSTAS
+      )) %>%
+      dplyr::mutate(DOR_COSTAS  = as.factor(.data$DOR_COSTAS))
   }
 
   # CONJUNTVIT
   if ("CONJUNTVIT" %in% variables_names) {
-    data$CONJUNTVIT <- as.numeric(data$CONJUNTVIT)
-    data$CONJUNTVIT[data$CONJUNTVIT == 1] <- "Sim"
-    data$CONJUNTVIT[data$CONJUNTVIT == 2] <- "N\u00e3o"
-    data$CONJUNTVIT <- factor(data$CONJUNTVIT)
+    data <- data %>%
+      dplyr::mutate(CONJUNTVIT = dplyr::case_match(
+        .data$CONJUNTVIT,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$CONJUNTVIT
+      )) %>%
+      dplyr::mutate(CONJUNTVIT  = as.factor(.data$CONJUNTVIT))
   }
 
   # ARTRITE
   if ("ARTRITE" %in% variables_names) {
-    data$ARTRITE <- as.numeric(data$ARTRITE)
-    data$ARTRITE[data$ARTRITE == 1] <- "Sim"
-    data$ARTRITE[data$ARTRITE == 2] <- "N\u00e3o"
-    data$ARTRITE <- factor(data$ARTRITE)
+    data <- data %>%
+      dplyr::mutate(ARTRITE = dplyr::case_match(
+        .data$ARTRITE,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$ARTRITE
+      )) %>%
+      dplyr::mutate(ARTRITE  = as.factor(.data$ARTRITE))
   }
 
   # ARTRALGIA
   if ("ARTRALGIA" %in% variables_names) {
-    data$ARTRALGIA <- as.numeric(data$ARTRALGIA)
-    data$ARTRALGIA[data$ARTRALGIA == 1] <- "Sim"
-    data$ARTRALGIA[data$ARTRALGIA == 2] <- "N\u00e3o"
-    data$ARTRALGIA <- factor(data$ARTRALGIA)
+    data <- data %>%
+      dplyr::mutate(ARTRALGIA = dplyr::case_match(
+        .data$ARTRALGIA,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$ARTRALGIA
+      )) %>%
+      dplyr::mutate(ARTRALGIA  = as.factor(.data$ARTRALGIA))
   }
 
   # PETEQUIA_N
   if ("PETEQUIA_N" %in% variables_names) {
-    data$PETEQUIA_N <- as.numeric(data$PETEQUIA_N)
-    data$PETEQUIA_N[data$PETEQUIA_N == 1] <- "Sim"
-    data$PETEQUIA_N[data$PETEQUIA_N == 2] <- "N\u00e3o"
-    data$PETEQUIA_N <- factor(data$PETEQUIA_N)
+    data <- data %>%
+      dplyr::mutate(PETEQUIA_N = dplyr::case_match(
+        .data$PETEQUIA_N,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$PETEQUIA_N
+      )) %>%
+      dplyr::mutate(PETEQUIA_N  = as.factor(.data$PETEQUIA_N))
   }
 
   # LEUCOPENIA
   if ("LEUCOPENIA" %in% variables_names) {
-    data$LEUCOPENIA <- as.numeric(data$LEUCOPENIA)
-    data$LEUCOPENIA[data$LEUCOPENIA == 1] <- "Sim"
-    data$LEUCOPENIA[data$LEUCOPENIA == 2] <- "N\u00e3o"
-    data$LEUCOPENIA <- factor(data$LEUCOPENIA)
+    data <- data %>%
+      dplyr::mutate(LEUCOPENIA = dplyr::case_match(
+        .data$LEUCOPENIA,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$LEUCOPENIA
+      )) %>%
+      dplyr::mutate(LEUCOPENIA  = as.factor(.data$LEUCOPENIA))
   }
 
   # LACO
   if ("LACO" %in% variables_names) {
-    data$LACO <- as.numeric(data$LACO)
-    data$LACO[data$LACO == 1] <- "Sim"
-    data$LACO[data$LACO == 2] <- "N\u00e3o"
-    data$LACO <- factor(data$LACO)
+    data <- data %>%
+      dplyr::mutate(LACO = dplyr::case_match(
+        .data$LACO,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$LACO
+      )) %>%
+      dplyr::mutate(LACO  = as.factor(.data$LACO))
   }
 
   # DOR_RETRO
   if ("DOR_RETRO" %in% variables_names) {
-    data$DOR_RETRO <- as.numeric(data$DOR_RETRO)
-    data$DOR_RETRO[data$DOR_RETRO == 1] <- "Sim"
-    data$DOR_RETRO[data$DOR_RETRO == 2] <- "N\u00e3o"
-    data$DOR_RETRO <- factor(data$DOR_RETRO)
+    data <- data %>%
+      dplyr::mutate(DOR_RETRO = dplyr::case_match(
+        .data$DOR_RETRO,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$DOR_RETRO
+      )) %>%
+      dplyr::mutate(DOR_RETRO  = as.factor(.data$DOR_RETRO))
   }
 
   # DIABETES
   if ("DIABETES" %in% variables_names) {
-    data$DIABETES <- as.numeric(data$DIABETES)
-    data$DIABETES[data$DIABETES == 1] <- "Sim"
-    data$DIABETES[data$DIABETES == 2] <- "N\u00e3o"
-    data$DIABETES <- factor(data$DIABETES)
+    data <- data %>%
+      dplyr::mutate(DIABETES = dplyr::case_match(
+        .data$DIABETES,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$DIABETES
+      )) %>%
+      dplyr::mutate(DIABETES  = as.factor(.data$DIABETES))
   }
 
   # HEMATOLOG
   if ("HEMATOLOG" %in% variables_names) {
-    data$HEMATOLOG <- as.numeric(data$HEMATOLOG)
-    data$HEMATOLOG[data$HEMATOLOG == 1] <- "Sim"
-    data$HEMATOLOG[data$HEMATOLOG == 2] <- "N\u00e3o"
-    data$HEMATOLOG <- factor(data$HEMATOLOG)
+    data <- data %>%
+      dplyr::mutate(HEMATOLOG = dplyr::case_match(
+        .data$HEMATOLOG,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$HEMATOLOG
+      )) %>%
+      dplyr::mutate(HEMATOLOG  = as.factor(.data$HEMATOLOG))
   }
 
   # HEPATOPAT
   if ("HEPATOPAT" %in% variables_names) {
-    data$HEPATOPAT <- as.numeric(data$HEPATOPAT)
-    data$HEPATOPAT[data$HEPATOPAT == 1] <- "Sim"
-    data$HEPATOPAT[data$HEPATOPAT == 2] <- "N\u00e3o"
-    data$HEPATOPAT <- factor(data$HEPATOPAT)
+    data <- data %>%
+      dplyr::mutate(HEPATOPAT = dplyr::case_match(
+        .data$HEPATOPAT,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$HEPATOPAT
+      )) %>%
+      dplyr::mutate(HEPATOPAT  = as.factor(.data$HEPATOPAT))
   }
 
   # RENAL
   if ("RENAL" %in% variables_names) {
-    data$RENAL <- as.numeric(data$RENAL)
-    data$RENAL[data$RENAL == 1] <- "Sim"
-    data$RENAL[data$RENAL == 2] <- "N\u00e3o"
-    data$RENAL <- factor(data$RENAL)
+    data <- data %>%
+      dplyr::mutate(RENAL = dplyr::case_match(
+        .data$RENAL,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$RENAL
+      )) %>%
+      dplyr::mutate(RENAL  = as.factor(.data$RENAL))
   }
 
   # HIPERTENSA
   if ("HIPERTENSA" %in% variables_names) {
-    data$HIPERTENSA <- as.numeric(data$HIPERTENSA)
-    data$HIPERTENSA[data$HIPERTENSA == 1] <- "Sim"
-    data$HIPERTENSA[data$HIPERTENSA == 2] <- "N\u00e3o"
-    data$HIPERTENSA <- factor(data$HIPERTENSA)
+    data <- data %>%
+      dplyr::mutate(HIPERTENSA = dplyr::case_match(
+        .data$HIPERTENSA,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$HIPERTENSA
+      )) %>%
+      dplyr::mutate(HIPERTENSA  = as.factor(.data$HIPERTENSA))
   }
 
   # ACIDO_PEPT
   if ("ACIDO_PEPT" %in% variables_names) {
-    data$ACIDO_PEPT <- as.numeric(data$ACIDO_PEPT)
-    data$ACIDO_PEPT[data$ACIDO_PEPT == 1] <- "Sim"
-    data$ACIDO_PEPT[data$ACIDO_PEPT == 2] <- "N\u00e3o"
-    data$ACIDO_PEPT <- factor(data$ACIDO_PEPT)
+    data <- data %>%
+      dplyr::mutate(ACIDO_PEPT = dplyr::case_match(
+        .data$ACIDO_PEPT,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$ACIDO_PEPT
+      )) %>%
+      dplyr::mutate(ACIDO_PEPT  = as.factor(.data$ACIDO_PEPT))
   }
 
   # AUTO_IMUNE
   if ("AUTO_IMUNE" %in% variables_names) {
-    data$AUTO_IMUNE <- as.numeric(data$AUTO_IMUNE)
-    data$AUTO_IMUNE[data$AUTO_IMUNE == 1] <- "Sim"
-    data$AUTO_IMUNE[data$AUTO_IMUNE == 2] <- "N\u00e3o"
-    data$AUTO_IMUNE <- factor(data$AUTO_IMUNE)
+    data <- data %>%
+      dplyr::mutate(AUTO_IMUNE = dplyr::case_match(
+        .data$AUTO_IMUNE,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$AUTO_IMUNE
+      )) %>%
+      dplyr::mutate(AUTO_IMUNE  = as.factor(.data$AUTO_IMUNE))
   }
 
   # DT_CHIK_S1
   if ("DT_CHIK_S1" %in% variables_names) {
-    data$DT_CHIK_S1 <- as.Date(data$DT_CHIK_S1)
+    data <- data %>%
+      dplyr::mutate(DT_CHIK_S1 = as.Date(.data$DT_CHIK_S1))
   }
 
   # DT_CHIK_S2
   if ("DT_CHIK_S2" %in% variables_names) {
-    data$DT_CHIK_S2 <- as.Date(data$DT_CHIK_S2)
+    data <- data %>%
+      dplyr::mutate(DT_CHIK_S2 = as.Date(.data$DT_CHIK_S2))
   }
 
   # DT_PRNT
   if ("DT_PRNT" %in% variables_names) {
-    data$DT_PRNT <- as.Date(data$DT_PRNT)
+    data <- data %>%
+      dplyr::mutate(DT_PRNT = as.Date(.data$DT_PRNT))
   }
 
   # RES_CHIKS1
   if ("RES_CHIKS1" %in% variables_names) {
-    data$RES_CHIKS1 <- as.numeric(data$RES_CHIKS1)
-    data$RES_CHIKS1[data$RES_CHIKS1 == 1] <- "Reagente"
-    data$RES_CHIKS1[data$RES_CHIKS1 == 2] <- "N\u00e3o reagente"
-    data$RES_CHIKS1[data$RES_CHIKS1 == 3] <- "Inconclusivo"
-    data$RES_CHIKS1[data$RES_CHIKS1 == 4] <- "N\u00e3o realizado"
-    data$RES_CHIKS1 <- factor(data$RES_CHIKS1)
+    data <- data %>%
+      dplyr::mutate(RES_CHIKS1 = dplyr::case_match(
+        .data$RES_CHIKS1,
+        "1" ~ "Reagente",
+        "2" ~ "N\u00e3o reagente",
+        "3" ~ "Inconclusivo",
+        "4" ~ "N\u00e3o realizado",
+        .default = .data$RES_CHIKS1
+      )) %>%
+      dplyr::mutate(RES_CHIKS1 = as.factor(.data$RES_CHIKS1))
   }
 
   # RES_CHIKS2
   if ("RES_CHIKS2" %in% variables_names) {
-    data$RES_CHIKS2 <- as.numeric(data$RES_CHIKS2)
-    data$RES_CHIKS2[data$RES_CHIKS2 == 1] <- "Reagente"
-    data$RES_CHIKS2[data$RES_CHIKS2 == 2] <- "N\u00e3o reagente"
-    data$RES_CHIKS2[data$RES_CHIKS2 == 3] <- "Inconclusivo"
-    data$RES_CHIKS2[data$RES_CHIKS2 == 4] <- "N\u00e3o realizado"
-    data$RES_CHIKS2 <- factor(data$RES_CHIKS2)
+    data <- data %>%
+      dplyr::mutate(RES_CHIKS2 = dplyr::case_match(
+        .data$RES_CHIKS2,
+        "1" ~ "Reagente",
+        "2" ~ "N\u00e3o reagente",
+        "3" ~ "Inconclusivo",
+        "4" ~ "N\u00e3o realizado",
+        .default = .data$RES_CHIKS2
+      )) %>%
+      dplyr::mutate(RES_CHIKS2 = as.factor(.data$RES_CHIKS2))
   }
 
   # RESUL_PRNT
   if ("RESUL_PRNT" %in% variables_names) {
-    data$RESUL_PRNT <- as.numeric(data$RESUL_PRNT)
-    data$RESUL_PRNT[data$RESUL_PRNT == 1] <- "Reagente"
-    data$RESUL_PRNT[data$RESUL_PRNT == 2] <- "N\u00e3o reagente"
-    data$RESUL_PRNT[data$RESUL_PRNT == 3] <- "Inconclusivo"
-    data$RESUL_PRNT[data$RESUL_PRNT == 4] <- "N\u00e3o realizado"
-    data$RESUL_PRNT <- factor(data$RESUL_PRNT)
+    data <- data %>%
+      dplyr::mutate(RESUL_PRNT = dplyr::case_match(
+        .data$RESUL_PRNT,
+        "1" ~ "Reagente",
+        "2" ~ "N\u00e3o reagente",
+        "3" ~ "Inconclusivo",
+        "4" ~ "N\u00e3o realizado",
+        .default = .data$RESUL_PRNT
+      )) %>%
+      dplyr::mutate(RESUL_PRNT = as.factor(.data$RESUL_PRNT))
   }
 
   # DT_SORO
   if ("DT_SORO" %in% variables_names) {
-    data$DT_SORO <- as.Date(data$DT_SORO)
+    data <- data %>%
+      dplyr::mutate(DT_SORO = as.Date(.data$DT_SORO))
   }
 
   # RESUL_SORO
   if ("RESUL_SORO" %in% variables_names) {
-    data$RESUL_SORO <- as.numeric(data$RESUL_SORO)
-    data$RESUL_SORO[data$RESUL_SORO == 1] <- "Reagente"
-    data$RESUL_SORO[data$RESUL_SORO == 2] <- "N\u00e3o reagente"
-    data$RESUL_SORO[data$RESUL_SORO == 3] <- "Inconclusivo"
-    data$RESUL_SORO[data$RESUL_SORO == 4] <- "N\u00e3o realizado"
-    data$RESUL_SORO <- factor(data$RESUL_SORO)
+    data <- data %>%
+      dplyr::mutate(RESUL_SORO = dplyr::case_match(
+        .data$RESUL_SORO,
+        "1" ~ "Reagente",
+        "2" ~ "N\u00e3o reagente",
+        "3" ~ "Inconclusivo",
+        "4" ~ "N\u00e3o realizado",
+        .default = .data$RESUL_SORO
+      )) %>%
+      dplyr::mutate(RESUL_SORO = as.factor(.data$RESUL_SORO))
   }
 
   # DT_NS1
   if ("DT_NS1" %in% variables_names) {
-    data$DT_NS1 <- as.Date(data$DT_NS1)
+    data <- data %>%
+      dplyr::mutate(DT_NS1 = as.Date(.data$DT_NS1))
   }
 
   # RESUL_NS1
   if ("RESUL_NS1" %in% variables_names) {
-    data$RESUL_NS1 <- as.numeric(data$RESUL_NS1)
-    data$RESUL_NS1[data$RESUL_NS1 == 1] <- "Positivo"
-    data$RESUL_NS1[data$RESUL_NS1 == 2] <- "Negativo"
-    data$RESUL_NS1[data$RESUL_NS1 == 3] <- "Inconclusivo"
-    data$RESUL_NS1[data$RESUL_NS1 == 4] <- "N\u00e3o realizado"
-    data$RESUL_NS1 <- factor(data$RESUL_NS1)
+    data <- data %>%
+      dplyr::mutate(RESUL_NS1 = dplyr::case_match(
+        .data$RESUL_NS1,
+        "1" ~ "Positivo",
+        "2" ~ "Negativo",
+        "3" ~ "Inconclusivo",
+        "4" ~ "N\u00e3o realizado",
+        .default = .data$RESUL_NS1
+      )) %>%
+      dplyr::mutate(RESUL_NS1 = as.factor(.data$RESUL_NS1))
   }
 
   # DT_VIRAL
   if ("DT_VIRAL" %in% variables_names) {
-    data$DT_VIRAL <- as.Date(data$DT_VIRAL)
+    data <- data %>%
+      dplyr::mutate(DT_VIRAL = as.Date(.data$DT_VIRAL))
   }
 
   # RESUL_VI_N
   if ("RESUL_VI_N" %in% variables_names) {
-    data$RESUL_VI_N <- as.numeric(data$RESUL_VI_N)
-    data$RESUL_VI_N[data$RESUL_VI_N == 1] <- "Positivo"
-    data$RESUL_VI_N[data$RESUL_VI_N == 2] <- "Negativo"
-    data$RESUL_VI_N[data$RESUL_VI_N == 3] <- "Inconclusivo"
-    data$RESUL_VI_N[data$RESUL_VI_N == 4] <- "N\u00e3o realizado"
-    data$RESUL_VI_N <- factor(data$RESUL_VI_N)
+    data <- data %>%
+      dplyr::mutate(RESUL_VI_N = dplyr::case_match(
+        .data$RESUL_VI_N,
+        "1" ~ "Positivo",
+        "2" ~ "Negativo",
+        "3" ~ "Inconclusivo",
+        "4" ~ "N\u00e3o realizado",
+        .default = .data$RESUL_VI_N
+      )) %>%
+      dplyr::mutate(RESUL_VI_N = as.factor(.data$RESUL_VI_N))
   }
 
   # DT_PCR
   if ("DT_PCR" %in% variables_names) {
-    data$DT_PCR <- as.Date(data$DT_PCR)
+    data <- data %>%
+      dplyr::mutate(DT_PCR = as.Date(.data$DT_PCR))
   }
 
   # RESUL_PCR_
   if ("RESUL_PCR_" %in% variables_names) {
-    data$RESUL_PCR_ <- as.numeric(data$RESUL_PCR_)
-    data$RESUL_PCR_[data$RESUL_PCR_ == 1] <- "Positivo"
-    data$RESUL_PCR_[data$RESUL_PCR_ == 2] <- "Negativo"
-    data$RESUL_PCR_[data$RESUL_PCR_ == 3] <- "Inconclusivo"
-    data$RESUL_PCR_[data$RESUL_PCR_ == 4] <- "N\u00e3o realizado"
-    data$RESUL_PCR_ <- factor(data$RESUL_PCR_)
+    data <- data %>%
+      dplyr::mutate(RESUL_PCR_ = dplyr::case_match(
+        .data$RESUL_PCR_,
+        "1" ~ "Positivo",
+        "2" ~ "Negativo",
+        "3" ~ "Inconclusivo",
+        "4" ~ "N\u00e3o realizado",
+        .default = .data$RESUL_PCR_
+      )) %>%
+      dplyr::mutate(RESUL_PCR_ = as.factor(.data$RESUL_PCR_))
   }
 
   # SOROTIPO
   if ("SOROTIPO" %in% variables_names) {
-    data$SOROTIPO <- as.numeric(data$SOROTIPO)
-    data$SOROTIPO[data$SOROTIPO == 1] <- "DEN 1"
-    data$SOROTIPO[data$SOROTIPO == 2] <- "DEN 2"
-    data$SOROTIPO[data$SOROTIPO == 3] <- "DEN 3"
-    data$SOROTIPO[data$SOROTIPO == 4] <- "DEN 4"
-    data$SOROTIPO <- factor(data$SOROTIPO)
+    data <- data %>%
+      dplyr::mutate(RESUL_PCR_ = dplyr::case_match(
+        .data$SOROTIPO,
+        "1" ~ "DEN 1",
+        "2" ~ "DEN 2",
+        "3" ~ "DEN 3",
+        "4" ~ "DEN 4",
+        .default = .data$SOROTIPO
+      )) %>%
+      dplyr::mutate(SOROTIPO = as.factor(.data$SOROTIPO))
   }
 
   # HISTOPA_N
   if ("HISTOPA_N" %in% variables_names) {
-    data$HISTOPA_N <- as.numeric(data$HISTOPA_N)
-    data$HISTOPA_N[data$HISTOPA_N == 1] <- "Positivo"
-    data$HISTOPA_N[data$HISTOPA_N == 2] <- "Negativo"
-    data$HISTOPA_N[data$HISTOPA_N == 3] <- "Inconclusivo"
-    data$HISTOPA_N[data$HISTOPA_N == 4] <- "N\u00e3o realizado"
-    data$HISTOPA_N <- factor(data$HISTOPA_N)
+    data <- data %>%
+      dplyr::mutate(HISTOPA_N = dplyr::case_match(
+        .data$HISTOPA_N,
+        "1" ~ "Positivo",
+        "2" ~ "Negativo",
+        "3" ~ "Inconclusivo",
+        "4" ~ "N\u00e3o realizado",
+        .default = .data$HISTOPA_N
+      )) %>%
+      dplyr::mutate(HISTOPA_N = as.factor(.data$HISTOPA_N))
   }
 
   # IMUNOH_N
   if ("IMUNOH_N" %in% variables_names) {
-    data$IMUNOH_N <- as.numeric(data$IMUNOH_N)
-    data$IMUNOH_N[data$IMUNOH_N == 1] <- "Positivo"
-    data$IMUNOH_N[data$IMUNOH_N == 2] <- "Negativo"
-    data$IMUNOH_N[data$IMUNOH_N == 3] <- "Inconclusivo"
-    data$IMUNOH_N[data$IMUNOH_N == 4] <- "N\u00e3o realizado"
-    data$IMUNOH_N <- factor(data$IMUNOH_N)
+    data <- data %>%
+      dplyr::mutate(IMUNOH_N = dplyr::case_match(
+        .data$IMUNOH_N,
+        "1" ~ "Positivo",
+        "2" ~ "Negativo",
+        "3" ~ "Inconclusivo",
+        "4" ~ "N\u00e3o realizado",
+        .default = .data$IMUNOH_N
+      )) %>%
+      dplyr::mutate(IMUNOH_N = as.factor(.data$IMUNOH_N))
   }
 
   # HOSPITALIZ
   if ("HOSPITALIZ" %in% variables_names) {
-    data$HOSPITALIZ <- as.numeric(data$HOSPITALIZ)
-    data$HOSPITALIZ[data$HOSPITALIZ == 1] <- "Sim"
-    data$HOSPITALIZ[data$HOSPITALIZ == 2] <- "N\u00e3o"
-    data$HOSPITALIZ[data$HOSPITALIZ == 9] <- "Ignorado"
-    data$HOSPITALIZ <- factor(data$HOSPITALIZ)
+    data <- data %>%
+      dplyr::mutate(IMUNOH_N = dplyr::case_match(
+        .data$HOSPITALIZ,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        "9" ~ "Ignorado",
+        .default = .data$HOSPITALIZ
+      )) %>%
+      dplyr::mutate(HOSPITALIZ = as.factor(.data$HOSPITALIZ))
   }
 
   # DT_INTERNA
   if ("DT_INTERNA" %in% variables_names) {
-    data$DT_INTERNA <- as.Date(data$DT_INTERNA)
-  }
-
-  # DT_INTERNA
-  if ("DT_INTERNA" %in% variables_names) {
-    data$DT_INTERNA <- as.Date(data$DT_INTERNA)
+    data <- data %>%
+      dplyr::mutate(DT_INTERNA = as.Date(.data$DT_INTERNA))
   }
 
   # UF
   if ("UF" %in% variables_names) {
-    data$UF <- as.numeric(data$UF)
-    data$UF[data$UF == 0] <- "Ignorado"
-    data$UF[data$UF == 99] <- "Ignorado"
-    data$UF[data$UF == 11] <- "Rond\u00f4nia"
-    data$UF[data$UF == 12] <- "Acre"
-    data$UF[data$UF == 13] <- "Amazonas"
-    data$UF[data$UF == 14] <- "Roraima"
-    data$UF[data$UF == 15] <- "Par\u00e1"
-    data$UF[data$UF == 16] <- "Amap\u00e1"
-    data$UF[data$UF == 17] <- "Tocantis"
-    data$UF[data$UF == 21] <- "Maranh\u00e3o"
-    data$UF[data$UF == 22] <- "Piau\u00ed"
-    data$UF[data$UF == 23] <- "Cear\u00e1"
-    data$UF[data$UF == 24] <- "Rio Grande do Norte"
-    data$UF[data$UF == 25] <- "Para\u00edba"
-    data$UF[data$UF == 26] <- "Pernambuco"
-    data$UF[data$UF == 27] <- "Alagoas"
-    data$UF[data$UF == 28] <- "Sergipe"
-    data$UF[data$UF == 29] <- "Bahia"
-    data$UF[data$UF == 31] <- "Minas Gerais"
-    data$UF[data$UF == 32] <- "Esp\u00edrito Santo"
-    data$UF[data$UF == 33] <- "Rio de Janeiro"
-    data$UF[data$UF == 35] <- "S\u00e3o Paulo"
-    data$UF[data$UF == 41] <- "Paran\u00e1"
-    data$UF[data$UF == 42] <- "Santa Catarina"
-    data$UF[data$UF == 43] <- "Rio Grande do Sul"
-    data$UF[data$UF == 50] <- "Mato Grosso do Sul"
-    data$UF[data$UF == 51] <- "Mato Grosso"
-    data$UF[data$UF == 52] <- "Goi\u00e1s"
-    data$UF[data$UF == 53] <- "Distrito Federal"
-    data$UF <- factor(data$UF)
+    data <- data %>%
+      dplyr::mutate(UF = dplyr::case_match(
+        .data$UF,
+        "0" ~ "Ignorado",
+        "99" ~ "Ignorado",
+        "11" ~ "Rond\u00f4nia",
+        "12" ~ "Acre",
+        "13" ~ "Amazonas",
+        "14" ~ "Roraima",
+        "15" ~ "Par\u00e1",
+        "16" ~ "Amap\u00e1",
+        "17" ~ "Tocantis",
+        "21" ~ "Maranh\u00e3o",
+        "22" ~ "Piau\u00ed",
+        "23" ~ "Cear\u00e1",
+        "24" ~ "Rio Grande do Norte",
+        "25" ~ "Para\u00edba",
+        "26" ~ "Pernambuco",
+        "27" ~ "Alagoas",
+        "28" ~ "Sergipe",
+        "29" ~ "Bahia",
+        "31" ~ "Minas Gerais",
+        "32" ~ "Esp\u00edrito Santo",
+        "33" ~ "Rio de Janeiro",
+        "35" ~ "S\u00e3o Paulo",
+        "41" ~ "Paran\u00e1",
+        "42" ~ "Santa Catarina",
+        "43" ~ "Rio Grande do Sul",
+        "50" ~ "Mato Grosso do Sul",
+        "51" ~ "Mato Grosso",
+        "52" ~ "Goi\u00e1s",
+        "53" ~ "Distrito Federal",
+        .default = .data$UF
+      )) %>%
+      dplyr::mutate(UF = as.factor(.data$UF))
   }
 
   # MUNICIPIO
   if("MUNICIPIO" %in% variables_names & municipality_data == TRUE){
-    data$MUNICIPIO <- as.numeric(data$MUNICIPIO)
-    data <- dplyr::left_join(data, microdatasus::tabMun, by = c("MUNICIPIO" = "munResCod"))
-  } else {
-    data$MUNICIPIO <- as.numeric(levels(data$MUNICIPIO))[data$MUNICIPIO]
+    data <- data %>%
+      dplyr::mutate(MUNICIPIO = as.numeric(.data$MUNICIPIO)) %>%
+      dplyr::left_join(microdatasus::tabMun, by = c("MUNICIPIO" = "munResCod"))
+  } else if("MUNICIPIO" %in% variables_names){
+    data <- data %>%
+      dplyr::mutate(MUNICIPIO = as.numeric(.data$MUNICIPIO))
   }
 
   # TPAUTOCTO
   if ("TPAUTOCTO" %in% variables_names) {
-    data$TPAUTOCTO <- as.numeric(data$TPAUTOCTO)
-    data$TPAUTOCTO[data$TPAUTOCTO == 1] <- "Sim"
-    data$TPAUTOCTO[data$TPAUTOCTO == 2] <- "N\u00e3o"
-    data$TPAUTOCTO[data$TPAUTOCTO == 3] <- "Indeterminado"
-    data$TPAUTOCTO <- factor(data$TPAUTOCTO)
+    data <- data %>%
+      dplyr::mutate(TPAUTOCTO = dplyr::case_match(
+        .data$TPAUTOCTO,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        "3" ~ "Indeterminado",
+        .default = .data$TPAUTOCTO
+      )) %>%
+      dplyr::mutate(TPAUTOCTO = as.factor(.data$TPAUTOCTO))
   }
 
   # COUFINF
   if ("COUFINF" %in% variables_names) {
-    data$COUFINF <- as.numeric(data$COUFINF)
-    data$COUFINF[data$COUFINF == 0] <- "Ignorado"
-    data$COUFINF[data$COUFINF == 99] <- "Ignorado"
-    data$COUFINF[data$COUFINF == 11] <- "Rond\u00f4nia"
-    data$COUFINF[data$COUFINF == 12] <- "Acre"
-    data$COUFINF[data$COUFINF == 13] <- "Amazonas"
-    data$COUFINF[data$COUFINF == 14] <- "Roraima"
-    data$COUFINF[data$COUFINF == 15] <- "Par\u00e1"
-    data$COUFINF[data$COUFINF == 16] <- "Amap\u00e1"
-    data$COUFINF[data$COUFINF == 17] <- "Tocantis"
-    data$COUFINF[data$COUFINF == 21] <- "Maranh\u00e3o"
-    data$COUFINF[data$COUFINF == 22] <- "Piau\u00ed"
-    data$COUFINF[data$COUFINF == 23] <- "Cear\u00e1"
-    data$COUFINF[data$COUFINF == 24] <- "Rio Grande do Norte"
-    data$COUFINF[data$COUFINF == 25] <- "Para\u00edba"
-    data$COUFINF[data$COUFINF == 26] <- "Pernambuco"
-    data$COUFINF[data$COUFINF == 27] <- "Alagoas"
-    data$COUFINF[data$COUFINF == 28] <- "Sergipe"
-    data$COUFINF[data$COUFINF == 29] <- "Bahia"
-    data$COUFINF[data$COUFINF == 31] <- "Minas Gerais"
-    data$COUFINF[data$COUFINF == 32] <- "Esp\u00edrito Santo"
-    data$COUFINF[data$COUFINF == 33] <- "Rio de Janeiro"
-    data$COUFINF[data$COUFINF == 35] <- "S\u00e3o Paulo"
-    data$COUFINF[data$COUFINF == 41] <- "Paran\u00e1"
-    data$COUFINF[data$COUFINF == 42] <- "Santa Catarina"
-    data$COUFINF[data$COUFINF == 43] <- "Rio Grande do Sul"
-    data$COUFINF[data$COUFINF == 50] <- "Mato Grosso do Sul"
-    data$COUFINF[data$COUFINF == 51] <- "Mato Grosso"
-    data$COUFINF[data$COUFINF == 52] <- "Goi\u00e1s"
-    data$COUFINF[data$COUFINF == 53] <- "Distrito Federal"
-    data$COUFINF <- factor(data$COUFINF)
+    data <- data %>%
+      dplyr::mutate(COUFINF = dplyr::case_match(
+        .data$COUFINF,
+        "0" ~ "Ignorado",
+        "99" ~ "Ignorado",
+        "11" ~ "Rond\u00f4nia",
+        "12" ~ "Acre",
+        "13" ~ "Amazonas",
+        "14" ~ "Roraima",
+        "15" ~ "Par\u00e1",
+        "16" ~ "Amap\u00e1",
+        "17" ~ "Tocantis",
+        "21" ~ "Maranh\u00e3o",
+        "22" ~ "Piau\u00ed",
+        "23" ~ "Cear\u00e1",
+        "24" ~ "Rio Grande do Norte",
+        "25" ~ "Para\u00edba",
+        "26" ~ "Pernambuco",
+        "27" ~ "Alagoas",
+        "28" ~ "Sergipe",
+        "29" ~ "Bahia",
+        "31" ~ "Minas Gerais",
+        "32" ~ "Esp\u00edrito Santo",
+        "33" ~ "Rio de Janeiro",
+        "35" ~ "S\u00e3o Paulo",
+        "41" ~ "Paran\u00e1",
+        "42" ~ "Santa Catarina",
+        "43" ~ "Rio Grande do Sul",
+        "50" ~ "Mato Grosso do Sul",
+        "51" ~ "Mato Grosso",
+        "52" ~ "Goi\u00e1s",
+        "53" ~ "Distrito Federal",
+        .default = .data$COUFINF
+      )) %>%
+      dplyr::mutate(COUFINF = as.factor(.data$COUFINF))
   }
 
   # COPAISINF
@@ -612,65 +789,87 @@ process_sinan_dengue <- function(data, municipality_data = TRUE){
 
   # CLASSI_FIN
   if ("CLASSI_FIN" %in% variables_names) {
-    data$CLASSI_FIN <- as.numeric(data$CLASSI_FIN)
-    data$CLASSI_FIN[data$CLASSI_FIN == 1] <- "Dengue cl\u00e1ssico"
-    data$CLASSI_FIN[data$CLASSI_FIN == 2] <- "Dengue com complica\u00e7\u00f5es"
-    data$CLASSI_FIN[data$CLASSI_FIN == 3] <- "Febre hemorr\u00e1gica do dengue"
-    data$CLASSI_FIN[data$CLASSI_FIN == 4] <- "S\u00edndrome do choque do dengue"
-    data$CLASSI_FIN[data$CLASSI_FIN == 5] <- "Descartado"
-    data$CLASSI_FIN[data$CLASSI_FIN == 8] <- "Inconclusivo"
-    data$CLASSI_FIN[data$CLASSI_FIN == 10] <- "Dengue"
-    data$CLASSI_FIN[data$CLASSI_FIN == 11] <- "Dengue com sinais de alarme"
-    data$CLASSI_FIN[data$CLASSI_FIN == 12] <- "Dengue grave"
-    data$CLASSI_FIN[data$CLASSI_FIN == 13] <- "Chikungunya"
-    data$CLASSI_FIN <- factor(data$CLASSI_FIN)
+    data <- data %>%
+      dplyr::mutate(CLASSI_FIN = dplyr::case_match(
+        .data$CLASSI_FIN,
+        1 ~ "Dengue cl\u00e1ssico",
+        2 ~ "Dengue com complica\u00e7\u00f5es",
+        3 ~ "Febre hemorr\u00e1gica do dengue",
+        4 ~ "S\u00edndrome do choque do dengue",
+        5 ~ "Descartado",
+        8 ~ "Inconclusivo",
+        10 ~  "Dengue",
+        11 ~  "Dengue com sinais de alarme",
+        12 ~  "Dengue grave",
+        13 ~  "Chikungunya",
+        .default = .data$CLASSI_FIN
+      )) %>%
+      dplyr::mutate(CLASSI_FIN = as.factor(.data$CLASSI_FIN))
   }
 
   # CRITERIO
   if ("CRITERIO" %in% variables_names) {
-    data$CRITERIO <- as.numeric(data$CRITERIO)
-    data$CRITERIO[data$CRITERIO == 1] <- "Laborat\u00f3rio"
-    data$CRITERIO[data$CRITERIO == 2] <- "Cl\u00ednico epidemiol\u00f3gico"
-    data$CRITERIO[data$CRITERIO == 3] <- "Em investiga\u00e7\u00e3o"
-    data$CRITERIO <- factor(data$CRITERIO)
+    data <- data %>%
+      dplyr::mutate(CRITERIO = dplyr::case_match(
+        .data$CRITERIO,
+        "1" ~ "Laborat\u00f3rio",
+        "2" ~ "Cl\u00ednico epidemiol\u00f3gico",
+        "3" ~ "Em investiga\u00e7\u00e3o",
+        .default = .data$CRITERIO
+      )) %>%
+      dplyr::mutate(CRITERIO = as.factor(.data$CRITERIO))
   }
 
   # DOENCA_TRA
   if ("DOENCA_TRA" %in% variables_names) {
-    data$DOENCA_TRA <- as.numeric(data$DOENCA_TRA)
-    data$DOENCA_TRA[data$DOENCA_TRA == 1] <- "Sim"
-    data$DOENCA_TRA[data$DOENCA_TRA == 2] <- "N\u00e3o"
-    data$DOENCA_TRA[data$DOENCA_TRA == 9] <- "Ignorado"
-    data$DOENCA_TRA <- factor(data$DOENCA_TRA)
+    data <- data %>%
+      dplyr::mutate(DOENCA_TRA = dplyr::case_match(
+        .data$DOENCA_TRA,
+        "1" ~"Sim",
+        "2" ~"N\u00e3o",
+        "9" ~"Ignorado",
+        .default = .data$DOENCA_TRA
+      )) %>%
+      dplyr::mutate(DOENCA_TRA = as.factor(.data$DOENCA_TRA))
   }
 
   # CLINC_CHIK
   if ("CLINC_CHIK" %in% variables_names) {
-    data$CLINC_CHIK <- as.numeric(data$CLINC_CHIK)
-    data$CLINC_CHIK[data$CLINC_CHIK == 1] <- "Aguda"
-    data$CLINC_CHIK[data$CLINC_CHIK == 2] <- "Cr\u00f4nica"
-    data$CLINC_CHIK <- factor(data$CLINC_CHIK)
+    data <- data %>%
+      dplyr::mutate(CLINC_CHIK = dplyr::case_match(
+        .data$CLINC_CHIK,
+        "1" ~"Aguda",
+        "2" ~"Cr\u00f4nica"
+        .default = .data$CLINC_CHIK
+      )) %>%
+      dplyr::mutate(CLINC_CHIK = as.factor(.data$CLINC_CHIK))
   }
 
   # EVOLUCAO
   if ("EVOLUCAO" %in% variables_names) {
-    data$EVOLUCAO <- as.numeric(data$EVOLUCAO)
-    data$EVOLUCAO[data$EVOLUCAO == 1] <- "Cura"
-    data$EVOLUCAO[data$EVOLUCAO == 2] <- "\u00d3bito por dengue"
-    data$EVOLUCAO[data$EVOLUCAO == 3] <- "\u00d3bito por outras causas"
-    data$EVOLUCAO[data$EVOLUCAO == 4] <- "\u00d3bito em investiga\u00e7\u00e3o"
-    data$EVOLUCAO[data$EVOLUCAO == 9] <- "Ignorado"
-    data$EVOLUCAO <- factor(data$EVOLUCAO)
+    data <- data %>%
+      dplyr::mutate(EVOLUCAO = dplyr::case_match(
+        .data$EVOLUCAO,
+        "1" ~ "Cura",
+        "2" ~ "\u00d3bito por dengue",
+        "3" ~ "\u00d3bito por outras causas",
+        "4" ~ "\u00d3bito em investiga\u00e7\u00e3o",
+        "9" ~ "Ignorado",
+        .default = .data$EVOLUCAO
+      )) %>%
+      dplyr::mutate(EVOLUCAO = as.factor(.data$EVOLUCAO))
   }
 
   # DT_OBITO
   if ("DT_OBITO" %in% variables_names) {
-    data$DT_OBITO <- as.Date(data$DT_OBITO)
+    data <- data %>%
+      dplyr::mutate(DT_OBITO = as.Date(.data$DT_OBITO))
   }
 
   # DT_ENCERRA
   if ("DT_ENCERRA" %in% variables_names) {
-    data$DT_ENCERRA <- as.Date(data$DT_ENCERRA)
+    data <- data %>%
+      dplyr::mutate(DT_ENCERRA = as.Date(.data$DT_ENCERRA))
   }
 
   # ALRM_HIPOT
