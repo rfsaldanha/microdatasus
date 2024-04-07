@@ -1,7 +1,8 @@
 # microdatasus 2.3.0
 * Process functions uses dplyr verbs and dtplyr for fast processing.
 * Process functions returns a tibble.
-* Progress bar removed due increased processing time.
+* Add `track_source` argument to `fetch_datasus` function to create a variable called `source` with the file name that originated the row.
+* Progress bar removed from `process_sim` due increased processing time.
 
 # microdatasus 2.2.7
 * Enhance messages of `fetch_datasus`.
