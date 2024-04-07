@@ -658,7 +658,7 @@ process_sim <- function(data, municipality_data = TRUE) {
   data <- droplevels(data)
 
   # Unescape unicode characters
-  suppressWarnings(data <- as.data.frame(lapply(X = data, FUN = stringi::stri_unescape_unicode)))
+  suppressWarnings(data <- tibble::as_tibble(lapply(X = data, FUN = stringi::stri_unescape_unicode)))
 
   # Return
   return(data)
