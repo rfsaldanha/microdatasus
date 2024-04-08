@@ -3,7 +3,9 @@
 * All process functions returns a tibble.
 * Add `track_source` argument to `fetch_datasus` function to create a variable called `source` with the file name that originated the row.
 * Updated CBO (CNES), CADGER (CNES), EQUIPE (SIA), SIGTAB (SIA) reference tables.
+* Sample data for health information systems.
 * Data files with XZ compression.
+* Internal tests restructured.
 * Progress bar removed from `process_sim` due increased processing time.
 
 # microdatasus 2.2.7
