@@ -13,7 +13,7 @@ Description: Downloads microdata files (DBC format) from DataSUS and imports the
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-LazyDataCompression: bzip2
+LazyDataCompression: xz
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
 Imports: 
