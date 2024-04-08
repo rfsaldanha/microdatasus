@@ -708,12 +708,11 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
 
   # MUNICIPIO
   if("MUNICIPIO" %in% variables_names & municipality_data == TRUE){
+    colnames(tabMun)[1] <- "MUNICIPIO"
+    tabMun$MUNICIPIO <- as.character(tabMun$MUNICIPIO)
+
     data <- data %>%
-      dplyr::mutate(MUNICIPIO = as.numeric(.data$MUNICIPIO)) %>%
-      dplyr::left_join(microdatasus::tabMun, by = c("MUNICIPIO" = "munResCod"))
-  } else if("MUNICIPIO" %in% variables_names){
-    data <- data %>%
-      dplyr::mutate(MUNICIPIO = as.numeric(.data$MUNICIPIO))
+      dplyr::left_join(tabMun, by = "MUNICIPIO")
   }
 
   # TPAUTOCTO
@@ -732,7 +731,8 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
   # COUFINF
   if ("COUFINF" %in% variables_names) {
     data <- data %>%
-      dplyr::mutate(IMUNOH_N = dplyr::case_match(
+      dplyr::mutate(COUFINF = dplyr::case_match(
+        .data$COUFINF,
         "0" ~ "Ignorado",
         "99" ~ "Ignorado",
         "11" ~ "Rond\u00f4nia",
@@ -777,16 +777,16 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
     data <- data %>%
       dplyr::mutate(CLASSI_FIN = dplyr::case_match(
         .data$CLASSI_FIN,
-        1 ~ "Dengue cl\u00e1ssico",
-        2 ~ "Dengue com complica\u00e7\u00f5es",
-        3 ~ "Febre hemorr\u00e1gica do dengue",
-        4 ~ "S\u00edndrome do choque do dengue",
-        5 ~ "Descartado",
-        8 ~ "Inconclusivo",
-        10 ~  "Dengue",
-        11 ~  "Dengue com sinais de alarme",
-        12 ~  "Dengue grave",
-        13 ~  "Chikungunya",
+        "1" ~ "Dengue cl\u00e1ssico",
+        "2" ~ "Dengue com complica\u00e7\u00f5es",
+        "3" ~ "Febre hemorr\u00e1gica do dengue",
+        "4" ~ "S\u00edndrome do choque do dengue",
+        "5" ~ "Descartado",
+        "8" ~ "Inconclusivo",
+        "10" ~  "Dengue",
+        "11" ~  "Dengue com sinais de alarme",
+        "12" ~  "Dengue grave",
+        "13" ~  "Chikungunya",
         .default = .data$CLASSI_FIN
       )) %>%
       dplyr::mutate(CLASSI_FIN = as.factor(.data$CLASSI_FIN))
@@ -811,7 +811,7 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
       dplyr::mutate(CLINC_CHIK = dplyr::case_match(
         .data$CLINC_CHIK,
         "1" ~"Aguda",
-        "2" ~"Cr\u00f4nica"
+        "2" ~"Cr\u00f4nica",
         .default = .data$CLINC_CHIK
       )) %>%
       dplyr::mutate(CLINC_CHIK = as.factor(.data$CLINC_CHIK))
@@ -912,6 +912,482 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE){
   if ("DT_ENCERRA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(DT_ENCERRA = as.Date(.data$DT_ENCERRA))
+  }
+
+  # ALRM_HIPOT
+  if ("ALRM_HIPOT" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(ALRM_HIPOT = dplyr::case_match(
+        .data$ALRM_HIPOT,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$ALRM_HIPOT
+      )) %>%
+      dplyr::mutate(ALRM_HIPOT = as.factor(.data$ALRM_HIPOT))
+  }
+
+  # ALRM_PLAQ
+  if ("ALRM_PLAQ" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(ALRM_PLAQ = dplyr::case_match(
+        .data$ALRM_PLAQ,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$ALRM_PLAQ
+      )) %>%
+      dplyr::mutate(ALRM_PLAQ = as.factor(.data$ALRM_PLAQ))
+  }
+
+  # ALRM_VOM
+  if ("ALRM_VOM" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(ALRM_VOM = dplyr::case_match(
+        .data$ALRM_VOM,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$ALRM_VOM
+      )) %>%
+      dplyr::mutate(ALRM_VOM = as.factor(.data$ALRM_VOM))
+  }
+
+  # ALRM_SANG
+  if ("ALRM_SANG" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(ALRM_SANG = dplyr::case_match(
+        .data$ALRM_SANG,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$ALRM_SANG
+      )) %>%
+      dplyr::mutate(ALRM_SANG = as.factor(.data$ALRM_SANG))
+  }
+
+  # ALRM_HEMAT
+  if ("ALRM_HEMAT" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(ALRM_HEMAT = dplyr::case_match(
+        .data$ALRM_HEMAT,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$ALRM_HEMAT
+      )) %>%
+      dplyr::mutate(ALRM_HEMAT = as.factor(.data$ALRM_HEMAT))
+  }
+
+  # ALRM_ABDOM
+  if ("ALRM_ABDOM" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(ALRM_ABDOM = dplyr::case_match(
+        .data$ALRM_ABDOM,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$ALRM_ABDOM
+      )) %>%
+      dplyr::mutate(ALRM_ABDOM = as.factor(.data$ALRM_ABDOM))
+  }
+
+  # ALRM_LETAR
+  if ("ALRM_LETAR" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(ALRM_LETAR = dplyr::case_match(
+        .data$ALRM_LETAR,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$ALRM_LETAR
+      )) %>%
+      dplyr::mutate(ALRM_LETAR = as.factor(.data$ALRM_LETAR))
+  }
+
+  # ALRM_HEPAT
+  if ("ALRM_HEPAT" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(ALRM_HEPAT = dplyr::case_match(
+        .data$ALRM_HEPAT,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$ALRM_HEPAT
+      )) %>%
+      dplyr::mutate(ALRM_HEPAT = as.factor(.data$ALRM_HEPAT))
+  }
+
+  # ALRM_LIQ
+  if ("ALRM_LIQ" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(ALRM_LIQ = dplyr::case_match(
+        .data$ALRM_LIQ,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$ALRM_LIQ
+      )) %>%
+      dplyr::mutate(ALRM_LIQ = as.factor(.data$ALRM_LIQ))
+  }
+
+  # DT_ALRM
+  if ("DT_ALRM" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(DT_ALRM = as.Date(.data$DT_ALRM))
+  }
+
+  # GRAV_PULSO
+  if ("GRAV_PULSO" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(GRAV_PULSO = dplyr::case_match(
+        .data$GRAV_PULSO,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$GRAV_PULSO
+      )) %>%
+      dplyr::mutate(GRAV_PULSO = as.factor(.data$GRAV_PULSO))
+  }
+
+  # GRAV_CONV
+  if ("GRAV_CONV" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(GRAV_CONV = dplyr::case_match(
+        .data$GRAV_CONV,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$GRAV_CONV
+      )) %>%
+      dplyr::mutate(GRAV_CONV = as.factor(.data$GRAV_CONV))
+  }
+
+  # GRAV_ENCH
+  if ("GRAV_ENCH" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(GRAV_ENCH = dplyr::case_match(
+        .data$GRAV_ENCH,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$GRAV_ENCH
+      )) %>%
+      dplyr::mutate(GRAV_ENCH = as.factor(.data$GRAV_ENCH))
+  }
+
+  # GRAV_INSUF
+  if ("GRAV_INSUF" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(GRAV_INSUF = dplyr::case_match(
+        .data$GRAV_INSUF,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$GRAV_INSUF
+      )) %>%
+      dplyr::mutate(GRAV_INSUF = as.factor(.data$GRAV_INSUF))
+  }
+
+  # GRAV_TAQUI
+  if ("GRAV_TAQUI" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(GRAV_TAQUI = dplyr::case_match(
+        .data$GRAV_TAQUI,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$GRAV_TAQUI
+      )) %>%
+      dplyr::mutate(GRAV_TAQUI = as.factor(.data$GRAV_TAQUI))
+  }
+
+  # GRAV_EXTRE
+  if ("GRAV_EXTRE" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(GRAV_EXTRE = dplyr::case_match(
+        .data$GRAV_EXTRE,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$GRAV_EXTRE
+      )) %>%
+      dplyr::mutate(GRAV_EXTRE = as.factor(.data$GRAV_EXTRE))
+  }
+
+  # GRAV_HIPOT
+  if ("GRAV_HIPOT" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(GRAV_HIPOT = dplyr::case_match(
+        .data$GRAV_HIPOT,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$GRAV_HIPOT
+      )) %>%
+      dplyr::mutate(GRAV_HIPOT = as.factor(.data$GRAV_HIPOT))
+  }
+
+  # GRAV_HEMAT
+  if ("GRAV_HEMAT" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(GRAV_HEMAT = dplyr::case_match(
+        .data$GRAV_HEMAT,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$GRAV_HEMAT
+      )) %>%
+      dplyr::mutate(GRAV_HEMAT = as.factor(.data$GRAV_HEMAT))
+  }
+
+  # GRAV_MELEN
+  if ("GRAV_MELEN" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(GRAV_MELEN = dplyr::case_match(
+        .data$GRAV_MELEN,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$GRAV_MELEN
+      )) %>%
+      dplyr::mutate(GRAV_MELEN = as.factor(.data$GRAV_MELEN))
+  }
+
+  # GRAV_METRO
+  if ("GRAV_METRO" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(GRAV_METRO = dplyr::case_match(
+        .data$GRAV_METRO,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$GRAV_METRO
+      )) %>%
+      dplyr::mutate(GRAV_METRO = as.factor(.data$GRAV_METRO))
+  }
+
+  # GRAV_SANG
+  if ("GRAV_SANG" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(GRAV_SANG = dplyr::case_match(
+        .data$GRAV_SANG,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$GRAV_SANG
+      )) %>%
+      dplyr::mutate(GRAV_SANG = as.factor(.data$GRAV_SANG))
+  }
+
+  # GRAV_AST
+  if ("GRAV_AST" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(GRAV_AST = dplyr::case_match(
+        .data$GRAV_AST,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$GRAV_AST
+      )) %>%
+      dplyr::mutate(GRAV_AST = as.factor(.data$GRAV_AST))
+  }
+
+  # GRAV_MIOC
+  if ("GRAV_MIOC" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(GRAV_MIOC = dplyr::case_match(
+        .data$GRAV_MIOC,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$GRAV_MIOC
+      )) %>%
+      dplyr::mutate(GRAV_MIOC = as.factor(.data$GRAV_MIOC))
+  }
+
+  # GRAV_CONSC
+  if ("GRAV_CONSC" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(GRAV_CONSC = dplyr::case_match(
+        .data$GRAV_CONSC,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$GRAV_CONSC
+      )) %>%
+      dplyr::mutate(GRAV_CONSC = as.factor(.data$GRAV_CONSC))
+  }
+
+  # GRAV_ORGAO
+  if ("GRAV_ORGAO" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(GRAV_ORGAO = dplyr::case_match(
+        .data$GRAV_ORGAO,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        .default = .data$GRAV_ORGAO
+      )) %>%
+      dplyr::mutate(GRAV_ORGAO = as.factor(.data$GRAV_ORGAO))
+  }
+
+  # DT_GRAV
+  if ("DT_GRAV" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(DT_GRAV = as.Date(.data$DT_GRAV))
+  }
+
+  # MANI_HEMOR
+  if ("MANI_HEMOR" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(MANI_HEMOR = dplyr::case_match(
+        .data$MANI_HEMOR,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        "9" ~ "Ignorado",
+        .default = .data$MANI_HEMOR
+      )) %>%
+      dplyr::mutate(MANI_HEMOR = as.factor(.data$MANI_HEMOR))
+  }
+
+  # EPISTAXE
+  if ("EPISTAXE" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(EPISTAXE = dplyr::case_match(
+        .data$EPISTAXE,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        "9" ~ "Ignorado",
+        .default = .data$EPISTAXE
+      )) %>%
+      dplyr::mutate(EPISTAXE = as.factor(.data$EPISTAXE))
+  }
+
+  # GENGIVO
+  if ("GENGIVO" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(GENGIVO = dplyr::case_match(
+        .data$GENGIVO,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        "9" ~ "Ignorado",
+        .default = .data$GENGIVO
+      )) %>%
+      dplyr::mutate(GENGIVO = as.factor(.data$GENGIVO))
+  }
+
+  # METRO
+  if ("METRO" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(METRO = dplyr::case_match(
+        .data$METRO,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        "9" ~ "Ignorado",
+        .default = .data$METRO
+      )) %>%
+      dplyr::mutate(METRO = as.factor(.data$METRO))
+  }
+
+  # PETEQUIAS
+  if ("PETEQUIAS" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(PETEQUIAS = dplyr::case_match(
+        .data$PETEQUIAS,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        "9" ~ "Ignorado",
+        .default = .data$PETEQUIAS
+      )) %>%
+      dplyr::mutate(PETEQUIAS = as.factor(.data$PETEQUIAS))
+  }
+
+  # HEMATURA
+  if ("HEMATURA" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(HEMATURA = dplyr::case_match(
+        .data$HEMATURA,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        "9" ~ "Ignorado",
+        .default = .data$HEMATURA
+      )) %>%
+      dplyr::mutate(HEMATURA = as.factor(.data$HEMATURA))
+  }
+
+  # SANGRAM
+  if ("SANGRAM" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(SANGRAM = dplyr::case_match(
+        .data$SANGRAM,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        "9" ~ "Ignorado",
+        .default = .data$SANGRAM
+      )) %>%
+      dplyr::mutate(SANGRAM = as.factor(.data$SANGRAM))
+  }
+
+  # LACO_N
+  if ("LACO_N" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(LACO_N = dplyr::case_match(
+        .data$LACO_N,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        "9" ~ "Ignorado",
+        .default = .data$LACO_N
+      )) %>%
+      dplyr::mutate(LACO_N = as.factor(.data$LACO_N))
+  }
+
+  # PLASMATICO
+  if ("PLASMATICO" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(PLASMATICO = dplyr::case_match(
+        .data$PLASMATICO,
+        "1" ~ "Sim",
+        "2" ~ "N\u00e3o",
+        "9" ~ "Ignorado",
+        .default = .data$PLASMATICO
+      )) %>%
+      dplyr::mutate(PLASMATICO = as.factor(.data$PLASMATICO))
+  }
+
+  # EVIDENCIA
+  if ("EVIDENCIA" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(EVIDENCIA = dplyr::case_match(
+        .data$EVIDENCIA,
+        "1" ~ "Hemoconcentra\u00e7\u00e3o",
+        "2" ~ "Derrames cavit\u00e1rios",
+        "3" ~ "Hipoproteinemia",
+        .default = .data$EVIDENCIA
+      )) %>%
+      dplyr::mutate(EVIDENCIA = as.factor(.data$EVIDENCIA))
+  }
+
+  # CON_FHD
+  if ("CON_FHD" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(CON_FHD = dplyr::case_match(
+        .data$CON_FHD,
+        "1" ~ "Grau I",
+        "2" ~ "Grau II",
+        "3" ~ "Grau III",
+        "4" ~ "Grau IV",
+        .default = .data$CON_FHD
+      )) %>%
+      dplyr::mutate(CON_FHD = as.factor(.data$CON_FHD))
+  }
+
+  # COMPLICA
+  if ("COMPLICA" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(COMPLICA = dplyr::case_match(
+        .data$COMPLICA,
+        "1" ~ "Altera\u00e7\u00f5es neurol\u00f3gicas",
+        "2" ~ "Disfun\u00e7\u00e3o cardiorespirat\u00f3ria",
+        "3" ~ "Insufici\u00eancia hep\u00e1tica",
+        "4" ~ "Plaquetas <50.000mm",
+        "5" ~ "Hemorragia digestiva",
+        "6" ~ "Derrames cavit\u00e1rios",
+        "7" ~ "Leucometria < 100",
+        "8" ~ "N\u00e3o se enquadra nos crit\u00e9rios de FHD",
+        .default = .data$COMPLICA
+      )) %>%
+      dplyr::mutate(COMPLICA = as.factor(.data$COMPLICA))
+  }
+
+  # NDUPLIC_N
+  if ("NDUPLIC_N" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(NDUPLIC_N = dplyr::case_match(
+        .data$NDUPLIC_N,
+        "0" ~ "N\u00e3o identificado",
+        "" ~ "N\u00e3o identificado",
+        "1" ~ "N\u00e3o \u00e9 duplicidade (n\u00e3o listar)",
+        "2" ~ "Duplicidade (n\u00e3o contar)",
+        .default = .data$NDUPLIC_N
+      )) %>%
+      dplyr::mutate(NDUPLIC_N = as.factor(.data$NDUPLIC_N))
   }
 
   # CS_FLXRET
