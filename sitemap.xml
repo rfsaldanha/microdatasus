@@ -28,6 +28,12 @@
     <loc>https://rfsaldanha.github.io/microdatasus/reference/cadger.html</loc>
   </url>
   <url>
+    <loc>https://rfsaldanha.github.io/microdatasus/reference/cnes_pf_sample.html</loc>
+  </url>
+  <url>
+    <loc>https://rfsaldanha.github.io/microdatasus/reference/cnes_st_sample.html</loc>
+  </url>
+  <url>
     <loc>https://rfsaldanha.github.io/microdatasus/reference/equipe.html</loc>
   </url>
   <url>
@@ -76,7 +82,31 @@
     <loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinasc.html</loc>
   </url>
   <url>
+    <loc>https://rfsaldanha.github.io/microdatasus/reference/sia_pa_sample.html</loc>
+  </url>
+  <url>
     <loc>https://rfsaldanha.github.io/microdatasus/reference/sigtab.html</loc>
+  </url>
+  <url>
+    <loc>https://rfsaldanha.github.io/microdatasus/reference/sih_rd_sample.html</loc>
+  </url>
+  <url>
+    <loc>https://rfsaldanha.github.io/microdatasus/reference/sim_do_sample.html</loc>
+  </url>
+  <url>
+    <loc>https://rfsaldanha.github.io/microdatasus/reference/sinan_chikungunya_sample.html</loc>
+  </url>
+  <url>
+    <loc>https://rfsaldanha.github.io/microdatasus/reference/sinan_dengue_sample.html</loc>
+  </url>
+  <url>
+    <loc>https://rfsaldanha.github.io/microdatasus/reference/sinan_malaria_sample.html</loc>
+  </url>
+  <url>
+    <loc>https://rfsaldanha.github.io/microdatasus/reference/sinan_zika_sample.html</loc>
+  </url>
+  <url>
+    <loc>https://rfsaldanha.github.io/microdatasus/reference/sinasc_sample.html</loc>
   </url>
   <url>
     <loc>https://rfsaldanha.github.io/microdatasus/reference/tabCBO.html</loc>

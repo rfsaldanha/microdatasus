@@ -16,7 +16,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">microdatasus</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.3.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -56,6 +56,17 @@
       <small>Source: <a href="https://github.com/rfsaldanha/microdatasus/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="2.3.0" id="microdatasus-230">microdatasus 2.3.0<a class="anchor" aria-label="anchor" href="#microdatasus-230"></a></h2>
+<ul><li>All process functions uses dplyr verbs and dtplyr for fast processing.</li>
+<li>All process functions returns a tibble.</li>
+<li>Add <code>track_source</code> argument to <code>fetch_datasus</code> function to create a variable called <code>source</code> with the file name that originated the row.</li>
+<li>Updated CBO (CNES), CADGER (CNES), EQUIPE (SIA), SIGTAB (SIA) reference tables.</li>
+<li>Sample data for health information systems.</li>
+<li>Data files with XZ compression.</li>
+<li>Internal tests restructured.</li>
+<li>Progress bar removed from <code>process_sim</code> due increased processing time.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="2.2.7" id="microdatasus-227">microdatasus 2.2.7<a class="anchor" aria-label="anchor" href="#microdatasus-227"></a></h2>
 <ul><li>Enhance messages of <code>fetch_datasus</code>.</li>

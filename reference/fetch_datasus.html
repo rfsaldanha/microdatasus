@@ -16,7 +16,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">microdatasus</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.3.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,14 +65,15 @@
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fetch_datasus</span><span class="op">(</span></span>
 <span>  <span class="va">year_start</span>,</span>
-<span>  <span class="va">month_start</span>,</span>
+<span>  month_start <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">year_end</span>,</span>
-<span>  <span class="va">month_end</span>,</span>
+<span>  month_end <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  uf <span class="op">=</span> <span class="st">"all"</span>,</span>
 <span>  <span class="va">information_system</span>,</span>
 <span>  vars <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  stop_on_error <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  timeout <span class="op">=</span> <span class="fl">240</span></span>
+<span>  timeout <span class="op">=</span> <span class="fl">240</span>,</span>
+<span>  track_source <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -104,6 +105,10 @@
 
 <dt>timeout</dt>
 <dd><p>numeric (seconds). Sets a timeout tolerance for downloads, usefull on large files and/or slow connections. Defaults to 240 seconds.</p></dd>
+
+
+<dt>track_source</dt>
+<dd><p>logical. If <code>TRUE</code>, adds a column called <code>source</code> with the downloaded file name.</p></dd>
 
 </dl></div>
     <div class="section level2">
