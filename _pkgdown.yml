@@ -9,9 +9,13 @@ navbar:
     right: [github]
 
 reference:
+- title: "The package"
+  contents:
+  - microdatasus
 - title: "Fetch data"
   contents:
   - fetch_datasus
+  - fetch_sigtab
 - title: "Process data"
   contents:
   - process_sim
@@ -22,6 +26,7 @@ reference:
   - process_sinan_dengue
   - process_sinan_zika
   - process_sinan_chikungunya
+  - process_sinan_malaria
 - title: "Sample datasets"
   contents:
   - sim_do_sample
@@ -33,6 +38,7 @@ reference:
   - sinan_dengue_sample
   - sinan_zika_sample
   - sinan_chikungunya_sample
+  - sinan_malaria_sample
 - title: "Reference datasets"
   contents:
   - tabMun
