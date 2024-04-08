@@ -1,6 +1,6 @@
 Package: microdatasus
 Title: Download and preprocess DataSUS files
-Version: 2.2.7
+Version: 2.3.0
 Authors@R: 
     person(given = "Raphael",
            family = "Saldanha",
@@ -13,7 +13,7 @@ Description: Downloads microdata files (DBC format) from DataSUS and imports the
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-LazyDataCompression: bzip2
+LazyDataCompression: xz
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
 Imports: 
@@ -26,7 +26,6 @@ Imports:
     foreign,
     lubridate,
     magrittr,
-    progress,
     RCurl,
     read.dbc,
     rlang,

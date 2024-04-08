@@ -20,412 +20,530 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   # Variables names
   variables_names <- names(data)
 
+  # Use dtplyr
+  data <- dtplyr::lazy_dt(data)
+
   # CODINST
   if("CODINST" %in% variables_names){
-    data$CODINST <- as.integer(data$CODINST)
+    data <- data %>%
+      dplyr::mutate(CODINST = as.integer(.data$CODINST))
   }
 
   # ORIGEM
   if("ORIGEM" %in% variables_names){
-    data$ORIGEM <- as.integer(data$ORIGEM)
+    data <- data %>%
+      dplyr::mutate(ORIGEM = as.integer(.data$ORIGEM))
   }
 
   # NUMERODV
   if("NUMERODV" %in% variables_names){
-    data$NUMERODV <- as.integer(data$NUMERODV)
+    data <- data %>%
+      dplyr::mutate(NUMERODV = as.integer(.data$NUMERODV))
   }
 
   # PREFIXODN
   if("PREFIXODN" %in% variables_names){
-    data$PREFIXODN <- as.integer(data$PREFIXODN)
+    data <- data %>%
+      dplyr::mutate(PREFIXODN = as.integer(.data$PREFIXODN))
   }
 
   # LOCNASC
   if("LOCNASC" %in% variables_names){
-    data$LOCNASC <- as.numeric(data$LOCNASC)
-    data$LOCNASC[data$LOCNASC==0] <- NA
-    data$LOCNASC[data$LOCNASC==1] <- "Hospital"
-    data$LOCNASC[data$LOCNASC==2] <- "Outro estabelecimento de sa\\u00fade"
-    data$LOCNASC[data$LOCNASC==3] <- "Domic\\u00edlio"
-    data$LOCNASC[data$LOCNASC==4] <- "Outros"
-    data$LOCNASC[data$LOCNASC==5] <- NA
-    data$LOCNASC[data$LOCNASC==6] <- NA
-    data$LOCNASC[data$LOCNASC==7] <- NA
-    data$LOCNASC[data$LOCNASC==8] <- NA
-    data$LOCNASC[data$LOCNASC==9] <- NA
-    data$LOCNASC <- factor(data$LOCNASC)
+    data <- data %>%
+      dplyr::mutate(LOCNASC = dplyr::case_match(
+        .data$LOCNASC,
+        "0" ~ NA,
+        "1" ~ "Hospital",
+        "2" ~ "Outro estabelecimento de sa\\u00fade",
+        "3" ~ "Domic\\u00edlio",
+        "4" ~ "Outros",
+        "5" ~ NA,
+        "6" ~ NA,
+        "7" ~ NA,
+        "8" ~ NA,
+        "9" ~ NA,
+        .default = .data$LOCNASC
+      )) %>%
+      dplyr::mutate(LOCNASC <- as.factor(.data$LOCNASC))
   }
 
   # IDADEMAE
   if("IDADEMAE" %in% variables_names){
-    data$IDADEMAE <- as.numeric(data$IDADEMAE)
-    data$IDADEMAE[data$IDADEMAE==0] <- NA
-    data$IDADEMAE[data$IDADEMAE==99] <- NA
+    data <- data %>%
+      dplyr::mutate(IDADEMAE = dplyr::case_match(
+        .data$IDADEMAE,
+        "0" ~ NA,
+        "99" ~ NA,
+        .default = IDADEMAE
+      )) %>%
+      dplyr::mutate(IDADEMAE <- as.factor(.data$IDADEMAE))
   }
 
   # ESTCIVMAE
   if("ESTCIVMAE" %in% variables_names){
-    data$ESTCIVMAE <- as.numeric(data$ESTCIVMAE)
-    data$ESTCIVMAE[data$ESTCIVMAE==0] <- NA
-    data$ESTCIVMAE[data$ESTCIVMAE==1] <- "Solteira"
-    data$ESTCIVMAE[data$ESTCIVMAE==2] <- "Casada"
-    data$ESTCIVMAE[data$ESTCIVMAE==3] <- "Vi\\u00fava"
-    data$ESTCIVMAE[data$ESTCIVMAE==4] <- "Separada judicialmente"
-    data$ESTCIVMAE[data$ESTCIVMAE==5] <- "Uni\\u00e3o consensual"
-    data$ESTCIVMAE[data$ESTCIVMAE==6] <- NA
-    data$ESTCIVMAE[data$ESTCIVMAE==7] <- NA
-    data$ESTCIVMAE[data$ESTCIVMAE==8] <- NA
-    data$ESTCIVMAE[data$ESTCIVMAE==9] <- NA
-    data$ESTCIVMAE <- factor(data$ESTCIVMAE)
+    data <- data %>%
+      dplyr::mutate(ESTCIVMAE = dplyr::case_match(
+        .data$ESTCIVMAE,
+        "0" ~ NA,
+        "1" ~ "Solteira",
+        "2" ~ "Casada",
+        "3" ~ "Vi\\u00fava",
+        "4" ~ "Separada judicialmente",
+        "5" ~ "Uni\\u00e3o consensual",
+        "6" ~ NA,
+        "7" ~ NA,
+        "8" ~ NA,
+        "9" ~ NA,
+        .default = .data$ESTCIVMAE
+      )) %>%
+      dplyr::mutate(ESTCIVMAE <- as.factor(.data$ESTCIVMAE))
   }
 
   # ESCMAE
   if("ESCMAE" %in% variables_names){
-    data$ESCMAE <- as.numeric(data$ESCMAE)
-    data$ESCMAE[data$ESCMAE==1] <- "Nenhum"
-    data$ESCMAE[data$ESCMAE==2] <- "1 a 3 anos"
-    data$ESCMAE[data$ESCMAE==3] <- "4 a 7 anos"
-    data$ESCMAE[data$ESCMAE==4] <- "8 a 11 anos"
-    data$ESCMAE[data$ESCMAE==5] <- "12 anos ou mais"
-    data$ESCMAE[data$ESCMAE==6] <- NA
-    data$ESCMAE[data$ESCMAE==7] <- NA
-    data$ESCMAE[data$ESCMAE==8] <- NA
-    data$ESCMAE[data$ESCMAE==9] <- NA
-    data$ESCMAE <- factor(data$ESCMAE)
+    data <- data %>%
+      dplyr::mutate(ESCMAE = dplyr::case_match(
+        .data$ESCMAE,
+        "1" ~ "Nenhum",
+        "2" ~ "1 a 3 anos",
+        "3" ~ "4 a 7 anos",
+        "4" ~ "8 a 11 anos",
+        "5" ~ "12 anos ou mais",
+        "6" ~ NA,
+        "7" ~ NA,
+        "8" ~ NA,
+        "9" ~ NA,
+        .default = .data$ESCMAE
+      )) %>%
+      dplyr::mutate(ESCMAE <- as.factor(.data$ESCMAE))
   }
 
   # DTNASC
   if("DTNASC" %in% variables_names){
-    data$DTNASC <- as.Date(data$DTNASC, format = "%d%m%Y")
+    data <- data %>%
+      dplyr::mutate(DTNASC = as.Date(.data$DTNASC, format = "%d%m%Y"))
   }
 
   # CODOCUPMAE
   if ("CODOCUPMAE" %in% variables_names) {
     if (!("DTNASC" %in% variables_names))
-      stop("The variable DTNASC is needed to preprocess the variable CODOCUPMAE")
-    colnames(tabOcupacao)[1] <- "CODOCUPMAE"
-    tabOcupacao$CODOCUPMAE = as.character(tabOcupacao$CODOCUPMAE) 
+      cli::cli_abort("The variable DTNASC is needed to preprocess the variable CODOCUPMAE")
+
     colnames(tabCBO)[1] <- "CODOCUPMAE"
-    tabCBO$CODOCUPMAE = as.character(tabCBO$CODOCUPMAE) 
-    ano <- lubridate::year(data$DTNASC)
-    data$CODOCUPMAE <-
-      factor(ifelse(
-        ano <= 2005,
-        dplyr::left_join(data, tabOcupacao, by = "CODOCUPMAE")$nome,
-        dplyr::left_join(data, tabCBO, by = "CODOCUPMAE")$nome
-      ))
+    tabCBO$CODOCUPMAE = as.character(tabCBO$CODOCUPMAE)
+
+    data <- data %>%
+      dplyr::left_join(tabCBO, by = "CODOCUPMAE") %>%
+      dplyr::select(-"CODOCUPMAE") %>%
+      dplyr::rename("CODOCUPMAE" = "nome")
   }
 
 
   # QTDFILVIVO
   if("QTDFILVIVO" %in% variables_names){
-    data$QTDFILVIVO <- as.numeric(data$QTDFILVIVO)
-    data$QTDFILVIVO[data$QTDFILVIVO==99] <- NA
+    data <- data %>%
+      dplyr::mutate(QTDFILVIVO = dplyr::case_match(
+        .data$QTDFILVIVO,
+        "99" ~ NA,
+        .default = .data$QTDFILVIVO
+      )) %>%
+      dplyr::mutate(QTDFILVIVO = as.numeric(.data$QTDFILVIVO))
   }
 
   # QTDFILMORT
   if("QTDFILMORT" %in% variables_names){
-    data$QTDFILMORT <- as.numeric(data$QTDFILMORT)
-    data$QTDFILMORT[data$QTDFILMORT==99] <- NA
+    data <- data %>%
+      dplyr::mutate(QTDFILMORT = dplyr::case_match(
+        .data$QTDFILMORT,
+        "99" ~ NA,
+        .default = .data$QTDFILMORT
+      )) %>%
+      dplyr::mutate(QTDFILMORT = as.numeric(.data$QTDFILMORT))
   }
 
   # CODMUNRES
   if("CODMUNRES" %in% variables_names & municipality_data == TRUE){
     colnames(tabMun)[1] <- "CODMUNRES"
     tabMun$CODMUNRES <- as.character(tabMun$CODMUNRES)
-    data <- dplyr::left_join(data, tabMun, by = "CODMUNRES")
+
+    data <- data %>%
+      dplyr::left_join(tabMun, by = "CODMUNRES")
   }
 
   # GESTACAO
   if("GESTACAO" %in% variables_names){
-    data$GESTACAO <- as.numeric(data$GESTACAO)
-    data$GESTACAO[data$GESTACAO==0] <- NA
-    data$GESTACAO[data$GESTACAO==1] <- "Menos de 22 semanas"
-    data$GESTACAO[data$GESTACAO==2] <- "22 a 27 semanas"
-    data$GESTACAO[data$GESTACAO==3] <- "28 a 31 semanas"
-    data$GESTACAO[data$GESTACAO==4] <- "32 a 36 semanas"
-    data$GESTACAO[data$GESTACAO==5] <- "37 a 41 semanas"
-    data$GESTACAO[data$GESTACAO==6] <- "42 semanas ou mais"
-    data$GESTACAO[data$GESTACAO==7] <- NA
-    data$GESTACAO[data$GESTACAO==8] <- NA
-    data$GESTACAO[data$GESTACAO==9] <- NA
-    data$GESTACAO <- factor(data$GESTACAO)
+    data <- data %>%
+      dplyr::mutate(GESTACAO = dplyr::case_match(
+        .data$GESTACAO,
+        "0" ~ NA,
+        "1" ~ "Menos de 22 semanas",
+        "2" ~ "22 a 27 semanas",
+        "3" ~ "28 a 31 semanas",
+        "4" ~ "32 a 36 semanas",
+        "5" ~ "37 a 41 semanas",
+        "6" ~ "42 semanas ou mais",
+        "7" ~ NA,
+        "8" ~ NA,
+        "9" ~ NA,
+        .default = .data$GESTACAO
+      )) %>%
+      dplyr::mutate(GESTACAO <- as.factor(.data$GESTACAO))
   }
 
   # GRAVIDEZ
   if("GRAVIDEZ" %in% variables_names){
-    data$GRAVIDEZ <- as.numeric(data$GRAVIDEZ)
-    data$GRAVIDEZ[data$GRAVIDEZ==0] <- NA
-    data$GRAVIDEZ[data$GRAVIDEZ==1] <- "\\u00fanica"
-    data$GRAVIDEZ[data$GRAVIDEZ==2] <- "Dupla"
-    data$GRAVIDEZ[data$GRAVIDEZ==3] <- "Tripla e mais"
-    data$GRAVIDEZ[data$GRAVIDEZ==4] <- NA
-    data$GRAVIDEZ[data$GRAVIDEZ==5] <- NA
-    data$GRAVIDEZ[data$GRAVIDEZ==6] <- NA
-    data$GRAVIDEZ[data$GRAVIDEZ==7] <- NA
-    data$GRAVIDEZ[data$GRAVIDEZ==8] <- NA
-    data$GRAVIDEZ[data$GRAVIDEZ==9] <- NA
-    data$GRAVIDEZ <- factor(data$GRAVIDEZ)
+    data <- data %>%
+      dplyr::mutate(GRAVIDEZ = dplyr::case_match(
+        .data$GRAVIDEZ,
+        "0" ~ NA,
+        "1" ~ "\\u00fanica",
+        "2" ~ "Dupla",
+        "3" ~ "Tripla e mais",
+        "4" ~ NA,
+        "5" ~ NA,
+        "6" ~ NA,
+        "7" ~ NA,
+        "8" ~ NA,
+        "9" ~ NA,
+        .default = .data$GRAVIDEZ
+      )) %>%
+      dplyr::mutate(GRAVIDEZ = as.factor(.data$GRAVIDEZ))
   }
 
   # PARTO
   if("PARTO" %in% variables_names){
-    data$PARTO <- as.numeric(data$PARTO)
-    data$PARTO[data$PARTO==0] <- NA
-    data$PARTO[data$PARTO==1] <- "Vaginal"
-    data$PARTO[data$PARTO==2] <- "Ces\\u00e1reo"
-    data$PARTO[data$PARTO==3] <- NA
-    data$PARTO[data$PARTO==4] <- NA
-    data$PARTO[data$PARTO==5] <- NA
-    data$PARTO[data$PARTO==6] <- NA
-    data$PARTO[data$PARTO==7] <- NA
-    data$PARTO[data$PARTO==8] <- NA
-    data$PARTO[data$PARTO==9] <- NA
-    data$PARTO <- factor(data$PARTO)
+    data <- data %>%
+      dplyr::mutate(PARTO = dplyr::case_match(
+        .data$PARTO,
+        "0" ~ NA,
+        "1" ~ "Vaginal",
+        "2" ~ "Ces\\u00e1reo",
+        "3" ~ NA,
+        "4" ~ NA,
+        "5" ~ NA,
+        "6" ~ NA,
+        "7" ~ NA,
+        "8" ~ NA,
+        "9" ~ NA,
+        .default = .data$PARTO
+      )) %>%
+      dplyr::mutate(PARTO <- as.factor(.data$PARTO))
   }
 
   # CONSULTAS
   if("CONSULTAS" %in% variables_names){
-    data$CONSULTAS <- as.numeric(data$CONSULTAS)
-    data$CONSULTAS[data$CONSULTAS==0] <- NA
-    data$CONSULTAS[data$CONSULTAS==1] <- "Nenhuma"
-    data$CONSULTAS[data$CONSULTAS==2] <- "1 a 3 vezes"
-    data$CONSULTAS[data$CONSULTAS==3] <- "4 a 6 vezes"
-    data$CONSULTAS[data$CONSULTAS==4] <- "7 ou mais vezes"
-    data$CONSULTAS[data$CONSULTAS==5] <- NA
-    data$CONSULTAS[data$CONSULTAS==6] <- NA
-    data$CONSULTAS[data$CONSULTAS==7] <- NA
-    data$CONSULTAS[data$CONSULTAS==8] <- NA
-    data$CONSULTAS[data$CONSULTAS==9] <- NA
-    data$CONSULTAS <- factor(data$CONSULTAS)
+    data <- data %>%
+      dplyr::mutate(CONSULTAS = dplyr::case_match(
+        .data$CONSULTAS,
+        "0" ~ NA,
+        "1" ~ "Nenhuma",
+        "2" ~ "1 a 3 vezes",
+        "3" ~ "4 a 6 vezes",
+        "4" ~ "7 ou mais vezes",
+        "5" ~ NA,
+        "6" ~ NA,
+        "7" ~ NA,
+        "8" ~ NA,
+        "9" ~ NA,
+        .default = .data$CONSULTAS
+      )) %>%
+      dplyr::mutate(CONSULTAS = as.factor(.data$CONSULTAS))
   }
 
   # SEXO
   if("SEXO" %in% variables_names){
-    data$SEXO[data$SEXO=="0"] <- NA
-    data$SEXO[data$SEXO=="1"] <- "Masculino"
-    data$SEXO[data$SEXO=="M"] <- "Masculino"
-    data$SEXO[data$SEXO=="2"] <- "Feminino"
-    data$SEXO[data$SEXO=="F"] <- "Feminino"
-    data$SEXO[data$SEXO=="9"] <- NA
-    data$SEXO[data$SEXO=="I"] <- NA
-    data$SEXO <- factor(data$SEXO)
+    data <- data %>%
+      dplyr::mutate(SEXO = dplyr::case_match(
+        .data$SEXO,
+        "0" ~ NA,
+        "1" ~ "Masculino",
+        "M" ~ "Masculino",
+        "2" ~ "Feminino",
+        "F" ~ "Feminino",
+        "9" ~ NA,
+        "I" ~ NA,
+        .default = .data$SEXO
+      )) %>%
+      dplyr::mutate(SEXO = as.factor(.data$SEXO))
   }
 
   # APGAR1
   if("APGAR1" %in% variables_names){
-    data$APGAR1 <- as.numeric(data$APGAR1)
-    data$APGAR1[data$APGAR1==99] <- NA
+    data <- data %>%
+      dplyr::mutate(APGAR1 = dplyr::case_match(
+        .data$APGAR1,
+        "99" ~ NA,
+        .default = .data$APGAR1
+      )) %>%
+      dplyr::mutate(APGAR1 = as.numeric(.data$APGAR1))
   }
 
   # APGAR5
   if("APGAR5" %in% variables_names){
-    data$APGAR5 <- as.numeric(data$APGAR5)
-    data$APGAR5[data$APGAR5==99] <- NA
+    data <- data %>%
+      dplyr::mutate(APGAR5 = dplyr::case_match(
+        .data$APGAR5,
+        "99" ~ NA,
+        .default = .data$APGAR5
+      )) %>%
+      dplyr::mutate(APGAR5 = as.numeric(.data$APGAR5))
   }
 
   # RACACOR
   if("RACACOR" %in% variables_names){
-    data$RACACOR <- as.numeric(data$RACACOR)
-    data$RACACOR[data$RACACOR==1] <- "Branca"
-    data$RACACOR[data$RACACOR==2] <- "Preta"
-    data$RACACOR[data$RACACOR==3] <- "Amarela"
-    data$RACACOR[data$RACACOR==4] <- "Parda"
-    data$RACACOR[data$RACACOR==5] <- "Ind\\u00edgena"
-    data$RACACOR[data$RACACOR==9] <- NA
-    data$RACACOR <- factor(data$RACACOR)
+    data <- data %>%
+      dplyr::mutate(RACACOR = dplyr::case_match(
+        .data$RACACOR,
+        "1" ~ "Branca",
+        "2" ~ "Preta",
+        "3" ~ "Amarela",
+        "4" ~ "Parda",
+        "5" ~ "Ind\\u00edgena",
+        "9" ~ NA,
+        .default = .data$RACACOR
+      )) %>%
+      dplyr::mutate(RACACOR = as.factor(.data$RACACOR))
   }
 
   # PESO
   if("PESO" %in% variables_names){
-    data$PESO <- as.numeric(data$PESO)
-    data$PESO[data$PESO==0] <- NA
-    data$PESO[data$PESO==9999] <- NA
+    data <- data %>%
+      dplyr::mutate(RACACOR = dplyr::case_match(
+        .data$PESO,
+        "0" ~ NA,
+        "9999" ~ NA
+      )) %>%
+      dplyr::mutate(PESO = as.numeric(.data$PESO))
   }
 
   # IDANOMAL
   if("IDANOMAL" %in% variables_names){
-    data$IDANOMAL <- as.numeric(data$IDANOMAL)
-    data$IDANOMAL[data$IDANOMAL==1] <- "Sim"
-    data$IDANOMAL[data$IDANOMAL==2] <- "N\\u00e3o"
-    data$IDANOMAL[data$IDANOMAL==3] <- NA
-    data$IDANOMAL[data$IDANOMAL==4] <- NA
-    data$IDANOMAL[data$IDANOMAL==5] <- NA
-    data$IDANOMAL[data$IDANOMAL==6] <- NA
-    data$IDANOMAL[data$IDANOMAL==7] <- NA
-    data$IDANOMAL[data$IDANOMAL==8] <- NA
-    data$IDANOMAL[data$IDANOMAL==9] <- NA
-    data$IDANOMAL <- factor(data$IDANOMAL)
+    data <- data %>%
+      dplyr::mutate(IDANOMAL = dplyr::case_match(
+        .data$IDANOMAL,
+        "1" ~ "Sim",
+        "2" ~ "N\\u00e3o",
+        "3" ~ NA,
+        "4" ~ NA,
+        "5" ~ NA,
+        "6" ~ NA,
+        "7" ~ NA,
+        "8" ~ NA,
+        "9" ~ NA,
+        .default = .data$IDANOMAL
+      )) %>%
+      dplyr::mutate(IDANOMAL = as.factor(.data$IDANOMAL))
   }
 
   # DTCADASTRO
   if("DTCADASTRO" %in% variables_names){
-    data$DTCADASTRO <- as.Date(data$DTCADASTRO, format = "%d%m%Y")
+    data <- data %>%
+      dplyr::mutate(DTCADASTRO = as.Date(.data$DTCADASTRO, format = "%d%m%Y"))
   }
 
   # DTRECEBIM
   if("DTRECEBIM" %in% variables_names){
-    data$DTRECEBIM <- as.Date(data$DTRECEBIM, format = "%d%m%Y")
+    data <- data %>%
+      dplyr::mutate(DTRECEBIM = as.Date(.data$DTRECEBIM, format = "%d%m%Y"))
   }
 
   # DIFDATA
   if("DIFDATA" %in% variables_names){
-    data$DIFDATA <- as.numeric(data$DIFDATA)
+    data <- data %>%
+      dplyr::mutate(DIFDATA = as.Date(.data$DIFDATA, format = "%d%m%Y"))
   }
 
   # DTRECORIG
   if("DTRECORIG" %in% variables_names){
-    data$DTRECORIG <- as.Date(data$DTRECORIG, format = "%d%m%Y")
+    data <- data %>%
+      dplyr::mutate(DTRECORIG = as.Date(.data$DTRECORIG, format = "%d%m%Y"))
   }
 
   # NATURALMAE
   if("NATURALMAE" %in% variables_names){
-    data$NATURALMAE <- as.numeric(data$NATURALMAE)
+    data <- data %>%
+      dplyr::mutate(NATURALMAE = as.numeric(.data$NATURALMAE))
   }
 
   # CODUFNATU
   if("CODUFNATU" %in% variables_names){
-    data$CODUFNATU <- as.numeric(data$CODUFNATU)
+    data <- data %>%
+      dplyr::mutate(CODUFNATU = as.numeric(.data$CODUFNATU))
   }
 
   # SERIESCMAE
   if("SERIESCMAE" %in% variables_names){
-    data$SERIESCMAE <- as.numeric(data$SERIESCMAE)
+    data <- data %>%
+      dplyr::mutate(SERIESCMAE = as.numeric(.data$SERIESCMAE))
   }
 
   # DTNASCMAE
   if("DTNASCMAE" %in% variables_names){
-    data$DTNASCMAE <- as.Date(data$DTNASCMAE, format = "%d%m%Y")
+    data <- data %>%
+      dplyr::mutate(DTNASCMAE = as.Date(.data$DTNASCMAE, format = "%d%m%Y"))
   }
 
   # RACACORMAE
   if("RACACORMAE" %in% variables_names){
-    data$RACACORMAE <- as.numeric(data$RACACORMAE)
-    data$RACACORMAE[data$RACACORMAE==1] <- "Branca"
-    data$RACACORMAE[data$RACACORMAE==2] <- "Preta"
-    data$RACACORMAE[data$RACACORMAE==3] <- "Amarela"
-    data$RACACORMAE[data$RACACORMAE==4] <- "Parda"
-    data$RACACORMAE[data$RACACORMAE==5] <- "Ind\\u00edgena"
-    data$RACACORMAE <- factor(data$RACACORMAE)
+    data <- data %>%
+      dplyr::mutate(RACACORMAE = dplyr::case_match(
+        .data$RACACORMAE,
+        "1" ~ "Branca",
+        "2" ~ "Preta",
+        "3" ~ "Amarela",
+        "4" ~ "Parda",
+        "5" ~ "Ind\\u00edgena",
+        .default = .data$RACACORMAE
+      )) %>%
+      dplyr::mutate(RACACORMAE = as.factor(.data$RACACORMAE))
   }
 
   # QTDGESTANT
   if("QTDGESTANT" %in% variables_names){
-    data$QTDGESTANT <- as.numeric(data$QTDGESTANT)
+    data <- data %>%
+      dplyr::mutate(QTDGESTANT = as.numeric(.data$QTDGESTANT))
   }
 
   # QTDPARTNOR
   if("QTDPARTNOR" %in% variables_names){
-    data$QTDPARTNOR <- as.numeric(data$QTDPARTNOR)
+    data <- data %>%
+      dplyr::mutate(QTDPARTNOR = as.numeric(.data$QTDPARTNOR))
   }
 
   # QTDPARTCES
   if("QTDPARTCES" %in% variables_names){
-    data$QTDPARTCES <- as.numeric(data$QTDPARTCES)
+    data <- data %>%
+      dplyr::mutate(QTDPARTCES = as.numeric(.data$QTDPARTCES))
   }
 
   # IDADEPAI
   if("IDADEPAI" %in% variables_names){
-    data$IDADEPAI <- as.numeric(data$IDADEPAI)
-    data$IDADEPAI[data$IDADEPAI==0] <- NA
-    data$IDADEPAI[data$IDADEPAI==99] <- NA
+    data <- data %>%
+      dplyr::mutate(IDADEPAI = dplyr::case_match(
+        .data$IDADEPAI,
+        "0" ~ NA,
+        "99" ~ NA,
+        .default = .data$IDADEPAI
+      )) %>%
+      dplyr::mutate(IDADEPAI = as.numeric(.data$IDADEPAI))
   }
 
   # DTULTMENST
   if("DTULTMENST" %in% variables_names){
-    data$DTULTMENST <- as.Date(data$DTULTMENST, format = "%d%m%Y")
+    data <- data %>%
+      dplyr::mutate(DTULTMENST = as.Date(.data$DTULTMENST, format = "%d%m%Y"))
   }
 
   # SEMAGESTAC
   if("SEMAGESTAC" %in% variables_names){
-    data$SEMAGESTAC <- as.numeric(as.character(data$SEMAGESTAC))
+    data <- data %>%
+      dplyr::mutate(SEMAGESTAC = as.numeric(.data$SEMAGESTAC))
   }
 
   # TPMETESTIM
   if("TPMETESTIM" %in% variables_names){
-    data$TPMETESTIM <- as.numeric(data$TPMETESTIM)
+    data <- data %>%
+      dplyr::mutate(TPMETESTIM = as.numeric(.data$TPMETESTIM))
   }
 
   # CONSPRENAT
   if("CONSPRENAT" %in% variables_names){
-    data$CONSPRENAT <- as.numeric(data$CONSPRENAT)
+    data <- data %>%
+      dplyr::mutate(CONSPRENAT = as.numeric(.data$CONSPRENAT))
   }
 
   # MESPRENAT
   if("MESPRENAT" %in% variables_names){
-    data$MESPRENAT <- as.numeric(data$MESPRENAT)
+    data <- data %>%
+      dplyr::mutate(MESPRENAT = as.numeric(.data$MESPRENAT))
   }
 
   # TPAPRESENT
   if("TPAPRESENT" %in% variables_names){
-    data$TPAPRESENT <- as.numeric(data$TPAPRESENT)
+    data <- data %>%
+      dplyr::mutate(TPAPRESENT = as.numeric(.data$TPAPRESENT))
   }
 
   # STTRABPART
   if("STTRABPART" %in% variables_names){
-    data$STTRABPART <- as.numeric(data$STTRABPART)
+    data <- data %>%
+      dplyr::mutate(STTRABPART = as.numeric(.data$STTRABPART))
   }
 
   # STCESPARTO
   if("STCESPARTO" %in% variables_names){
-    data$STCESPARTO <- as.numeric(data$STCESPARTO)
+    data <- data %>%
+      dplyr::mutate(STCESPARTO = as.numeric(.data$STCESPARTO))
   }
 
   # TPNASCASSI
   if("TPNASCASSI" %in% variables_names){
-    data$TPNASCASSI <- as.numeric(data$TPNASCASSI)
+    data <- data %>%
+      dplyr::mutate(TPNASCASSI = as.numeric(.data$TPNASCASSI))
   }
 
   # TPFUNCRESP
   if("TPFUNCRESP" %in% variables_names){
-    data$TPFUNCRESP <- as.numeric(data$TPFUNCRESP)
+    data <- data %>%
+      dplyr::mutate(TPFUNCRESP = as.numeric(.data$TPFUNCRESP))
   }
 
   # TPDOCRESP
   if("TPDOCRESP" %in% variables_names){
-    data$TPDOCRESP <- as.numeric(data$TPDOCRESP)
+    data <- data %>%
+      dplyr::mutate(TPDOCRESP = as.numeric(.data$TPDOCRESP))
   }
 
   # DTDECLARAC
   if("DTDECLARAC" %in% variables_names){
-    data$DTDECLARAC <- as.Date(data$DTDECLARAC, format = "%d%m%Y")
+    data <- data %>%
+      dplyr::mutate(DTDECLARAC = as.Date(.data$DTDECLARAC, format = "%d%m%Y"))
   }
 
   # ESCMAEAGR1
   if("ESCMAEAGR1" %in% variables_names){
-    data$ESCMAEAGR1 <- as.numeric(data$ESCMAEAGR1)
+    data <- data %>%
+      dplyr::mutate(ESCMAEAGR1 = as.numeric(.data$ESCMAEAGR1))
   }
 
   # TPROBSON
   if("TPROBSON" %in% variables_names){
-    data$TPROBSON <- as.numeric(data$TPROBSON)
+    data <- data %>%
+      dplyr::mutate(TPROBSON = as.numeric(.data$TPROBSON))
   }
 
   # STDNEPIDEM
   if("STDNEPIDEM" %in% variables_names){
-    data$STDNEPIDEM <- as.numeric(data$STDNEPIDEM)
+    data <- data %>%
+      dplyr::mutate(STDNEPIDEM = as.numeric(.data$STDNEPIDEM))
   }
 
   # STDNNOVA
   if("STDNNOVA" %in% variables_names){
-    data$STDNNOVA <- as.numeric(data$STDNNOVA)
+    data <- data %>%
+      dplyr::mutate(STDNNOVA = as.numeric(.data$STDNNOVA))
   }
 
   # CODPAISRES
   if("CODPAISRES" %in% variables_names){
-    data$CODPAISRES <- as.numeric(data$CODPAISRES)
+    data <- data %>%
+      dplyr::mutate(CODPAISRES = as.numeric(.data$CODPAISRES))
   }
 
   # PARIDADE
   if("PARIDADE" %in% variables_names){
-    data$PARIDADE <- as.numeric(data$PARIDADE)
+    data <- data %>%
+      dplyr::mutate(PARIDADE = as.numeric(.data$PARIDADE))
   }
+
+  # From data.table to tibble
+  data <- tibble::as_tibble(data)
 
   # Purge levels
   data <- droplevels(data)
 
   # Unescape unicode characters
-  data <- as.data.frame(lapply(X = data, FUN = stringi::stri_unescape_unicode))
+  data <- suppressWarnings(tibble::as_tibble(lapply(X = data, FUN = stringi::stri_unescape_unicode)))
 
   # Return
   return(data)

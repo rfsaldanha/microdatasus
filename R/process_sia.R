@@ -948,7 +948,7 @@ process_sia <- function(data, information_system = "SIA-PA", nome_proced = TRUE,
   data <- droplevels(data.table::as.data.table(data))
 
   # Unescape unicode characters
-  data <- tibble::as_tibble(lapply(X = data, FUN = stringi::stri_unescape_unicode))
+  data <- suppressWarnings(tibble::as_tibble(lapply(X = data, FUN = stringi::stri_unescape_unicode)))
 
   # Return
   return(data)

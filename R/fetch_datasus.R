@@ -15,6 +15,7 @@
 #' @param vars an optional string or a vector of strings. By default, all variables read and stored, unless a list of desired variables is informed by this parameter.
 #' @param stop_on_error logical. If TRUE, the download process will be stopped if an error occurs.
 #' @param timeout numeric (seconds). Sets a timeout tolerance for downloads, usefull on large files and/or slow connections. Defaults to 240 seconds.
+#' @param track_source logical. If `TRUE`, adds a column called `source` with the downloaded file name.
 #'
 #' @section Warning:
 #' A Internet connection is needed to use this function.
@@ -40,7 +41,7 @@
 #' }
 #' @export
 
-fetch_datasus <- function(year_start, month_start = NULL, year_end, month_end = NULL, uf = "all", information_system, vars = NULL, stop_on_error = FALSE, timeout = 240){
+fetch_datasus <- function(year_start, month_start = NULL, year_end, month_end = NULL, uf = "all", information_system, vars = NULL, stop_on_error = FALSE, timeout = 240, track_source = FALSE){
   # Resets original timeout option on function exit
   original_time_option <- getOption("timeout")
   on.exit(options(timeout = original_time_option))
@@ -1228,6 +1229,11 @@ fetch_datasus <- function(year_start, month_start = NULL, year_end, month_end = 
 
     # Merge files
     if(nrow(partial) > 0){
+
+      if(track_source == TRUE){
+        partial$source <- basename(file)
+      }
+
       if(!all(vars %in% names(partial))) cli::cli_abort("One or more variables names are unknown. Typo?")
       if(is.null(vars)){
         data <- dplyr::bind_rows(data, partial)
