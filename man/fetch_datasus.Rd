@@ -13,7 +13,8 @@ fetch_datasus(
   information_system,
   vars = NULL,
   stop_on_error = FALSE,
-  timeout = 240
+  timeout = 240,
+  track_source = FALSE
 )
 }
 \arguments{
@@ -30,6 +31,8 @@ fetch_datasus(
 \item{stop_on_error}{logical. If TRUE, the download process will be stopped if an error occurs.}
 
 \item{timeout}{numeric (seconds). Sets a timeout tolerance for downloads, usefull on large files and/or slow connections. Defaults to 240 seconds.}
+
+\item{track_source}{logical. If \code{TRUE}, adds a column called \code{source} with the downloaded file name.}
 }
 \description{
 \code{fetch_datasus} downloads microdata (DBC) files from DataSUS and reads them.
