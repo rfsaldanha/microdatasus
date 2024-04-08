@@ -235,7 +235,7 @@ process_sinan_malaria <- function(data, municipality_data = TRUE){
         .data$CLASSI_FIN,
         "1" ~ "Confirmado",
         "2" ~ "Descartado",
-        .default = CLASSI_FIN
+        .default = .data$CLASSI_FIN
       )) %>%
       dplyr::mutate(CLASSI_FIN = as.factor(.data$CLASSI_FIN))
   }

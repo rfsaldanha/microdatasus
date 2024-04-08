@@ -236,7 +236,7 @@ process_sinan_zika <- function(data, municipality_data = TRUE){
         "1" ~ "Confirmado",
         "2" ~ "Descartado",
         "8" ~ "Inconclusivo",
-        .default = CLASSI_FIN
+        .default = .data$CLASSI_FIN
       )) %>%
       dplyr::mutate(CLASSI_FIN = as.factor(.data$CLASSI_FIN))
   }
