@@ -6,4 +6,4 @@ cadger$CNES <- as.integer(cadger$CNES)
 Encoding(cadger$FANTASIA) <- "latin1"
 cadger$FANTASIA <- stringi::stri_escape_unicode(str = cadger$FANTASIA)
 
-usethis::use_data(cadger, overwrite = TRUE)
+usethis::use_data(cadger, overwrite = TRUE, compress = "xz")
