@@ -2221,7 +2221,7 @@ process_cnes <- function(data, information_system = c("CNES-ST", "CNES-PF"), nom
     # CPF_CNPJ
     if("CPF_CNPJ" %in% variables_names){
       data <- data %>%
-        dplyr::mutate(CPF_CNPJ = as.integer(.data$CPF_CNPJ))
+        dplyr::mutate(CPF_CNPJ = as.numeric(.data$CPF_CNPJ))
     }
 
     # NIV_DEP
@@ -2241,7 +2241,7 @@ process_cnes <- function(data, information_system = c("CNES-ST", "CNES-PF"), nom
     # CNPJ_MAN
     if("CNPJ_MAN" %in% variables_names){
       data <- data %>%
-        dplyr::mutate(CNPJ_MAN = as.integer(.data$CNPJ_MAN))
+        dplyr::mutate(CNPJ_MAN = as.numeric(.data$CNPJ_MAN))
     }
 
     # ESFERA_A
