@@ -2,7 +2,8 @@
 * All process functions uses dplyr verbs and dtplyr for fast processing.
 * All process functions returns a tibble.
 * Add `track_source` argument to `fetch_datasus` function to create a variable called `source` with the file name that originated the row.
-* Updated CBO reference table.
+* Updated CBO (CNES), CADGER (CNES), EQUIPE (SIA), SIGTAB (SIA) reference tables.
+* Data files with XZ compression.
 * Progress bar removed from `process_sim` due increased processing time.
 
 # microdatasus 2.2.7
