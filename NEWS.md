@@ -1,6 +1,7 @@
 # microdatasus 2.3.1
 * Import read.dbc package from CRAN
 * Remove CADGER data
+* General package adjustments for CRAN submission.
 
 # microdatasus 2.3.0
 * All process functions uses dplyr verbs and dtplyr for fast processing.
