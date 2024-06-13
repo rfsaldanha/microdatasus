@@ -1,5 +1,5 @@
 Package: microdatasus
-Title: Download and Preprocess 'DataSUS' Files
+Title: Download and Process 'DataSUS' Files
 Version: 2.3.1
 Authors@R: 
     person(given = "Raphael",
@@ -9,7 +9,7 @@ Authors@R:
            comment = c(ORCID = "0000-0003-0652-8466"))
 URL: https://github.com/rfsaldanha/microdatasus, https://rfsaldanha.github.io/microdatasus/
 BugReports: https://github.com/rfsaldanha/microdatasus/issues
-Description: Downloads data files from 'DataSUS' health information systems from <ftp.datasus.gov.br> and pre-process the data, including labeling categorical variables.
+Description: Downloads data files from 'DataSUS' health information systems from <ftp.datasus.gov.br> and process the data, including labeling categorical variables.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
