@@ -12,3 +12,4 @@ README.md
 ^docs$
 ^pkgdown$
 ^vignettes/articles$
+^CRAN-SUBMISSION$
