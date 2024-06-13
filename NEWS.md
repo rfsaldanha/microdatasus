@@ -1,3 +1,6 @@
+# microdatasus 2.3.1
+* Import read.dbc package from CRAN
+
 # microdatasus 2.3.0
 * All process functions uses dplyr verbs and dtplyr for fast processing.
 * All process functions returns a tibble.
