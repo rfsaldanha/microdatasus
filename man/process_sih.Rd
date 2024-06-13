@@ -22,12 +22,5 @@ This function processes SIH variables retrieved by \code{fetch_datasus()}, infor
 Currently, only "SIH-RD" is supported.
 }
 \examples{
-\dontrun{
-df <- fetch_datasus(year_start = 2010, month_start = 1,
-                    year_end = 2010, month_end = 1,
-                    uf = "RJ",
-                    information_system = "SIH-RD")
-df_a <- process_sih(df)
-df_b <- process_sih(df, municipality_data = FALSE)
-}
+process_sih(sih_rd_sample)
 }

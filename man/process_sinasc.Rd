@@ -18,11 +18,5 @@ process_sinasc(data, municipality_data = TRUE)
 This function processes SINASC variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
 }
 \examples{
-\dontrun{
-df <- fetch_datasus(year_start = 2010, year_end = 2010,
-                    uf = "RJ",
-                    information_system = "SINASC")
-df_a <- process_sinasc(df)
-df_b <- process_sinasc(df, municipality_data = FALSE)
-}
+process_sinasc(sinasc_sample)
 }

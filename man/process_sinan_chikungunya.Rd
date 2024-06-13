@@ -17,11 +17,3 @@ process_sinan_chikungunya(data, municipality_data = TRUE)
 \details{
 This function processes SINAN Chikungunya variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
 }
-\examples{
-\dontrun{
-df <- fetch_datasus(year_start = 2016, year_end = 2016,
-uf = "RJ", information_system = "SINAN-CHIKUNGUNYA-FINAL")
-df_a <- process_sinan_chikungunya(df)
-df_b <- process_sinan_chikungunya(df, municipality_data = FALSE)
-}
-}

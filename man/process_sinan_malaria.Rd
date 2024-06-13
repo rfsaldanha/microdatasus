@@ -18,10 +18,5 @@ process_sinan_malaria(data, municipality_data = TRUE)
 This function processes SINAN Malaria variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
 }
 \examples{
-\dontrun{
-df <- fetch_datasus(year_start = 2016, year_end = 2016,
-uf = "RJ", information_system = "SINAN-MALARIA-FINAL")
-df_a <- process_sinan_malaria(df)
-df_b <- process_sinan_malaria(df, municipality_data = FALSE)
-}
+process_sinan_malaria(sinan_malaria_sample)
 }

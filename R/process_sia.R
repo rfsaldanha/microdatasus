@@ -13,14 +13,8 @@
 #' @param nome_equipe optional logical. \code{TRUE} by default, add  \code{EQUIPE} name to the dataset.
 #' @param municipality_data optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.
 #'
-#' @examples \dontrun{
-#' df <- fetch_datasus(year_start = 2010, month_start = 1,
-#'                     year_end = 2010, month_end = 1,
-#'                     uf = "RJ",
-#'                     information_system = "SIA-PA")
-#' df_a <- process_sia(df)
-#' df_b <- process_sia(df, municipality_data = FALSE)
-#' }
+#' @examples
+#' process_sia(sia_pa_sample, nome_proced = FALSE)
 #' @export
 #' @importFrom rlang .data
 

@@ -27,12 +27,6 @@ process_cnes(
 This function processes CNES-ST (Estabelecimentos) or CNES-PF (Pessoa f\\u00edsica) variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
 }
 \examples{
-\dontrun{
-df <- fetch_datasus(year_start = 2015, month_start = 1,
-                    year_end = 2015, month_end = 1,
-                    uf = "RJ",
-                    information_system = "CNES-ST")
-df_a <- process_cnes(df, information_system = "CNES-ST")
-df_b <- process_cnes(df, information_system = "CNES-ST", nomes = FALSE, municipality_data = FALSE)
-}
+process_cnes(cnes_st_sample, information_system = "CNES-ST")
+process_cnes(cnes_pf_sample, information_system = "CNES-PF")
 }

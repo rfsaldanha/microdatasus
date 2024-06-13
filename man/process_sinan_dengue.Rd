@@ -18,10 +18,5 @@ process_sinan_dengue(data, municipality_data = TRUE)
 This function processes SINAN Dengue variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
 }
 \examples{
-\dontrun{
-df <- fetch_datasus(year_start = 2016, year_end = 2016,
-uf = "RJ", information_system = "SINAN-DENGUE-FINAL")
-df_a <- process_sinan_dengue(df)
-df_b <- process_sinan_dengue(df, municipality_data = FALSE)
-}
+process_sinan_dengue(sinan_dengue_sample)
 }

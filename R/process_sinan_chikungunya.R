@@ -7,12 +7,8 @@
 #' @param data \code{data.frame} created by \code{fetch_datasus()}.
 #' @param municipality_data optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.
 #'
-#' @examples \dontrun{
-#' df <- fetch_datasus(year_start = 2016, year_end = 2016,
-#' uf = "RJ", information_system = "SINAN-CHIKUNGUNYA-FINAL")
-#' df_a <- process_sinan_chikungunya(df)
-#' df_b <- process_sinan_chikungunya(df, municipality_data = FALSE)
-#' }
+#' @examples}
+#' process_sinan_chikungunya(sinan_chikungunya_sample)
 #' @export
 
 process_sinan_chikungunya <- function(data, municipality_data = TRUE){

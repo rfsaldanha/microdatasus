@@ -7,13 +7,8 @@
 #' @param data \code{data.frame} created by \code{fetch_datasus()}.
 #' @param municipality_data optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.
 #'
-#' @examples \dontrun{
-#' df <- fetch_datasus(year_start = 2010, year_end = 2010,
-#'                     uf = "RJ",
-#'                     information_system = "SIM-DO")
-#' df_a <- process_sim(df)
-#' df_b <- process_sim(df, municipality_data = FALSE)
-#' }
+#' @examples
+#' process_sim(sim_do_sample)
 #' @export
 
 process_sim <- function(data, municipality_data = TRUE) {
