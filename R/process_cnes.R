@@ -36,14 +36,6 @@ process_cnes <- function(data, information_system = c("CNES-ST", "CNES-PF"), nom
         dplyr::mutate(CNES = as.character(.data$CNES))
     }
 
-    # Nome fantasia e razão social
-    if(nomes == TRUE){
-      data <- data %>%
-        dplyr::mutate(CNES_integer = as.integer(.data$CNES)) %>%
-        dplyr::left_join(microdatasus::cadger, by = c("CNES_integer" = "CNES")) %>%
-        dplyr::select(-"CNES_integer")
-    }
-
     # CODUFMUN
     if ("CODUFMUN" %in% variables_names & municipality_data == TRUE) {
       colnames(tabMun)[1] <- "CODUFMUN"
