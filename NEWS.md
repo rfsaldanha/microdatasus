@@ -1,7 +1,8 @@
 # microdatasus 2.3.1
-* Import read.dbc package from CRAN
-* Remove CADGER data
+* Import read.dbc package from CRAN.
+* Remove CADGER data.
 * General package adjustments for CRAN submission.
+* Examples of process functions use data samples.
 
 # microdatasus 2.3.0
 * All process functions uses dplyr verbs and dtplyr for fast processing.
