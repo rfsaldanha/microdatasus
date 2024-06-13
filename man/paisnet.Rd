@@ -12,9 +12,6 @@ A data frame with 266 rows and 3 variables:
 \item{NM_PAIS}{Label}
 }
 }
-\source{
-\url{ftp://ftp.datasus.gov.br/dissemin/publicos/SINAN/AUXILIAR/TAB_SINANNET.zip}
-}
 \usage{
 paisnet
 }

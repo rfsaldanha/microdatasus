@@ -8,5 +8,4 @@
 #'   \item{COPAISINF}{Contry code 2}
 #'   \item{NM_PAIS}{Label}
 #' }
-#' @source \url{ftp://ftp.datasus.gov.br/dissemin/publicos/SINAN/AUXILIAR/TAB_SINANNET.zip}
 "paisnet"

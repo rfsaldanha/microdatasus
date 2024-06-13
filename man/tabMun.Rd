@@ -19,9 +19,6 @@ A data frame with 5659 rows and 2 variables:
 
 }
 }
-\source{
-\url{ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/TAB/OBITOS_CID10_TAB.ZIP}
-}
 \usage{
 tabMun
 }

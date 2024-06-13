@@ -7,5 +7,4 @@
 #'   \item{COD}{Code}
 #'   \item{equipe_ref}{Label}
 #' }
-#' @source \url{ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Auxiliar/TAB_SIA.zip}
 "equipe"

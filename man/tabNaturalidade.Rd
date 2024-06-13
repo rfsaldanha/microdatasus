@@ -11,9 +11,6 @@ A data frame with 292 rows and 2 variables:
 \item{nome}{Label}
 }
 }
-\source{
-\url{ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/TAB/OBITOS_CID10_TAB.ZIP}
-}
 \usage{
 tabNaturalidade
 }

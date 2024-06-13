@@ -15,5 +15,4 @@
 #'   \item{munResArea}{Area}
 #'
 #' }
-#' @source \url{ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/TAB/OBITOS_CID10_TAB.ZIP}
 "tabMun"
