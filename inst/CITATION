@@ -1,0 +1,11 @@
+bibentry(
+  bibtype  = "Article",
+  title    = "Microdatasus: pacote para download e pré-processamento de microdados do Departamento de Informática do SUS (DATASUS)",
+  author   = "Saldanha, Raphael and Bastos, Ronaldo and Barcellos, Christovam",
+  journal  = "Cadernos de Saúde Pública",
+  year     = "2019",
+  volume   = "35",
+  number   = "9",
+  pages    = "1-9",
+  doi      = "10.1590/0102-311x00032419"
+)
