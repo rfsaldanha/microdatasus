@@ -112,6 +112,12 @@
 
 </dl></div>
     <div class="section level2">
+    <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
+    
+
+<p>a <code>data.frame</code> with the contents of the DBC files.</p>
+    </div>
+    <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This function downloads DBC files from DataSUS following parameters about start date, end date, UF and health information system abbreviation. After the download process, the files are merged into a unique <code>data.frame</code> object.</p>
 <p>A specific UF or a vector of UFs can be informed using the following abbreviations: "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO".</p>
@@ -122,6 +128,7 @@
     
 
 <p>A Internet connection is needed to use this function.</p>
+<p>Currently, DataSUS FTP server is restricting download calls from some countries, except Brazil.</p>
 <p>The year and month used to download the files regards the processing month and year of the cases by DataSUS.</p>
 <p>The UF regards where the cases were processed by DataSUS.</p>
 <p>The files are downloaded to a temporary folder and deleted after the reading process.</p>
@@ -129,14 +136,17 @@
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># curl::has_internet() &amp; RCurl::url.exists("ftp.datasus.gov.br",      timeout.ms = 100)</span></span></span>
+<span class="r-in"><span><span class="co"># Fetch two years of data from SIM-DO</span></span></span>
 <span class="r-in"><span><span class="fu">fetch_datasus</span><span class="op">(</span>year_start <span class="op">=</span> <span class="fl">2010</span>, year_end <span class="op">=</span> <span class="fl">2011</span>,</span></span>
 <span class="r-in"><span>              information_system <span class="op">=</span> <span class="st">"SIM-DO"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Fetch one year of data from SIM-DO and keep only three variables</span></span></span>
 <span class="r-in"><span><span class="fu">fetch_datasus</span><span class="op">(</span>year_start <span class="op">=</span> <span class="fl">2014</span>, year_end <span class="op">=</span> <span class="fl">2014</span>,</span></span>
 <span class="r-in"><span>              information_system <span class="op">=</span> <span class="st">"SIM-DO"</span>,</span></span>
 <span class="r-in"><span>              vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CODMUNRES"</span>, <span class="st">"DTOBITO"</span>, <span class="st">"CAUSABAS"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Fetch some months' data from SIH-RD for four states</span></span></span>
 <span class="r-in"><span><span class="fu">fetch_datasus</span><span class="op">(</span>year_start <span class="op">=</span> <span class="fl">2014</span>, month_start <span class="op">=</span> <span class="fl">1</span>,</span></span>
 <span class="r-in"><span>              year_end <span class="op">=</span> <span class="fl">2014</span>, month_end <span class="op">=</span> <span class="fl">2</span>,</span></span>
 <span class="r-in"><span>              uf <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"RJ"</span>, <span class="st">"MG"</span>, <span class="st">"SP"</span>, <span class="st">"ES"</span><span class="op">)</span>,</span></span>

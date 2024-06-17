@@ -77,10 +77,42 @@
 
 </dl></div>
     <div class="section level2">
+    <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
+    
+
+<p>a <code>data.frame</code> with the processed data.</p>
+    </div>
+    <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This function processes SINAN Chikungunya variables retrieved by <code><a href="fetch_datasus.html">fetch_datasus()</a></code>, informing labels for categoric variables including NA values.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">process_sinan_chikungunya</span><span class="op">(</span><span class="va">sinan_chikungunya_sample</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 100 × 136</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    TP_NOT    ID_AGRAVO DT_NOTIFIC SEM_NOT NU_ANO SG_UF_NOT ID_MUNICIP ID_REGIONA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> Individu… A92.0     2022-01-08 202201  2022   Acre      120033     1941      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> Individu… A92.0     2022-02-16 202207  2022   Acre      120033     1941      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> Individu… A92.0     2022-01-26 202204  2022   Acre      120033     1941      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> Individu… A92.0     2022-01-08 202201  2022   Acre      120033     1941      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> Individu… A92.0     2022-01-26 202204  2022   Acre      120033     1941      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> Individu… A92.0     2022-01-05 202201  2022   Acre      120033     1941      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> Individu… A92.0     2022-12-30 202252  2022   Acre      120020     1941      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> Individu… A92.0     2022-11-14 202246  2022   Acre      120020     1941      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> Individu… A92.0     2022-05-19 202220  2022   Acre      120020     1941      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> Individu… A92.0     2022-01-31 202205  2022   Acre      120020     1941      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 90 more rows</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 128 more variables: ID_UNIDADE &lt;chr&gt;, DT_SIN_PRI &lt;chr&gt;, SEM_PRI &lt;chr&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   ANO_NASC &lt;chr&gt;, NU_IDADE_N &lt;chr&gt;, CS_SEXO &lt;chr&gt;, CS_GESTANT &lt;chr&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   CS_RACA &lt;chr&gt;, CS_ESCOL_N &lt;chr&gt;, SG_UF &lt;chr&gt;, ID_MN_RESI &lt;chr&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   ID_RG_RESI &lt;chr&gt;, ID_PAIS &lt;chr&gt;, DT_INVEST &lt;chr&gt;, ID_OCUPA_N &lt;chr&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   FEBRE &lt;chr&gt;, MIALGIA &lt;chr&gt;, CEFALEIA &lt;chr&gt;, EXANTEMA &lt;chr&gt;, VOMITO &lt;chr&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   NAUSEA &lt;chr&gt;, DOR_COSTAS &lt;chr&gt;, CONJUNTVIT &lt;chr&gt;, ARTRITE &lt;chr&gt;, …</span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>
 
