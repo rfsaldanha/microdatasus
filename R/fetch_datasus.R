@@ -31,20 +31,19 @@
 #' @examplesIf curl::has_internet() & RCurl::url.exists("ftp.datasus.gov.br", .opts = list(timeout = 3))
 #' \donttest{
 #' # Fetch two years of data from SIM-DO
-#' fetch_datasus(year_start = 2010, year_end = 2011,
-#'               information_system = "SIM-DO")
+#' res <- fetch_datasus(year_start = 2010, year_end = 2011, uf = "AC",
+#'                      information_system = "SIM-DO")
 #'
 #' # Fetch one year of data from SIM-DO and keep only three variables
-#' fetch_datasus(year_start = 2014, year_end = 2014,
-#'               information_system = "SIM-DO",
-#'               vars = c("CODMUNRES", "DTOBITO", "CAUSABAS"))
+#' res <- fetch_datasus(year_start = 2014, year_end = 2014,
+#'                      information_system = "SIM-DO", uf = "AC",
+#'                      vars = c("CODMUNRES", "DTOBITO", "CAUSABAS"))
 #'
 #' # Fetch some months' data from SIH-RD for four states
-#' fetch_datasus(year_start = 2014, month_start = 1,
-#'               year_end = 2014, month_end = 2,
-#'               uf = c("AC", "RR"),
-#'               information_system = "SIH-RD")
-#' }
+#' res <- fetch_datasus(year_start = 2014, month_start = 1,
+#'                      year_end = 2014, month_end = 2,
+#'                      uf = c("AC", "RR"),
+#'                      information_system = "SIH-RD")
 #'
 #' @return a \code{data.frame} with the contents of the DBC files.
 #'
