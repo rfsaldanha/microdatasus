@@ -29,6 +29,7 @@
 #' The files are downloaded to a temporary folder and deleted after the reading process.
 #'
 #' @examplesIf curl::has_internet() & RCurl::url.exists("ftp.datasus.gov.br", .opts = list(timeout = 3))
+#' \donttest{
 #' # Fetch two years of data from SIM-DO
 #' fetch_datasus(year_start = 2010, year_end = 2011,
 #'               information_system = "SIM-DO")
@@ -43,6 +44,7 @@
 #'               year_end = 2014, month_end = 2,
 #'               uf = c("RJ", "MG", "SP", "ES"),
 #'               information_system = "SIH-RD")
+#' }
 #'
 #' @return a \code{data.frame} with the contents of the DBC files.
 #'
@@ -107,7 +109,7 @@ fetch_datasus <- function(year_start, month_start = NULL, year_end, month_end = 
   }
 
   # Check DataSUS FTP server
-  datasus_ftp_connection <- RCurl::url.exists("ftp.datasus.gov.br", timeout.ms = 5000)
+  datasus_ftp_connection <- RCurl::url.exists("ftp.datasus.gov.br", .opts = list(timeout = timeout))
   if(datasus_ftp_connection == TRUE){
     cli::cli_alert_info("DataSUS FTP server seems to be up and reachable.")
     cli::cli_alert_info("Starting download...")
