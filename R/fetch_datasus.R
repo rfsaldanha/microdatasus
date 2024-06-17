@@ -28,7 +28,7 @@
 #'
 #' The files are downloaded to a temporary folder and deleted after the reading process.
 #'
-#' @examplesIf curl::has_internet() & RCurl::url.exists("ftp.datasus.gov.br", timeout.ms = 100)
+#' @examplesIf curl::has_internet() & RCurl::url.exists("ftp.datasus.gov.br", .opts = list(timeout.ms = 100))
 #' # Fetch two years of data from SIM-DO
 #' fetch_datasus(year_start = 2010, year_end = 2011,
 #'               information_system = "SIM-DO")
