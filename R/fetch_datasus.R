@@ -42,7 +42,7 @@
 #' # Fetch some months' data from SIH-RD for four states
 #' fetch_datasus(year_start = 2014, month_start = 1,
 #'               year_end = 2014, month_end = 2,
-#'               uf = c("RJ", "MG", "SP", "ES"),
+#'               uf = c("AC", "RR"),
 #'               information_system = "SIH-RD")
 #' }
 #'
@@ -92,7 +92,7 @@ fetch_datasus <- function(year_start, month_start = NULL, year_end, month_end = 
 
   # Check UF
   ufs <- c("AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO")
-  checkmate::assert_choice(x = uf, choices = c("all",ufs))
+  checkmate::assert_subset(x = uf, choices = c("all",ufs))
 
   # Check UF for SINAN files
   if(information_system %in% sisSINAN & uf[1] != "all"){

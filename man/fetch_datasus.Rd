@@ -75,7 +75,7 @@ fetch_datasus(year_start = 2014, year_end = 2014,
 # Fetch some months' data from SIH-RD for four states
 fetch_datasus(year_start = 2014, month_start = 1,
               year_end = 2014, month_end = 2,
-              uf = c("RJ", "MG", "SP", "ES"),
+              uf = c("AC", "RR"),
               information_system = "SIH-RD")
 }
 \dontshow{\}) # examplesIf}
