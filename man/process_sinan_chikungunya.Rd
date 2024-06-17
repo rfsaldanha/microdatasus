@@ -11,9 +11,16 @@ process_sinan_chikungunya(data, municipality_data = TRUE)
 
 \item{municipality_data}{optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.}
 }
+\value{
+a \code{data.frame} with the processed data.
+}
 \description{
 \code{process_sinan_chikungunya} processes SINAN Chikungunya variables retrieved by \code{fetch_datasus()}.
 }
 \details{
 This function processes SINAN Chikungunya variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
+}
+\examples{
+process_sinan_chikungunya(sinan_chikungunya_sample)
+
 }

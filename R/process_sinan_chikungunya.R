@@ -7,8 +7,11 @@
 #' @param data \code{data.frame} created by \code{fetch_datasus()}.
 #' @param municipality_data optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.
 #'
-#' @examples}
+#' @examples
 #' process_sinan_chikungunya(sinan_chikungunya_sample)
+#'
+#' @return a \code{data.frame} with the processed data.
+#'
 #' @export
 
 process_sinan_chikungunya <- function(data, municipality_data = TRUE){

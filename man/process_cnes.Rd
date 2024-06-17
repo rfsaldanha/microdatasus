@@ -20,6 +20,9 @@ process_cnes(
 
 \item{municipality_data}{optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.}
 }
+\value{
+a \code{data.frame} with the processed data.
+}
 \description{
 \code{process_cnes} processes CNES variables retrieved by \code{fetch_datasus()}.
 }
@@ -29,4 +32,5 @@ This function processes CNES-ST (Estabelecimentos) or CNES-PF (Pessoa f\\u00edsi
 \examples{
 process_cnes(cnes_st_sample, information_system = "CNES-ST")
 process_cnes(cnes_pf_sample, information_system = "CNES-PF")
+
 }

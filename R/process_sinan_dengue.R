@@ -9,6 +9,9 @@
 #'
 #' @examples
 #' process_sinan_dengue(sinan_dengue_sample)
+#'
+#' @return a \code{data.frame} with the processed data.
+#'
 #' @export
 
 process_sinan_dengue <- function(data, municipality_data = TRUE){

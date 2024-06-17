@@ -26,6 +26,9 @@ process_sia(
 
 \item{municipality_data}{optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.}
 }
+\value{
+a \code{data.frame} with the processed data.
+}
 \description{
 \code{process_sia} processes SIA variables retrieved by \code{fetch_datasus()}.
 }
@@ -36,4 +39,5 @@ Currently, only "SIA-PA" is supported.
 }
 \examples{
 process_sia(sia_pa_sample, nome_proced = FALSE)
+
 }

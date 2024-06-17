@@ -9,6 +9,9 @@
 #'
 #' @examples
 #' process_sim(sim_do_sample)
+#'
+#' @return a \code{data.frame} with the processed data.
+#'
 #' @export
 
 process_sim <- function(data, municipality_data = TRUE) {

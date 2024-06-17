@@ -13,6 +13,9 @@ process_sih(data, information_system = "SIH-RD", municipality_data = TRUE)
 
 \item{municipality_data}{optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.}
 }
+\value{
+a \code{data.frame} with the processed data.
+}
 \description{
 \code{process_SIH} processes SIH variables retrieved by \code{fetch_datasus()}.
 }
@@ -23,4 +26,5 @@ Currently, only "SIH-RD" is supported.
 }
 \examples{
 process_sih(sih_rd_sample)
+
 }

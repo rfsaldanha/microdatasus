@@ -11,6 +11,9 @@ process_sinan_dengue(data, municipality_data = TRUE)
 
 \item{municipality_data}{optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.}
 }
+\value{
+a \code{data.frame} with the processed data.
+}
 \description{
 \code{process_sinan_dengue} processes SINAN Dengue variables retrieved by \code{fetch_datasus()}.
 }
@@ -19,4 +22,5 @@ This function processes SINAN Dengue variables retrieved by \code{fetch_datasus(
 }
 \examples{
 process_sinan_dengue(sinan_dengue_sample)
+
 }

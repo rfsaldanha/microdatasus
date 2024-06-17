@@ -9,6 +9,9 @@
 #'
 #' @examples
 #' process_sinasc(sinasc_sample)
+#'
+#' @return a \code{data.frame} with the processed data.
+#'
 #' @export
 
 process_sinasc <- function(data, municipality_data = TRUE) {

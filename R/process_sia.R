@@ -15,6 +15,9 @@
 #'
 #' @examples
 #' process_sia(sia_pa_sample, nome_proced = FALSE)
+#'
+#' @return a \code{data.frame} with the processed data.
+#'
 #' @export
 #' @importFrom rlang .data
 

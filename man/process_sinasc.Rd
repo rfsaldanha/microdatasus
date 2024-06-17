@@ -11,6 +11,9 @@ process_sinasc(data, municipality_data = TRUE)
 
 \item{municipality_data}{optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.}
 }
+\value{
+a \code{data.frame} with the processed data.
+}
 \description{
 \code{process_sinasc} processes SINASC variables retrieved by \code{fetch_datasus()}.
 }
@@ -19,4 +22,5 @@ This function processes SINASC variables retrieved by \code{fetch_datasus()}, in
 }
 \examples{
 process_sinasc(sinasc_sample)
+
 }

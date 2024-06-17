@@ -34,6 +34,9 @@ fetch_datasus(
 
 \item{track_source}{logical. If \code{TRUE}, adds a column called \code{source} with the downloaded file name.}
 }
+\value{
+a \code{data.frame} with the contents of the DBC files.
+}
 \description{
 \code{fetch_datasus} downloads microdata (DBC) files from DataSUS and reads them.
 }
@@ -48,6 +51,8 @@ The following systems are implemented: "SIH-RD", "SIH-RJ", "SIH-SP", "SIH-ER", "
 
 A Internet connection is needed to use this function.
 
+Currently, DataSUS FTP server is restricting download calls from some countries, except Brazil.
+
 The year and month used to download the files regards the processing month and year of the cases by DataSUS.
 
 The UF regards where the cases were processed by DataSUS.
@@ -56,17 +61,20 @@ The files are downloaded to a temporary folder and deleted after the reading pro
 }
 
 \examples{
-\dontrun{
+\dontshow{if (curl::has_internet() & RCurl::url.exists("ftp.datasus.gov.br", timeout.ms = 100)) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+# Fetch two years of data from SIM-DO
 fetch_datasus(year_start = 2010, year_end = 2011,
               information_system = "SIM-DO")
 
+# Fetch one year of data from SIM-DO and keep only three variables
 fetch_datasus(year_start = 2014, year_end = 2014,
               information_system = "SIM-DO",
               vars = c("CODMUNRES", "DTOBITO", "CAUSABAS"))
 
+# Fetch some months' data from SIH-RD for four states
 fetch_datasus(year_start = 2014, month_start = 1,
               year_end = 2014, month_end = 2,
               uf = c("RJ", "MG", "SP", "ES"),
               information_system = "SIH-RD")
-}
+\dontshow{\}) # examplesIf}
 }

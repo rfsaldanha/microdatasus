@@ -12,6 +12,9 @@
 #' @examples
 #' process_cnes(cnes_st_sample, information_system = "CNES-ST")
 #' process_cnes(cnes_pf_sample, information_system = "CNES-PF")
+#'
+#' @return a \code{data.frame} with the processed data.
+#'
 #' @export
 
 process_cnes <- function(data, information_system = c("CNES-ST", "CNES-PF"), nomes = TRUE, municipality_data = TRUE) {

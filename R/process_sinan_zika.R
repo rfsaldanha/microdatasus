@@ -9,6 +9,9 @@
 #'
 #' @examples
 #' process_sinan_zika(sinan_zika_sample)
+#'
+#' @return a \code{data.frame} with the processed data.
+#'
 #' @export
 
 process_sinan_zika <- function(data, municipality_data = TRUE){

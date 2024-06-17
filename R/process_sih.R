@@ -12,6 +12,9 @@
 #'
 #' @examples
 #' process_sih(sih_rd_sample)
+#'
+#' @return a \code{data.frame} with the processed data.
+#'
 #' @export
 
 process_sih <- function(data, information_system = "SIH-RD", municipality_data = TRUE) {

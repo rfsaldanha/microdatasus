@@ -9,6 +9,9 @@
 #'
 #' @examples
 #' process_sinan_malaria(sinan_malaria_sample)
+#'
+#' @return a \code{data.frame} with the processed data.
+#'
 #' @export
 
 process_sinan_malaria <- function(data, municipality_data = TRUE){
