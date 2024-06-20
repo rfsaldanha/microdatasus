@@ -77,11 +77,14 @@
 </h1></div>
 <!-- badges: start -->
 
-<p>O pacote para o R <em>microdatasus</em> apresenta funções para download dos arquivos de microdados do DataSUS (formato <em>DBC</em>), leitura dos arquivos através do pacote <a href="https://cran.r-project.org/web/packages/read.dbc/index.html" class="external-link"><em>read.dbc</em></a> e pré-processamento para utilização. Nesta última etapa, os rótulos e formato das variáveis são atribuídos e tratados.</p>
+<p>Este pacote para o R apresenta funções para download e pré-processamento dos arquivos de microdados do DataSUS (formato <em>DBC</em>). Nesta última etapa, os rótulos e formato das variáveis são atribuídos e tratados.</p>
 <div class="section level2">
 <h2 id="instalação">Instalação<a class="anchor" aria-label="anchor" href="#instala%C3%A7%C3%A3o"></a>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"microdatasus"</span><span class="op">)</span></span></code></pre></div>
+<p>Versão de desenvolvimento do GitHub</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"rfsaldanha/microdatasus"</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -92,43 +95,43 @@
 <div class="section level3">
 <h3 id="exemplo">Exemplo<a class="anchor" aria-label="anchor" href="#exemplo"></a>
 </h3>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rfsaldanha/microdatasus" class="external-link">microdatasus</a></span><span class="op">)</span></span>
 <span><span class="va">dados</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fetch_datasus.html">fetch_datasus</a></span><span class="op">(</span>year_start <span class="op">=</span> <span class="fl">2013</span>, year_end <span class="op">=</span> <span class="fl">2014</span>, uf <span class="op">=</span> <span class="st">"RJ"</span>, information_system <span class="op">=</span> <span class="st">"SIM-DO"</span><span class="op">)</span></span>
 <span><span class="va">dados</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/process_sim.html">process_sim</a></span><span class="op">(</span><span class="va">dados</span><span class="op">)</span></span></code></pre></div>
-<p>O manual para a utilização do pacote encontra-se na <a href="https://github.com/rfsaldanha/microdatasus/wiki" class="external-link">Wiki do projeto</a>.</p>
 </div>
-<div class="section level3">
-<h3 id="sistemas-de-informação-em-saúde-suportados">Sistemas de Informação em Saúde suportados<a class="anchor" aria-label="anchor" href="#sistemas-de-informa%C3%A7%C3%A3o-em-sa%C3%BAde-suportados"></a>
-</h3>
+</div>
+<div class="section level2">
+<h2 id="sistemas-de-informação-em-saúde-suportados">Sistemas de Informação em Saúde suportados<a class="anchor" aria-label="anchor" href="#sistemas-de-informa%C3%A7%C3%A3o-em-sa%C3%BAde-suportados"></a>
+</h2>
 <ul>
 <li>Download: SIM, SINASC, SIH, CNES, SIA, SINAN-DENGUE, SINAN-CHIKUNGUNYA, SINAN-ZIKA, SINAN-MALARIA.</li>
 <li>Pré-processamento: SIM, SINASC, SIH-RD, CNES-ST, CNES-PF, SINAN-DENGUE, SINAN-CHIKUNGUNYA, SINAN-ZIKA, SINAN-MALARIA.</li>
 </ul>
 </div>
-</div>
 <div class="section level2">
 <h2 id="agradecimento">Agradecimento<a class="anchor" aria-label="anchor" href="#agradecimento"></a>
 </h2>
-<p>O desenvolvimento deste pacote não seria possível sem a função <code>read.dbc</code> criada por Daniela Petruzalek, através do pacote <a href="https://cran.r-project.org/web/packages/read.dbc/index.html" class="external-link"><em>read.dbc</em></a>.</p>
+<p>O desenvolvimento deste pacote não seria possível sem o pacote <a href="https://cran.r-project.org/web/packages/read.dbc/index.html" class="external-link"><em>read.dbc</em></a>, criado por Daniela Petruzalek.</p>
 </div>
 <div class="section level2">
 <h2 id="como-citar">Como citar<a class="anchor" aria-label="anchor" href="#como-citar"></a>
 </h2>
 <p>Peço aos usuários que citem o pacote sempre que ele for utilizado.</p>
 <blockquote>
-<p>SALDANHA, Raphael de Freitas; BASTOS, Ronaldo Rocha; BARCELLOS, Christovam. Microdatasus: pacote para download e pré-processamento de microdados do Departamento de Informática do SUS (DATASUS). Cad. Saúde Pública, Rio de Janeiro , v. 35, n. 9, e00032419, 2019. Available from <a href="http://ref.scielo.org/dhcq3y" class="external-link uri">http://ref.scielo.org/dhcq3y</a>.</p>
+<p>SALDANHA, Raphael de Freitas; BASTOS, Ronaldo Rocha; BARCELLOS, Christovam. Microdatasus: pacote para download e pré-processamento de microdados do Departamento de Informática do SUS (DATASUS). Cad. Saúde Pública, Rio de Janeiro , v. 35, n. 9, e00032419, 2019. Available from <a href="https://doi.org/10.1590/0102-311x00032419" class="external-link uri">https://doi.org/10.1590/0102-311x00032419</a>.</p>
 </blockquote>
 </div>
 <div class="section level2">
 <h2 id="dúvidas-e-sugestões">Dúvidas e sugestões<a class="anchor" aria-label="anchor" href="#d%C3%BAvidas-e-sugest%C3%B5es"></a>
 </h2>
-<p>Crie uma <a href="https://github.com/rfsaldanha/microdatasus/issues" class="external-link">issue</a> no projeto ou envie um e-mail para <code>raphael.saldanha@icict.fiocruz.br</code></p>
+<p>Crie uma <a href="https://github.com/rfsaldanha/microdatasus/issues" class="external-link">issue</a> no projeto ou envie um e-mail para <code>raphael.saldanha@fiocruz.br</code></p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
+<li><a href="https://cloud.r-project.org/package=microdatasus" class="external-link">View on CRAN</a></li>
 <li><a href="https://github.com/rfsaldanha/microdatasus/" class="external-link">Browse source code</a></li>
 <li><a href="https://github.com/rfsaldanha/microdatasus/issues" class="external-link">Report a bug</a></li>
 </ul>
@@ -161,6 +164,7 @@
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
 <li><a href="https://github.com/rfsaldanha/microdatasus/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/rfsaldanha/microdatasus/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
+<li><a href="https://CRAN.R-project.org/package=microdatasus" class="external-link"><img src="https://www.r-pkg.org/badges/version/microdatasus" alt="CRAN status"></a></li>
 </ul>
 </div>
 
