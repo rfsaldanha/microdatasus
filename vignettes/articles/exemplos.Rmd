@@ -144,7 +144,7 @@ O CNES apresenta dados sobre estabelecimentos de saúde, profissionais, equipame
 
 Cada arquivo representa uma "fotografia" do cadastro para um ano e mês.
 
-## Exemplos
+### Exemplo
 
 Estabelecimentos de saúde de Belém do Pará em outubro de 2021.
 
