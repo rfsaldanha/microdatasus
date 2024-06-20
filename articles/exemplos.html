@@ -145,7 +145,7 @@ divulgados arquivos preliminares pelo DataSUS</p></li>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sinasc_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_datasus.html">fetch_datasus</a></span><span class="op">(</span></span>
 <span>  year_start <span class="op">=</span> <span class="fl">2008</span>, year_end <span class="op">=</span> <span class="fl">2008</span>, </span>
-<span>  uf <span class="op">=</span> <span class="st">"PA"</span>, </span>
+<span>  uf <span class="op">=</span> <span class="st">"PR"</span>, </span>
 <span>  information_system <span class="op">=</span> <span class="st">"SINASC"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -211,6 +211,35 @@ de 2020.</p>
 </div>
 </div>
 <div class="section level2">
+<h2 id="cadastro-nacional-de-estabelecimentos-de-saúde-cnes">Cadastro Nacional de Estabelecimentos de Saúde (CNES)<a class="anchor" aria-label="anchor" href="#cadastro-nacional-de-estabelecimentos-de-sa%C3%BAde-cnes"></a>
+</h2>
+<p>O CNES apresenta dados sobre estabelecimentos de saúde,
+profissionais, equipamentos e outros elementos do SUS.</p>
+<ul>
+<li><p>Instrumento de registro: cadastro</p></li>
+<li><p>Cobertura: dimensão pública e privada do SUS</p></li>
+<li><p>Arquivos: mensal, todo o Brasil</p></li>
+<li><p>Atualização: mensal</p></li>
+<li><p>Defasagem de atualização: entre 1 a 2 meses</p></li>
+</ul>
+<p>Cada arquivo representa uma “fotografia” do cadastro para um ano e
+mês.</p>
+</div>
+<div class="section level2">
+<h2 id="exemplos">Exemplos<a class="anchor" aria-label="anchor" href="#exemplos"></a>
+</h2>
+<p>Estabelecimentos de saúde de Belém do Pará em outubro de 2021.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cnes_st_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_datasus.html">fetch_datasus</a></span><span class="op">(</span></span>
+<span>  year_start <span class="op">=</span> <span class="fl">2021</span>, year_end <span class="op">=</span> <span class="fl">2021</span>, </span>
+<span>  month_start <span class="op">=</span> <span class="fl">10</span>, month_end <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  uf <span class="op">=</span> <span class="st">"PA"</span>, </span>
+<span>  information_system <span class="op">=</span> <span class="st">"CNES-ST"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">cnes_st_p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_cnes.html">process_cnes</a></span><span class="op">(</span><span class="va">cnes_st_raw</span>, information_system <span class="op">=</span> <span class="st">"CNES-ST"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="sistema-de-informações-de-agravos-de-notificação-sinan">Sistema de Informações de Agravos de Notificação (SINAN)<a class="anchor" aria-label="anchor" href="#sistema-de-informa%C3%A7%C3%B5es-de-agravos-de-notifica%C3%A7%C3%A3o-sinan"></a>
 </h2>
 <p>O SINAN é responsável por receber e disseminar dados sobre doenças e
@@ -228,7 +257,7 @@ divulgados arquivos preliminares pelo DataSUS</p></li>
 <h3 id="exemplo-4">Exemplo<a class="anchor" aria-label="anchor" href="#exemplo-4"></a>
 </h3>
 <p>Casos suspeitos de Dengue em 2010.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sinan_dengue_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_datasus.html">fetch_datasus</a></span><span class="op">(</span></span>
 <span>  year_start <span class="op">=</span> <span class="fl">2010</span>, year_end <span class="op">=</span> <span class="fl">2010</span>,</span>
 <span>  uf <span class="op">=</span> <span class="st">"CE"</span>, </span>
