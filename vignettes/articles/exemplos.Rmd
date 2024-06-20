@@ -1,0 +1,157 @@
+---
+title: "Exemplos de uso"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+```{r setup}
+library(microdatasus)
+```
+
+## Sistema de Informações de Mortalidade (SIM)
+
+O SIM é o sistema de informações em saúde brasileiro mais antigo em funcionamento. Ele apresenta um grande conjunto de características sobre os óbitos ocorridos em território nacional.
+
+-   Instrumento de registro: Declaração de Óbito (DO)
+
+-   Cobertura: dimensões pública e privada do SUS
+
+-   Arquivos: anual por UF
+
+-   Atualização: anual
+
+-   Defasagem de atualização: entre 1 a 2 anos, podendo ser divulgados arquivos preliminares pelo DataSUS
+
+### Exemplo
+
+Óbitos processados no estado do Rio de Janeiro em 2021.
+
+```{r}
+sim_raw <- fetch_datasus(
+  year_start = 2021, year_end = 2021, 
+  uf = "RJ", 
+  information_system = "SIM-DO"
+)
+
+sim_p <- process_sim(sim_raw)
+```
+
+## Sistema de Informações de Nascidos Vivos (SINASC)
+
+O SINASC é responsável por apresentar dados sobre nascidos vivos no Brasil. Segundo a Organização Mundial da Saúde (OMS), nascido vivo é "a expulsão ou extração completa do corpo da mãe, independentemente da duração da gravidez, de um produto de concepção que, depois da separação, respire ou apresente qualquer outro sinal de vida, tal como batimentos do coração, pulsações do cordão umbilical ou movimentos efetivos dos músculos de contração voluntária, estando ou não cortado o cordão umbilical e estando ou não desprendida da placenta. Cada produto de um nascimento que reúna essas condições se considera como uma criança viva"
+
+-   Instrumento de registro: Declaração de Nascido Vivo (DN)
+
+-   Cobertura: dimensões pública e privada do SUS
+
+-   Arquivos: anual por UF
+
+-   Atualização: anual
+
+-   Defasagem de atualização: entre 1 a 2 anos, podendo ser divulgados arquivos preliminares pelo DataSUS
+
+### Exemplo
+
+Nascidos vivos processados no Paraná em 2008.
+
+```{r}
+sinasc_raw <- fetch_datasus(
+  year_start = 2008, year_end = 2008, 
+  uf = "PA", 
+  information_system = "SINASC"
+)
+
+sinasc_p <- process_sinasc(sinasc_raw)
+```
+
+## Sistema de Informações Hospitalares (SIH)
+
+O SIH apresenta informações sobre internações hospitalares realizadas no SUS.
+
+-   Instrumento de registro: Autorização de Internação Hospitalar (AIH)
+
+-   Cobertura: dimensão pública do SUS
+
+-   Arquivos: mensal por UF
+
+-   Atualização: mensal
+
+-   Defasagem de atualização: entre 1 a 2 meses
+
+### Exemplo
+
+Internações hospitalares no SUS processadas entre janeiro e fevereiro de 2019 na Paraíba.
+
+```{r}
+sih_raw <- fetch_datasus(
+  year_start = 2019, year_end = 2019, 
+  month_start = 1, month_end = 2,
+  uf = "PB", 
+  information_system = "SIH-RD"
+)
+
+sih_p <- process_sih(sih_raw)
+```
+
+## Sistema de Informações Ambulatoriais (SIA)
+
+O SIA apresenta dados sobre atendimentos ambulatoriais realizados no SUS.
+
+-   Instrumento de registro: Boletins de Atendimento Ambulatorial (BPA)
+
+-   Cobertura: dimensão pública do SUS
+
+-   Arquivos: mensal por UF
+
+-   Atualização: mensal
+
+-   Defasagem de atualização: entre 1 a 2 meses
+
+### Exemplo
+
+Atendimentos ambulatoriais processados em Roraima entre março e abril de 2020.
+
+```{r}
+sia_raw <- fetch_datasus(
+  year_start = 2020, year_end = 2020, 
+  month_start = 3, month_end = 4,
+  uf = "RR", 
+  information_system = "SIA-PA"
+)
+
+sia_p <- process_sih(sia_raw)
+```
+
+## Sistema de Informações de Agravos de Notificação (SINAN)
+
+O SINAN é responsável por receber e disseminar dados sobre doenças e agravos de saúde de interesse. Para doenças, a notificação se inicia na suspeita do caso, que é acompanhada no sistema até o seu desfecho.
+
+-   Instrumento de registro: notificação de caso suspeito
+
+-   Cobertura: dimensão pública e privada do SUS
+
+-   Arquivos: anual, todo o Brasil
+
+-   Atualização: anual
+
+-   Defasagem de atualização: entre 1 a 2 anos, podendo ser divulgados arquivos preliminares pelo DataSUS
+
+### Exemplo
+
+Casos suspeitos de Dengue em 2010.
+
+```{r}
+sinan_dengue_raw <- fetch_datasus(
+  year_start = 2010, year_end = 2010,
+  uf = "CE", 
+  information_system = "SINAN-DENGUE"
+)
+
+sinan_dengue_p <- process_sinan_dengue(sinan_dengue_raw)
+```
