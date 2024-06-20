@@ -224,10 +224,9 @@ profissionais, equipamentos e outros elementos do SUS.</p>
 </ul>
 <p>Cada arquivo representa uma “fotografia” do cadastro para um ano e
 mês.</p>
-</div>
-<div class="section level2">
-<h2 id="exemplos">Exemplos<a class="anchor" aria-label="anchor" href="#exemplos"></a>
-</h2>
+<div class="section level3">
+<h3 id="exemplo-4">Exemplo<a class="anchor" aria-label="anchor" href="#exemplo-4"></a>
+</h3>
 <p>Estabelecimentos de saúde de Belém do Pará em outubro de 2021.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cnes_st_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_datasus.html">fetch_datasus</a></span><span class="op">(</span></span>
@@ -238,6 +237,7 @@ mês.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">cnes_st_p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_cnes.html">process_cnes</a></span><span class="op">(</span><span class="va">cnes_st_raw</span>, information_system <span class="op">=</span> <span class="st">"CNES-ST"</span><span class="op">)</span></span></code></pre></div>
+</div>
 </div>
 <div class="section level2">
 <h2 id="sistema-de-informações-de-agravos-de-notificação-sinan">Sistema de Informações de Agravos de Notificação (SINAN)<a class="anchor" aria-label="anchor" href="#sistema-de-informa%C3%A7%C3%B5es-de-agravos-de-notifica%C3%A7%C3%A3o-sinan"></a>
@@ -254,7 +254,7 @@ suspeita do caso, que é acompanhada no sistema até o seu desfecho.</p>
 divulgados arquivos preliminares pelo DataSUS</p></li>
 </ul>
 <div class="section level3">
-<h3 id="exemplo-4">Exemplo<a class="anchor" aria-label="anchor" href="#exemplo-4"></a>
+<h3 id="exemplo-5">Exemplo<a class="anchor" aria-label="anchor" href="#exemplo-5"></a>
 </h3>
 <p>Casos suspeitos de Dengue em 2010.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
