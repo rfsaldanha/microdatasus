@@ -5,9 +5,15 @@
 [![CRAN status](https://www.r-pkg.org/badges/version/microdatasus)](https://CRAN.R-project.org/package=microdatasus)
 <!-- badges: end -->
 
-O pacote para o R *microdatasus* apresenta funções para download dos arquivos de microdados do DataSUS (formato *DBC*), leitura dos arquivos através do pacote [*read.dbc*](https://cran.r-project.org/web/packages/read.dbc/index.html) e pré-processamento para utilização. Nesta última etapa, os rótulos e formato das variáveis são atribuídos e tratados.
+Este pacote para o R apresenta funções para download e pré-processamento dos arquivos de microdados do DataSUS (formato *DBC*). Nesta última etapa, os rótulos e formato das variáveis são atribuídos e tratados.
 
 ## Instalação
+
+```r
+install.packages("microdatasus")
+```
+
+Versão de desenvolvimento do GitHub
 
 ```r
 # install.packages("remotes")
@@ -26,16 +32,14 @@ dados <- fetch_datasus(year_start = 2013, year_end = 2014, uf = "RJ", informatio
 dados <- process_sim(dados)
 ```
 
-O manual para a utilização do pacote encontra-se na [Wiki do projeto](https://github.com/rfsaldanha/microdatasus/wiki).
-
-### Sistemas de Informação em Saúde suportados
+## Sistemas de Informação em Saúde suportados
 
 * Download: SIM, SINASC, SIH, CNES, SIA, SINAN-DENGUE, SINAN-CHIKUNGUNYA, SINAN-ZIKA, SINAN-MALARIA.
 * Pré-processamento: SIM, SINASC, SIH-RD, CNES-ST, CNES-PF, SINAN-DENGUE, SINAN-CHIKUNGUNYA, SINAN-ZIKA, SINAN-MALARIA.
 
 ## Agradecimento
 
-O desenvolvimento deste pacote não seria possível sem a função `read.dbc` criada por Daniela Petruzalek, através do pacote [*read.dbc*](https://cran.r-project.org/web/packages/read.dbc/index.html).
+O desenvolvimento deste pacote não seria possível sem o pacote [*read.dbc*](https://cran.r-project.org/web/packages/read.dbc/index.html), criado por Daniela Petruzalek.
 
 ## Como citar
 
@@ -46,4 +50,4 @@ Peço aos usuários que citem o pacote sempre que ele for utilizado.
 
 ## Dúvidas e sugestões
 
-Crie uma [issue](https://github.com/rfsaldanha/microdatasus/issues) no projeto ou envie um e-mail para `raphael.saldanha@icict.fiocruz.br`
+Crie uma [issue](https://github.com/rfsaldanha/microdatasus/issues) no projeto ou envie um e-mail para `raphael.saldanha@fiocruz.br`
