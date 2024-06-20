@@ -63,7 +63,7 @@ Nascidos vivos processados no Paraná em 2008.
 ```{r}
 sinasc_raw <- fetch_datasus(
   year_start = 2008, year_end = 2008, 
-  uf = "PA", 
+  uf = "PR", 
   information_system = "SINASC"
 )
 
@@ -126,6 +126,37 @@ sia_raw <- fetch_datasus(
 )
 
 sia_p <- process_sih(sia_raw)
+```
+
+## Cadastro Nacional de Estabelecimentos de Saúde (CNES)
+
+O CNES apresenta dados sobre estabelecimentos de saúde, profissionais, equipamentos e outros elementos do SUS.
+
+-   Instrumento de registro: cadastro
+
+-   Cobertura: dimensão pública e privada do SUS
+
+-   Arquivos: mensal, todo o Brasil
+
+-   Atualização: mensal
+
+-   Defasagem de atualização: entre 1 a 2 meses
+
+Cada arquivo representa uma "fotografia" do cadastro para um ano e mês.
+
+## Exemplos
+
+Estabelecimentos de saúde de Belém do Pará em outubro de 2021.
+
+```{r}
+cnes_st_raw <- fetch_datasus(
+  year_start = 2021, year_end = 2021, 
+  month_start = 10, month_end = 10,
+  uf = "PA", 
+  information_system = "CNES-ST"
+)
+
+cnes_st_p <- process_cnes(cnes_st_raw, information_system = "CNES-ST")
 ```
 
 ## Sistema de Informações de Agravos de Notificação (SINAN)
