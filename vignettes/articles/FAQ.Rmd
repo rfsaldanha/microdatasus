@@ -1,16 +1,40 @@
 ---
-title: "FAQ"
+title: "Perguntas frequentes"
 ---
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  eval = FALSE
 )
 ```
 
-```{r setup}
+## Data e local de processamento e data e local de ocorrência do evento
+
+Os arquivos disponibilizados pelo DataSUS são organizados segundo data e local de processamento. Assim, ao se consultar por exemplo, os dados do SIM para 2020 no RJ, são obtidos os dados dos óbitos que foram processados no estado do Rio de Janeiro no ano de 2020.
+
+O local e data de processamento pode ser diferente do local e data de ocorrência do evento. Por exemplo, um óbito ocorrido em Dezembro de 2019 pode ser processado pelas Secretariais de Saúde e pelo DataSUS apenas no mês seguinte, indo para o arquivo de Janeiro de 2020.
+
+Desta forma, para garantir que você tem os dados de todos em eventos ocorridos em um ano e/ou mês específico, recomenda-se baixar os dados aos anos e mêses vizinhos, filtrando posteriormente os registros pela data de ocorrência desejada.
+
+Exemplo: Para se computador os óbitos ocorridos no Acre em 2020, recomenda-se baixar os dados de 2019, 2020 e 2021.
+
+```{r}
 library(microdatasus)
+library(dplyr)
+library(lubridate)
+
+sim_raw <- fetch_datasus(
+  year_start = 2019, year_end = 2021, 
+  uf = "AC", 
+  information_system = "SIM-DO"
+)
+
+sim_p <- process_sim(sim_raw)
+
+sim_f <- sim_p %>%
+  filter(year(DTOBITO) == 2020)
 ```
 
 ## Download timeout
