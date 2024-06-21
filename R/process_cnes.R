@@ -404,6 +404,8 @@ process_cnes <- function(data, information_system = c("CNES-ST", "CNES-PF"), nom
             "81" ~ "Central de regula\u00e7\u00e3o do acesso",
             "82" ~ "Central de notifica\u00e7\u00e3o, capta\u00e7\u00e3o e distribui\u00e7\u00e3o de \u00f3rg\u00e3os estadual",
             "83" ~ "P\u00f3lo de preven\u00e7\u00e3o de doen\u00e7as e agravos e promo\u00e7\u00e3o da sa\u00fade",
+            "84" ~ "Central de abastecimento",
+            "85" ~ "Centro de imuniza\u00e7\u00e3o",
             .default = .data$TP_UNID
           )
         ) %>%
