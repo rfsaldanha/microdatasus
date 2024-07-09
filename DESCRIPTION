@@ -27,13 +27,14 @@ Imports:
     lubridate,
     magrittr,
     RCurl,
+    read.dbc,
     rlang,
     stringi,
     tibble,
     utils,
     zip
 Remotes:
-    danicat/read.dbc    
+    danicat/read.dbc        
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
