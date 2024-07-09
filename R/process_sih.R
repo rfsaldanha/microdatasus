@@ -46,7 +46,7 @@ process_sih <- function(data, information_system = "SIH-RD", municipality_data =
     if("ESPEC" %in% variables_names){
       data <- data %>%
         dplyr::mutate(ESPEC = as.character(.data$ESPEC)) %>%
-        dplyr::mutate(PA_REGCT = dplyr::case_match(
+        dplyr::mutate(ESPEC = dplyr::case_match(
           .data$ESPEC,
           "1" ~ "Cir\u00fargico",
           "2" ~ "Obst\u00e9tricos",
