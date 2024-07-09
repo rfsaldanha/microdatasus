@@ -1,123 +1,43 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/404.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/articles/FAQ.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/articles/exemplos.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/index.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/news/index.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/cnes_pf_sample.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/cnes_st_sample.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/equipe.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/fetch_sigtab.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/microdatasus.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/paisnet.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/pipe.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/process_cnes.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/process_sia.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/process_sih.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/process_sim.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinan_chikungunya.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinan_dengue.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinan_malaria.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinan_zika.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinasc.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/sia_pa_sample.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/sigtab.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/sih_rd_sample.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/sim_do_sample.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/sinan_chikungunya_sample.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/sinan_dengue_sample.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/sinan_malaria_sample.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/sinan_zika_sample.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/sinasc_sample.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/tabCBO.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/tabMun.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/tabNaturalidade.html</loc>
-  </url>
-  <url>
-    <loc>https://rfsaldanha.github.io/microdatasus/reference/tabOcupacao.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://rfsaldanha.github.io/microdatasus/404.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/LICENSE-text.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/LICENSE.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/articles/FAQ.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/articles/exemplos.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/articles/index.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/authors.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/index.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/news/index.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/cnes_pf_sample.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/cnes_st_sample.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/equipe.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/fetch_sigtab.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/index.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/microdatasus.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/paisnet.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/pipe.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_cnes.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sia.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sih.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sim.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinan_chikungunya.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinan_dengue.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinan_malaria.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinan_zika.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinasc.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/sia_pa_sample.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/sigtab.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/sih_rd_sample.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/sim_do_sample.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/sinan_chikungunya_sample.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/sinan_dengue_sample.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/sinan_malaria_sample.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/sinan_zika_sample.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/sinasc_sample.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/tabCBO.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/tabMun.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/tabNaturalidade.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/tabOcupacao.html</loc></url>
 </urlset>
+

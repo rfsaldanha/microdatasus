@@ -1,11 +1,10 @@
 pandoc: 3.1.11
-pkgdown: 2.0.9
+pkgdown: 2.1.0
 pkgdown_sha: ~
 articles:
-  exemplos: exemplos.html
-  FAQ: FAQ.html
-last_built: 2024-06-20T09:02Z
+  articles/exemplos: exemplos.html
+  articles/FAQ: FAQ.html
+last_built: 2024-07-09T07:07Z
 urls:
   reference: https://rfsaldanha.github.io/microdatasus/reference
   article: https://rfsaldanha.github.io/microdatasus/articles
-
