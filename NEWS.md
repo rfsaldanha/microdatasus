@@ -1,3 +1,6 @@
+# microdatasus 2.3.2
+* Fix processing of `ESPEC` variable on `process_sih` function (#113).
+
 # microdatasus 2.3.1
 * Import read.dbc package from CRAN.
 * Remove CADGER data.
