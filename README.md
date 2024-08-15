@@ -10,12 +10,6 @@ Este pacote para o R apresenta funções para download e pré-processamento dos 
 ## Instalação
 
 ```r
-install.packages("microdatasus")
-```
-
-Versão de desenvolvimento do GitHub
-
-```r
 # install.packages("remotes")
 remotes::install_github("rfsaldanha/microdatasus")
 ```
