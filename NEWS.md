@@ -1,3 +1,6 @@
+# microdatasus 2.3.3
+* Add leading zeros to CNES TIPO_UNID processing.
+
 # microdatasus 2.3.2
 * Fix processing of `ESPEC` variable on `process_sih` function (#113).
 * Use read.dbc package from Github repo.
