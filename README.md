@@ -13,6 +13,24 @@ Este pacote para o R apresenta funções para download e pré-processamento dos 
 # install.packages("remotes")
 remotes::install_github("rfsaldanha/microdatasus")
 ```
+### Windows
+
+Para instalar o pacote no Windows, é necessário instalar antes o pacote `read.dbc`. 
+
+Você pode instalar a última versão já compilada para Windows
+
+```r
+install.packages("read.dbc", repos = "https://packagemanager.posit.co/cran/2024-07-05")
+```
+
+E depois instalar o `microdatasus`
+
+```r
+remotes::install_github("rfsaldanha/microdatasus")
+```
+
+
+Ou instalar o [Rtools](https://cran.r-project.org/bin/windows/Rtools/) e compilar locamente.
 
 ## Utilização
 
