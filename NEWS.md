@@ -1,3 +1,7 @@
+# microdatasus 2.3.4
+* Fix error on tabNaturalidade, issue #123. Thanks @SophiaDamianoRovere and @hafermoraes for the suggestions.
+* Fix FANTASIA names on CNES, issue #125.
+
 # microdatasus 2.3.3
 * Add leading zeros to CNES TIPO_UNID processing.
 
