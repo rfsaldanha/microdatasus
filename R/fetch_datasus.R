@@ -188,42 +188,23 @@ fetch_datasus <- function(year_start, month_start = NULL, year_end, month_end = 
     # File list
     files_list <- c(avail_geral, avail_prelim)
   } else if (information_system == "SIM-DOEXT") {
-    # Available dates
-    geral_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
-    prelim_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/PRELIM/DOFET/"
-
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = geral_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
-    tmp <- tmp[grep("DOEXT", tmp)]
-    tmp <- unique(substr(x = tmp, start = 6, stop = 7))
-    avail_geral <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
-
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = prelim_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
-    tmp <- tmp[grep("DOEXT", tmp)]
-    tmp <- unique(substr(x = tmp, start = 6, stop = 7))
-    avail_prelim <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
-
-    # Check if required dates are available
-    if(!all(dates %in% c(avail_geral, avail_prelim))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+    # Data URL
+    if(use_mirror == FALSE){
+      geral_url <- paste0(base_ftp, "/SIM/CID10/DOFET/")
+      prelim_url <- paste0(base_ftp, "/SIM/PRELIM/DOFET/")
+    } else {
+      geral_url <- paste0(base_mirror, "/SIM/CID10/DOFET/")
+      prelim_url <- paste0(base_mirror, "/SIM/PRELIM/DOFET/")
     }
-    valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
-
-    # Message about preliminary data
-    if(any(valid_dates %in% avail_prelim)){
-      cli::cli_alert(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
-    }
+    
+    # Available files
+    avail_geral <- paste0(geral_url,"DOEXT", substr(dates, 3, 4),".dbc")
+    avail_prelim <- paste0(prelim_url,"DOEXT", substr(dates, 3, 4),".dbc")
+    avail_geral <- avail_geral[RCurl::url.exists(avail_geral, .opts = list(timeout = timeout))]
+    avail_prelim <- avail_prelim[RCurl::url.exists(avail_prelim, .opts = list(timeout = timeout))]
 
     # File list
-    if(uf != "Any"){
-      cli::cli_alert(paste0("DOEXT data is not available by UF. Downloading all data available instead. "))
-    }
-    files_list_1 <- if(any(valid_dates %in% avail_geral)){
-      paste0(geral_url,"DOEXT", substr(valid_dates[valid_dates %in% avail_geral], 3, 4),".dbc")
-    }
-    files_list_2 <- if(any(valid_dates %in% avail_prelim)){
-      paste0(prelim_url,"DOEXT", substr(valid_dates[valid_dates %in% avail_prelim], 3, 4),".dbc")
-    }
-    files_list <- c(files_list_1, files_list_2)
+    files_list <- c(avail_geral, avail_prelim)
   } else if (information_system == "SIM-DOINF") {
     # Available dates
     geral_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
