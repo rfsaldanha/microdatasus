@@ -7,7 +7,7 @@
 process_cnes(
   data,
   information_system = c("CNES-ST", "CNES-PF"),
-  nomes = TRUE,
+  nomes = FALSE,
   municipality_data = TRUE
 )
 }
@@ -16,7 +16,7 @@ process_cnes(
 
 \item{information_system}{\code{string}. \code{CNES-ST} or \code{CNES-PF}}
 
-\item{nomes}{optional logical. \code{TRUE} by default, add  \code{FANTASIA} and \code{RAZÃO SOCIAL} names to the dataset.}
+\item{nomes}{optional logical. \code{FALSE} by default, downloads extra data and add  \code{FANTASIA} names to the dataset.}
 
 \item{municipality_data}{optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.}
 }

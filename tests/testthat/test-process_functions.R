@@ -1,10 +1,10 @@
 test_that("cnes-st works at 2016, 6-7", {
-  cnes_st <- process_cnes(data = cnes_st_sample, information_system = "CNES-ST", nomes = TRUE, municipality_data = TRUE)
+  cnes_st <- process_cnes(data = cnes_st_sample, information_system = "CNES-ST", nomes = FALSE, municipality_data = TRUE)
   expect_true("tbl_df" %in% class(cnes_st))
 })
 
 test_that("cnes-sf works at 2016, 6-7", {
-  cnes_pf <- process_cnes(data = cnes_pf_sample, information_system = "CNES-PF", nomes = TRUE, municipality_data = TRUE)
+  cnes_pf <- process_cnes(data = cnes_pf_sample, information_system = "CNES-PF", nomes = FALSE, municipality_data = TRUE)
   expect_true("tbl_df" %in% class(cnes_pf))
 })
 

@@ -6,7 +6,7 @@
 #'
 #' @param data \code{data.frame} created by \code{fetch_datasus()}.
 #' @param information_system \code{string}. \code{CNES-ST} or \code{CNES-PF}
-#' @param nomes optional logical. \code{TRUE} by default, add  \code{FANTASIA} and \code{RAZÃO SOCIAL} names to the dataset.
+#' @param nomes optional logical. \code{FALSE} by default, downloads extra data and add  \code{FANTASIA} names to the dataset.
 #' @param municipality_data optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.
 #'
 #' @examples
@@ -17,7 +17,7 @@
 #'
 #' @export
 
-process_cnes <- function(data, information_system = c("CNES-ST", "CNES-PF"), nomes = TRUE, municipality_data = TRUE) {
+process_cnes <- function(data, information_system = c("CNES-ST", "CNES-PF"), nomes = FALSE, municipality_data = TRUE) {
   # Check information system
   checkmate::assert_choice(x = information_system, choices = c("CNES-ST", "CNES-PF"))
 
@@ -32,6 +32,13 @@ process_cnes <- function(data, information_system = c("CNES-ST", "CNES-PF"), nom
     if("CNES" %in% variables_names){
       data <- data %>%
         dplyr::mutate(CNES = as.character(.data$CNES))
+    }
+
+    # Nome fantasia e razão social
+    if(nomes == TRUE){
+      cadger_temp <- microdatasus::fetch_cadger()
+      data <- data %>%
+        dplyr::left_join(cadger_temp, by = "CNES")
     }
 
     # CODUFMUN
