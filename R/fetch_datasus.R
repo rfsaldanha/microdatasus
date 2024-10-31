@@ -44,7 +44,7 @@
 #'                      year_end = 2014, month_end = 2,
 #'                      uf = c("AC", "RR"),
 #'                      information_system = "SIH-RD")
-#'
+#'}
 #' @return a \code{data.frame} with the contents of the DBC files.
 #'
 #' @export
