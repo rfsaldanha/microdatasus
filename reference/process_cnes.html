@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">microdatasus</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.3.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.3.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,7 +51,7 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">process_cnes</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
 <span>  information_system <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CNES-ST"</span>, <span class="st">"CNES-PF"</span><span class="op">)</span>,</span>
-<span>  nomes <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  nomes <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  municipality_data <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -69,7 +69,7 @@
 
 
 <dt id="arg-nomes">nomes<a class="anchor" aria-label="anchor" href="#arg-nomes"></a></dt>
-<dd><p>optional logical. <code>TRUE</code> by default, add  <code>FANTASIA</code> and <code>RAZÃO SOCIAL</code> names to the dataset.</p></dd>
+<dd><p>optional logical. <code>FALSE</code> by default, downloads extra data and add  <code>FANTASIA</code> names to the dataset.</p></dd>
 
 
 <dt id="arg-municipality-data">municipality_data<a class="anchor" aria-label="anchor" href="#arg-municipality-data"></a></dt>

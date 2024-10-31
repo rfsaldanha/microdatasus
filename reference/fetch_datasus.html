@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">microdatasus</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.3.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.3.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -119,6 +119,35 @@
 <p>The files are downloaded to a temporary folder and deleted after the reading process.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co"># Fetch two years of data from SIM-DO</span></span></span>
+<span class="r-in"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">fetch_datasus</span><span class="op">(</span>year_start <span class="op">=</span> <span class="fl">2010</span>, year_end <span class="op">=</span> <span class="fl">2011</span>, uf <span class="op">=</span> <span class="st">"AC"</span>,</span></span>
+<span class="r-in"><span>                     information_system <span class="op">=</span> <span class="st">"SIM-DO"</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Your local Internet connection seems to be ok.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> DataSUS FTP server seems to be up and reachable.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Starting download...</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Fetch one year of data from SIM-DO and keep only three variables</span></span></span>
+<span class="r-in"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">fetch_datasus</span><span class="op">(</span>year_start <span class="op">=</span> <span class="fl">2014</span>, year_end <span class="op">=</span> <span class="fl">2014</span>,</span></span>
+<span class="r-in"><span>                     information_system <span class="op">=</span> <span class="st">"SIM-DO"</span>, uf <span class="op">=</span> <span class="st">"AC"</span>,</span></span>
+<span class="r-in"><span>                     vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CODMUNRES"</span>, <span class="st">"DTOBITO"</span>, <span class="st">"CAUSABAS"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Your local Internet connection seems to be ok.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> DataSUS FTP server seems to be up and reachable.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Starting download...</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Fetch some months' data from SIH-RD for four states</span></span></span>
+<span class="r-in"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">fetch_datasus</span><span class="op">(</span>year_start <span class="op">=</span> <span class="fl">2014</span>, month_start <span class="op">=</span> <span class="fl">1</span>,</span></span>
+<span class="r-in"><span>                     year_end <span class="op">=</span> <span class="fl">2014</span>, month_end <span class="op">=</span> <span class="fl">2</span>,</span></span>
+<span class="r-in"><span>                     uf <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"AC"</span>, <span class="st">"RR"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                     information_system <span class="op">=</span> <span class="st">"SIH-RD"</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Your local Internet connection seems to be ok.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> DataSUS FTP server seems to be up and reachable.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Starting download...</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
