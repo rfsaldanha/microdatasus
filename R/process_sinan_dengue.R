@@ -137,7 +137,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
       ) %>%
       dplyr::select(-"idade_cod", -"idade_value")
   } else if ("NU_IDADE" %in% variables_names) {
-    data2 <- data %>%
+    data <- data %>%
       dplyr::mutate(
         idade_cod = substr(.data$NU_IDADE, 0, 1),
         idade_value = as.numeric(substr(.data$NU_IDADE, 2, 4)),
