@@ -96,3 +96,11 @@ test_that("sinan-leishmaniose-tegumentar at 2023", {
   )
   expect_true("tbl_df" %in% class(sinan_leishmaniose_tegumentar))
 })
+
+test_that("sinan-chagas at 2023", {
+  sinan_chagas <- process_sinan_chagas(
+    data = sinan_chagas_sample,
+    municipality_data = TRUE
+  )
+  expect_true("tbl_df" %in% class(sinan_chagas))
+})
