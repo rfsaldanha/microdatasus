@@ -1,6 +1,7 @@
 # microdatasus 2.4.0
 * Update documentation on `fetch_datasus()`.
 * Fetch SINAN-CHAGAS data.
+* Fix message when downloading data for all UFs.
 
 # microdatasus 2.3.5
 * Treat age field `NU_IDADE` on pre-processing SINAN on old files.
