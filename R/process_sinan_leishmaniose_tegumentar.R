@@ -624,9 +624,9 @@ process_sinan_leishmaniose_tegumentar <- function(
         LAB_HISTOP = dplyr::case_match(
           .data$LAB_HISTOP,
           "1" ~ "Encontro do parasita",
-          "2" ~ "Compatível",
-          "3" ~ "Não Compatível",
-          "4" ~ "Não realizado",
+          "2" ~ "Compat\\u00edvel",
+          "3" ~ "N\\u00e3o Compat\\u00edvel",
+          "4" ~ "N\\u00e3o realizado",
           "9" ~ NA,
           .default = .data$LAB_HISTOP
         )
@@ -642,7 +642,7 @@ process_sinan_leishmaniose_tegumentar <- function(
           .data$CLA_TIPO_N,
           "1" ~ "Caso novo",
           "2" ~ "Recidiva",
-          "3" ~ "Transferência",
+          "3" ~ "Transfer\\u00eancia",
           "9" ~ NA,
           .default = .data$CLA_TIPO_N
         )
@@ -656,7 +656,7 @@ process_sinan_leishmaniose_tegumentar <- function(
       dplyr::mutate(
         CLAS_FORMA = dplyr::case_match(
           .data$CLAS_FORMA,
-          "1" ~ "Cutânea",
+          "1" ~ "Cut\\u00e2nea",
           "2" ~ "Mucosa",
           "9" ~ NA,
           .default = .data$CLAS_FORMA
@@ -675,7 +675,7 @@ process_sinan_leishmaniose_tegumentar <- function(
           "2" ~ "Anfotericina b",
           "3" ~ "Pentamidina",
           "4" ~ "Outras",
-          "5" ~ "Não Utilizada",
+          "5" ~ "N\\u00e3o Utilizada",
           "9" ~ NA,
           .default = .data$TRA_DROGA_
         )
@@ -693,7 +693,7 @@ process_sinan_leishmaniose_tegumentar <- function(
           "2" ~ "Anfotericina b",
           "3" ~ "Pentamidina",
           "4" ~ "Outras",
-          "5" ~ "Não se aplica",
+          "5" ~ "N\\u00e3o se aplica",
           "9" ~ NA,
           .default = .data$TRA_OUTR_N
         )
@@ -709,7 +709,7 @@ process_sinan_leishmaniose_tegumentar <- function(
           .data$CRITERIO,
           "9" ~ NA,
           "1" ~ "Laboratorial",
-          "2" ~ "Clínico-epidemiológico",
+          "2" ~ "Cl\\u00ednico-epidemiol\\u00f3gico",
           .default = .data$CRITERIO
         )
       ) %>%
@@ -722,7 +722,7 @@ process_sinan_leishmaniose_tegumentar <- function(
       dplyr::mutate(
         CON_CLASS_ = dplyr::case_match(
           .data$CON_CLASS_,
-          "1" ~ "Autóctone",
+          "1" ~ "Aut\\u00f3ctone",
           "2" ~ "Importado",
           "3" ~ "Indeterminado",
           .default = .data$CON_CLASS_
@@ -739,7 +739,7 @@ process_sinan_leishmaniose_tegumentar <- function(
           .data$TPAUTOCTO,
           "9" ~ NA,
           "1" ~ "Sim",
-          "2" ~ "Não",
+          "2" ~ "N\\u00e3o",
           "3" ~ "Indeterminado",
           .default = .data$TPAUTOCTO
         )
@@ -821,9 +821,9 @@ process_sinan_leishmaniose_tegumentar <- function(
           "9" ~ NA,
           "1" ~ "Cura",
           "2" ~ "Abandono",
-          "3" ~ "Óbito por LV",
-          "4" ~ "Óbito por outra causa",
-          "5" ~ "Transferência",
+          "3" ~ "\\u00d3bito por LV",
+          "4" ~ "\\u00d3bito por outra causa",
+          "5" ~ "Transfer\\u00eancia",
           .default = .data$EVOLUCAO
         )
       ) %>%

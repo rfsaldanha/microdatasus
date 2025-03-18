@@ -550,8 +550,8 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
           .data$PRESENCA,
           "9" ~ NA,
           "1" ~ "Sim",
-          "2" ~ "Não",
-          "3" ~ "Não se aplica",
+          "2" ~ "N\\u00e3o",
+          "3" ~ "N\\u00e3o se aplica",
           .default = .data$PRESENCA
         )
       ) %>%
@@ -1286,7 +1286,7 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
           .data$CRITERIO,
           "9" ~ NA,
           "1" ~ "Laboratorial",
-          "2" ~ "Clínico-epidemiológico",
+          "2" ~ "Cl\\u00ednico-epidemiol\\u00f3gico",
           .default = .data$CRITERIO
         )
       ) %>%
@@ -1320,8 +1320,8 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
           .data$CON_LOCAL,
           "9" ~ NA,
           "1" ~ "Unidade de Hemoterapia",
-          "2" ~ "Domicílio",
-          "3" ~ "Laboratório",
+          "2" ~ "Domic\\u00edlio",
+          "3" ~ "Laborat\\u00f3rio",
           "4" ~ "Outro",
           .default = .data$CON_LOCAL
         )
@@ -1337,7 +1337,7 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
           .data$TPAUTOCTO,
           "9" ~ NA,
           "1" ~ "Sim",
-          "2" ~ "Não",
+          "2" ~ "N\\u00e3o",
           "3" ~ "Indeterminado",
           .default = .data$TPAUTOCTO
         )
@@ -1418,8 +1418,8 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
           .data$EVOLUCAO,
           "9" ~ NA,
           "1" ~ "Vivo",
-          "2" ~ "Óbito pelo agravo notificado",
-          "3" ~ "Óbito por outra causa",
+          "2" ~ "\\u00d3bito pelo agravo notificado",
+          "3" ~ "\\u00d3bito por outra causa",
           .default = .data$EVOLUCAO
         )
       ) %>%

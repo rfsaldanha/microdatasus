@@ -689,7 +689,7 @@ process_sinan_leishmaniose_visceral <- function(
           "9" ~ NA,
           "1" ~ "Positivo",
           "2" ~ "Negativo",
-          "3" ~ "Não realizado",
+          "3" ~ "N\\u00e3o realizado",
           .default = .data$DIAG_PAR_N
         )
       ) %>%
@@ -705,7 +705,7 @@ process_sinan_leishmaniose_visceral <- function(
           "9" ~ NA,
           "1" ~ "Positivo",
           "2" ~ "Negativo",
-          "3" ~ "Não realizado",
+          "3" ~ "N\\u00e3o realizado",
           .default = .data$IFI
         )
       ) %>%
@@ -721,7 +721,7 @@ process_sinan_leishmaniose_visceral <- function(
           "9" ~ NA,
           "1" ~ "Positivo",
           "2" ~ "Negativo",
-          "3" ~ "Não realizado",
+          "3" ~ "N\\u00e3o realizado",
           .default = .data$OUTRO
         )
       ) %>%
@@ -737,7 +737,7 @@ process_sinan_leishmaniose_visceral <- function(
           "9" ~ NA,
           "1" ~ "Caso novo",
           "2" ~ "Recidiva",
-          "3" ~ "Transferência",
+          "3" ~ "Transfer\\u00eancia",
           .default = .data$ENTRADA
         )
       ) %>%
@@ -802,7 +802,7 @@ process_sinan_leishmaniose_visceral <- function(
           .data$CRITERIO,
           "9" ~ NA,
           "1" ~ "Laboratorial",
-          "2" ~ "Clínico-epidemiológico",
+          "2" ~ "Cl\\u00ednico-epidemiol\\u00f3gico",
           .default = .data$CRITERIO
         )
       ) %>%
@@ -817,7 +817,7 @@ process_sinan_leishmaniose_visceral <- function(
           .data$TPAUTOCTO,
           "9" ~ NA,
           "1" ~ "Sim",
-          "2" ~ "Não",
+          "2" ~ "N\\u00e3o",
           "3" ~ "Indeterminado",
           .default = .data$TPAUTOCTO
         )
@@ -899,9 +899,9 @@ process_sinan_leishmaniose_visceral <- function(
           "9" ~ NA,
           "1" ~ "Cura",
           "2" ~ "Abandono",
-          "3" ~ "Óbito por LV",
-          "4" ~ "Óbito por outra causa",
-          "5" ~ "Transferência",
+          "3" ~ "\\u00d3bito por LV",
+          "4" ~ "\\u00d3bito por outra causa",
+          "5" ~ "Transfer\\u00eancia",
           .default = .data$EVOLUCAO
         )
       ) %>%
