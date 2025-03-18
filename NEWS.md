@@ -1,4 +1,5 @@
 # microdatasus 2.3.5
+* Treat age field `NU_IDADE` on pre-processing SINAN on old files.
 
 # microdatasus 2.3.4
 * Fix error on tabNaturalidade, issue #123. Thanks @SophiaDamianoRovere and @hafermoraes for the suggestions.
