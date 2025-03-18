@@ -6,7 +6,7 @@
 #'
 #' A specific UF or a vector of UFs can be informed using the following abbreviations: "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO".
 #'
-#' The following systems are implemented: "SIH-RD", "SIH-RJ", "SIH-SP", "SIH-ER", "SIM-DO", "SIM-DOFET", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT", "SINASC", "CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB", "CNES-PF", "CNES-EP", "CNES-RC", "CNES-IN", "CNES-EE", "CNES-EF", "CNES-GM", "SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD", "SINAN-DENGUE-FINAL", "SINAN-DENGUE-PRELIMINAR", "SINAN-CHIKUNGUNYA-FINAL", "SINAN-CHIKUNGUNYA-PRELIMINAR", "SINAN-ZIKA-FINAL", "SINAN-ZIKA-PRELIMINAR", "SINAN-MALARIA-FINAL", "SINAN-MALARIA-PRELIMINAR".
+#' The following systems are implemented: "SIH-RD", "SIH-RJ", "SIH-SP", "SIH-ER", "SIM-DO", "SIM-DOFET", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT", "SINASC", "CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB", "CNES-PF", "CNES-EP", "CNES-RC", "CNES-IN", "CNES-EE", "CNES-EF", "CNES-GM", "SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD", "SINAN-DENGUE", "SINAN-CHIKUNGUNYA", "SINAN-ZIKA", "SINAN-MALARIA".
 #'
 #' @param year_start,year_end numeric. Start and end year of files in the format yyyy.
 #' @param month_start,month_end numeric. Start and end month in the format mm. Those parameters are only used with the healh information systems SIH, CNES and SIA. There parameter are ignored if the information health system is SIM or SINASC.
@@ -49,7 +49,18 @@
 #'
 #' @export
 
-fetch_datasus <- function(year_start, month_start = NULL, year_end, month_end = NULL, uf = "all", information_system, vars = NULL, stop_on_error = FALSE, timeout = 240, track_source = FALSE){
+fetch_datasus <- function(
+  year_start,
+  month_start = NULL,
+  year_end,
+  month_end = NULL,
+  uf = "all",
+  information_system,
+  vars = NULL,
+  stop_on_error = FALSE,
+  timeout = 240,
+  track_source = FALSE
+) {
   # Resets original timeout option on function exit
   original_time_option <- getOption("timeout")
   on.exit(options(timeout = original_time_option))
@@ -60,105 +71,282 @@ fetch_datasus <- function(year_start, month_start = NULL, year_end, month_end = 
   # Assert arguments
 
   # Health information system
-  sisSIH <- c("SIH-RD","SIH-RJ","SIH-SP","SIH-ER")
-  sisSIM <- c("SIM-DO", "SIM-DOFET","SIM-DOEXT","SIM-DOINF","SIM-DOMAT")
+  sisSIH <- c("SIH-RD", "SIH-RJ", "SIH-SP", "SIH-ER")
+  sisSIM <- c("SIM-DO", "SIM-DOFET", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT")
   sisSINASC <- c("SINASC")
-  sisCNES <- c("CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB","CNES-PF","CNES-EP","CNES-RC","CNES-IN","CNES-EE","CNES-EF","CNES-GM")
-  sisSIA <- c("SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD")
-  sisSINAN <- c("SINAN-DENGUE", "SINAN-CHIKUNGUNYA", "SINAN-ZIKA", "SINAN-MALARIA")
-  available_information_system <- c(sisSIH, sisSIM, sisSINASC, sisCNES, sisSIA, sisSINAN)
-  checkmate::assert_choice(x = information_system, choices = available_information_system)
+  sisCNES <- c(
+    "CNES-LT",
+    "CNES-ST",
+    "CNES-DC",
+    "CNES-EQ",
+    "CNES-SR",
+    "CNES-HB",
+    "CNES-PF",
+    "CNES-EP",
+    "CNES-RC",
+    "CNES-IN",
+    "CNES-EE",
+    "CNES-EF",
+    "CNES-GM"
+  )
+  sisSIA <- c(
+    "SIA-AB",
+    "SIA-ABO",
+    "SIA-ACF",
+    "SIA-AD",
+    "SIA-AN",
+    "SIA-AM",
+    "SIA-AQ",
+    "SIA-AR",
+    "SIA-ATD",
+    "SIA-PA",
+    "SIA-PS",
+    "SIA-SAD"
+  )
+  sisSINAN <- c(
+    "SINAN-DENGUE",
+    "SINAN-CHIKUNGUNYA",
+    "SINAN-ZIKA",
+    "SINAN-MALARIA"
+  )
+  available_information_system <- c(
+    sisSIH,
+    sisSIM,
+    sisSINASC,
+    sisCNES,
+    sisSIA,
+    sisSINAN
+  )
+  checkmate::assert_choice(
+    x = information_system,
+    choices = available_information_system
+  )
 
   # Year and month
   checkmate::assert_numeric(x = year_start, lower = 1996, null.ok = FALSE)
   checkmate::assert_numeric(x = year_end, lower = 1996, null.ok = FALSE)
-  checkmate::assert_numeric(x = month_start, lower = 1, upper = 12, null.ok = TRUE)
-  checkmate::assert_numeric(x = month_end, lower = 1, upper = 12, null.ok = TRUE)
+  checkmate::assert_numeric(
+    x = month_start,
+    lower = 1,
+    upper = 12,
+    null.ok = TRUE
+  )
+  checkmate::assert_numeric(
+    x = month_end,
+    lower = 1,
+    upper = 12,
+    null.ok = TRUE
+  )
 
   # Create dates for verification
-  if(substr(information_system,1,3) == "SIH" | substr(information_system,1,4) == "CNES" | substr(information_system,1,3) == "SIA"){
-    date_start <- as.Date(paste0(year_start,"-",formatC(month_start, width = 2, format = "d", flag = "0"),"-","01"))
-    date_end <- as.Date(paste0(year_end,"-",formatC(month_end, width = 2, format = "d", flag = "0"),"-","01"))
-  } else if(substr(information_system,1,3) == "SIM" | information_system == "SINASC" | information_system == "SINAN-DENGUE" | information_system == "SINAN-CHIKUNGUNYA" | information_system == "SINAN-ZIKA" | information_system == "SINAN-MALARIA"){
-    date_start <- as.Date(paste0(year_start,"-01-01"))
-    date_end <- as.Date(paste0(year_end,"-01-01"))
+  if (
+    substr(information_system, 1, 3) == "SIH" |
+      substr(information_system, 1, 4) == "CNES" |
+      substr(information_system, 1, 3) == "SIA"
+  ) {
+    date_start <- as.Date(paste0(
+      year_start,
+      "-",
+      formatC(month_start, width = 2, format = "d", flag = "0"),
+      "-",
+      "01"
+    ))
+    date_end <- as.Date(paste0(
+      year_end,
+      "-",
+      formatC(month_end, width = 2, format = "d", flag = "0"),
+      "-",
+      "01"
+    ))
+  } else if (
+    substr(information_system, 1, 3) == "SIM" |
+      information_system == "SINASC" |
+      information_system == "SINAN-DENGUE" |
+      information_system == "SINAN-CHIKUNGUNYA" |
+      information_system == "SINAN-ZIKA" |
+      information_system == "SINAN-MALARIA"
+  ) {
+    date_start <- as.Date(paste0(year_start, "-01-01"))
+    date_end <- as.Date(paste0(year_end, "-01-01"))
   }
 
   # Check dates
-  if(date_start > date_end){
+  if (date_start > date_end) {
     cli::cli_abort(message = "Start date must be greather than end date.")
   }
 
   # Check UF
-  ufs <- c("AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO")
-  checkmate::assert_subset(x = uf, choices = c("all",ufs))
+  ufs <- c(
+    "AC",
+    "AL",
+    "AP",
+    "AM",
+    "BA",
+    "CE",
+    "DF",
+    "ES",
+    "GO",
+    "MA",
+    "MT",
+    "MS",
+    "MG",
+    "PA",
+    "PB",
+    "PR",
+    "PE",
+    "PI",
+    "RJ",
+    "RN",
+    "RS",
+    "RO",
+    "RR",
+    "SC",
+    "SP",
+    "SE",
+    "TO"
+  )
+  checkmate::assert_subset(x = uf, choices = c("all", ufs))
 
   # Check UF for SINAN files
-  if(information_system %in% sisSINAN & uf[1] != "all"){
-    cli::cli_alert_info("SINAN files are not available per UF. Ignoring argument 'uf' and downloading data.")
+  if (information_system %in% sisSINAN & uf[1] != "all") {
+    cli::cli_alert_info(
+      "SINAN files are not available per UF. Ignoring argument 'uf' and downloading data."
+    )
   }
 
   # Check local Internet connection
   local_internet <- curl::has_internet()
-  if(local_internet == TRUE){
+  if (local_internet == TRUE) {
     cli::cli_alert_info("Your local Internet connection seems to be ok.")
   } else {
-    cli::cli_alert_warning("It appears that your local Internet connection is not working. Can you check?")
+    cli::cli_alert_warning(
+      "It appears that your local Internet connection is not working. Can you check?"
+    )
     return(NULL)
   }
 
   # Check DataSUS FTP server
-  datasus_ftp_connection <- RCurl::url.exists("ftp.datasus.gov.br", .opts = list(timeout = timeout))
-  if(datasus_ftp_connection == TRUE){
+  datasus_ftp_connection <- RCurl::url.exists(
+    "ftp.datasus.gov.br",
+    .opts = list(timeout = timeout)
+  )
+  if (datasus_ftp_connection == TRUE) {
     cli::cli_alert_info("DataSUS FTP server seems to be up and reachable.")
     cli::cli_alert_info("Starting download...")
   } else {
-    cli::cli_alert_warning("It appears that DataSUS FTP is down or not reachable.")
+    cli::cli_alert_warning(
+      "It appears that DataSUS FTP is down or not reachable."
+    )
     return(NULL)
   }
 
   # Prepare sequence of dates
-  if(substr(information_system,1,3) == "SIH" | substr(information_system,1,4) == "CNES" | substr(information_system,1,3) == "SIA"){
+  if (
+    substr(information_system, 1, 3) == "SIH" |
+      substr(information_system, 1, 4) == "CNES" |
+      substr(information_system, 1, 3) == "SIA"
+  ) {
     dates <- seq(date_start, date_end, by = "month")
-    dates <- paste0(substr(lubridate::year(dates),3,4),formatC(lubridate::month(dates), width = 2, format = "d", flag = "0"))
-  } else if(substr(information_system,1,3) == "SIM" | information_system == "SINASC" | information_system == "SINAN-DENGUE" | information_system == "SINAN-CHIKUNGUNYA" | information_system == "SINAN-ZIKA" | information_system == "SINAN-MALARIA"){
+    dates <- paste0(
+      substr(lubridate::year(dates), 3, 4),
+      formatC(lubridate::month(dates), width = 2, format = "d", flag = "0")
+    )
+  } else if (
+    substr(information_system, 1, 3) == "SIM" |
+      information_system == "SINASC" |
+      information_system == "SINAN-DENGUE" |
+      information_system == "SINAN-CHIKUNGUNYA" |
+      information_system == "SINAN-ZIKA" |
+      information_system == "SINAN-MALARIA"
+  ) {
     dates <- seq(date_start, date_end, by = "year")
     dates <- lubridate::year(dates)
   }
 
   # Prepare ufs
   lista_uf <- vector()
-  if(uf[1] == "all"){
+  if (uf[1] == "all") {
     lista_uf <- ufs
   } else {
     lista_uf = uf
   }
 
   # Create files list for download
-  if(information_system == "SIM-DO") {
+  if (information_system == "SIM-DO") {
     # Available dates
     geral_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DORES/"
     prelim_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/PRELIM/DORES/"
-    avail_geral <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = geral_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 5, stop = 8))
-    avail_prelim <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = prelim_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 5, stop = 8))
+    avail_geral <- unique(substr(
+      x = unlist(strsplit(
+        x = RCurl::getURL(
+          url = geral_url,
+          ftp.use.epsv = TRUE,
+          dirlistonly = TRUE
+        ),
+        split = "\n"
+      )),
+      start = 5,
+      stop = 8
+    ))
+    avail_prelim <- unique(substr(
+      x = unlist(strsplit(
+        x = RCurl::getURL(
+          url = prelim_url,
+          ftp.use.epsv = TRUE,
+          dirlistonly = TRUE
+        ),
+        split = "\n"
+      )),
+      start = 5,
+      stop = 8
+    ))
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_geral, avail_prelim))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_geral, avail_prelim))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS: ",
+        paste0(
+          dates[!dates %in% c(avail_geral, avail_prelim)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
 
     # Message about preliminary data
-    if(any(valid_dates %in% avail_prelim)){
-      cli::cli_alert(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_prelim)) {
+      cli::cli_alert(paste0(
+        "The following dates are preliminar: ",
+        paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
-    files_list_1 <- if(any(valid_dates %in% avail_geral)){
-      paste0(geral_url,"DO", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_geral],".dbc")))
+    files_list_1 <- if (any(valid_dates %in% avail_geral)) {
+      paste0(
+        geral_url,
+        "DO",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_geral],
+          ".dbc"
+        ))
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_prelim)){
-      paste0(prelim_url,"DO", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_prelim],".dbc")))
+    files_list_2 <- if (any(valid_dates %in% avail_prelim)) {
+      paste0(
+        prelim_url,
+        "DO",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_prelim],
+          ".dbc"
+        ))
+      )
     }
     files_list <- c(files_list_1, files_list_2)
   } else if (information_system == "SIM-DOFET") {
@@ -166,36 +354,81 @@ fetch_datasus <- function(year_start, month_start = NULL, year_end, month_end = 
     geral_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
     prelim_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/PRELIM/DOFET/"
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = geral_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = geral_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("DOFET", tmp)]
     tmp <- unique(substr(x = tmp, start = 6, stop = 7))
-    avail_geral <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+    avail_geral <- sort(as.numeric(ifelse(
+      test = substr(tmp, 0, 1) == "9",
+      yes = paste0("19", tmp),
+      no = paste0("20", tmp)
+    )))
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = prelim_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = prelim_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("DOFET", tmp)]
     tmp <- unique(substr(x = tmp, start = 6, stop = 7))
-    avail_prelim <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+    avail_prelim <- sort(as.numeric(ifelse(
+      test = substr(tmp, 0, 1) == "9",
+      yes = paste0("19", tmp),
+      no = paste0("20", tmp)
+    )))
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_geral, avail_prelim))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_geral, avail_prelim))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS: ",
+        paste0(
+          dates[!dates %in% c(avail_geral, avail_prelim)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
 
     # Message about preliminary data
-    if(any(valid_dates %in% avail_prelim)){
-      cli::cli_alert(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_prelim)) {
+      cli::cli_alert(paste0(
+        "The following dates are preliminar: ",
+        paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
-    if(uf != "Any"){
-      cli::cli_alert(paste0("DOFET data is not available by UF. Downloading all data available instead. "))
+    if (uf != "Any") {
+      cli::cli_alert(paste0(
+        "DOFET data is not available by UF. Downloading all data available instead. "
+      ))
     }
-    files_list_1 <- if(any(valid_dates %in% avail_geral)){
-      paste0(geral_url,"DOFET", substr(valid_dates[valid_dates %in% avail_geral], 3, 4),".dbc")
+    files_list_1 <- if (any(valid_dates %in% avail_geral)) {
+      paste0(
+        geral_url,
+        "DOFET",
+        substr(valid_dates[valid_dates %in% avail_geral], 3, 4),
+        ".dbc"
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_prelim)){
-      paste0(prelim_url,"DOFET", substr(valid_dates[valid_dates %in% avail_prelim], 3, 4),".dbc")
+    files_list_2 <- if (any(valid_dates %in% avail_prelim)) {
+      paste0(
+        prelim_url,
+        "DOFET",
+        substr(valid_dates[valid_dates %in% avail_prelim], 3, 4),
+        ".dbc"
+      )
     }
     files_list <- c(files_list_1, files_list_2)
   } else if (information_system == "SIM-DOEXT") {
@@ -203,36 +436,81 @@ fetch_datasus <- function(year_start, month_start = NULL, year_end, month_end = 
     geral_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
     prelim_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/PRELIM/DOFET/"
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = geral_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = geral_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("DOEXT", tmp)]
     tmp <- unique(substr(x = tmp, start = 6, stop = 7))
-    avail_geral <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+    avail_geral <- sort(as.numeric(ifelse(
+      test = substr(tmp, 0, 1) == "9",
+      yes = paste0("19", tmp),
+      no = paste0("20", tmp)
+    )))
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = prelim_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = prelim_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("DOEXT", tmp)]
     tmp <- unique(substr(x = tmp, start = 6, stop = 7))
-    avail_prelim <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+    avail_prelim <- sort(as.numeric(ifelse(
+      test = substr(tmp, 0, 1) == "9",
+      yes = paste0("19", tmp),
+      no = paste0("20", tmp)
+    )))
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_geral, avail_prelim))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_geral, avail_prelim))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS: ",
+        paste0(
+          dates[!dates %in% c(avail_geral, avail_prelim)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
 
     # Message about preliminary data
-    if(any(valid_dates %in% avail_prelim)){
-      cli::cli_alert(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_prelim)) {
+      cli::cli_alert(paste0(
+        "The following dates are preliminar: ",
+        paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
-    if(uf != "Any"){
-      cli::cli_alert(paste0("DOEXT data is not available by UF. Downloading all data available instead. "))
+    if (uf != "Any") {
+      cli::cli_alert(paste0(
+        "DOEXT data is not available by UF. Downloading all data available instead. "
+      ))
     }
-    files_list_1 <- if(any(valid_dates %in% avail_geral)){
-      paste0(geral_url,"DOEXT", substr(valid_dates[valid_dates %in% avail_geral], 3, 4),".dbc")
+    files_list_1 <- if (any(valid_dates %in% avail_geral)) {
+      paste0(
+        geral_url,
+        "DOEXT",
+        substr(valid_dates[valid_dates %in% avail_geral], 3, 4),
+        ".dbc"
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_prelim)){
-      paste0(prelim_url,"DOEXT", substr(valid_dates[valid_dates %in% avail_prelim], 3, 4),".dbc")
+    files_list_2 <- if (any(valid_dates %in% avail_prelim)) {
+      paste0(
+        prelim_url,
+        "DOEXT",
+        substr(valid_dates[valid_dates %in% avail_prelim], 3, 4),
+        ".dbc"
+      )
     }
     files_list <- c(files_list_1, files_list_2)
   } else if (information_system == "SIM-DOINF") {
@@ -240,36 +518,81 @@ fetch_datasus <- function(year_start, month_start = NULL, year_end, month_end = 
     geral_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
     prelim_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/PRELIM/DOFET/"
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = geral_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = geral_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("DOINF", tmp)]
     tmp <- unique(substr(x = tmp, start = 6, stop = 7))
-    avail_geral <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+    avail_geral <- sort(as.numeric(ifelse(
+      test = substr(tmp, 0, 1) == "9",
+      yes = paste0("19", tmp),
+      no = paste0("20", tmp)
+    )))
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = prelim_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = prelim_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("DOINF", tmp)]
     tmp <- unique(substr(x = tmp, start = 6, stop = 7))
-    avail_prelim <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+    avail_prelim <- sort(as.numeric(ifelse(
+      test = substr(tmp, 0, 1) == "9",
+      yes = paste0("19", tmp),
+      no = paste0("20", tmp)
+    )))
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_geral, avail_prelim))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_geral, avail_prelim))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS: ",
+        paste0(
+          dates[!dates %in% c(avail_geral, avail_prelim)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
 
     # Message about preliminary data
-    if(any(valid_dates %in% avail_prelim)){
-      cli::cli_alert(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_prelim)) {
+      cli::cli_alert(paste0(
+        "The following dates are preliminar: ",
+        paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
-    if(uf != "Any"){
-      cli::cli_alert(paste0("DOINF data is not available by UF. Downloading all data available instead. "))
+    if (uf != "Any") {
+      cli::cli_alert(paste0(
+        "DOINF data is not available by UF. Downloading all data available instead. "
+      ))
     }
-    files_list_1 <- if(any(valid_dates %in% avail_geral)){
-      paste0(geral_url,"DOINF", substr(valid_dates[valid_dates %in% avail_geral], 3, 4),".dbc")
+    files_list_1 <- if (any(valid_dates %in% avail_geral)) {
+      paste0(
+        geral_url,
+        "DOINF",
+        substr(valid_dates[valid_dates %in% avail_geral], 3, 4),
+        ".dbc"
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_prelim)){
-      paste0(prelim_url,"DOINF", substr(valid_dates[valid_dates %in% avail_prelim], 3, 4),".dbc")
+    files_list_2 <- if (any(valid_dates %in% avail_prelim)) {
+      paste0(
+        prelim_url,
+        "DOINF",
+        substr(valid_dates[valid_dates %in% avail_prelim], 3, 4),
+        ".dbc"
+      )
     }
     files_list <- c(files_list_1, files_list_2)
   } else if (information_system == "SIM-DOMAT") {
@@ -277,942 +600,2198 @@ fetch_datasus <- function(year_start, month_start = NULL, year_end, month_end = 
     geral_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DOFET/"
     prelim_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/PRELIM/DOFET/"
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = geral_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = geral_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("DOMAT", tmp)]
     tmp <- unique(substr(x = tmp, start = 6, stop = 7))
-    avail_geral <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+    avail_geral <- sort(as.numeric(ifelse(
+      test = substr(tmp, 0, 1) == "9",
+      yes = paste0("19", tmp),
+      no = paste0("20", tmp)
+    )))
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = prelim_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = prelim_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("DOMAT", tmp)]
     tmp <- unique(substr(x = tmp, start = 6, stop = 7))
-    avail_prelim <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+    avail_prelim <- sort(as.numeric(ifelse(
+      test = substr(tmp, 0, 1) == "9",
+      yes = paste0("19", tmp),
+      no = paste0("20", tmp)
+    )))
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_geral, avail_prelim))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_geral, avail_prelim))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS: ",
+        paste0(
+          dates[!dates %in% c(avail_geral, avail_prelim)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
 
     # Message about preliminary data
-    if(any(valid_dates %in% avail_prelim)){
-      cli::cli_alert(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_prelim)) {
+      cli::cli_alert(paste0(
+        "The following dates are preliminar: ",
+        paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
-    if(uf != "Any"){
-      cli::cli_alert(paste0("DOMAT data is not available by UF. Downloading all data available instead. "))
+    if (uf != "Any") {
+      cli::cli_alert(paste0(
+        "DOMAT data is not available by UF. Downloading all data available instead. "
+      ))
     }
-    files_list_1 <- if(any(valid_dates %in% avail_geral)){
-      paste0(geral_url,"DOMAT", substr(valid_dates[valid_dates %in% avail_geral], 3, 4),".dbc")
+    files_list_1 <- if (any(valid_dates %in% avail_geral)) {
+      paste0(
+        geral_url,
+        "DOMAT",
+        substr(valid_dates[valid_dates %in% avail_geral], 3, 4),
+        ".dbc"
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_prelim)){
-      paste0(prelim_url,"DOMAT", substr(valid_dates[valid_dates %in% avail_prelim], 3, 4),".dbc")
+    files_list_2 <- if (any(valid_dates %in% avail_prelim)) {
+      paste0(
+        prelim_url,
+        "DOMAT",
+        substr(valid_dates[valid_dates %in% avail_prelim], 3, 4),
+        ".dbc"
+      )
     }
     files_list <- c(files_list_1, files_list_2)
-  } else if(information_system == "SIH-RD"){
+  } else if (information_system == "SIH-RD") {
     # Available dates
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/Dados/"
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/199201_200712/Dados/"
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = atual_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("RD", tmp)]
     avail_atual <- unique(substr(x = tmp, start = 5, stop = 8))
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = antigo_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("RD", tmp)]
     avail_antigo <- unique(substr(x = tmp, start = 5, stop = 8))
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_atual, avail_antigo))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_atual, avail_antigo))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(
+          dates[!dates %in% c(avail_atual, avail_antigo)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
-    if(any(valid_dates %in% avail_antigo)){
-      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_antigo)) {
+      cli::cli_alert(paste0(
+        "The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ",
+        paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
 
-    files_list_1 <- if(any(valid_dates %in% avail_antigo)){
-      paste0(antigo_url,"RD", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
+    files_list_1 <- if (any(valid_dates %in% avail_antigo)) {
+      paste0(
+        antigo_url,
+        "RD",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_antigo],
+          ".dbc"
+        ))
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_atual)){
-      paste0(atual_url,"RD", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_atual],".dbc")))
+    files_list_2 <- if (any(valid_dates %in% avail_atual)) {
+      paste0(
+        atual_url,
+        "RD",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_atual],
+          ".dbc"
+        ))
+      )
     }
     files_list <- c(files_list_1, files_list_2)
-  } else if(information_system == "SIH-RJ") {
+  } else if (information_system == "SIH-RJ") {
     # Available dates
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/Dados/"
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/199201_200712/Dados/"
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = atual_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("RJ", tmp)]
     avail_atual <- unique(substr(x = tmp, start = 5, stop = 8))
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = antigo_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("RJ", tmp)]
     avail_antigo <- unique(substr(x = tmp, start = 5, stop = 8))
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_atual, avail_antigo))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_atual, avail_antigo))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(
+          dates[!dates %in% c(avail_atual, avail_antigo)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about preliminary data
-    if(any(valid_dates %in% avail_antigo)){
-      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_antigo)) {
+      cli::cli_alert(paste0(
+        "The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ",
+        paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
 
-    files_list_1 <- if(any(valid_dates %in% avail_antigo)){
-      paste0(antigo_url,"RJ", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
+    files_list_1 <- if (any(valid_dates %in% avail_antigo)) {
+      paste0(
+        antigo_url,
+        "RJ",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_antigo],
+          ".dbc"
+        ))
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_atual)){
-      paste0(atual_url,"RJ", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_atual],".dbc")))
+    files_list_2 <- if (any(valid_dates %in% avail_atual)) {
+      paste0(
+        atual_url,
+        "RJ",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_atual],
+          ".dbc"
+        ))
+      )
     }
     files_list <- c(files_list_1, files_list_2)
-  } else if(information_system == "SIH-SP") {
+  } else if (information_system == "SIH-SP") {
     # Available dates
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/Dados/"
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/199201_200712/Dados/"
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = atual_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("SP", tmp)]
     avail_atual <- unique(substr(x = tmp, start = 5, stop = 8))
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = antigo_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("SP", tmp)]
     avail_antigo <- unique(substr(x = tmp, start = 5, stop = 8))
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_atual, avail_antigo))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_atual, avail_antigo))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(
+          dates[!dates %in% c(avail_atual, avail_antigo)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about preliminary data
-    if(any(valid_dates %in% avail_antigo)){
-      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_antigo)) {
+      cli::cli_alert(paste0(
+        "The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ",
+        paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
 
-    files_list_1 <- if(any(valid_dates %in% avail_antigo)){
-      paste0(antigo_url,"SP", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
+    files_list_1 <- if (any(valid_dates %in% avail_antigo)) {
+      paste0(
+        antigo_url,
+        "SP",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_antigo],
+          ".dbc"
+        ))
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_atual)){
-      paste0(atual_url,"SP", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_atual],".dbc")))
+    files_list_2 <- if (any(valid_dates %in% avail_atual)) {
+      paste0(
+        atual_url,
+        "SP",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_atual],
+          ".dbc"
+        ))
+      )
     }
     files_list <- c(files_list_1, files_list_2)
-  } else if(information_system == "SIH-ER") {
+  } else if (information_system == "SIH-ER") {
     # Available dates
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/Dados/"
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/199201_200712/Dados/"
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = atual_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("ER", tmp)]
     avail_atual <- unique(substr(x = tmp, start = 5, stop = 8))
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = antigo_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("ER", tmp)]
     avail_antigo <- unique(substr(x = tmp, start = 5, stop = 8))
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_atual, avail_antigo))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_atual, avail_antigo))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(
+          dates[!dates %in% c(avail_atual, avail_antigo)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about preliminary data
-    if(any(valid_dates %in% avail_antigo)){
-      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_antigo)) {
+      cli::cli_alert(paste0(
+        "The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ",
+        paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
 
-    files_list_1 <- if(any(valid_dates %in% avail_antigo)){
-      paste0(antigo_url,"ER", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
+    files_list_1 <- if (any(valid_dates %in% avail_antigo)) {
+      paste0(
+        antigo_url,
+        "ER",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_antigo],
+          ".dbc"
+        ))
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_atual)){
-      paste0(atual_url,"ER", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_atual],".dbc")))
+    files_list_2 <- if (any(valid_dates %in% avail_atual)) {
+      paste0(
+        atual_url,
+        "ER",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_atual],
+          ".dbc"
+        ))
+      )
     }
     files_list <- c(files_list_1, files_list_2)
-  } else if(information_system == "SINASC") {
+  } else if (information_system == "SINASC") {
     # Available dates
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINASC/1994_1995/Dados/DNRES/"
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINASC/1996_/Dados/DNRES/"
     prelim_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINASC/PRELIM/DNRES/"
-    avail_antigo <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 6, stop = 9))
-    avail_atual <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 5, stop = 8))
-    avail_prelim <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = prelim_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 5, stop = 8))
+    avail_antigo <- unique(substr(
+      x = unlist(strsplit(
+        x = RCurl::getURL(
+          url = antigo_url,
+          ftp.use.epsv = TRUE,
+          dirlistonly = TRUE
+        ),
+        split = "\n"
+      )),
+      start = 6,
+      stop = 9
+    ))
+    avail_atual <- unique(substr(
+      x = unlist(strsplit(
+        x = RCurl::getURL(
+          url = atual_url,
+          ftp.use.epsv = TRUE,
+          dirlistonly = TRUE
+        ),
+        split = "\n"
+      )),
+      start = 5,
+      stop = 8
+    ))
+    avail_prelim <- unique(substr(
+      x = unlist(strsplit(
+        x = RCurl::getURL(
+          url = prelim_url,
+          ftp.use.epsv = TRUE,
+          dirlistonly = TRUE
+        ),
+        split = "\n"
+      )),
+      start = 5,
+      stop = 8
+    ))
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_antigo, avail_atual, avail_prelim))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_antigo, avail_atual, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_antigo, avail_atual, avail_prelim))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS: ",
+        paste0(
+          dates[!dates %in% c(avail_antigo, avail_atual, avail_prelim)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_antigo, avail_atual, avail_prelim)]
 
     # Message about preliminary data
-    if(any(valid_dates %in% avail_prelim)){
-      cli::cli_alert(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_prelim)) {
+      cli::cli_alert(paste0(
+        "The following dates are preliminar: ",
+        paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "),
+        "."
+      ))
     }
 
     # Message about old data
-    if(any(valid_dates %in% avail_antigo)){
-      cli::cli_alert(paste0("The following dates are from old folders and and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_antigo)) {
+      cli::cli_alert(paste0(
+        "The following dates are from old folders and and may contain incompatible codes (including old ICD codes): ",
+        paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
 
-    files_list_1 <- if(any(valid_dates %in% avail_antigo)){
-      paste0(antigo_url,"DNR", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
+    files_list_1 <- if (any(valid_dates %in% avail_antigo)) {
+      paste0(
+        antigo_url,
+        "DNR",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_antigo],
+          ".dbc"
+        ))
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_atual)){
-      paste0(atual_url,"DN", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_atual],".dbc")))
+    files_list_2 <- if (any(valid_dates %in% avail_atual)) {
+      paste0(
+        atual_url,
+        "DN",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_atual],
+          ".dbc"
+        ))
+      )
     }
-    files_list_3 <- if(any(valid_dates %in% avail_prelim)){
-      paste0(prelim_url,"DN", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_prelim],".dbc")))
+    files_list_3 <- if (any(valid_dates %in% avail_prelim)) {
+      paste0(
+        prelim_url,
+        "DN",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_prelim],
+          ".dbc"
+        ))
+      )
     }
     files_list <- c(files_list_1, files_list_2, files_list_3)
-
-  } else if(information_system == "CNES-LT"){
+  } else if (information_system == "CNES-LT") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/LT/"
-    avail <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 5, stop = 8))
+    avail <- unique(substr(
+      x = unlist(strsplit(
+        x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE),
+        split = "\n"
+      )),
+      start = 5,
+      stop = 8
+    ))
 
     # Check if required dates are available
-    if(!all(dates %in% avail)){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% avail)) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(dates[!dates %in% avail], collapse = ", "),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% avail]
 
     # File list
 
-    files_list <- paste0(url,"LT", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
-  } else if(information_system == "CNES-ST"){
+    files_list <- paste0(
+      url,
+      "LT",
+      as.vector(sapply(
+        lista_uf,
+        paste0,
+        valid_dates[valid_dates %in% avail],
+        ".dbc"
+      ))
+    )
+  } else if (information_system == "CNES-ST") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/ST/"
-    avail <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 5, stop = 8))
+    avail <- unique(substr(
+      x = unlist(strsplit(
+        x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE),
+        split = "\n"
+      )),
+      start = 5,
+      stop = 8
+    ))
 
     # Check if required dates are available
-    if(!all(dates %in% avail)){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% avail)) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(dates[!dates %in% avail], collapse = ", "),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% avail]
 
     # File list
 
-    files_list <- paste0(url,"ST", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
-  } else if(information_system == "CNES-DC"){
+    files_list <- paste0(
+      url,
+      "ST",
+      as.vector(sapply(
+        lista_uf,
+        paste0,
+        valid_dates[valid_dates %in% avail],
+        ".dbc"
+      ))
+    )
+  } else if (information_system == "CNES-DC") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/DC/"
-    avail <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 5, stop = 8))
+    avail <- unique(substr(
+      x = unlist(strsplit(
+        x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE),
+        split = "\n"
+      )),
+      start = 5,
+      stop = 8
+    ))
 
     # Check if required dates are available
-    if(!all(dates %in% avail)){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% avail)) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(dates[!dates %in% avail], collapse = ", "),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% avail]
 
     # File list
 
-    files_list <- paste0(url,"DC", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
-  } else if(information_system == "CNES-EQ"){
+    files_list <- paste0(
+      url,
+      "DC",
+      as.vector(sapply(
+        lista_uf,
+        paste0,
+        valid_dates[valid_dates %in% avail],
+        ".dbc"
+      ))
+    )
+  } else if (information_system == "CNES-EQ") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/EQ/"
-    avail <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 5, stop = 8))
+    avail <- unique(substr(
+      x = unlist(strsplit(
+        x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE),
+        split = "\n"
+      )),
+      start = 5,
+      stop = 8
+    ))
 
     # Check if required dates are available
-    if(!all(dates %in% avail)){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% avail)) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(dates[!dates %in% avail], collapse = ", "),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% avail]
 
     # File list
 
-    files_list <- paste0(url,"EQ", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
-  } else if(information_system == "CNES-SR"){
+    files_list <- paste0(
+      url,
+      "EQ",
+      as.vector(sapply(
+        lista_uf,
+        paste0,
+        valid_dates[valid_dates %in% avail],
+        ".dbc"
+      ))
+    )
+  } else if (information_system == "CNES-SR") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/SR/"
-    avail <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 5, stop = 8))
+    avail <- unique(substr(
+      x = unlist(strsplit(
+        x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE),
+        split = "\n"
+      )),
+      start = 5,
+      stop = 8
+    ))
 
     # Check if required dates are available
-    if(!all(dates %in% avail)){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% avail)) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(dates[!dates %in% avail], collapse = ", "),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% avail]
 
     # File list
 
-    files_list <- paste0(url,"SR", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
-  } else if(information_system == "CNES-HB"){
+    files_list <- paste0(
+      url,
+      "SR",
+      as.vector(sapply(
+        lista_uf,
+        paste0,
+        valid_dates[valid_dates %in% avail],
+        ".dbc"
+      ))
+    )
+  } else if (information_system == "CNES-HB") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/HB/"
-    avail <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 5, stop = 8))
+    avail <- unique(substr(
+      x = unlist(strsplit(
+        x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE),
+        split = "\n"
+      )),
+      start = 5,
+      stop = 8
+    ))
 
     # Check if required dates are available
-    if(!all(dates %in% avail)){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% avail)) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(dates[!dates %in% avail], collapse = ", "),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% avail]
 
     # File list
 
-    files_list <- paste0(url,"HB", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
-  } else if(information_system == "CNES-PF"){
+    files_list <- paste0(
+      url,
+      "HB",
+      as.vector(sapply(
+        lista_uf,
+        paste0,
+        valid_dates[valid_dates %in% avail],
+        ".dbc"
+      ))
+    )
+  } else if (information_system == "CNES-PF") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/PF/"
-    avail <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 5, stop = 8))
+    avail <- unique(substr(
+      x = unlist(strsplit(
+        x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE),
+        split = "\n"
+      )),
+      start = 5,
+      stop = 8
+    ))
 
     # Check if required dates are available
-    if(!all(dates %in% avail)){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% avail)) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(dates[!dates %in% avail], collapse = ", "),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% avail]
 
     # File list
 
-    files_list <- paste0(url,"PF", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
-  } else if(information_system == "CNES-EP"){
+    files_list <- paste0(
+      url,
+      "PF",
+      as.vector(sapply(
+        lista_uf,
+        paste0,
+        valid_dates[valid_dates %in% avail],
+        ".dbc"
+      ))
+    )
+  } else if (information_system == "CNES-EP") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/EP/"
-    avail <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 5, stop = 8))
+    avail <- unique(substr(
+      x = unlist(strsplit(
+        x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE),
+        split = "\n"
+      )),
+      start = 5,
+      stop = 8
+    ))
 
     # Check if required dates are available
-    if(!all(dates %in% avail)){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% avail)) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(dates[!dates %in% avail], collapse = ", "),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% avail]
 
     # File list
 
-    files_list <- paste0(url,"EP", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
-  } else if(information_system == "CNES-RC"){
+    files_list <- paste0(
+      url,
+      "EP",
+      as.vector(sapply(
+        lista_uf,
+        paste0,
+        valid_dates[valid_dates %in% avail],
+        ".dbc"
+      ))
+    )
+  } else if (information_system == "CNES-RC") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/RC/"
-    avail <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 5, stop = 8))
+    avail <- unique(substr(
+      x = unlist(strsplit(
+        x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE),
+        split = "\n"
+      )),
+      start = 5,
+      stop = 8
+    ))
 
     # Check if required dates are available
-    if(!all(dates %in% avail)){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% avail)) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(dates[!dates %in% avail], collapse = ", "),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% avail]
 
     # File list
 
-    files_list <- paste0(url,"RC", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
-  } else if(information_system == "CNES-IN"){
+    files_list <- paste0(
+      url,
+      "RC",
+      as.vector(sapply(
+        lista_uf,
+        paste0,
+        valid_dates[valid_dates %in% avail],
+        ".dbc"
+      ))
+    )
+  } else if (information_system == "CNES-IN") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/IN/"
-    avail <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 5, stop = 8))
+    avail <- unique(substr(
+      x = unlist(strsplit(
+        x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE),
+        split = "\n"
+      )),
+      start = 5,
+      stop = 8
+    ))
 
     # Check if required dates are available
-    if(!all(dates %in% avail)){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% avail)) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(dates[!dates %in% avail], collapse = ", "),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% avail]
 
     # File list
 
-    files_list <- paste0(url,"IN", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
-  } else if(information_system == "CNES-EE"){
+    files_list <- paste0(
+      url,
+      "IN",
+      as.vector(sapply(
+        lista_uf,
+        paste0,
+        valid_dates[valid_dates %in% avail],
+        ".dbc"
+      ))
+    )
+  } else if (information_system == "CNES-EE") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/EE/"
-    avail <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 5, stop = 8))
+    avail <- unique(substr(
+      x = unlist(strsplit(
+        x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE),
+        split = "\n"
+      )),
+      start = 5,
+      stop = 8
+    ))
 
     # Check if required dates are available
-    if(!all(dates %in% avail)){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% avail)) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(dates[!dates %in% avail], collapse = ", "),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% avail]
 
     # File list
 
-    files_list <- paste0(url,"EE", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
-  } else if(information_system == "CNES-EF"){
+    files_list <- paste0(
+      url,
+      "EE",
+      as.vector(sapply(
+        lista_uf,
+        paste0,
+        valid_dates[valid_dates %in% avail],
+        ".dbc"
+      ))
+    )
+  } else if (information_system == "CNES-EF") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/EF/"
-    avail <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 5, stop = 8))
+    avail <- unique(substr(
+      x = unlist(strsplit(
+        x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE),
+        split = "\n"
+      )),
+      start = 5,
+      stop = 8
+    ))
 
     # Check if required dates are available
-    if(!all(dates %in% avail)){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% avail)) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(dates[!dates %in% avail], collapse = ", "),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% avail]
 
     # File list
 
-    files_list <- paste0(url,"EF", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
-  } else if(information_system == "CNES-GM"){
+    files_list <- paste0(
+      url,
+      "EF",
+      as.vector(sapply(
+        lista_uf,
+        paste0,
+        valid_dates[valid_dates %in% avail],
+        ".dbc"
+      ))
+    )
+  } else if (information_system == "CNES-GM") {
     url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/GM/"
-    avail <- unique(substr(x = unlist(strsplit(x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n")), start = 5, stop = 8))
+    avail <- unique(substr(
+      x = unlist(strsplit(
+        x = RCurl::getURL(url = url, ftp.use.epsv = TRUE, dirlistonly = TRUE),
+        split = "\n"
+      )),
+      start = 5,
+      stop = 8
+    ))
 
     # Check if required dates are available
-    if(!all(dates %in% avail)){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% avail], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% avail)) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(dates[!dates %in% avail], collapse = ", "),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% avail]
 
     # File list
 
-    files_list <- paste0(url,"GM", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail],".dbc")))
-  } else if(information_system == "SIA-AB"){
+    files_list <- paste0(
+      url,
+      "GM",
+      as.vector(sapply(
+        lista_uf,
+        paste0,
+        valid_dates[valid_dates %in% avail],
+        ".dbc"
+      ))
+    )
+  } else if (information_system == "SIA-AB") {
     # Available dates
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/199407_200712/Dados/"
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = atual_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("AB", tmp)]
     avail_atual <- unique(substr(x = tmp, start = 5, stop = 8))
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = antigo_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("AB", tmp)]
     avail_antigo <- unique(substr(x = tmp, start = 5, stop = 8))
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_atual, avail_antigo))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_atual, avail_antigo))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(
+          dates[!dates %in% c(avail_atual, avail_antigo)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
-    if(any(valid_dates %in% avail_antigo)){
-      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_antigo)) {
+      cli::cli_alert(paste0(
+        "The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ",
+        paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
 
-    files_list_1 <- if(any(valid_dates %in% avail_antigo)){
-      paste0(antigo_url,"AB", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
+    files_list_1 <- if (any(valid_dates %in% avail_antigo)) {
+      paste0(
+        antigo_url,
+        "AB",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_antigo],
+          ".dbc"
+        ))
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_atual)){
-      paste0(atual_url,"AB", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_atual],".dbc")))
+    files_list_2 <- if (any(valid_dates %in% avail_atual)) {
+      paste0(
+        atual_url,
+        "AB",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_atual],
+          ".dbc"
+        ))
+      )
     }
     files_list <- c(files_list_1, files_list_2)
-  } else if(information_system == "SIA-ABO"){
+  } else if (information_system == "SIA-ABO") {
     # Available dates
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/199407_200712/Dados/"
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = atual_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("ABO", tmp)]
     avail_atual <- unique(substr(x = tmp, start = 5, stop = 8))
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = antigo_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("ABO", tmp)]
     avail_antigo <- unique(substr(x = tmp, start = 5, stop = 8))
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_atual, avail_antigo))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_atual, avail_antigo))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(
+          dates[!dates %in% c(avail_atual, avail_antigo)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
-    if(any(valid_dates %in% avail_antigo)){
-      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_antigo)) {
+      cli::cli_alert(paste0(
+        "The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ",
+        paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
 
-    files_list_1 <- if(any(valid_dates %in% avail_antigo)){
-      paste0(antigo_url,"ABO", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
+    files_list_1 <- if (any(valid_dates %in% avail_antigo)) {
+      paste0(
+        antigo_url,
+        "ABO",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_antigo],
+          ".dbc"
+        ))
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_atual)){
-      paste0(atual_url,"ABO", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_atual],".dbc")))
+    files_list_2 <- if (any(valid_dates %in% avail_atual)) {
+      paste0(
+        atual_url,
+        "ABO",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_atual],
+          ".dbc"
+        ))
+      )
     }
     files_list <- c(files_list_1, files_list_2)
-  } else if(information_system == "SIA-ACF"){
+  } else if (information_system == "SIA-ACF") {
     # Available dates
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/199407_200712/Dados/"
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = atual_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("ACF", tmp)]
     avail_atual <- unique(substr(x = tmp, start = 5, stop = 8))
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = antigo_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("ACF", tmp)]
     avail_antigo <- unique(substr(x = tmp, start = 5, stop = 8))
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_atual, avail_antigo))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_atual, avail_antigo))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(
+          dates[!dates %in% c(avail_atual, avail_antigo)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
-    if(any(valid_dates %in% avail_antigo)){
-      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_antigo)) {
+      cli::cli_alert(paste0(
+        "The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ",
+        paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
 
-    files_list_1 <- if(any(valid_dates %in% avail_antigo)){
-      paste0(antigo_url,"ACF", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
+    files_list_1 <- if (any(valid_dates %in% avail_antigo)) {
+      paste0(
+        antigo_url,
+        "ACF",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_antigo],
+          ".dbc"
+        ))
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_atual)){
-      paste0(atual_url,"ACF", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_atual],".dbc")))
+    files_list_2 <- if (any(valid_dates %in% avail_atual)) {
+      paste0(
+        atual_url,
+        "ACF",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_atual],
+          ".dbc"
+        ))
+      )
     }
     files_list <- c(files_list_1, files_list_2)
-  } else if(information_system == "SIA-AD"){
+  } else if (information_system == "SIA-AD") {
     # Available dates
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/199407_200712/Dados/"
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = atual_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("AD", tmp)]
     avail_atual <- unique(substr(x = tmp, start = 5, stop = 8))
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = antigo_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("AD", tmp)]
     avail_antigo <- unique(substr(x = tmp, start = 5, stop = 8))
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_atual, avail_antigo))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_atual, avail_antigo))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(
+          dates[!dates %in% c(avail_atual, avail_antigo)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
-    if(any(valid_dates %in% avail_antigo)){
-      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_antigo)) {
+      cli::cli_alert(paste0(
+        "The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ",
+        paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
 
-    files_list_1 <- if(any(valid_dates %in% avail_antigo)){
-      paste0(antigo_url,"AD", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
+    files_list_1 <- if (any(valid_dates %in% avail_antigo)) {
+      paste0(
+        antigo_url,
+        "AD",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_antigo],
+          ".dbc"
+        ))
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_atual)){
-      paste0(atual_url,"AD", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_atual],".dbc")))
+    files_list_2 <- if (any(valid_dates %in% avail_atual)) {
+      paste0(
+        atual_url,
+        "AD",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_atual],
+          ".dbc"
+        ))
+      )
     }
     files_list <- c(files_list_1, files_list_2)
-  } else if(information_system == "SIA-AN"){
+  } else if (information_system == "SIA-AN") {
     # Available dates
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/199407_200712/Dados/"
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = atual_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("AN", tmp)]
     avail_atual <- unique(substr(x = tmp, start = 5, stop = 8))
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = antigo_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("AN", tmp)]
     avail_antigo <- unique(substr(x = tmp, start = 5, stop = 8))
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_atual, avail_antigo))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_atual, avail_antigo))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(
+          dates[!dates %in% c(avail_atual, avail_antigo)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
-    if(any(valid_dates %in% avail_antigo)){
-      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_antigo)) {
+      cli::cli_alert(paste0(
+        "The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ",
+        paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
 
-    files_list_1 <- if(any(valid_dates %in% avail_antigo)){
-      paste0(antigo_url,"AN", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
+    files_list_1 <- if (any(valid_dates %in% avail_antigo)) {
+      paste0(
+        antigo_url,
+        "AN",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_antigo],
+          ".dbc"
+        ))
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_atual)){
-      paste0(atual_url,"AN", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_atual],".dbc")))
+    files_list_2 <- if (any(valid_dates %in% avail_atual)) {
+      paste0(
+        atual_url,
+        "AN",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_atual],
+          ".dbc"
+        ))
+      )
     }
     files_list <- c(files_list_1, files_list_2)
-  } else if(information_system == "SIA-AM"){
+  } else if (information_system == "SIA-AM") {
     # Available dates
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/199407_200712/Dados/"
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = atual_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("AM", tmp)]
     avail_atual <- unique(substr(x = tmp, start = 5, stop = 8))
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = antigo_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("AM", tmp)]
     avail_antigo <- unique(substr(x = tmp, start = 5, stop = 8))
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_atual, avail_antigo))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_atual, avail_antigo))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(
+          dates[!dates %in% c(avail_atual, avail_antigo)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
-    if(any(valid_dates %in% avail_antigo)){
-      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_antigo)) {
+      cli::cli_alert(paste0(
+        "The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ",
+        paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
 
-    files_list_1 <- if(any(valid_dates %in% avail_antigo)){
-      paste0(antigo_url,"AM", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
+    files_list_1 <- if (any(valid_dates %in% avail_antigo)) {
+      paste0(
+        antigo_url,
+        "AM",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_antigo],
+          ".dbc"
+        ))
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_atual)){
-      paste0(atual_url,"AM", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_atual],".dbc")))
+    files_list_2 <- if (any(valid_dates %in% avail_atual)) {
+      paste0(
+        atual_url,
+        "AM",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_atual],
+          ".dbc"
+        ))
+      )
     }
     files_list <- c(files_list_1, files_list_2)
-  } else if(information_system == "SIA-AQ"){
+  } else if (information_system == "SIA-AQ") {
     # Available dates
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/199407_200712/Dados/"
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = atual_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("AQ", tmp)]
     avail_atual <- unique(substr(x = tmp, start = 5, stop = 8))
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = antigo_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("AQ", tmp)]
     avail_antigo <- unique(substr(x = tmp, start = 5, stop = 8))
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_atual, avail_antigo))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_atual, avail_antigo))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(
+          dates[!dates %in% c(avail_atual, avail_antigo)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
-    if(any(valid_dates %in% avail_antigo)){
-      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_antigo)) {
+      cli::cli_alert(paste0(
+        "The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ",
+        paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
 
-    files_list_1 <- if(any(valid_dates %in% avail_antigo)){
-      paste0(antigo_url,"AQ", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
+    files_list_1 <- if (any(valid_dates %in% avail_antigo)) {
+      paste0(
+        antigo_url,
+        "AQ",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_antigo],
+          ".dbc"
+        ))
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_atual)){
-      paste0(atual_url,"AQ", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_atual],".dbc")))
+    files_list_2 <- if (any(valid_dates %in% avail_atual)) {
+      paste0(
+        atual_url,
+        "AQ",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_atual],
+          ".dbc"
+        ))
+      )
     }
     files_list <- c(files_list_1, files_list_2)
-  } else if(information_system == "SIA-AR"){
+  } else if (information_system == "SIA-AR") {
     # Available dates
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/199407_200712/Dados/"
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = atual_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("AR", tmp)]
     avail_atual <- unique(substr(x = tmp, start = 5, stop = 8))
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = antigo_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("AR", tmp)]
     avail_antigo <- unique(substr(x = tmp, start = 5, stop = 8))
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_atual, avail_antigo))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_atual, avail_antigo))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(
+          dates[!dates %in% c(avail_atual, avail_antigo)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
-    if(any(valid_dates %in% avail_antigo)){
-      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_antigo)) {
+      cli::cli_alert(paste0(
+        "The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ",
+        paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
 
-    files_list_1 <- if(any(valid_dates %in% avail_antigo)){
-      paste0(antigo_url,"AR", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
+    files_list_1 <- if (any(valid_dates %in% avail_antigo)) {
+      paste0(
+        antigo_url,
+        "AR",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_antigo],
+          ".dbc"
+        ))
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_atual)){
-      paste0(atual_url,"AR", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_atual],".dbc")))
+    files_list_2 <- if (any(valid_dates %in% avail_atual)) {
+      paste0(
+        atual_url,
+        "AR",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_atual],
+          ".dbc"
+        ))
+      )
     }
     files_list <- c(files_list_1, files_list_2)
-  } else if(information_system == "SIA-ATD"){
+  } else if (information_system == "SIA-ATD") {
     # Available dates
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/199407_200712/Dados/"
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = atual_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("ATD", tmp)]
     avail_atual <- unique(substr(x = tmp, start = 5, stop = 8))
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = antigo_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("ATD", tmp)]
     avail_antigo <- unique(substr(x = tmp, start = 5, stop = 8))
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_atual, avail_antigo))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_atual, avail_antigo))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(
+          dates[!dates %in% c(avail_atual, avail_antigo)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
-    if(any(valid_dates %in% avail_antigo)){
-      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_antigo)) {
+      cli::cli_alert(paste0(
+        "The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ",
+        paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
 
-    files_list_1 <- if(any(valid_dates %in% avail_antigo)){
-      paste0(antigo_url,"ATD", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
+    files_list_1 <- if (any(valid_dates %in% avail_antigo)) {
+      paste0(
+        antigo_url,
+        "ATD",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_antigo],
+          ".dbc"
+        ))
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_atual)){
-      paste0(atual_url,"ATD", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_atual],".dbc")))
+    files_list_2 <- if (any(valid_dates %in% avail_atual)) {
+      paste0(
+        atual_url,
+        "ATD",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_atual],
+          ".dbc"
+        ))
+      )
     }
     files_list <- c(files_list_1, files_list_2)
-  } else if(information_system == "SIA-PA"){
+  } else if (information_system == "SIA-PA") {
     # Available dates
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/199407_200712/Dados/"
 
-
-
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = atual_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("^PA", tmp)]
     tmp <- tmp[substr(x = tmp, start = 3, stop = 4) %in% lista_uf]
     avail_atual <- unique(substr(x = tmp, start = 5, stop = 9))
     avail_atual <- gsub(pattern = "\\.", replacement = "", x = avail_atual)
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = antigo_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("^PA", tmp)]
     tmp <- tmp[substr(x = tmp, start = 3, stop = 4) %in% lista_uf]
     avail_antigo <- unique(substr(x = tmp, start = 5, stop = 9))
     avail_antigo <- gsub(pattern = "\\.", replacement = "", x = avail_antigo)
 
     # Check if required dates are available
-    if(!all(dates %in% c(substr(x = avail_atual, start = 0, stop = 4), substr(x = avail_antigo, start = 0, stop = 4)))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(substr(x = avail_atual, start = 0, stop = 4), substr(x = avail_antigo, start = 0, stop = 4))], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (
+      !all(
+        dates %in%
+          c(
+            substr(x = avail_atual, start = 0, stop = 4),
+            substr(x = avail_antigo, start = 0, stop = 4)
+          )
+      )
+    ) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(
+          dates[
+            !dates %in%
+              c(
+                substr(x = avail_atual, start = 0, stop = 4),
+                substr(x = avail_antigo, start = 0, stop = 4)
+              )
+          ],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
-    valid_dates <- c(avail_atual, avail_antigo)[substr(x = c(avail_atual, avail_antigo), start = 0, stop = 4) %in% dates]
-
+    valid_dates <- c(avail_atual, avail_antigo)[
+      substr(x = c(avail_atual, avail_antigo), start = 0, stop = 4) %in% dates
+    ]
 
     # Message about old data
-    if(any(valid_dates %in% avail_antigo)){
-      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_antigo)) {
+      cli::cli_alert(paste0(
+        "The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ",
+        paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
-    files_list_1 <- if(any(valid_dates %in% avail_antigo)){
-      paste0(antigo_url,"PA", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
+    files_list_1 <- if (any(valid_dates %in% avail_antigo)) {
+      paste0(
+        antigo_url,
+        "PA",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_antigo],
+          ".dbc"
+        ))
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_atual)){
-      paste0(atual_url,"PA", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_atual],".dbc")))
+    files_list_2 <- if (any(valid_dates %in% avail_atual)) {
+      paste0(
+        atual_url,
+        "PA",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_atual],
+          ".dbc"
+        ))
+      )
     }
     files_list <- c(files_list_1, files_list_2)
-  } else if(information_system == "SIA-PS"){
+  } else if (information_system == "SIA-PS") {
     # Available dates
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/199407_200712/Dados/"
 
-
-
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = atual_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("^PS", tmp)]
     tmp <- tmp[substr(x = tmp, start = 3, stop = 4) %in% lista_uf]
     avail_atual <- unique(substr(x = tmp, start = 5, stop = 9))
     avail_atual <- gsub(pattern = "\\.", replacement = "", x = avail_atual)
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = antigo_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("^PS", tmp)]
     tmp <- tmp[substr(x = tmp, start = 3, stop = 4) %in% lista_uf]
     avail_antigo <- unique(substr(x = tmp, start = 5, stop = 9))
     avail_antigo <- gsub(pattern = "\\.", replacement = "", x = avail_antigo)
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_atual, avail_antigo))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_atual, avail_antigo))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(
+          dates[!dates %in% c(avail_atual, avail_antigo)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
-    if(any(valid_dates %in% avail_antigo)){
-      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_antigo)) {
+      cli::cli_alert(paste0(
+        "The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ",
+        paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
-    files_list_1 <- if(any(valid_dates %in% avail_antigo)){
-      paste0(antigo_url,"PS", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
+    files_list_1 <- if (any(valid_dates %in% avail_antigo)) {
+      paste0(
+        antigo_url,
+        "PS",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_antigo],
+          ".dbc"
+        ))
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_atual)){
-      paste0(atual_url,"PS", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_atual],".dbc")))
+    files_list_2 <- if (any(valid_dates %in% avail_atual)) {
+      paste0(
+        atual_url,
+        "PS",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_atual],
+          ".dbc"
+        ))
+      )
     }
     files_list <- c(files_list_1, files_list_2)
-  } else if(information_system == "SIA-SAD"){
+  } else if (information_system == "SIA-SAD") {
     # Available dates
     atual_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Dados/"
     antigo_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/199407_200712/Dados/"
 
-
-
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = atual_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = atual_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("^SAD", tmp)]
     tmp <- tmp[substr(x = tmp, start = 3, stop = 4) %in% lista_uf]
     avail_atual <- unique(substr(x = tmp, start = 5, stop = 9))
     avail_atual <- gsub(pattern = "\\.", replacement = "", x = avail_atual)
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = antigo_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = antigo_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("^SAD", tmp)]
     tmp <- tmp[substr(x = tmp, start = 3, stop = 4) %in% lista_uf]
     avail_antigo <- unique(substr(x = tmp, start = 5, stop = 9))
     avail_antigo <- gsub(pattern = "\\.", replacement = "", x = avail_antigo)
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_atual, avail_antigo))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS (yymm): ", paste0(dates[!dates %in% c(avail_atual, avail_antigo)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_atual, avail_antigo))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS (yymm): ",
+        paste0(
+          dates[!dates %in% c(avail_atual, avail_antigo)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_atual, avail_antigo)]
 
     # Message about old data
-    if(any(valid_dates %in% avail_antigo)){
-      cli::cli_alert(paste0("The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ", paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_antigo)) {
+      cli::cli_alert(paste0(
+        "The following dates (yymm) are from old folders and may contain incompatible codes (including old ICD codes): ",
+        paste0(valid_dates[valid_dates %in% avail_antigo], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
-    files_list_1 <- if(any(valid_dates %in% avail_antigo)){
-      paste0(antigo_url,"SAD", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_antigo],".dbc")))
+    files_list_1 <- if (any(valid_dates %in% avail_antigo)) {
+      paste0(
+        antigo_url,
+        "SAD",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_antigo],
+          ".dbc"
+        ))
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_atual)){
-      paste0(atual_url,"SAD", as.vector(sapply(lista_uf, paste0, valid_dates[valid_dates %in% avail_atual],".dbc")))
+    files_list_2 <- if (any(valid_dates %in% avail_atual)) {
+      paste0(
+        atual_url,
+        "SAD",
+        as.vector(sapply(
+          lista_uf,
+          paste0,
+          valid_dates[valid_dates %in% avail_atual],
+          ".dbc"
+        ))
+      )
     }
     files_list <- c(files_list_1, files_list_2)
-  } else if(information_system == "SINAN-DENGUE"){
+  } else if (information_system == "SINAN-DENGUE") {
     # Available dates
     geral_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINAN/DADOS/FINAIS/"
     prelim_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINAN/DADOS/PRELIM/"
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = geral_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = geral_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("DENGBR", tmp)]
     tmp <- unique(substr(x = tmp, start = 7, stop = 8))
-    avail_geral <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+    avail_geral <- sort(as.numeric(ifelse(
+      test = substr(tmp, 0, 1) == "9",
+      yes = paste0("19", tmp),
+      no = paste0("20", tmp)
+    )))
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = prelim_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = prelim_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("DENGBR", tmp)]
     tmp <- unique(substr(x = tmp, start = 7, stop = 8))
-    avail_prelim <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+    avail_prelim <- sort(as.numeric(ifelse(
+      test = substr(tmp, 0, 1) == "9",
+      yes = paste0("19", tmp),
+      no = paste0("20", tmp)
+    )))
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_geral, avail_prelim))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_geral, avail_prelim))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS: ",
+        paste0(
+          dates[!dates %in% c(avail_geral, avail_prelim)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
 
     # Message about preliminary data
-    if(any(valid_dates %in% avail_prelim)){
-      cli::cli_alert(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_prelim)) {
+      cli::cli_alert(paste0(
+        "The following dates are preliminar: ",
+        paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
-    if(uf != "Any"){
-      cli::cli_alert(paste0("DENGUE data is not available by UF. Downloading all data available instead. "))
+    if (uf != "Any") {
+      cli::cli_alert(paste0(
+        "DENGUE data is not available by UF. Downloading all data available instead. "
+      ))
     }
-    files_list_1 <- if(any(valid_dates %in% avail_geral)){
-      paste0(geral_url,"DENGBR", substr(valid_dates[valid_dates %in% avail_geral], 3, 4),".dbc")
+    files_list_1 <- if (any(valid_dates %in% avail_geral)) {
+      paste0(
+        geral_url,
+        "DENGBR",
+        substr(valid_dates[valid_dates %in% avail_geral], 3, 4),
+        ".dbc"
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_prelim)){
-      paste0(prelim_url,"DENGBR", substr(valid_dates[valid_dates %in% avail_prelim], 3, 4),".dbc")
+    files_list_2 <- if (any(valid_dates %in% avail_prelim)) {
+      paste0(
+        prelim_url,
+        "DENGBR",
+        substr(valid_dates[valid_dates %in% avail_prelim], 3, 4),
+        ".dbc"
+      )
     }
     files_list <- c(files_list_1, files_list_2)
-  } else if(information_system == "SINAN-CHIKUNGUNYA"){
+  } else if (information_system == "SINAN-CHIKUNGUNYA") {
     # Available dates
     geral_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINAN/DADOS/FINAIS/"
     prelim_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINAN/DADOS/PRELIM/"
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = geral_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = geral_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("CHIKBR", tmp)]
     tmp <- unique(substr(x = tmp, start = 7, stop = 8))
-    avail_geral <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+    avail_geral <- sort(as.numeric(ifelse(
+      test = substr(tmp, 0, 1) == "9",
+      yes = paste0("19", tmp),
+      no = paste0("20", tmp)
+    )))
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = prelim_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = prelim_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("CHIKBR", tmp)]
     tmp <- unique(substr(x = tmp, start = 7, stop = 8))
-    avail_prelim <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+    avail_prelim <- sort(as.numeric(ifelse(
+      test = substr(tmp, 0, 1) == "9",
+      yes = paste0("19", tmp),
+      no = paste0("20", tmp)
+    )))
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_geral, avail_prelim))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_geral, avail_prelim))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS: ",
+        paste0(
+          dates[!dates %in% c(avail_geral, avail_prelim)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
 
     # Message about preliminary data
-    if(any(valid_dates %in% avail_prelim)){
-      cli::cli_alert(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_prelim)) {
+      cli::cli_alert(paste0(
+        "The following dates are preliminar: ",
+        paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
-    if(uf != "Any"){
-      cli::cli_alert(paste0("CHIKUNGUNYA data is not available by UF. Downloading all data available instead. "))
+    if (uf != "Any") {
+      cli::cli_alert(paste0(
+        "CHIKUNGUNYA data is not available by UF. Downloading all data available instead. "
+      ))
     }
-    files_list_1 <- if(any(valid_dates %in% avail_geral)){
-      paste0(geral_url,"CHIKBR", substr(valid_dates[valid_dates %in% avail_geral], 3, 4),".dbc")
+    files_list_1 <- if (any(valid_dates %in% avail_geral)) {
+      paste0(
+        geral_url,
+        "CHIKBR",
+        substr(valid_dates[valid_dates %in% avail_geral], 3, 4),
+        ".dbc"
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_prelim)){
-      paste0(prelim_url,"CHIKBR", substr(valid_dates[valid_dates %in% avail_prelim], 3, 4),".dbc")
+    files_list_2 <- if (any(valid_dates %in% avail_prelim)) {
+      paste0(
+        prelim_url,
+        "CHIKBR",
+        substr(valid_dates[valid_dates %in% avail_prelim], 3, 4),
+        ".dbc"
+      )
     }
     files_list <- c(files_list_1, files_list_2)
-  } else if(information_system == "SINAN-ZIKA"){
+  } else if (information_system == "SINAN-ZIKA") {
     # Available dates
     geral_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINAN/DADOS/FINAIS/"
     prelim_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINAN/DADOS/PRELIM/"
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = geral_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = geral_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("ZIKABR", tmp)]
     tmp <- unique(substr(x = tmp, start = 7, stop = 8))
-    avail_geral <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+    avail_geral <- sort(as.numeric(ifelse(
+      test = substr(tmp, 0, 1) == "9",
+      yes = paste0("19", tmp),
+      no = paste0("20", tmp)
+    )))
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = prelim_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = prelim_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("ZIKABR", tmp)]
     tmp <- unique(substr(x = tmp, start = 7, stop = 8))
-    avail_prelim <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+    avail_prelim <- sort(as.numeric(ifelse(
+      test = substr(tmp, 0, 1) == "9",
+      yes = paste0("19", tmp),
+      no = paste0("20", tmp)
+    )))
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_geral, avail_prelim))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_geral, avail_prelim))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS: ",
+        paste0(
+          dates[!dates %in% c(avail_geral, avail_prelim)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
 
     # Message about preliminary data
-    if(any(valid_dates %in% avail_prelim)){
-      cli::cli_alert(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_prelim)) {
+      cli::cli_alert(paste0(
+        "The following dates are preliminar: ",
+        paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
-    if(uf != "Any"){
-      cli::cli_alert(paste0("ZIKA data is not available by UF. Downloading all data available instead. "))
+    if (uf != "Any") {
+      cli::cli_alert(paste0(
+        "ZIKA data is not available by UF. Downloading all data available instead. "
+      ))
     }
-    files_list_1 <- if(any(valid_dates %in% avail_geral)){
-      paste0(geral_url,"ZIKABR", substr(valid_dates[valid_dates %in% avail_geral], 3, 4),".dbc")
+    files_list_1 <- if (any(valid_dates %in% avail_geral)) {
+      paste0(
+        geral_url,
+        "ZIKABR",
+        substr(valid_dates[valid_dates %in% avail_geral], 3, 4),
+        ".dbc"
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_prelim)){
-      paste0(prelim_url,"ZIKABR", substr(valid_dates[valid_dates %in% avail_prelim], 3, 4),".dbc")
+    files_list_2 <- if (any(valid_dates %in% avail_prelim)) {
+      paste0(
+        prelim_url,
+        "ZIKABR",
+        substr(valid_dates[valid_dates %in% avail_prelim], 3, 4),
+        ".dbc"
+      )
     }
     files_list <- c(files_list_1, files_list_2)
-  } else if(information_system == "SINAN-MALARIA"){
+  } else if (information_system == "SINAN-MALARIA") {
     # Available dates
     geral_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINAN/DADOS/FINAIS/"
     prelim_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINAN/DADOS/PRELIM/"
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = geral_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = geral_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("MALABR", tmp)]
     tmp <- unique(substr(x = tmp, start = 7, stop = 8))
-    avail_geral <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+    avail_geral <- sort(as.numeric(ifelse(
+      test = substr(tmp, 0, 1) == "9",
+      yes = paste0("19", tmp),
+      no = paste0("20", tmp)
+    )))
 
-    tmp <- unlist(strsplit(x = RCurl::getURL(url = prelim_url, ftp.use.epsv = TRUE, dirlistonly = TRUE), split = "\n"))
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = prelim_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
     tmp <- tmp[grep("MALABR", tmp)]
     tmp <- unique(substr(x = tmp, start = 7, stop = 8))
-    avail_prelim <- sort(as.numeric(ifelse(test = substr(tmp, 0, 1) == "9", yes = paste0("19", tmp), no = paste0("20", tmp))))
+    avail_prelim <- sort(as.numeric(ifelse(
+      test = substr(tmp, 0, 1) == "9",
+      yes = paste0("19", tmp),
+      no = paste0("20", tmp)
+    )))
 
     # Check if required dates are available
-    if(!all(dates %in% c(avail_geral, avail_prelim))){
-      cli::cli_alert(paste0("The following dates are not availabe at DataSUS: ", paste0(dates[!dates %in% c(avail_geral, avail_prelim)], collapse = ", "), ". Only the available dates will be downloaded."))
+    if (!all(dates %in% c(avail_geral, avail_prelim))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS: ",
+        paste0(
+          dates[!dates %in% c(avail_geral, avail_prelim)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
     }
     valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
 
     # Message about preliminary data
-    if(any(valid_dates %in% avail_prelim)){
-      cli::cli_alert(paste0("The following dates are preliminar: ", paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "), "."))
+    if (any(valid_dates %in% avail_prelim)) {
+      cli::cli_alert(paste0(
+        "The following dates are preliminar: ",
+        paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "),
+        "."
+      ))
     }
 
     # File list
-    if(uf != "Any"){
-      cli::cli_alert(paste0("MALARIA data is not available by UF. Downloading all data available instead. "))
+    if (uf != "Any") {
+      cli::cli_alert(paste0(
+        "MALARIA data is not available by UF. Downloading all data available instead. "
+      ))
     }
-    files_list_1 <- if(any(valid_dates %in% avail_geral)){
-      paste0(geral_url,"MALABR", substr(valid_dates[valid_dates %in% avail_geral], 3, 4),".dbc")
+    files_list_1 <- if (any(valid_dates %in% avail_geral)) {
+      paste0(
+        geral_url,
+        "MALABR",
+        substr(valid_dates[valid_dates %in% avail_geral], 3, 4),
+        ".dbc"
+      )
     }
-    files_list_2 <- if(any(valid_dates %in% avail_prelim)){
-      paste0(prelim_url,"MALABR", substr(valid_dates[valid_dates %in% avail_prelim], 3, 4),".dbc")
+    files_list_2 <- if (any(valid_dates %in% avail_prelim)) {
+      paste0(
+        prelim_url,
+        "MALABR",
+        substr(valid_dates[valid_dates %in% avail_prelim], 3, 4),
+        ".dbc"
+      )
     }
     files_list <- c(files_list_1, files_list_2)
   }
 
   # Dowload files
   data <- NULL
-  for(file in files_list){
+  for (file in files_list) {
     # Temporary file
     temp <- tempfile()
 
@@ -1220,36 +2799,41 @@ fetch_datasus <- function(year_start, month_start = NULL, year_end, month_end = 
     partial <- data.frame()
 
     # Try to download file
-    tryCatch({
-      utils::download.file(file, temp, mode = "wb", method = "libcurl")
-      partial <- read.dbc::read.dbc(temp, as.is = TRUE)
-      file.remove(temp)
-    },
-    error=function(cond) {
-      cli::cli_alert_info(paste("Something went wrong with this URL:", file))
-      cli::cli_alert("This can be a problem with the Internet or the file does not exist yet.")
-      cli::cli_alert("If the file is too big, try to increase the timeout argument value.")
+    tryCatch(
+      {
+        utils::download.file(file, temp, mode = "wb", method = "libcurl")
+        partial <- read.dbc::read.dbc(temp, as.is = TRUE)
+        file.remove(temp)
+      },
+      error = function(cond) {
+        cli::cli_alert_info(paste("Something went wrong with this URL:", file))
+        cli::cli_alert(
+          "This can be a problem with the Internet or the file does not exist yet."
+        )
+        cli::cli_alert(
+          "If the file is too big, try to increase the timeout argument value."
+        )
 
-      if(stop_on_error == TRUE){
-        cli::cli_abort("Stopping download.")
+        if (stop_on_error == TRUE) {
+          cli::cli_abort("Stopping download.")
+        }
       }
-    })
+    )
 
     # Merge files
-    if(nrow(partial) > 0){
-
-      if(track_source == TRUE){
+    if (nrow(partial) > 0) {
+      if (track_source == TRUE) {
         partial$source <- basename(file)
       }
 
-      if(!all(vars %in% names(partial))) cli::cli_abort("One or more variables names are unknown. Typo?")
-      if(is.null(vars)){
+      if (!all(vars %in% names(partial)))
+        cli::cli_abort("One or more variables names are unknown. Typo?")
+      if (is.null(vars)) {
         data <- dplyr::bind_rows(data, partial)
       } else {
         data <- dplyr::bind_rows(data, subset(partial, select = vars))
       }
     }
-
   }
 
   # Return
