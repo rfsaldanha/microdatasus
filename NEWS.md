@@ -2,6 +2,7 @@
 * Update documentation on `fetch_datasus()`.
 * Fetch SINAN-CHAGAS data.
 * Fetch SINAN-LEISHMANIOSE-VISCERAL and SINAN-LEISHMANIOSE-TEGUMENTAR data.
+* Process SINAN-LEISHMANIOSE-VISCERAL and SINAN-LEISHMANIOSE-TEGUMENTAR data.
 * Fetch SINAN-LEPTOSPIROSE data.
 * Fix message when downloading data for all UFs.
 

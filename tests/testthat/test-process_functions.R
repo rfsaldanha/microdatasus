@@ -88,3 +88,11 @@ test_that("sinan-leishmaniose-visceral at 2023", {
   )
   expect_true("tbl_df" %in% class(sinan_leishmaniose_visceral))
 })
+
+test_that("sinan-leishmaniose-tegumentar at 2023", {
+  sinan_leishmaniose_tegumentar <- process_sinan_leishmaniose_tegumentar(
+    data = sinan_leishmaniose_tegumentar_sample,
+    municipality_data = TRUE
+  )
+  expect_true("tbl_df" %in% class(sinan_leishmaniose_tegumentar))
+})
