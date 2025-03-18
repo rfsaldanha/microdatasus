@@ -227,3 +227,33 @@ test_that("fetch sinan chagas", {
   )
   expect_true("data.frame" %in% class(sinan_chagas_raw))
 })
+
+test_that("fetch sinan leishmaniose visceral", {
+  skip()
+  sinan_leish_visc_raw <- fetch_datasus(
+    year_start = 2023,
+    year_end = 2023,
+    information_system = "SINAN-LEISHMANIOSE-VISCERAL"
+  )
+  expect_true("data.frame" %in% class(sinan_chagas_raw))
+})
+
+test_that("fetch sinan leishmaniose tegumentar", {
+  skip()
+  sinan_leish_teg_raw <- fetch_datasus(
+    year_start = 2023,
+    year_end = 2023,
+    information_system = "SINAN-LEISHMANIOSE-TEGUMENTAR"
+  )
+  expect_true("data.frame" %in% class(sinan_chagas_raw))
+})
+
+test_that("fetch sinan leptospitose", {
+  skip()
+  sinan_lepto_raw <- fetch_datasus(
+    year_start = 2023,
+    year_end = 2023,
+    information_system = "SINAN-LEPTOSPIROSE"
+  )
+  expect_true("data.frame" %in% class(sinan_chagas_raw))
+})
