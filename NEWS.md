@@ -1,6 +1,7 @@
 # microdatasus 2.4.0
 * Update documentation on `fetch_datasus()`.
 * Fetch SINAN-CHAGAS data.
+* Process SINAN-CHAGAS data.
 * Fetch SINAN-LEISHMANIOSE-VISCERAL and SINAN-LEISHMANIOSE-TEGUMENTAR data.
 * Process SINAN-LEISHMANIOSE-VISCERAL and SINAN-LEISHMANIOSE-TEGUMENTAR data.
 * Fetch SINAN-LEPTOSPIROSE data.
