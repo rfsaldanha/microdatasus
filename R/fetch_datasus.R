@@ -6,7 +6,7 @@
 #'
 #' A specific UF or a vector of UFs can be informed using the following abbreviations: "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO".
 #'
-#' The following systems are implemented: "SIH-RD", "SIH-RJ", "SIH-SP", "SIH-ER", "SIM-DO", "SIM-DOFET", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT", "SINASC", "CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB", "CNES-PF", "CNES-EP", "CNES-RC", "CNES-IN", "CNES-EE", "CNES-EF", "CNES-GM", "SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD", "SINAN-DENGUE", "SINAN-CHIKUNGUNYA", "SINAN-ZIKA", "SINAN-MALARIA".
+#' The following systems are implemented: "SIH-RD", "SIH-RJ", "SIH-SP", "SIH-ER", "SIM-DO", "SIM-DOFET", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT", "SINASC", "CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB", "CNES-PF", "CNES-EP", "CNES-RC", "CNES-IN", "CNES-EE", "CNES-EF", "CNES-GM", "SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD", "SINAN-DENGUE", "SINAN-CHIKUNGUNYA", "SINAN-ZIKA", "SINAN-MALARIA", "SINAN-CHAGAS".
 #'
 #' @param year_start,year_end numeric. Start and end year of files in the format yyyy.
 #' @param month_start,month_end numeric. Start and end month in the format mm. Those parameters are only used with the healh information systems SIH, CNES and SIA. There parameter are ignored if the information health system is SIM or SINASC.
@@ -107,7 +107,8 @@ fetch_datasus <- function(
     "SINAN-DENGUE",
     "SINAN-CHIKUNGUNYA",
     "SINAN-ZIKA",
-    "SINAN-MALARIA"
+    "SINAN-MALARIA",
+    "SINAN-CHAGAS"
   )
   available_information_system <- c(
     sisSIH,
@@ -164,7 +165,8 @@ fetch_datasus <- function(
       information_system == "SINAN-DENGUE" |
       information_system == "SINAN-CHIKUNGUNYA" |
       information_system == "SINAN-ZIKA" |
-      information_system == "SINAN-MALARIA"
+      information_system == "SINAN-MALARIA" |
+      information_system == "SINAN-CHAGAS"
   ) {
     date_start <- as.Date(paste0(year_start, "-01-01"))
     date_end <- as.Date(paste0(year_end, "-01-01"))
@@ -257,7 +259,8 @@ fetch_datasus <- function(
       information_system == "SINAN-DENGUE" |
       information_system == "SINAN-CHIKUNGUNYA" |
       information_system == "SINAN-ZIKA" |
-      information_system == "SINAN-MALARIA"
+      information_system == "SINAN-MALARIA" |
+      information_system == "SINAN-CHAGAS"
   ) {
     dates <- seq(date_start, date_end, by = "year")
     dates <- lubridate::year(dates)
@@ -2782,6 +2785,88 @@ fetch_datasus <- function(
       paste0(
         prelim_url,
         "MALABR",
+        substr(valid_dates[valid_dates %in% avail_prelim], 3, 4),
+        ".dbc"
+      )
+    }
+    files_list <- c(files_list_1, files_list_2)
+  } else if (information_system == "SINAN-CHAGAS") {
+    # Available dates
+    geral_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINAN/DADOS/FINAIS/"
+    prelim_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SINAN/DADOS/PRELIM/"
+
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = geral_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
+    tmp <- tmp[grep("CHAGBR", tmp)]
+    tmp <- unique(substr(x = tmp, start = 7, stop = 8))
+    avail_geral <- sort(as.numeric(ifelse(
+      test = substr(tmp, 0, 1) == "9",
+      yes = paste0("19", tmp),
+      no = paste0("20", tmp)
+    )))
+
+    tmp <- unlist(strsplit(
+      x = RCurl::getURL(
+        url = prelim_url,
+        ftp.use.epsv = TRUE,
+        dirlistonly = TRUE
+      ),
+      split = "\n"
+    ))
+    tmp <- tmp[grep("CHAGBR", tmp)]
+    tmp <- unique(substr(x = tmp, start = 7, stop = 8))
+    avail_prelim <- sort(as.numeric(ifelse(
+      test = substr(tmp, 0, 1) == "9",
+      yes = paste0("19", tmp),
+      no = paste0("20", tmp)
+    )))
+
+    # Check if required dates are available
+    if (!all(dates %in% c(avail_geral, avail_prelim))) {
+      cli::cli_alert(paste0(
+        "The following dates are not availabe at DataSUS: ",
+        paste0(
+          dates[!dates %in% c(avail_geral, avail_prelim)],
+          collapse = ", "
+        ),
+        ". Only the available dates will be downloaded."
+      ))
+    }
+    valid_dates <- dates[dates %in% c(avail_geral, avail_prelim)]
+
+    # Message about preliminary data
+    if (any(valid_dates %in% avail_prelim)) {
+      cli::cli_alert(paste0(
+        "The following dates are preliminar: ",
+        paste0(valid_dates[valid_dates %in% avail_prelim], collapse = ", "),
+        "."
+      ))
+    }
+
+    # File list
+    if (uf != "Any") {
+      cli::cli_alert(paste0(
+        "CHAGAS data is not available by UF. Downloading all data available instead. "
+      ))
+    }
+    files_list_1 <- if (any(valid_dates %in% avail_geral)) {
+      paste0(
+        geral_url,
+        "CHAGBR",
+        substr(valid_dates[valid_dates %in% avail_geral], 3, 4),
+        ".dbc"
+      )
+    }
+    files_list_2 <- if (any(valid_dates %in% avail_prelim)) {
+      paste0(
+        prelim_url,
+        "CHAGBR",
         substr(valid_dates[valid_dates %in% avail_prelim], 3, 4),
         ".dbc"
       )
