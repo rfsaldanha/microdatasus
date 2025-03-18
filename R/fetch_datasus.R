@@ -412,7 +412,7 @@ fetch_datasus <- function(
     }
 
     # File list
-    if (uf != "Any") {
+    if (uf != "all") {
       cli::cli_alert(paste0(
         "DOFET data is not available by UF. Downloading all data available instead. "
       ))
@@ -494,7 +494,7 @@ fetch_datasus <- function(
     }
 
     # File list
-    if (uf != "Any") {
+    if (uf != "all") {
       cli::cli_alert(paste0(
         "DOEXT data is not available by UF. Downloading all data available instead. "
       ))
@@ -576,7 +576,7 @@ fetch_datasus <- function(
     }
 
     # File list
-    if (uf != "Any") {
+    if (uf != "all") {
       cli::cli_alert(paste0(
         "DOINF data is not available by UF. Downloading all data available instead. "
       ))
@@ -658,7 +658,7 @@ fetch_datasus <- function(
     }
 
     # File list
-    if (uf != "Any") {
+    if (uf != "all") {
       cli::cli_alert(paste0(
         "DOMAT data is not available by UF. Downloading all data available instead. "
       ))
@@ -2522,7 +2522,7 @@ fetch_datasus <- function(
     }
 
     # File list
-    if (uf != "Any") {
+    if (uf != "all") {
       cli::cli_alert(paste0(
         "DENGUE data is not available by UF. Downloading all data available instead. "
       ))
@@ -2604,7 +2604,7 @@ fetch_datasus <- function(
     }
 
     # File list
-    if (uf != "Any") {
+    if (uf != "all") {
       cli::cli_alert(paste0(
         "CHIKUNGUNYA data is not available by UF. Downloading all data available instead. "
       ))
@@ -2686,7 +2686,7 @@ fetch_datasus <- function(
     }
 
     # File list
-    if (uf != "Any") {
+    if (uf != "all") {
       cli::cli_alert(paste0(
         "ZIKA data is not available by UF. Downloading all data available instead. "
       ))
@@ -2768,7 +2768,7 @@ fetch_datasus <- function(
     }
 
     # File list
-    if (uf != "Any") {
+    if (uf != "all") {
       cli::cli_alert(paste0(
         "MALARIA data is not available by UF. Downloading all data available instead. "
       ))
@@ -2850,7 +2850,7 @@ fetch_datasus <- function(
     }
 
     # File list
-    if (uf != "Any") {
+    if (uf != "all") {
       cli::cli_alert(paste0(
         "CHAGAS data is not available by UF. Downloading all data available instead. "
       ))
