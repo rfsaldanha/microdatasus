@@ -7,6 +7,8 @@
 
 Este pacote para o R apresenta funções para download e pré-processamento dos arquivos de microdados do DataSUS (formato *DBC*). Nesta última etapa, os rótulos e formato das variáveis são atribuídos e tratados.
 
+Para saber mais sobre os Sistemas de Informação em Saúde do Brasil, [acesse o e-book](https://rfsaldanha.github.io/sis/).
+
 ## Instalação
 
 ```r
