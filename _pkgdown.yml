@@ -28,6 +28,9 @@ reference:
   - process_sinan_zika
   - process_sinan_chikungunya
   - process_sinan_malaria
+  - process_sinan_chagas
+  - process_sinan_leishmaniose_tegumentar
+  - process_sinan_leishmaniose_visceral
 - title: "Sample datasets"
   contents:
   - sim_do_sample
@@ -40,6 +43,9 @@ reference:
   - sinan_zika_sample
   - sinan_chikungunya_sample
   - sinan_malaria_sample
+  - sinan_chagas_sample
+  - sinan_leishmaniose_tegumentar_sample
+  - sinan_leishmaniose_visceral_sample
 - title: "Reference datasets"
   contents:
   - tabMun
