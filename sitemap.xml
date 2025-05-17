@@ -22,8 +22,11 @@
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sia.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sih.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sim.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinan_chagas.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinan_chikungunya.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinan_dengue.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinan_leishmaniose_tegumentar.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinan_leishmaniose_visceral.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinan_malaria.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinan_zika.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinasc.html</loc></url>
@@ -31,8 +34,11 @@
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/sigtab.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/sih_rd_sample.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/sim_do_sample.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/sinan_chagas_sample.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/sinan_chikungunya_sample.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/sinan_dengue_sample.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/sinan_leishmaniose_tegumentar_sample.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/sinan_leishmaniose_visceral_sample.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/sinan_malaria_sample.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/sinan_zika_sample.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/sinasc_sample.html</loc></url>
