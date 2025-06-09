@@ -1,3 +1,6 @@
+# microdatasus 2.4.1
+* Fix typo in process functions that was changing variable names (`process_sinan_sim()`, `process_sinasc()`,`process_sinan_zika()`, `process_sinan_malaria()`, `process_sinan_leishmaniose_visceral()`, `process_sinan_leishmaniose_tegumentar()`, `process_sinan_dengue()`, `process_sinan_chikungunya()`, `process_sinan_chagas()`).
+
 # microdatasus 2.4.0
 * Update documentation on `fetch_datasus()`.
 * Fetch SINAN-CHAGAS data.
