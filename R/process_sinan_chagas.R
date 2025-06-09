@@ -478,7 +478,7 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
           .default = .data$CS_ESCOL_N
         )
       ) %>%
-      dplyr::mutate(CS_ESCOL_N <- as.factor(.data$CS_ESCOL_N))
+      dplyr::mutate(CS_ESCOL_N = as.factor(.data$CS_ESCOL_N))
   }
 
   # SG_UF

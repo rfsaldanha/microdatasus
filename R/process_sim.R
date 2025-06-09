@@ -49,7 +49,7 @@ process_sim <- function(data, municipality_data = TRUE) {
           .default = .data$TIPOBITO
         )
       ) %>%
-      dplyr::mutate(TIPOBITO <- as.factor(data$TIPOBITO))
+      dplyr::mutate(TIPOBITO = as.factor(.data$TIPOBITO))
   }
 
   # DTOBITO
@@ -77,25 +77,47 @@ process_sim <- function(data, municipality_data = TRUE) {
   # IDADE
   if ("IDADE" %in% variables_names) {
     data <- data %>%
-      dplyr::mutate(IDADE = dplyr::case_match(.data$IDADE,
-                                              "000" ~ NA,
-                                              "999" ~ NA,
-                                              .default = .data$IDADE)) %>%
+      dplyr::mutate(
+        IDADE = dplyr::case_match(
+          .data$IDADE,
+          "000" ~ NA,
+          "999" ~ NA,
+          .default = .data$IDADE
+        )
+      ) %>%
       # Codigo e valor
-      dplyr::mutate(idade_cod = substr(.data$IDADE, 1, 1),
-                    idade_value = as.numeric(substr(.data$IDADE, 2, 3)),) %>%
-      dplyr::mutate(IDADEminutos = dplyr::case_match(.data$idade_cod,
-                                                     "0" ~ idade_value,
-                                                     .default = NA)) %>%
-      dplyr::mutate(IDADEhoras = dplyr::case_match(.data$idade_cod,
-                                                   "1" ~ idade_value,
-                                                   .default = NA)) %>%
-      dplyr::mutate(IDADEdias = dplyr::case_match(.data$idade_cod,
-                                                  "2" ~ idade_value,
-                                                  .default = NA)) %>%
-      dplyr::mutate(IDADEmeses = dplyr::case_match(.data$idade_cod,
-                                                   "3" ~ idade_value,
-                                                   .default = NA)) %>%
+      dplyr::mutate(
+        idade_cod = substr(.data$IDADE, 1, 1),
+        idade_value = as.numeric(substr(.data$IDADE, 2, 3)),
+      ) %>%
+      dplyr::mutate(
+        IDADEminutos = dplyr::case_match(
+          .data$idade_cod,
+          "0" ~ idade_value,
+          .default = NA
+        )
+      ) %>%
+      dplyr::mutate(
+        IDADEhoras = dplyr::case_match(
+          .data$idade_cod,
+          "1" ~ idade_value,
+          .default = NA
+        )
+      ) %>%
+      dplyr::mutate(
+        IDADEdias = dplyr::case_match(
+          .data$idade_cod,
+          "2" ~ idade_value,
+          .default = NA
+        )
+      ) %>%
+      dplyr::mutate(
+        IDADEmeses = dplyr::case_match(
+          .data$idade_cod,
+          "3" ~ idade_value,
+          .default = NA
+        )
+      ) %>%
       dplyr::mutate(
         IDADEanos = dplyr::case_match(
           .data$idade_cod,
@@ -164,7 +186,7 @@ process_sim <- function(data, municipality_data = TRUE) {
           .default = .data$ESTCIV
         )
       ) %>%
-      dplyr::mutate(ESTCIV <- as.factor(.data$ESTCIV))
+      dplyr::mutate(ESTCIV = as.factor(.data$ESTCIV))
   }
 
   # ESC
@@ -188,7 +210,7 @@ process_sim <- function(data, municipality_data = TRUE) {
           .default = .data$ESC
         )
       ) %>%
-      dplyr::mutate(ESC <- as.factor(.data$ESC))
+      dplyr::mutate(ESC = as.factor(.data$ESC))
   }
 
   # ESC2010
@@ -205,8 +227,11 @@ process_sim <- function(data, municipality_data = TRUE) {
 
   # OCUP
   if ("OCUP" %in% variables_names) {
-    if (!("DTOBITO" %in% variables_names))
-      cli::cli_abort("The variable DTOBITO is needed to preprocess the variable OCUP.")
+    if (!("DTOBITO" %in% variables_names)) {
+      cli::cli_abort(
+        "The variable DTOBITO is needed to preprocess the variable OCUP."
+      )
+    }
 
     colnames(tabCBO)[1] <- "OCUP"
     tabCBO$OCUP = as.character(tabCBO$OCUP)
@@ -258,9 +283,13 @@ process_sim <- function(data, municipality_data = TRUE) {
   # IDADEMAE
   if ("IDADEMAE" %in% variables_names) {
     data <- data %>%
-      dplyr::mutate(IDADEMAE = dplyr::case_match(.data$IDADEMAE,
-                                                 "0" ~ NA,
-                                                 .default = .data$IDADEMAE)) %>%
+      dplyr::mutate(
+        IDADEMAE = dplyr::case_match(
+          .data$IDADEMAE,
+          "0" ~ NA,
+          .default = .data$IDADEMAE
+        )
+      ) %>%
       dplyr::mutate(IDADEMAE = as.numeric(.data$IDADEMAE))
   }
 
@@ -290,8 +319,11 @@ process_sim <- function(data, municipality_data = TRUE) {
 
   # OCUPMAE
   if ("OCUPMAE" %in% variables_names) {
-    if (!("DTOBITO" %in% variables_names))
-      cli::cli_abort("The variable DTOBITO is needed to preprocess the variable OCUPMAE.")
+    if (!("DTOBITO" %in% variables_names)) {
+      cli::cli_abort(
+        "The variable DTOBITO is needed to preprocess the variable OCUPMAE."
+      )
+    }
 
     colnames(tabOcupacao)[1] <- "OCUPMAE"
     colnames(tabCBO)[1] <- "OCUPMAE"
@@ -372,7 +404,7 @@ process_sim <- function(data, municipality_data = TRUE) {
           .default = .data$PARTO
         )
       ) %>%
-      dplyr::mutate(PARTO <- as.factor(.data$PARTO))
+      dplyr::mutate(PARTO = as.factor(.data$PARTO))
   }
 
   # OBITOPARTO
@@ -394,15 +426,15 @@ process_sim <- function(data, municipality_data = TRUE) {
           .default = .data$OBITOPARTO
         )
       ) %>%
-      dplyr::mutate(OBITOPARTO <- as.factor(.data$OBITOPARTO))
+      dplyr::mutate(OBITOPARTO = as.factor(.data$OBITOPARTO))
   }
 
   # PESO
   if ("PESO" %in% variables_names) {
     data <- data %>%
-      dplyr::mutate(PESO = dplyr::case_match(.data$PESO,
-                                             "0" ~ NA,
-                                             .default = .data$PESO)) %>%
+      dplyr::mutate(
+        PESO = dplyr::case_match(.data$PESO, "0" ~ NA, .default = .data$PESO)
+      ) %>%
       dplyr::mutate(PESO = as.numeric(.data$PESO))
   }
 
@@ -424,7 +456,7 @@ process_sim <- function(data, municipality_data = TRUE) {
           .default = .data$OBITOGRAV
         )
       ) %>%
-      dplyr::mutate(OBITOGRAV <- as.factor(.data$OBITOGRAV))
+      dplyr::mutate(OBITOGRAV = as.factor(.data$OBITOGRAV))
   }
 
   # OBITOPUERP
@@ -445,7 +477,7 @@ process_sim <- function(data, municipality_data = TRUE) {
           .default = .data$OBITOPUERP
         )
       ) %>%
-      dplyr::mutate(OBITOPUERP <- as.factor(.data$OBITOPUERP))
+      dplyr::mutate(OBITOPUERP = as.factor(.data$OBITOPUERP))
   }
 
   # ASSISTMED
@@ -533,7 +565,7 @@ process_sim <- function(data, municipality_data = TRUE) {
           .default = .data$CIRCOBITO
         )
       ) %>%
-      dplyr::mutate(CIRCOBITO <- as.factor(.data$CIRCOBITO))
+      dplyr::mutate(CIRCOBITO = as.factor(.data$CIRCOBITO))
   }
 
   # ACIDTRAB
@@ -565,7 +597,7 @@ process_sim <- function(data, municipality_data = TRUE) {
           .default = .data$FONTE
         )
       ) %>%
-      dplyr::mutate(FONTE <- as.factor(.data$FONTE))
+      dplyr::mutate(FONTE = as.factor(.data$FONTE))
   }
 
   # TPPOS
@@ -613,7 +645,7 @@ process_sim <- function(data, municipality_data = TRUE) {
           .default = .data$ATESTANTE
         )
       ) %>%
-      dplyr::mutate(ATESTANTE <- as.factor(.data$ATESTANTE))
+      dplyr::mutate(ATESTANTE = as.factor(.data$ATESTANTE))
   }
 
   # FONTEINV
@@ -634,7 +666,7 @@ process_sim <- function(data, municipality_data = TRUE) {
           .default = .data$FONTEINV
         )
       ) %>%
-      dplyr::mutate(FONTEINV <- as.factor(.data$FONTEINV))
+      dplyr::mutate(FONTEINV = as.factor(.data$FONTEINV))
   }
 
   # DTRECEBIM
@@ -656,9 +688,13 @@ process_sim <- function(data, municipality_data = TRUE) {
   data <- droplevels(data)
 
   # Unescape unicode characters
-  suppressWarnings(data <- tibble::as_tibble(lapply(X = data, FUN = stringi::stri_unescape_unicode)))
+  suppressWarnings(
+    data <- tibble::as_tibble(lapply(
+      X = data,
+      FUN = stringi::stri_unescape_unicode
+    ))
+  )
 
   # Return
   return(data)
-
 }

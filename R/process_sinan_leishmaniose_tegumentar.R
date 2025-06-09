@@ -463,7 +463,7 @@ process_sinan_leishmaniose_tegumentar <- function(
           .default = .data$CS_ESCOL_N
         )
       ) %>%
-      dplyr::mutate(CS_ESCOL_N <- as.factor(.data$CS_ESCOL_N))
+      dplyr::mutate(CS_ESCOL_N = as.factor(.data$CS_ESCOL_N))
   }
 
   # SG_UF
