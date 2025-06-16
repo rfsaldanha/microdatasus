@@ -864,8 +864,8 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE) {
           "3" ~ "Indeterminado",
           .default = .data$TPAUTOCTO
         )
-      ) %>%
-      dplyr::mutate(TPAUTOCTO = as.factor(.data$TPAUTOCTO))
+      )
+    # dplyr::mutate(TPAUTOCTO = as.factor(.data$TPAUTOCTO))
   }
 
   # COUFINF
@@ -905,8 +905,8 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE) {
           "53" ~ "Distrito Federal",
           .default = .data$COUFINF
         )
-      ) %>%
-      dplyr::mutate(COUFINF = as.factor(.data$COUFINF))
+      )
+    # dplyr::mutate(COUFINF = as.factor(.data$COUFINF))
   }
 
   # COPAISINF
@@ -1648,6 +1648,16 @@ process_sinan_chikungunya <- function(data, municipality_data = TRUE) {
 
   # Purge levels
   data <- droplevels(data)
+
+  # Convert variables to factor
+  if ("TPAUTOCTO" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(TPAUTOCTO = as.factor(.data$TPAUTOCTO))
+  }
+  if ("COUFINF" %in% variables_names) {
+    data <- data %>%
+      dplyr::mutate(COUFINF = as.factor(.data$COUFINF))
+  }
 
   # Unescape unicode characters
   data <- suppressWarnings(tibble::as_tibble(lapply(
