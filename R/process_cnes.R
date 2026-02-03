@@ -142,7 +142,7 @@ process_cnes <- function(
     # DISTRSAN
     if ("DISTRSAN" %in% variables_names) {
       data <- data %>%
-        dplyr::mutate(DISTRSAN = as.integer(.data$DISTRSAN))
+        dplyr::mutate(DISTRSAN = as.character(.data$DISTRSAN))
     }
 
     # VINC_SUS
