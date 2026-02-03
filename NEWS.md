@@ -1,3 +1,6 @@
+# microdatasus 2.5.0
+* In function `process_cnes` for CNES-ST, fix `MICR_REG` and `DISTRSAN` conversion.
+
 # microdatasus 2.4.3
 * Remove `dtplyr` usage due incompatibility on recent version.
 
