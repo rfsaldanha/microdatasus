@@ -134,7 +134,9 @@ process_cnes <- function(
     # MICR_REG
     if ("MICR_REG" %in% variables_names) {
       data <- data %>%
-        dplyr::mutate(MICR_REG = as.integer(.data$MICR_REG))
+        dplyr::mutate(
+          MICR_REG = as.character(.data$MICR_REG)
+        )
     }
 
     # DISTRSAN
@@ -2212,12 +2214,6 @@ process_cnes <- function(
     if ("REGSAUDE" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(REGSAUDE = as.character(.data$REGSAUDE))
-    }
-
-    # MICR_REG
-    if ("MICR_REG" %in% variables_names) {
-      data <- data %>%
-        dplyr::mutate(MICR_REG = as.integer(.data$MICR_REG))
     }
 
     # DISTRSAN
