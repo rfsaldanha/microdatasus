@@ -1423,6 +1423,17 @@ process_sih <- function(
             "60000" ~ "M\u00e9dia e Alta Complexidade (MAC)",
             "70000" ~ "Vigil\u00e2ncia em Sa\u00fade",
             "80000" ~ "Gest\u00e3o do SUS",
+            "10000" ~ "Aten\\u00e7\\u00e3o B\\u00e1sica (PAB)",
+            "40000" ~ "FAEC - Subtipo de financiamento ignorado",
+            "40069" ~ "Tratamento de Doen\\u00e7a Macular",
+            "40070" ~ "OPME N\\u00e3o Relacionados ao Ato Cir\\u00fargico",
+            "40071" ~ "Diagn\\u00f3stico/tratamento em oncologia",
+            "40072" ~ "Diagn\\u00f3stico de trombofilia em gestante",
+            "40073" ~ "Reabilita\\u00e7\\u00e3o P\\u00f3s-COVID-19",
+            "40074" ~ "Telemedicina em Urg\\u00eancia",
+            "40075" ~ "Fisioterapia Cardiovascular",
+            "40076" ~ "Hemodin\\u00e2mica em atendimento de urg\\u00eancia",
+            "40077" ~ "Exames Sorol\\u00f3gicos e Imunol\\u00f3gicos",
             .default = .data$FAEC_TP
           )
         ) %>%
