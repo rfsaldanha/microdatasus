@@ -996,7 +996,7 @@ process_sih <- function(
           HOMONIMO = dplyr::case_match(
             .data$HOMONIMO,
             "0" ~ "N\u00e3o",
-            "1" ~ "Sim",
+            "2" ~ "Sim",
             .default = .data$HOMONIMO
           )
         ) %>%
