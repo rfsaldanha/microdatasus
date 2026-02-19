@@ -2,6 +2,9 @@
 
 ## microdatasus 2.5.0
 
+- Function `process_sinan_malaria`, fix variable type when
+  pre-processing the variable `NU_IDADE_N`
+  ([\#132](https://github.com/rfsaldanha/microdatasus/issues/132))
 - Function `process_sinasc`, fix typo when pre-processing the variable
   `PESO`
   ([\#141](https://github.com/rfsaldanha/microdatasus/issues/141)).
