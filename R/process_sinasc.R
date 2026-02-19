@@ -337,7 +337,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   if ("PESO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        RACACOR = dplyr::case_match(
+        PESO = dplyr::case_match(
           .data$PESO,
           "0" ~ NA,
           "9999" ~ NA

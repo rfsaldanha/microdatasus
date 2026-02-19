@@ -1,4 +1,5 @@
 # microdatasus 2.5.0
+* Function `process_sinasc`, fix typo when pre-processing the variable `PESO` (#141).
 * Function `process_sia`, fix typo when pre-processing the variable `PA_MUNPCN` (#137).
 * Function `process_cnes` for CNES-ST, fix `MICR_REG` and `DISTRSAN` conversion.
 * Function `process_sih`, fix `NACIONAL` and `HOMONIMO` codes, add more `FAEC_TP` codes (#131).
