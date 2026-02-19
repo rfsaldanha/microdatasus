@@ -7,3 +7,8 @@
 docs
 
 /.quarto/
+
+# Build files
+src/*.o
+src/*.so
+src/*.dll

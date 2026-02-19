@@ -1,4 +1,4 @@
-/* init.c -- register C routines for healthbR package */
+/* init.c -- register C routines for microdatasus package */
 
 #include <R.h>
 #include <Rinternals.h>
@@ -9,11 +9,11 @@ extern void dbc2dbf(char **input_file, char **output_file,
                     int *ret_code, char **error_str);
 
 static const R_CMethodDef CEntries[] = {
-    {"healthbR_dbc2dbf", (DL_FUNC) &dbc2dbf, 4},
+    {"microdatasus_dbc2dbf", (DL_FUNC) &dbc2dbf, 4},
     {NULL, NULL, 0}
 };
 
-void R_init_healthbR(DllInfo *dll)
+void R_init_microdatasus(DllInfo *dll)
 {
     R_registerRoutines(dll, CEntries, NULL, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
