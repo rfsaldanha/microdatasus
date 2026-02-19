@@ -485,7 +485,7 @@ process_sia <- function(
     if ("PA_MUNPCN" %in% variables_names & municipality_data == TRUE) {
       colnames(tabMun)[1] <- "PA_MUNPCN"
       data <- data %>%
-        dplyr::mutate(PA_MUNPCN = as.integer(.data$IDADEMAX)) %>%
+        dplyr::mutate(PA_MUNPCN = as.integer(.data$PA_MUNPCN)) %>%
         dplyr::left_join(tabMun, by = "PA_MUNPCN")
     }
 
