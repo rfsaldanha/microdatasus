@@ -17,6 +17,7 @@ reference:
   - fetch_datasus
   - fetch_sigtab
   - fetch_cadger
+  - read_dbc
 - title: "Process data"
   contents:
   - process_sim
