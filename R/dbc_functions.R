@@ -54,12 +54,13 @@
 #' Decompresses a DATASUS .dbc file to a temporary .dbf, reads it with
 #' foreign::read.dbf(), and converts all columns to character for safety.
 #'
-#' @param file Character. Path to the .dbc file.
+#' @param file character. Path to the .dbc file.
+#' @param as_character logical. If `TRUE`, convert all variables to character.
 #'
 #' @return A tibble with all columns as character.
 #'
 #' @export
-read_dbc <- function(file) {
+read_dbc <- function(file, as_character = TRUE) {
   if (!file.exists(file)) {
     cli::cli_abort("File not found: {.file {file}}")
   }
