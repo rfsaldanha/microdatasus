@@ -88,6 +88,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("NU_IDADE_N" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
+        NU_IDADE_N = as.character(.data$NU_IDADE_N),
         NU_IDADE_N = dplyr::recode_values(
           .data$NU_IDADE_N,
           "999" ~ NA_character_,
