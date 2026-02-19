@@ -25,13 +25,13 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("TP_NOT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        TP_NOT = dplyr::case_match(
+        TP_NOT = dplyr::recode_values(
           .data$TP_NOT,
           "1" ~ "Negativa",
           "2" ~ "Individual",
           "3" ~ "Surto",
           "4" ~ "Agregado",
-          .default = .data$TP_NOT
+          default = .data$TP_NOT
         )
       ) %>%
       dplyr::mutate(TP_NOT = as.factor(.data$TP_NOT))
@@ -47,7 +47,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("SG_UF_NOT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        SG_UF_NOT = dplyr::case_match(
+        SG_UF_NOT = dplyr::recode_values(
           .data$SG_UF_NOT,
           "0" ~ "Ignorado",
           "99" ~ "Ignorado",
@@ -78,7 +78,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
           "51" ~ "Mato Grosso",
           "52" ~ "Goi\u00e1s",
           "53" ~ "Distrito Federal",
-          .default = .data$SG_UF_NOT
+          default = .data$SG_UF_NOT
         )
       ) %>%
       dplyr::mutate(SG_UF_NOT = as.factor(.data$SG_UF_NOT))
@@ -88,10 +88,10 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("NU_IDADE_N" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        NU_IDADE_N = dplyr::case_match(
+        NU_IDADE_N = dplyr::recode_values(
           .data$NU_IDADE_N,
           999 ~ NA,
-          .default = .data$NU_IDADE_N
+          default = .data$NU_IDADE_N
         )
       ) %>%
       # Codigo e valor
@@ -100,39 +100,39 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
         idade_value = as.numeric(substr(.data$NU_IDADE_N, 2, 3)),
       ) %>%
       dplyr::mutate(
-        IDADEminutos = dplyr::case_match(
+        IDADEminutos = dplyr::recode_values(
           .data$idade_cod,
           "0" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEhoras = dplyr::case_match(
+        IDADEhoras = dplyr::recode_values(
           .data$idade_cod,
           "1" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEdias = dplyr::case_match(
+        IDADEdias = dplyr::recode_values(
           .data$idade_cod,
           "2" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEmeses = dplyr::case_match(
+        IDADEmeses = dplyr::recode_values(
           .data$idade_cod,
           "3" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEanos = dplyr::case_match(
+        IDADEanos = dplyr::recode_values(
           .data$idade_cod,
           "4" ~ idade_value,
           "5" ~ idade_value + 100,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::select(-"idade_cod", -"idade_value")
@@ -143,24 +143,24 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
         idade_value = as.numeric(substr(.data$NU_IDADE, 2, 4)),
       ) %>%
       dplyr::mutate(
-        IDADEdias = dplyr::case_match(
+        IDADEdias = dplyr::recode_values(
           .data$idade_cod,
           "D" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEmeses = dplyr::case_match(
+        IDADEmeses = dplyr::recode_values(
           .data$idade_cod,
           "M" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEanos = dplyr::case_match(
+        IDADEanos = dplyr::recode_values(
           .data$idade_cod,
           "A" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::select(-"idade_cod", -"idade_value")
@@ -170,12 +170,12 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("CS_SEXO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CS_SEXO = dplyr::case_match(
+        CS_SEXO = dplyr::recode_values(
           .data$CS_SEXO,
           "M" ~ "Masculino",
           "F" ~ "Feminino",
           "I" ~ "Ignorado",
-          .default = .data$CS_SEXO
+          default = .data$CS_SEXO
         )
       ) %>%
       dplyr::mutate(CS_SEXO = as.factor(.data$CS_SEXO))
@@ -185,7 +185,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("CS_GESTANT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CS_GESTANT = dplyr::case_match(
+        CS_GESTANT = dplyr::recode_values(
           .data$CS_GESTANT,
           "1" ~ "1o trimestre",
           "2" ~ "2o trimestre",
@@ -194,7 +194,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
           "5" ~ "N\u00e3o",
           "6" ~ "N\u00e3o se aplica",
           "9" ~ "Ignorado",
-          .default = .data$CS_GESTANT
+          default = .data$CS_GESTANT
         )
       ) %>%
       dplyr::mutate(CS_GESTANT = as.factor(.data$CS_GESTANT))
@@ -204,7 +204,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("CS_RACA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CS_RACA = dplyr::case_match(
+        CS_RACA = dplyr::recode_values(
           .data$CS_RACA,
           "1" ~ "Branca",
           "2" ~ "Preta",
@@ -212,7 +212,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
           "4" ~ "Parda",
           "5" ~ "Ind\u00edgena",
           "9" ~ "Ignorado",
-          .default = .data$CS_RACA
+          default = .data$CS_RACA
         )
       ) %>%
       dplyr::mutate(CS_RACA = as.factor(.data$CS_RACA))
@@ -222,7 +222,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("CS_ESCOL_N" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CS_ESCOL_N = dplyr::case_match(
+        CS_ESCOL_N = dplyr::recode_values(
           .data$CS_ESCOL_N,
           "1" ~ "1a a 4a s\u00e9rie incompleta do EF",
           "2" ~ "4a s\u00e9rie completa do EF (antigo 1o grau)",
@@ -235,7 +235,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
           "8" ~ "Educa\u00e7\u00e3o superior completa",
           "9" ~ "Ignorado",
           "10" ~ "N\u00e3o se aplica",
-          .default = .data$CS_ESCOL_N
+          default = .data$CS_ESCOL_N
         )
       ) %>%
       dplyr::mutate(CS_ESCOL_N = as.factor(.data$CS_ESCOL_N))
@@ -245,7 +245,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("SG_UF" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        SG_UF = dplyr::case_match(
+        SG_UF = dplyr::recode_values(
           .data$SG_UF,
           "0" ~ "Ignorado",
           "99" ~ "Ignorado",
@@ -276,7 +276,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
           "51" ~ "Mato Grosso",
           "52" ~ "Goi\u00e1s",
           "53" ~ "Distrito Federal",
-          .default = .data$SG_UF
+          default = .data$SG_UF
         )
       ) %>%
       dplyr::mutate(SG_UF = as.factor(.data$SG_UF))
@@ -306,11 +306,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("FEBRE" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        FEBRE = dplyr::case_match(
+        FEBRE = dplyr::recode_values(
           .data$FEBRE,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$FEBRE
+          default = .data$FEBRE
         )
       ) %>%
       dplyr::mutate(FEBRE = as.factor(.data$FEBRE))
@@ -320,11 +320,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("MIALGIA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        MIALGIA = dplyr::case_match(
+        MIALGIA = dplyr::recode_values(
           .data$MIALGIA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$MIALGIA
+          default = .data$MIALGIA
         )
       ) %>%
       dplyr::mutate(MIALGIA = as.factor(.data$MIALGIA))
@@ -334,11 +334,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("CEFALEIA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CEFALEIA = dplyr::case_match(
+        CEFALEIA = dplyr::recode_values(
           .data$CEFALEIA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$CEFALEIA
+          default = .data$CEFALEIA
         )
       ) %>%
       dplyr::mutate(CEFALEIA = as.factor(.data$CEFALEIA))
@@ -348,11 +348,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("EXANTEMA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        EXANTEMA = dplyr::case_match(
+        EXANTEMA = dplyr::recode_values(
           .data$EXANTEMA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$EXANTEMA
+          default = .data$EXANTEMA
         )
       ) %>%
       dplyr::mutate(EXANTEMA = as.factor(.data$EXANTEMA))
@@ -362,11 +362,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("VOMITO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        VOMITO = dplyr::case_match(
+        VOMITO = dplyr::recode_values(
           .data$VOMITO,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$VOMITO
+          default = .data$VOMITO
         )
       ) %>%
       dplyr::mutate(VOMITO = as.factor(.data$VOMITO))
@@ -376,11 +376,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("NAUSEA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        NAUSEA = dplyr::case_match(
+        NAUSEA = dplyr::recode_values(
           .data$NAUSEA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$NAUSEA
+          default = .data$NAUSEA
         )
       ) %>%
       dplyr::mutate(NAUSEA = as.factor(.data$NAUSEA))
@@ -390,11 +390,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("DOR_COSTAS" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        DOR_COSTAS = dplyr::case_match(
+        DOR_COSTAS = dplyr::recode_values(
           .data$DOR_COSTAS,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$DOR_COSTAS
+          default = .data$DOR_COSTAS
         )
       ) %>%
       dplyr::mutate(DOR_COSTAS = as.factor(.data$DOR_COSTAS))
@@ -404,11 +404,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("CONJUNTVIT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CONJUNTVIT = dplyr::case_match(
+        CONJUNTVIT = dplyr::recode_values(
           .data$CONJUNTVIT,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$CONJUNTVIT
+          default = .data$CONJUNTVIT
         )
       ) %>%
       dplyr::mutate(CONJUNTVIT = as.factor(.data$CONJUNTVIT))
@@ -418,11 +418,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("ARTRITE" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ARTRITE = dplyr::case_match(
+        ARTRITE = dplyr::recode_values(
           .data$ARTRITE,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$ARTRITE
+          default = .data$ARTRITE
         )
       ) %>%
       dplyr::mutate(ARTRITE = as.factor(.data$ARTRITE))
@@ -432,11 +432,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("ARTRALGIA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ARTRALGIA = dplyr::case_match(
+        ARTRALGIA = dplyr::recode_values(
           .data$ARTRALGIA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$ARTRALGIA
+          default = .data$ARTRALGIA
         )
       ) %>%
       dplyr::mutate(ARTRALGIA = as.factor(.data$ARTRALGIA))
@@ -446,11 +446,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("PETEQUIA_N" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        PETEQUIA_N = dplyr::case_match(
+        PETEQUIA_N = dplyr::recode_values(
           .data$PETEQUIA_N,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$PETEQUIA_N
+          default = .data$PETEQUIA_N
         )
       ) %>%
       dplyr::mutate(PETEQUIA_N = as.factor(.data$PETEQUIA_N))
@@ -460,11 +460,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("LEUCOPENIA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        LEUCOPENIA = dplyr::case_match(
+        LEUCOPENIA = dplyr::recode_values(
           .data$LEUCOPENIA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$LEUCOPENIA
+          default = .data$LEUCOPENIA
         )
       ) %>%
       dplyr::mutate(LEUCOPENIA = as.factor(.data$LEUCOPENIA))
@@ -474,11 +474,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("LACO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        LACO = dplyr::case_match(
+        LACO = dplyr::recode_values(
           .data$LACO,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$LACO
+          default = .data$LACO
         )
       ) %>%
       dplyr::mutate(LACO = as.factor(.data$LACO))
@@ -488,11 +488,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("DOR_RETRO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        DOR_RETRO = dplyr::case_match(
+        DOR_RETRO = dplyr::recode_values(
           .data$DOR_RETRO,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$DOR_RETRO
+          default = .data$DOR_RETRO
         )
       ) %>%
       dplyr::mutate(DOR_RETRO = as.factor(.data$DOR_RETRO))
@@ -502,11 +502,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("DIABETES" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        DIABETES = dplyr::case_match(
+        DIABETES = dplyr::recode_values(
           .data$DIABETES,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$DIABETES
+          default = .data$DIABETES
         )
       ) %>%
       dplyr::mutate(DIABETES = as.factor(.data$DIABETES))
@@ -516,11 +516,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("HEMATOLOG" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        HEMATOLOG = dplyr::case_match(
+        HEMATOLOG = dplyr::recode_values(
           .data$HEMATOLOG,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$HEMATOLOG
+          default = .data$HEMATOLOG
         )
       ) %>%
       dplyr::mutate(HEMATOLOG = as.factor(.data$HEMATOLOG))
@@ -530,11 +530,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("HEPATOPAT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        HEPATOPAT = dplyr::case_match(
+        HEPATOPAT = dplyr::recode_values(
           .data$HEPATOPAT,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$HEPATOPAT
+          default = .data$HEPATOPAT
         )
       ) %>%
       dplyr::mutate(HEPATOPAT = as.factor(.data$HEPATOPAT))
@@ -544,11 +544,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("RENAL" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        RENAL = dplyr::case_match(
+        RENAL = dplyr::recode_values(
           .data$RENAL,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$RENAL
+          default = .data$RENAL
         )
       ) %>%
       dplyr::mutate(RENAL = as.factor(.data$RENAL))
@@ -558,11 +558,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("HIPERTENSA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        HIPERTENSA = dplyr::case_match(
+        HIPERTENSA = dplyr::recode_values(
           .data$HIPERTENSA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$HIPERTENSA
+          default = .data$HIPERTENSA
         )
       ) %>%
       dplyr::mutate(HIPERTENSA = as.factor(.data$HIPERTENSA))
@@ -572,11 +572,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("ACIDO_PEPT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ACIDO_PEPT = dplyr::case_match(
+        ACIDO_PEPT = dplyr::recode_values(
           .data$ACIDO_PEPT,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$ACIDO_PEPT
+          default = .data$ACIDO_PEPT
         )
       ) %>%
       dplyr::mutate(ACIDO_PEPT = as.factor(.data$ACIDO_PEPT))
@@ -586,11 +586,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("AUTO_IMUNE" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        AUTO_IMUNE = dplyr::case_match(
+        AUTO_IMUNE = dplyr::recode_values(
           .data$AUTO_IMUNE,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$AUTO_IMUNE
+          default = .data$AUTO_IMUNE
         )
       ) %>%
       dplyr::mutate(AUTO_IMUNE = as.factor(.data$AUTO_IMUNE))
@@ -618,13 +618,13 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("RES_CHIKS1" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        RES_CHIKS1 = dplyr::case_match(
+        RES_CHIKS1 = dplyr::recode_values(
           .data$RES_CHIKS1,
           "1" ~ "Reagente",
           "2" ~ "N\u00e3o reagente",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
-          .default = .data$RES_CHIKS1
+          default = .data$RES_CHIKS1
         )
       ) %>%
       dplyr::mutate(RES_CHIKS1 = as.factor(.data$RES_CHIKS1))
@@ -634,13 +634,13 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("RES_CHIKS2" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        RES_CHIKS2 = dplyr::case_match(
+        RES_CHIKS2 = dplyr::recode_values(
           .data$RES_CHIKS2,
           "1" ~ "Reagente",
           "2" ~ "N\u00e3o reagente",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
-          .default = .data$RES_CHIKS2
+          default = .data$RES_CHIKS2
         )
       ) %>%
       dplyr::mutate(RES_CHIKS2 = as.factor(.data$RES_CHIKS2))
@@ -650,13 +650,13 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("RESUL_PRNT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        RESUL_PRNT = dplyr::case_match(
+        RESUL_PRNT = dplyr::recode_values(
           .data$RESUL_PRNT,
           "1" ~ "Reagente",
           "2" ~ "N\u00e3o reagente",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
-          .default = .data$RESUL_PRNT
+          default = .data$RESUL_PRNT
         )
       ) %>%
       dplyr::mutate(RESUL_PRNT = as.factor(.data$RESUL_PRNT))
@@ -672,13 +672,13 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("RESUL_SORO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        RESUL_SORO = dplyr::case_match(
+        RESUL_SORO = dplyr::recode_values(
           .data$RESUL_SORO,
           "1" ~ "Reagente",
           "2" ~ "N\u00e3o reagente",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
-          .default = .data$RESUL_SORO
+          default = .data$RESUL_SORO
         )
       ) %>%
       dplyr::mutate(RESUL_SORO = as.factor(.data$RESUL_SORO))
@@ -694,13 +694,13 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("RESUL_NS1" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        RESUL_NS1 = dplyr::case_match(
+        RESUL_NS1 = dplyr::recode_values(
           .data$RESUL_NS1,
           "1" ~ "Positivo",
           "2" ~ "Negativo",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
-          .default = .data$RESUL_NS1
+          default = .data$RESUL_NS1
         )
       ) %>%
       dplyr::mutate(RESUL_NS1 = as.factor(.data$RESUL_NS1))
@@ -716,13 +716,13 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("RESUL_VI_N" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        RESUL_VI_N = dplyr::case_match(
+        RESUL_VI_N = dplyr::recode_values(
           .data$RESUL_VI_N,
           "1" ~ "Positivo",
           "2" ~ "Negativo",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
-          .default = .data$RESUL_VI_N
+          default = .data$RESUL_VI_N
         )
       ) %>%
       dplyr::mutate(RESUL_VI_N = as.factor(.data$RESUL_VI_N))
@@ -738,13 +738,13 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("RESUL_PCR_" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        RESUL_PCR_ = dplyr::case_match(
+        RESUL_PCR_ = dplyr::recode_values(
           .data$RESUL_PCR_,
           "1" ~ "Positivo",
           "2" ~ "Negativo",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
-          .default = .data$RESUL_PCR_
+          default = .data$RESUL_PCR_
         )
       ) %>%
       dplyr::mutate(RESUL_PCR_ = as.factor(.data$RESUL_PCR_))
@@ -754,13 +754,13 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("SOROTIPO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        RESUL_PCR_ = dplyr::case_match(
+        RESUL_PCR_ = dplyr::recode_values(
           .data$SOROTIPO,
           "1" ~ "DEN 1",
           "2" ~ "DEN 2",
           "3" ~ "DEN 3",
           "4" ~ "DEN 4",
-          .default = .data$SOROTIPO
+          default = .data$SOROTIPO
         )
       ) %>%
       dplyr::mutate(SOROTIPO = as.factor(.data$SOROTIPO))
@@ -770,13 +770,13 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("HISTOPA_N" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        HISTOPA_N = dplyr::case_match(
+        HISTOPA_N = dplyr::recode_values(
           .data$HISTOPA_N,
           "1" ~ "Positivo",
           "2" ~ "Negativo",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
-          .default = .data$HISTOPA_N
+          default = .data$HISTOPA_N
         )
       ) %>%
       dplyr::mutate(HISTOPA_N = as.factor(.data$HISTOPA_N))
@@ -786,13 +786,13 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("IMUNOH_N" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        IMUNOH_N = dplyr::case_match(
+        IMUNOH_N = dplyr::recode_values(
           .data$IMUNOH_N,
           "1" ~ "Positivo",
           "2" ~ "Negativo",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
-          .default = .data$IMUNOH_N
+          default = .data$IMUNOH_N
         )
       ) %>%
       dplyr::mutate(IMUNOH_N = as.factor(.data$IMUNOH_N))
@@ -802,12 +802,12 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("HOSPITALIZ" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        IMUNOH_N = dplyr::case_match(
+        IMUNOH_N = dplyr::recode_values(
           .data$HOSPITALIZ,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ "Ignorado",
-          .default = .data$HOSPITALIZ
+          default = .data$HOSPITALIZ
         )
       ) %>%
       dplyr::mutate(HOSPITALIZ = as.factor(.data$HOSPITALIZ))
@@ -823,7 +823,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("UF" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        UF = dplyr::case_match(
+        UF = dplyr::recode_values(
           .data$UF,
           "0" ~ "Ignorado",
           "99" ~ "Ignorado",
@@ -854,7 +854,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
           "51" ~ "Mato Grosso",
           "52" ~ "Goi\u00e1s",
           "53" ~ "Distrito Federal",
-          .default = .data$UF
+          default = .data$UF
         )
       ) %>%
       dplyr::mutate(UF = as.factor(.data$UF))
@@ -873,12 +873,12 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("TPAUTOCTO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        TPAUTOCTO = dplyr::case_match(
+        TPAUTOCTO = dplyr::recode_values(
           .data$TPAUTOCTO,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "3" ~ "Indeterminado",
-          .default = .data$TPAUTOCTO
+          default = .data$TPAUTOCTO
         )
       ) %>%
       dplyr::mutate(TPAUTOCTO = as.factor(.data$TPAUTOCTO))
@@ -888,7 +888,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("COUFINF" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        COUFINF = dplyr::case_match(
+        COUFINF = dplyr::recode_values(
           .data$COUFINF,
           "0" ~ "Ignorado",
           "99" ~ "Ignorado",
@@ -919,7 +919,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
           "51" ~ "Mato Grosso",
           "52" ~ "Goi\u00e1s",
           "53" ~ "Distrito Federal",
-          .default = .data$COUFINF
+          default = .data$COUFINF
         )
       ) %>%
       dplyr::mutate(COUFINF = as.factor(.data$COUFINF))
@@ -938,7 +938,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("CLASSI_FIN" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CLASSI_FIN = dplyr::case_match(
+        CLASSI_FIN = dplyr::recode_values(
           .data$CLASSI_FIN,
           "1" ~ "Dengue cl\u00e1ssico",
           "2" ~ "Dengue com complica\u00e7\u00f5es",
@@ -950,7 +950,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
           "11" ~ "Dengue com sinais de alarme",
           "12" ~ "Dengue grave",
           "13" ~ "Chikungunya",
-          .default = .data$CLASSI_FIN
+          default = .data$CLASSI_FIN
         )
       ) %>%
       dplyr::mutate(CLASSI_FIN = as.factor(.data$CLASSI_FIN))
@@ -960,12 +960,12 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("CRITERIO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CRITERIO = dplyr::case_match(
+        CRITERIO = dplyr::recode_values(
           .data$CRITERIO,
           "1" ~ "Laborat\u00f3rio",
           "2" ~ "Cl\u00ednico epidemiol\u00f3gico",
           "3" ~ "Em investiga\u00e7\u00e3o",
-          .default = .data$CRITERIO
+          default = .data$CRITERIO
         )
       ) %>%
       dplyr::mutate(CRITERIO = as.factor(.data$CRITERIO))
@@ -975,12 +975,12 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("DOENCA_TRA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        DOENCA_TRA = dplyr::case_match(
+        DOENCA_TRA = dplyr::recode_values(
           .data$DOENCA_TRA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ "Ignorado",
-          .default = .data$DOENCA_TRA
+          default = .data$DOENCA_TRA
         )
       ) %>%
       dplyr::mutate(DOENCA_TRA = as.factor(.data$DOENCA_TRA))
@@ -990,11 +990,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("CLINC_CHIK" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CLINC_CHIK = dplyr::case_match(
+        CLINC_CHIK = dplyr::recode_values(
           .data$CLINC_CHIK,
           "1" ~ "Aguda",
           "2" ~ "Cr\u00f4nica",
-          .default = .data$CLINC_CHIK
+          default = .data$CLINC_CHIK
         )
       ) %>%
       dplyr::mutate(CLINC_CHIK = as.factor(.data$CLINC_CHIK))
@@ -1004,14 +1004,14 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("EVOLUCAO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        EVOLUCAO = dplyr::case_match(
+        EVOLUCAO = dplyr::recode_values(
           .data$EVOLUCAO,
           "1" ~ "Cura",
           "2" ~ "\u00d3bito por dengue",
           "3" ~ "\u00d3bito por outras causas",
           "4" ~ "\u00d3bito em investiga\u00e7\u00e3o",
           "9" ~ "Ignorado",
-          .default = .data$EVOLUCAO
+          default = .data$EVOLUCAO
         )
       ) %>%
       dplyr::mutate(EVOLUCAO = as.factor(.data$EVOLUCAO))
@@ -1033,11 +1033,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("ALRM_HIPOT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ALRM_HIPOT = dplyr::case_match(
+        ALRM_HIPOT = dplyr::recode_values(
           .data$ALRM_HIPOT,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$ALRM_HIPOT
+          default = .data$ALRM_HIPOT
         )
       ) %>%
       dplyr::mutate(ALRM_HIPOT = as.factor(.data$ALRM_HIPOT))
@@ -1047,11 +1047,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("ALRM_PLAQ" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ALRM_PLAQ = dplyr::case_match(
+        ALRM_PLAQ = dplyr::recode_values(
           .data$ALRM_PLAQ,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$ALRM_PLAQ
+          default = .data$ALRM_PLAQ
         )
       ) %>%
       dplyr::mutate(ALRM_PLAQ = as.factor(.data$ALRM_PLAQ))
@@ -1061,11 +1061,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("ALRM_VOM" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ALRM_VOM = dplyr::case_match(
+        ALRM_VOM = dplyr::recode_values(
           .data$ALRM_VOM,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$ALRM_VOM
+          default = .data$ALRM_VOM
         )
       ) %>%
       dplyr::mutate(ALRM_VOM = as.factor(.data$ALRM_VOM))
@@ -1075,11 +1075,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("ALRM_SANG" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ALRM_SANG = dplyr::case_match(
+        ALRM_SANG = dplyr::recode_values(
           .data$ALRM_SANG,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$ALRM_SANG
+          default = .data$ALRM_SANG
         )
       ) %>%
       dplyr::mutate(ALRM_SANG = as.factor(.data$ALRM_SANG))
@@ -1089,11 +1089,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("ALRM_HEMAT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ALRM_HEMAT = dplyr::case_match(
+        ALRM_HEMAT = dplyr::recode_values(
           .data$ALRM_HEMAT,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$ALRM_HEMAT
+          default = .data$ALRM_HEMAT
         )
       ) %>%
       dplyr::mutate(ALRM_HEMAT = as.factor(.data$ALRM_HEMAT))
@@ -1103,11 +1103,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("ALRM_ABDOM" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ALRM_ABDOM = dplyr::case_match(
+        ALRM_ABDOM = dplyr::recode_values(
           .data$ALRM_ABDOM,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$ALRM_ABDOM
+          default = .data$ALRM_ABDOM
         )
       ) %>%
       dplyr::mutate(ALRM_ABDOM = as.factor(.data$ALRM_ABDOM))
@@ -1117,11 +1117,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("ALRM_LETAR" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ALRM_LETAR = dplyr::case_match(
+        ALRM_LETAR = dplyr::recode_values(
           .data$ALRM_LETAR,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$ALRM_LETAR
+          default = .data$ALRM_LETAR
         )
       ) %>%
       dplyr::mutate(ALRM_LETAR = as.factor(.data$ALRM_LETAR))
@@ -1131,11 +1131,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("ALRM_HEPAT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ALRM_HEPAT = dplyr::case_match(
+        ALRM_HEPAT = dplyr::recode_values(
           .data$ALRM_HEPAT,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$ALRM_HEPAT
+          default = .data$ALRM_HEPAT
         )
       ) %>%
       dplyr::mutate(ALRM_HEPAT = as.factor(.data$ALRM_HEPAT))
@@ -1145,11 +1145,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("ALRM_LIQ" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ALRM_LIQ = dplyr::case_match(
+        ALRM_LIQ = dplyr::recode_values(
           .data$ALRM_LIQ,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$ALRM_LIQ
+          default = .data$ALRM_LIQ
         )
       ) %>%
       dplyr::mutate(ALRM_LIQ = as.factor(.data$ALRM_LIQ))
@@ -1165,11 +1165,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("GRAV_PULSO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        GRAV_PULSO = dplyr::case_match(
+        GRAV_PULSO = dplyr::recode_values(
           .data$GRAV_PULSO,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$GRAV_PULSO
+          default = .data$GRAV_PULSO
         )
       ) %>%
       dplyr::mutate(GRAV_PULSO = as.factor(.data$GRAV_PULSO))
@@ -1179,11 +1179,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("GRAV_CONV" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        GRAV_CONV = dplyr::case_match(
+        GRAV_CONV = dplyr::recode_values(
           .data$GRAV_CONV,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$GRAV_CONV
+          default = .data$GRAV_CONV
         )
       ) %>%
       dplyr::mutate(GRAV_CONV = as.factor(.data$GRAV_CONV))
@@ -1193,11 +1193,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("GRAV_ENCH" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        GRAV_ENCH = dplyr::case_match(
+        GRAV_ENCH = dplyr::recode_values(
           .data$GRAV_ENCH,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$GRAV_ENCH
+          default = .data$GRAV_ENCH
         )
       ) %>%
       dplyr::mutate(GRAV_ENCH = as.factor(.data$GRAV_ENCH))
@@ -1207,11 +1207,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("GRAV_INSUF" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        GRAV_INSUF = dplyr::case_match(
+        GRAV_INSUF = dplyr::recode_values(
           .data$GRAV_INSUF,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$GRAV_INSUF
+          default = .data$GRAV_INSUF
         )
       ) %>%
       dplyr::mutate(GRAV_INSUF = as.factor(.data$GRAV_INSUF))
@@ -1221,11 +1221,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("GRAV_TAQUI" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        GRAV_TAQUI = dplyr::case_match(
+        GRAV_TAQUI = dplyr::recode_values(
           .data$GRAV_TAQUI,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$GRAV_TAQUI
+          default = .data$GRAV_TAQUI
         )
       ) %>%
       dplyr::mutate(GRAV_TAQUI = as.factor(.data$GRAV_TAQUI))
@@ -1235,11 +1235,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("GRAV_EXTRE" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        GRAV_EXTRE = dplyr::case_match(
+        GRAV_EXTRE = dplyr::recode_values(
           .data$GRAV_EXTRE,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$GRAV_EXTRE
+          default = .data$GRAV_EXTRE
         )
       ) %>%
       dplyr::mutate(GRAV_EXTRE = as.factor(.data$GRAV_EXTRE))
@@ -1249,11 +1249,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("GRAV_HIPOT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        GRAV_HIPOT = dplyr::case_match(
+        GRAV_HIPOT = dplyr::recode_values(
           .data$GRAV_HIPOT,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$GRAV_HIPOT
+          default = .data$GRAV_HIPOT
         )
       ) %>%
       dplyr::mutate(GRAV_HIPOT = as.factor(.data$GRAV_HIPOT))
@@ -1263,11 +1263,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("GRAV_HEMAT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        GRAV_HEMAT = dplyr::case_match(
+        GRAV_HEMAT = dplyr::recode_values(
           .data$GRAV_HEMAT,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$GRAV_HEMAT
+          default = .data$GRAV_HEMAT
         )
       ) %>%
       dplyr::mutate(GRAV_HEMAT = as.factor(.data$GRAV_HEMAT))
@@ -1277,11 +1277,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("GRAV_MELEN" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        GRAV_MELEN = dplyr::case_match(
+        GRAV_MELEN = dplyr::recode_values(
           .data$GRAV_MELEN,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$GRAV_MELEN
+          default = .data$GRAV_MELEN
         )
       ) %>%
       dplyr::mutate(GRAV_MELEN = as.factor(.data$GRAV_MELEN))
@@ -1291,11 +1291,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("GRAV_METRO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        GRAV_METRO = dplyr::case_match(
+        GRAV_METRO = dplyr::recode_values(
           .data$GRAV_METRO,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$GRAV_METRO
+          default = .data$GRAV_METRO
         )
       ) %>%
       dplyr::mutate(GRAV_METRO = as.factor(.data$GRAV_METRO))
@@ -1305,11 +1305,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("GRAV_SANG" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        GRAV_SANG = dplyr::case_match(
+        GRAV_SANG = dplyr::recode_values(
           .data$GRAV_SANG,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$GRAV_SANG
+          default = .data$GRAV_SANG
         )
       ) %>%
       dplyr::mutate(GRAV_SANG = as.factor(.data$GRAV_SANG))
@@ -1319,11 +1319,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("GRAV_AST" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        GRAV_AST = dplyr::case_match(
+        GRAV_AST = dplyr::recode_values(
           .data$GRAV_AST,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$GRAV_AST
+          default = .data$GRAV_AST
         )
       ) %>%
       dplyr::mutate(GRAV_AST = as.factor(.data$GRAV_AST))
@@ -1333,11 +1333,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("GRAV_MIOC" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        GRAV_MIOC = dplyr::case_match(
+        GRAV_MIOC = dplyr::recode_values(
           .data$GRAV_MIOC,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$GRAV_MIOC
+          default = .data$GRAV_MIOC
         )
       ) %>%
       dplyr::mutate(GRAV_MIOC = as.factor(.data$GRAV_MIOC))
@@ -1347,11 +1347,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("GRAV_CONSC" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        GRAV_CONSC = dplyr::case_match(
+        GRAV_CONSC = dplyr::recode_values(
           .data$GRAV_CONSC,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$GRAV_CONSC
+          default = .data$GRAV_CONSC
         )
       ) %>%
       dplyr::mutate(GRAV_CONSC = as.factor(.data$GRAV_CONSC))
@@ -1361,11 +1361,11 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("GRAV_ORGAO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        GRAV_ORGAO = dplyr::case_match(
+        GRAV_ORGAO = dplyr::recode_values(
           .data$GRAV_ORGAO,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
-          .default = .data$GRAV_ORGAO
+          default = .data$GRAV_ORGAO
         )
       ) %>%
       dplyr::mutate(GRAV_ORGAO = as.factor(.data$GRAV_ORGAO))
@@ -1381,12 +1381,12 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("MANI_HEMOR" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        MANI_HEMOR = dplyr::case_match(
+        MANI_HEMOR = dplyr::recode_values(
           .data$MANI_HEMOR,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ "Ignorado",
-          .default = .data$MANI_HEMOR
+          default = .data$MANI_HEMOR
         )
       ) %>%
       dplyr::mutate(MANI_HEMOR = as.factor(.data$MANI_HEMOR))
@@ -1396,12 +1396,12 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("EPISTAXE" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        EPISTAXE = dplyr::case_match(
+        EPISTAXE = dplyr::recode_values(
           .data$EPISTAXE,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ "Ignorado",
-          .default = .data$EPISTAXE
+          default = .data$EPISTAXE
         )
       ) %>%
       dplyr::mutate(EPISTAXE = as.factor(.data$EPISTAXE))
@@ -1411,12 +1411,12 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("GENGIVO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        GENGIVO = dplyr::case_match(
+        GENGIVO = dplyr::recode_values(
           .data$GENGIVO,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ "Ignorado",
-          .default = .data$GENGIVO
+          default = .data$GENGIVO
         )
       ) %>%
       dplyr::mutate(GENGIVO = as.factor(.data$GENGIVO))
@@ -1426,12 +1426,12 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("METRO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        METRO = dplyr::case_match(
+        METRO = dplyr::recode_values(
           .data$METRO,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ "Ignorado",
-          .default = .data$METRO
+          default = .data$METRO
         )
       ) %>%
       dplyr::mutate(METRO = as.factor(.data$METRO))
@@ -1441,12 +1441,12 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("PETEQUIAS" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        PETEQUIAS = dplyr::case_match(
+        PETEQUIAS = dplyr::recode_values(
           .data$PETEQUIAS,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ "Ignorado",
-          .default = .data$PETEQUIAS
+          default = .data$PETEQUIAS
         )
       ) %>%
       dplyr::mutate(PETEQUIAS = as.factor(.data$PETEQUIAS))
@@ -1456,12 +1456,12 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("HEMATURA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        HEMATURA = dplyr::case_match(
+        HEMATURA = dplyr::recode_values(
           .data$HEMATURA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ "Ignorado",
-          .default = .data$HEMATURA
+          default = .data$HEMATURA
         )
       ) %>%
       dplyr::mutate(HEMATURA = as.factor(.data$HEMATURA))
@@ -1471,12 +1471,12 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("SANGRAM" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        SANGRAM = dplyr::case_match(
+        SANGRAM = dplyr::recode_values(
           .data$SANGRAM,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ "Ignorado",
-          .default = .data$SANGRAM
+          default = .data$SANGRAM
         )
       ) %>%
       dplyr::mutate(SANGRAM = as.factor(.data$SANGRAM))
@@ -1486,12 +1486,12 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("LACO_N" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        LACO_N = dplyr::case_match(
+        LACO_N = dplyr::recode_values(
           .data$LACO_N,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ "Ignorado",
-          .default = .data$LACO_N
+          default = .data$LACO_N
         )
       ) %>%
       dplyr::mutate(LACO_N = as.factor(.data$LACO_N))
@@ -1501,12 +1501,12 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("PLASMATICO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        PLASMATICO = dplyr::case_match(
+        PLASMATICO = dplyr::recode_values(
           .data$PLASMATICO,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ "Ignorado",
-          .default = .data$PLASMATICO
+          default = .data$PLASMATICO
         )
       ) %>%
       dplyr::mutate(PLASMATICO = as.factor(.data$PLASMATICO))
@@ -1516,12 +1516,12 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("EVIDENCIA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        EVIDENCIA = dplyr::case_match(
+        EVIDENCIA = dplyr::recode_values(
           .data$EVIDENCIA,
           "1" ~ "Hemoconcentra\u00e7\u00e3o",
           "2" ~ "Derrames cavit\u00e1rios",
           "3" ~ "Hipoproteinemia",
-          .default = .data$EVIDENCIA
+          default = .data$EVIDENCIA
         )
       ) %>%
       dplyr::mutate(EVIDENCIA = as.factor(.data$EVIDENCIA))
@@ -1531,13 +1531,13 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("CON_FHD" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CON_FHD = dplyr::case_match(
+        CON_FHD = dplyr::recode_values(
           .data$CON_FHD,
           "1" ~ "Grau I",
           "2" ~ "Grau II",
           "3" ~ "Grau III",
           "4" ~ "Grau IV",
-          .default = .data$CON_FHD
+          default = .data$CON_FHD
         )
       ) %>%
       dplyr::mutate(CON_FHD = as.factor(.data$CON_FHD))
@@ -1547,7 +1547,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("COMPLICA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        COMPLICA = dplyr::case_match(
+        COMPLICA = dplyr::recode_values(
           .data$COMPLICA,
           "1" ~ "Altera\u00e7\u00f5es neurol\u00f3gicas",
           "2" ~ "Disfun\u00e7\u00e3o cardiorespirat\u00f3ria",
@@ -1557,7 +1557,7 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
           "6" ~ "Derrames cavit\u00e1rios",
           "7" ~ "Leucometria < 100",
           "8" ~ "N\u00e3o se enquadra nos crit\u00e9rios de FHD",
-          .default = .data$COMPLICA
+          default = .data$COMPLICA
         )
       ) %>%
       dplyr::mutate(COMPLICA = as.factor(.data$COMPLICA))
@@ -1567,13 +1567,13 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("NDUPLIC_N" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        NDUPLIC_N = dplyr::case_match(
+        NDUPLIC_N = dplyr::recode_values(
           .data$NDUPLIC_N,
           "0" ~ "N\u00e3o identificado",
           "" ~ "N\u00e3o identificado",
           "1" ~ "N\u00e3o \u00e9 duplicidade (n\u00e3o listar)",
           "2" ~ "Duplicidade (n\u00e3o contar)",
-          .default = .data$NDUPLIC_N
+          default = .data$NDUPLIC_N
         )
       ) %>%
       dplyr::mutate(NDUPLIC_N = as.factor(.data$NDUPLIC_N))
@@ -1583,12 +1583,12 @@ process_sinan_dengue <- function(data, municipality_data = TRUE) {
   if ("CS_FLXRET" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CS_FLXRET = dplyr::case_match(
+        CS_FLXRET = dplyr::recode_values(
           .data$CS_FLXRET,
           "0" ~ "N\u00e3o",
           "1" ~ "Habilitado para envio",
           "2" ~ "Enviado",
-          .default = .data$CS_FLXRET
+          default = .data$CS_FLXRET
         )
       ) %>%
       dplyr::mutate(CS_FLXRET = as.factor(.data$CS_FLXRET))

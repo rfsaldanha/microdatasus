@@ -52,7 +52,7 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(ESPEC = as.character(.data$ESPEC)) %>%
         dplyr::mutate(
-          ESPEC = dplyr::case_match(
+          ESPEC = dplyr::recode_values(
             .data$ESPEC,
             "1" ~ "Cir\u00fargico",
             "2" ~ "Obst\u00e9tricos",
@@ -96,7 +96,7 @@ process_sih <- function(
             "94" ~ "UCI Unidade de Cuidados Intermediarios Pediatrico",
             "95" ~ "UCI Unidade de Cuidados Intermediarios Adulto",
             "96" ~ "Suporte Ventilat\u00f3rio Pulmonar COVID-19",
-            .default = .data$ESPEC
+            default = .data$ESPEC
           )
         ) %>%
         dplyr::mutate(ESPEC = as.factor(.data$ESPEC))
@@ -107,12 +107,12 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(IDENT = as.character(.data$IDENT)) %>%
         dplyr::mutate(
-          IDENT = dplyr::case_match(
+          IDENT = dplyr::recode_values(
             .data$IDENT,
             "1" ~ "Principal",
             "3" ~ "Continua\u00e7\u00e3o",
             "5" ~ "Longa perman\u00eancia",
-            .default = .data$IDENT
+            default = .data$IDENT
           )
         ) %>%
         dplyr::mutate(IDENT = as.factor(.data$IDENT))
@@ -137,14 +137,14 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(SEXO = as.character(.data$SEXO)) %>%
         dplyr::mutate(
-          SEXO = dplyr::case_match(
+          SEXO = dplyr::recode_values(
             .data$SEXO,
             "1" ~ "Masculino",
             "2" ~ "Feminino",
             "3" ~ "Feminino",
             "0" ~ NA,
             "9" ~ NA,
-            .default = .data$SEXO
+            default = .data$SEXO
           )
         ) %>%
         dplyr::mutate(SEXO = as.factor(.data$SEXO))
@@ -179,7 +179,7 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(MARCA_UTI = as.character(.data$MARCA_UTI)) %>%
         dplyr::mutate(
-          MARCA_UTI = dplyr::case_match(
+          MARCA_UTI = dplyr::recode_values(
             .data$MARCA_UTI,
             "0" ~ "N\u00e3o utilizou UTI",
             "51" ~ "UTI adulto - tipo II COVID 19",
@@ -198,7 +198,7 @@ process_sih <- function(
             "86" ~ "UTI coronariana tipo III - UCO tipo III",
             "99" ~ "UTI Doador",
             "1" ~ "Utilizou mais de um tipo de UTI",
-            .default = .data$MARCA_UTI
+            default = .data$MARCA_UTI
           )
         ) %>%
         dplyr::mutate(MARCA_UTI = as.factor(.data$MARCA_UTI))
@@ -341,7 +341,7 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(COBRANCA = as.character(.data$COBRANCA)) %>%
         dplyr::mutate(
-          COBRANCA = dplyr::case_match(
+          COBRANCA = dplyr::recode_values(
             .data$COBRANCA,
             "11" ~ "Alta curado",
             "12" ~ "Alta melhorado",
@@ -382,7 +382,7 @@ process_sih <- function(
               "\u00d3bito da m\u00e3e/pu\u00e9rpera e alta do rec\u00e9m-nascido",
             "67" ~
               "\u00d3bito da m\u00e3e/pu\u00e9rpera e perman\u00eancia rec\u00e9m-nascido",
-            .default = .data$COBRANCA
+            default = .data$COBRANCA
           )
         ) %>%
         dplyr::mutate(COBRANCA = as.factor(.data$COBRANCA))
@@ -393,7 +393,7 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(NATUREZA = as.character(.data$NATUREZA)) %>%
         dplyr::mutate(
-          NATUREZA = dplyr::case_match(
+          NATUREZA = dplyr::recode_values(
             .data$NATUREZA,
             "0" ~ NA,
             "99" ~ NA,
@@ -415,7 +415,7 @@ process_sih <- function(
             "93" ~ "Univ. Pesquisas isento IR e contr.s/lucro l\u00edquido",
             "94" ~ "Universit\u00e1rio de ensino e pesquisa privado",
             "92" ~ "Universit\u00e1rio de ensino e pesquisa privado",
-            .default = .data$NATUREZA
+            default = .data$NATUREZA
           )
         ) %>%
         dplyr::mutate(NATUREZA = as.factor(.data$NATUREZA))
@@ -426,7 +426,7 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(NAT_JUR = as.character(.data$NAT_JUR)) %>%
         dplyr::mutate(
-          NAT_JUR = dplyr::case_match(
+          NAT_JUR = dplyr::recode_values(
             .data$NAT_JUR,
             "1015" ~ "\u00d3rg\u00e3o P\u00fablico do Poder Executivo Federal",
             "1023" ~
@@ -509,7 +509,7 @@ process_sih <- function(
             "5029" ~ "Representa\u00e7\u00e3o Diplom\u00e1tica Estrangeira",
             "5037" ~ "Outras Institui\u00e7\u00f5es Extraterritoriais",
             "0" ~ NA,
-            .default = .data$NAT_JUR
+            default = .data$NAT_JUR
           )
         ) %>%
         dplyr::mutate(NAT_JUR = as.factor(.data$NAT_JUR))
@@ -520,14 +520,14 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(GESTAO = as.character(.data$GESTAO)) %>%
         dplyr::mutate(
-          GESTAO = dplyr::case_match(
+          GESTAO = dplyr::recode_values(
             .data$GESTAO,
             "0" ~ "Estadual",
             "2" ~ "Estadual plena",
             "1" ~ "Municipal plena assist",
             "3" ~ NA,
             "9" ~ NA,
-            .default = .data$GESTAO
+            default = .data$GESTAO
           )
         ) %>%
         dplyr::mutate(GESTAO = as.factor(.data$GESTAO))
@@ -544,11 +544,11 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(IND_VDRL = as.character(.data$IND_VDRL)) %>%
         dplyr::mutate(
-          IND_VDRL = dplyr::case_match(
+          IND_VDRL = dplyr::recode_values(
             .data$IND_VDRL,
             "0" ~ "N\u00e3o",
             "1" ~ "Sim",
-            .default = .data$IND_VDRL
+            default = .data$IND_VDRL
           )
         ) %>%
         dplyr::mutate(IND_VDRL = as.factor(.data$IND_VDRL))
@@ -564,14 +564,14 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(COD_IDADE = as.character(.data$COD_IDADE)) %>%
         dplyr::mutate(
-          COD_IDADE = dplyr::case_match(
+          COD_IDADE = dplyr::recode_values(
             .data$COD_IDADE,
             "0" ~ NA,
             "2" ~ "Dias",
             "3" ~ "Meses",
             "4" ~ "Anos",
             "5" ~ "Centena de anos (100 + idade)",
-            .default = .data$COD_IDADE
+            default = .data$COD_IDADE
           )
         ) %>%
         dplyr::mutate(COD_IDADE = as.factor(.data$COD_IDADE))
@@ -594,11 +594,11 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(MORTE = as.character(.data$MORTE)) %>%
         dplyr::mutate(
-          MORTE = dplyr::case_match(
+          MORTE = dplyr::recode_values(
             .data$MORTE,
             "0" ~ "N\u00e3o",
             "1" ~ "Sim",
-            .default = .data$MORTE
+            default = .data$MORTE
           )
         ) %>%
         dplyr::mutate(MORTE = as.factor(.data$MORTE))
@@ -609,7 +609,7 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(NACIONAL = as.character(.data$NACIONAL)) %>%
         dplyr::mutate(
-          NACIONAL = dplyr::case_match(
+          NACIONAL = dplyr::recode_values(
             .data$NACIONAL,
             "170" ~ "Abissinia",
             "171" ~ "Acores",
@@ -944,7 +944,7 @@ process_sih <- function(
             "236" ~ "Zaire",
             "237" ~ "Zambia",
             "239" ~ "Zimbabwe",
-            .default = .data$NACIONAL
+            default = .data$NACIONAL
           )
         ) %>%
         dplyr::mutate(NACIONAL = as.factor(.data$NACIONAL))
@@ -961,7 +961,7 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(CAR_INT = as.character(.data$CAR_INT)) %>%
         dplyr::mutate(
-          CAR_INT = dplyr::case_match(
+          CAR_INT = dplyr::recode_values(
             .data$CAR_INT,
             "1" ~ "Eletivo",
             "2" ~ "Urg\u00eancia",
@@ -970,7 +970,7 @@ process_sih <- function(
             "5" ~ "Outros tipo de acidente de tr\u00e2nsito",
             "6" ~
               "Out tp les\u00f5es e envenen por agent qu\u00edm f\u00edsicos",
-            .default = .data$CAR_INT
+            default = .data$CAR_INT
           )
         ) %>%
         dplyr::mutate(CAR_INT = as.factor(.data$CAR_INT))
@@ -993,11 +993,11 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(HOMONIMO = as.character(.data$HOMONIMO)) %>%
         dplyr::mutate(
-          HOMONIMO = dplyr::case_match(
+          HOMONIMO = dplyr::recode_values(
             .data$HOMONIMO,
             "0" ~ "N\u00e3o",
             "2" ~ "Sim",
-            .default = .data$HOMONIMO
+            default = .data$HOMONIMO
           )
         ) %>%
         dplyr::mutate(HOMONIMO = as.factor(.data$HOMONIMO))
@@ -1014,7 +1014,7 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(INSTRU = as.character(.data$INSTRU)) %>%
         dplyr::mutate(
-          INSTRU = dplyr::case_match(
+          INSTRU = dplyr::recode_values(
             .data$INSTRU,
             "1" ~ "Analfabeto",
             "2" ~ "1\u00ba grau",
@@ -1022,7 +1022,7 @@ process_sih <- function(
             "4" ~ "3\u00ba grau",
             "0" ~ NA,
             "9" ~ NA,
-            .default = .data$INSTRU
+            default = .data$INSTRU
           )
         ) %>%
         dplyr::mutate(INSTRU = as.factor(.data$INSTRU))
@@ -1033,7 +1033,7 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(CONTRACEP1 = as.character(.data$CONTRACEP1)) %>%
         dplyr::mutate(
-          CONTRACEP1 = dplyr::case_match(
+          CONTRACEP1 = dplyr::recode_values(
             .data$CONTRACEP1,
             "1" ~ "LAM",
             "2" ~ "Ogino Kaus",
@@ -1049,7 +1049,7 @@ process_sih <- function(
             "12" ~ "Coito interrompido",
             "0" ~ NA,
             "99" ~ NA,
-            .default = .data$CONTRACEP1
+            default = .data$CONTRACEP1
           )
         ) %>%
         dplyr::mutate(CONTRACEP1 = as.factor(.data$CONTRACEP1))
@@ -1060,7 +1060,7 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(CONTRACEP2 = as.character(.data$CONTRACEP2)) %>%
         dplyr::mutate(
-          CONTRACEP2 = dplyr::case_match(
+          CONTRACEP2 = dplyr::recode_values(
             .data$CONTRACEP2,
             "1" ~ "LAM",
             "2" ~ "Ogino Kaus",
@@ -1076,7 +1076,7 @@ process_sih <- function(
             "12" ~ "Coito interrompido",
             "0" ~ NA,
             "99" ~ NA,
-            .default = .data$CONTRACEP2
+            default = .data$CONTRACEP2
           )
         ) %>%
         dplyr::mutate(CONTRACEP2 = as.factor(.data$CONTRACEP2))
@@ -1087,11 +1087,11 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(GESTRISCO = as.character(.data$GESTRISCO)) %>%
         dplyr::mutate(
-          GESTRISCO = dplyr::case_match(
+          GESTRISCO = dplyr::recode_values(
             .data$GESTRISCO,
             "0" ~ "N\u00e3o",
             "1" ~ "Sim",
-            .default = .data$GESTRISCO
+            default = .data$GESTRISCO
           )
         ) %>%
         dplyr::mutate(GESTRISCO = as.factor(.data$GESTRISCO))
@@ -1102,7 +1102,7 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(SEQ_AIH5 = as.character(.data$SEQ_AIH5)) %>%
         dplyr::mutate(
-          SEQ_AIH5 = dplyr::case_match(
+          SEQ_AIH5 = dplyr::recode_values(
             .data$SEQ_AIH5,
             "0" ~ "Sequencial zerado",
             "1" ~ "Seq 1",
@@ -1110,7 +1110,7 @@ process_sih <- function(
             "3" ~ "Seq 3",
             "4" ~ NA,
             "999" ~ NA,
-            .default = .data$SEQ_AIH5
+            default = .data$SEQ_AIH5
           )
         ) %>%
         dplyr::mutate(SEQ_AIH5 = as.factor(.data$SEQ_AIH5))
@@ -1127,7 +1127,7 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(VINCPREV = as.character(.data$VINCPREV)) %>%
         dplyr::mutate(
-          VINCPREV = dplyr::case_match(
+          VINCPREV = dplyr::recode_values(
             .data$VINCPREV,
             "1" ~ "Aut\u00f4nomo",
             "2" ~ "Desempregado",
@@ -1137,7 +1137,7 @@ process_sih <- function(
             "6" ~ "Empregador",
             "0" ~ NA,
             "9" ~ NA,
-            .default = .data$VINCPREV
+            default = .data$VINCPREV
           )
         ) %>%
         dplyr::mutate(VINCPREV = as.factor(.data$VINCPREV))
@@ -1148,7 +1148,7 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(GESTOR_COD = as.character(.data$GESTOR_COD)) %>%
         dplyr::mutate(
-          GESTOR_COD = dplyr::case_match(
+          GESTOR_COD = dplyr::recode_values(
             .data$GESTOR_COD,
             "1" ~ "TEMPO DE PERMANENCIA",
             "2" ~ "IDADE MENOR",
@@ -1249,7 +1249,7 @@ process_sih <- function(
             "241" ~ "CNS E TELEFONE E CBO E QTD E ID. MENOR E PERM. MENOR",
             "242" ~ "CNS E TELEFONE E CBO E QTD E ID. MAIOR",
             "243" ~ "CNS E TELEFONE E CBO E QTD E ID. MAIOR E PERM. MENOR",
-            .default = .data$GESTOR_COD
+            default = .data$GESTOR_COD
           )
         ) %>%
         dplyr::mutate(GESTOR_COD = as.factor(.data$GESTOR_COD))
@@ -1278,11 +1278,11 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(INFEHOSP = as.character(.data$INFEHOSP)) %>%
         dplyr::mutate(
-          INFEHOSP = dplyr::case_match(
+          INFEHOSP = dplyr::recode_values(
             .data$INFEHOSP,
             "0" ~ "N\u00e3o",
             "1" ~ "Sim",
-            .default = .data$INFEHOSP
+            default = .data$INFEHOSP
           )
         ) %>%
         dplyr::mutate(INFEHOSP = as.factor(.data$INFEHOSP))
@@ -1293,14 +1293,14 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(COMPLEX = as.character(.data$COMPLEX)) %>%
         dplyr::mutate(
-          COMPLEX = dplyr::case_match(
+          COMPLEX = dplyr::recode_values(
             .data$COMPLEX,
             "1" ~ "Aten\u00e7\u00e3o B\u00e1sica",
             "2" ~ "M\u00e9dia complexidade",
             "3" ~ "Alta complexidade",
             "0" ~ NA,
             "99" ~ NA,
-            .default = .data$COMPLEX
+            default = .data$COMPLEX
           )
         ) %>%
         dplyr::mutate(COMPLEX = as.factor(.data$COMPLEX))
@@ -1311,7 +1311,7 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(FINANC = as.character(.data$FINANC)) %>%
         dplyr::mutate(
-          FINANC = dplyr::case_match(
+          FINANC = dplyr::recode_values(
             .data$FINANC,
             "1" ~ "Aten\u00e7\u00e3o B\u00e1sica (PAB)",
             "2" ~ "Assist\u00eancia Farmac\u00eautica",
@@ -1322,7 +1322,7 @@ process_sih <- function(
             "7" ~ "Vigil\u00e2ncia em Sa\u00fade",
             "0" ~ NA,
             "99" ~ NA,
-            .default = .data$FINANC
+            default = .data$FINANC
           )
         ) %>%
         dplyr::mutate(FINANC = as.factor(.data$FINANC))
@@ -1333,7 +1333,7 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(FAEC_TP = as.character(.data$FAEC_TP)) %>%
         dplyr::mutate(
-          FAEC_TP = dplyr::case_match(
+          FAEC_TP = dplyr::recode_values(
             .data$FAEC_TP,
             "10000" ~ "Aten\u00e7\u00e3o B\u00e1sica (PAB)",
             "20000" ~ "Assist\u00eancia Farmac\u00eautica",
@@ -1434,7 +1434,7 @@ process_sih <- function(
             "40075" ~ "Fisioterapia Cardiovascular",
             "40076" ~ "Hemodin\\u00e2mica em atendimento de urg\\u00eancia",
             "40077" ~ "Exames Sorol\\u00f3gicos e Imunol\\u00f3gicos",
-            .default = .data$FAEC_TP
+            default = .data$FAEC_TP
           )
         ) %>%
         dplyr::mutate(FAEC_TP = as.factor(.data$FAEC_TP))
@@ -1445,7 +1445,7 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(REGCT = as.character(.data$REGCT)) %>%
         dplyr::mutate(
-          REGCT = dplyr::case_match(
+          REGCT = dplyr::recode_values(
             .data$REGCT,
             "7100" ~
               "TABELA DE NAO GERACAO DE CREDITO POR PRODUCAO NA INTERNACAO E/OU AMBULATORIO",
@@ -1483,7 +1483,7 @@ process_sih <- function(
             "7117" ~
               "Estabelecimento de Sa\u00fade sem gera\u00e7\u00e3o de cr\u00e9dito na m\u00e9dia complexidade (exceto OPM) - CER",
             "0" ~ "Sem regra contratual",
-            .default = .data$REGCT
+            default = .data$REGCT
           )
         ) %>%
         dplyr::mutate(REGCT = as.factor(.data$REGCT))
@@ -1494,7 +1494,7 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(RACA_COR = as.character(.data$RACA_COR)) %>%
         dplyr::mutate(
-          RACA_COR = dplyr::case_match(
+          RACA_COR = dplyr::recode_values(
             .data$RACA_COR,
             "1" ~ "Branca",
             "2" ~ "Preta",
@@ -1503,7 +1503,7 @@ process_sih <- function(
             "5" ~ "Ind\u00edgena",
             "0" ~ NA,
             "99" ~ NA,
-            .default = .data$RACA_COR
+            default = .data$RACA_COR
           )
         ) %>%
         dplyr::mutate(RACA_COR = as.factor(.data$RACA_COR))
@@ -1514,7 +1514,7 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(ETNIA = as.character(.data$ETNIA)) %>%
         dplyr::mutate(
-          ETNIA = dplyr::case_match(
+          ETNIA = dplyr::recode_values(
             .data$ETNIA,
             "0001" ~ "ACONA (WAKONAS, NACONAS, JAKONA, ACORANES)",
             "0002" ~ "AIKANA (AIKANA, MAS SAKA,TUBARAO)",
@@ -1926,7 +1926,7 @@ process_sih <- function(
             "X403" ~ "SAKIRIABAR",
             "X404" ~ "TATZ",
             "X405" ~ "SEM INFORMACAO",
-            .default = .data$ETNIA
+            default = .data$ETNIA
           )
         ) %>%
         dplyr::mutate(ETNIA = as.factor(.data$ETNIA))
@@ -1967,14 +1967,14 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(MARCA_UCI = as.character(.data$MARCA_UCI)) %>%
         dplyr::mutate(
-          MARCA_UCI = dplyr::case_match(
+          MARCA_UCI = dplyr::recode_values(
             .data$MARCA_UCI,
             "0" ~ "N\u00e3o utilizou UCI",
             "1" ~ "Unidade de cuidados intermed neonatal convencional",
             "2" ~ "Unidade de cuidados intermed neonatal canguru",
             "3" ~ "Unidade intermedi\u00e1ria neonatal",
             "88" ~ "Utilizou dois tipos de leitos UCI",
-            .default = .data$MARCA_UCI
+            default = .data$MARCA_UCI
           )
         ) %>%
         dplyr::mutate(MARCA_UCI = as.factor(.data$MARCA_UCI))
@@ -1985,12 +1985,12 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(TPDISEC1 = as.character(.data$TPDISEC1)) %>%
         dplyr::mutate(
-          TPDISEC1 = dplyr::case_match(
+          TPDISEC1 = dplyr::recode_values(
             .data$TPDISEC1,
             "0" ~ NA,
             "1" ~ "Pr\u00e9-existente",
             "2" ~ "Adquirido",
-            .default = .data$TPDISEC1
+            default = .data$TPDISEC1
           )
         ) %>%
         dplyr::mutate(TPDISEC1 = as.factor(.data$TPDISEC1))
@@ -2001,12 +2001,12 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(TPDISEC2 = as.character(.data$TPDISEC2)) %>%
         dplyr::mutate(
-          TPDISEC2 = dplyr::case_match(
+          TPDISEC2 = dplyr::recode_values(
             .data$TPDISEC2,
             "0" ~ NA,
             "1" ~ "Pr\u00e9-existente",
             "2" ~ "Adquirido",
-            .default = .data$TPDISEC2
+            default = .data$TPDISEC2
           )
         ) %>%
         dplyr::mutate(TPDISEC2 = as.factor(.data$TPDISEC2))
@@ -2017,12 +2017,12 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(TPDISEC3 = as.character(.data$TPDISEC3)) %>%
         dplyr::mutate(
-          TPDISEC3 = dplyr::case_match(
+          TPDISEC3 = dplyr::recode_values(
             .data$TPDISEC3,
             "0" ~ NA,
             "1" ~ "Pr\u00e9-existente",
             "2" ~ "Adquirido",
-            .default = .data$TPDISEC3
+            default = .data$TPDISEC3
           )
         ) %>%
         dplyr::mutate(TPDISEC3 = as.factor(.data$TPDISEC3))
@@ -2033,12 +2033,12 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(TPDISEC4 = as.character(.data$TPDISEC4)) %>%
         dplyr::mutate(
-          TPDISEC4 = dplyr::case_match(
+          TPDISEC4 = dplyr::recode_values(
             .data$TPDISEC4,
             "0" ~ NA,
             "1" ~ "Pr\u00e9-existente",
             "2" ~ "Adquirido",
-            .default = .data$TPDISEC4
+            default = .data$TPDISEC4
           )
         ) %>%
         dplyr::mutate(TPDISEC4 = as.factor(.data$TPDISEC4))
@@ -2050,12 +2050,12 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(TPDISEC5 = as.character(.data$TPDISEC5)) %>%
         dplyr::mutate(
-          TPDISEC5 = dplyr::case_match(
+          TPDISEC5 = dplyr::recode_values(
             .data$TPDISEC5,
             "0" ~ NA,
             "1" ~ "Pr\u00e9-existente",
             "2" ~ "Adquirido",
-            .default = .data$TPDISEC5
+            default = .data$TPDISEC5
           )
         ) %>%
         dplyr::mutate(TPDISEC5 = as.factor(.data$TPDISEC5))
@@ -2066,12 +2066,12 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(TPDISEC6 = as.character(.data$TPDISEC6)) %>%
         dplyr::mutate(
-          TPDISEC6 = dplyr::case_match(
+          TPDISEC6 = dplyr::recode_values(
             .data$TPDISEC6,
             "0" ~ NA,
             "1" ~ "Pr\u00e9-existente",
             "2" ~ "Adquirido",
-            .default = .data$TPDISEC6
+            default = .data$TPDISEC6
           )
         ) %>%
         dplyr::mutate(TPDISEC6 = as.factor(.data$TPDISEC6))
@@ -2082,12 +2082,12 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(TPDISEC7 = as.character(.data$TPDISEC7)) %>%
         dplyr::mutate(
-          TPDISEC7 = dplyr::case_match(
+          TPDISEC7 = dplyr::recode_values(
             .data$TPDISEC7,
             "0" ~ NA,
             "1" ~ "Pr\u00e9-existente",
             "2" ~ "Adquirido",
-            .default = .data$TPDISEC7
+            default = .data$TPDISEC7
           )
         ) %>%
         dplyr::mutate(TPDISEC7 = as.factor(.data$TPDISEC7))
@@ -2098,12 +2098,12 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(TPDISEC8 = as.character(.data$TPDISEC8)) %>%
         dplyr::mutate(
-          TPDISEC8 = dplyr::case_match(
+          TPDISEC8 = dplyr::recode_values(
             .data$TPDISEC8,
             "0" ~ NA,
             "1" ~ "Pr\u00e9-existente",
             "2" ~ "Adquirido",
-            .default = .data$TPDISEC8
+            default = .data$TPDISEC8
           )
         ) %>%
         dplyr::mutate(TPDISEC8 = as.factor(.data$TPDISEC8))
@@ -2114,12 +2114,12 @@ process_sih <- function(
       data <- data %>%
         dplyr::mutate(TPDISEC9 = as.character(.data$TPDISEC9)) %>%
         dplyr::mutate(
-          TPDISEC9 = dplyr::case_match(
+          TPDISEC9 = dplyr::recode_values(
             .data$TPDISEC9,
             "0" ~ NA,
             "1" ~ "Pr\u00e9-existente",
             "2" ~ "Adquirido",
-            .default = .data$TPDISEC9
+            default = .data$TPDISEC9
           )
         ) %>%
         dplyr::mutate(TPDISEC9 = as.factor(.data$TPDISEC9))

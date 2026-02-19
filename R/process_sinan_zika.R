@@ -25,13 +25,13 @@ process_sinan_zika <- function(data, municipality_data = TRUE) {
   if ("TP_NOT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        TP_NOT = dplyr::case_match(
+        TP_NOT = dplyr::recode_values(
           .data$TP_NOT,
           "1" ~ "Negativa",
           "2" ~ "Individual",
           "3" ~ "Surto",
           "4" ~ "Agregado",
-          .default = .data$TP_NOT
+          default = .data$TP_NOT
         )
       ) %>%
       dplyr::mutate(TP_NOT = as.factor(.data$TP_NOT))
@@ -47,7 +47,7 @@ process_sinan_zika <- function(data, municipality_data = TRUE) {
   if ("SG_UF_NOT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        SG_UF_NOT = dplyr::case_match(
+        SG_UF_NOT = dplyr::recode_values(
           .data$SG_UF_NOT,
           "0" ~ "Ignorado",
           "99" ~ "Ignorado",
@@ -78,7 +78,7 @@ process_sinan_zika <- function(data, municipality_data = TRUE) {
           "51" ~ "Mato Grosso",
           "52" ~ "Goi\u00e1s",
           "53" ~ "Distrito Federal",
-          .default = .data$SG_UF_NOT
+          default = .data$SG_UF_NOT
         )
       ) %>%
       dplyr::mutate(SG_UF_NOT = as.factor(.data$SG_UF_NOT))
@@ -88,10 +88,10 @@ process_sinan_zika <- function(data, municipality_data = TRUE) {
   if ("NU_IDADE_N" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        NU_IDADE_N = dplyr::case_match(
+        NU_IDADE_N = dplyr::recode_values(
           .data$NU_IDADE_N,
           999 ~ NA,
-          .default = .data$NU_IDADE_N
+          default = .data$NU_IDADE_N
         )
       ) %>%
       # Codigo e valor
@@ -100,39 +100,39 @@ process_sinan_zika <- function(data, municipality_data = TRUE) {
         idade_value = as.numeric(substr(.data$NU_IDADE_N, 2, 3)),
       ) %>%
       dplyr::mutate(
-        IDADEminutos = dplyr::case_match(
+        IDADEminutos = dplyr::recode_values(
           .data$idade_cod,
           "0" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEhoras = dplyr::case_match(
+        IDADEhoras = dplyr::recode_values(
           .data$idade_cod,
           "1" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEdias = dplyr::case_match(
+        IDADEdias = dplyr::recode_values(
           .data$idade_cod,
           "2" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEmeses = dplyr::case_match(
+        IDADEmeses = dplyr::recode_values(
           .data$idade_cod,
           "3" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEanos = dplyr::case_match(
+        IDADEanos = dplyr::recode_values(
           .data$idade_cod,
           "4" ~ idade_value,
           "5" ~ idade_value + 100,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::select(-"idade_cod", -"idade_value")
@@ -143,24 +143,24 @@ process_sinan_zika <- function(data, municipality_data = TRUE) {
         idade_value = as.numeric(substr(.data$NU_IDADE, 2, 4)),
       ) %>%
       dplyr::mutate(
-        IDADEdias = dplyr::case_match(
+        IDADEdias = dplyr::recode_values(
           .data$idade_cod,
           "D" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEmeses = dplyr::case_match(
+        IDADEmeses = dplyr::recode_values(
           .data$idade_cod,
           "M" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEanos = dplyr::case_match(
+        IDADEanos = dplyr::recode_values(
           .data$idade_cod,
           "A" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::select(-"idade_cod", -"idade_value")
@@ -170,12 +170,12 @@ process_sinan_zika <- function(data, municipality_data = TRUE) {
   if ("CS_SEXO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CS_SEXO = dplyr::case_match(
+        CS_SEXO = dplyr::recode_values(
           .data$CS_SEXO,
           "M" ~ "Masculino",
           "F" ~ "Feminino",
           "I" ~ "Ignorado",
-          .default = .data$CS_SEXO
+          default = .data$CS_SEXO
         )
       ) %>%
       dplyr::mutate(CS_SEXO = as.factor(.data$CS_SEXO))
@@ -185,7 +185,7 @@ process_sinan_zika <- function(data, municipality_data = TRUE) {
   if ("CS_GESTANT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CS_GESTANT = dplyr::case_match(
+        CS_GESTANT = dplyr::recode_values(
           .data$CS_GESTANT,
           "1" ~ "1o trimestre",
           "2" ~ "2o trimestre",
@@ -194,7 +194,7 @@ process_sinan_zika <- function(data, municipality_data = TRUE) {
           "5" ~ "N\u00e3o",
           "6" ~ "N\u00e3o se aplica",
           "9" ~ "Ignorado",
-          .default = .data$CS_GESTANT
+          default = .data$CS_GESTANT
         )
       ) %>%
       dplyr::mutate(CS_GESTANT = as.factor(.data$CS_GESTANT))
@@ -204,7 +204,7 @@ process_sinan_zika <- function(data, municipality_data = TRUE) {
   if ("CS_RACA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CS_RACA = dplyr::case_match(
+        CS_RACA = dplyr::recode_values(
           .data$CS_RACA,
           "1" ~ "Branca",
           "2" ~ "Preta",
@@ -212,7 +212,7 @@ process_sinan_zika <- function(data, municipality_data = TRUE) {
           "4" ~ "Parda",
           "5" ~ "Ind\u00edgena",
           "9" ~ "Ignorado",
-          .default = .data$CS_RACA
+          default = .data$CS_RACA
         )
       ) %>%
       dplyr::mutate(CS_RACA = as.factor(.data$CS_RACA))
@@ -222,7 +222,7 @@ process_sinan_zika <- function(data, municipality_data = TRUE) {
   if ("CS_ESCOL_N" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CS_ESCOL_N = dplyr::case_match(
+        CS_ESCOL_N = dplyr::recode_values(
           .data$CS_ESCOL_N,
           "1" ~ "1a a 4a s\u00e9rie incompleta do EF",
           "2" ~ "4a s\u00e9rie completa do EF (antigo 1o grau)",
@@ -235,7 +235,7 @@ process_sinan_zika <- function(data, municipality_data = TRUE) {
           "8" ~ "Educa\u00e7\u00e3o superior completa",
           "9" ~ "Ignorado",
           "10" ~ "N\u00e3o se aplica",
-          .default = .data$CS_ESCOL_N
+          default = .data$CS_ESCOL_N
         )
       ) %>%
       dplyr::mutate(CS_ESCOL_N = as.factor(.data$CS_ESCOL_N))
@@ -245,7 +245,7 @@ process_sinan_zika <- function(data, municipality_data = TRUE) {
   if ("SG_UF" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        SG_UF = dplyr::case_match(
+        SG_UF = dplyr::recode_values(
           .data$SG_UF,
           "0" ~ "Ignorado",
           "99" ~ "Ignorado",
@@ -276,7 +276,7 @@ process_sinan_zika <- function(data, municipality_data = TRUE) {
           "51" ~ "Mato Grosso",
           "52" ~ "Goi\u00e1s",
           "53" ~ "Distrito Federal",
-          .default = .data$SG_UF
+          default = .data$SG_UF
         )
       ) %>%
       dplyr::mutate(SG_UF = as.factor(.data$SG_UF))
@@ -306,12 +306,12 @@ process_sinan_zika <- function(data, municipality_data = TRUE) {
   if ("CLASSI_FIN" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CLASSI_FIN = dplyr::case_match(
+        CLASSI_FIN = dplyr::recode_values(
           .data$CLASSI_FIN,
           "1" ~ "Confirmado",
           "2" ~ "Descartado",
           "8" ~ "Inconclusivo",
-          .default = .data$CLASSI_FIN
+          default = .data$CLASSI_FIN
         )
       ) %>%
       dplyr::mutate(CLASSI_FIN = as.factor(.data$CLASSI_FIN))
@@ -321,12 +321,12 @@ process_sinan_zika <- function(data, municipality_data = TRUE) {
   if ("CRITERIO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CRITERIO = dplyr::case_match(
+        CRITERIO = dplyr::recode_values(
           .data$CRITERIO,
           "1" ~ "Laborat\u00f3rio",
           "2" ~ "Cl\u00ednico epidemiol\u00f3gico",
           "3" ~ "Em investiga\u00e7\u00e3o",
-          .default = .data$CRITERIO
+          default = .data$CRITERIO
         )
       ) %>%
       dplyr::mutate(CRITERIO = as.factor(.data$CRITERIO))
@@ -336,12 +336,12 @@ process_sinan_zika <- function(data, municipality_data = TRUE) {
   if ("TPAUTOCTO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        TPAUTOCTO = dplyr::case_match(
+        TPAUTOCTO = dplyr::recode_values(
           .data$TPAUTOCTO,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "3" ~ "Indeterminado",
-          .default = .data$TPAUTOCTO
+          default = .data$TPAUTOCTO
         )
       ) %>%
       dplyr::mutate(TPAUTOCTO = as.factor(.data$TPAUTOCTO))
@@ -351,7 +351,7 @@ process_sinan_zika <- function(data, municipality_data = TRUE) {
   if ("COUFINF" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        COUFINF = dplyr::case_match(
+        COUFINF = dplyr::recode_values(
           .data$COUFINF,
           "0" ~ "Ignorado",
           "99" ~ "Ignorado",
@@ -382,7 +382,7 @@ process_sinan_zika <- function(data, municipality_data = TRUE) {
           "51" ~ "Mato Grosso",
           "52" ~ "Goi\u00e1s",
           "53" ~ "Distrito Federal",
-          .default = .data$COUFINF
+          default = .data$COUFINF
         )
       ) %>%
       dplyr::mutate(COUFINF = as.factor(.data$COUFINF))
@@ -401,12 +401,12 @@ process_sinan_zika <- function(data, municipality_data = TRUE) {
   if ("DOENCA_TRA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        DOENCA_TRA = dplyr::case_match(
+        DOENCA_TRA = dplyr::recode_values(
           .data$DOENCA_TRA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ "Ignorado",
-          .default = .data$DOENCA_TRA
+          default = .data$DOENCA_TRA
         )
       ) %>%
       dplyr::mutate(DOENCA_TRA = as.factor(.data$DOENCA_TRA))
@@ -416,14 +416,14 @@ process_sinan_zika <- function(data, municipality_data = TRUE) {
   if ("EVOLUCAO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        EVOLUCAO = dplyr::case_match(
+        EVOLUCAO = dplyr::recode_values(
           .data$EVOLUCAO,
           "1" ~ "Cura",
           "2" ~ "\u00d3bito por dengue",
           "3" ~ "\u00d3bito por outras causas",
           "4" ~ "\u00d3bito em investiga\u00e7\u00e3o",
           "9" ~ "Ignorado",
-          .default = .data$EVOLUCAO
+          default = .data$EVOLUCAO
         )
       ) %>%
       dplyr::mutate(EVOLUCAO = as.factor(.data$EVOLUCAO))
@@ -445,12 +445,12 @@ process_sinan_zika <- function(data, municipality_data = TRUE) {
   if ("CS_FLXRET" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CS_FLXRET = dplyr::case_match(
+        CS_FLXRET = dplyr::recode_values(
           .data$CS_FLXRET,
           "0" ~ "N\u00e3o",
           "1" ~ "Habilitado para envio",
           "2" ~ "Enviado",
-          .default = .data$CS_FLXRET
+          default = .data$CS_FLXRET
         )
       ) %>%
       dplyr::mutate(CS_FLXRET = as.factor(.data$CS_FLXRET))

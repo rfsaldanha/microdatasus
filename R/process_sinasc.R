@@ -49,7 +49,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   if ("LOCNASC" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        LOCNASC = dplyr::case_match(
+        LOCNASC = dplyr::recode_values(
           .data$LOCNASC,
           "0" ~ NA,
           "1" ~ "Hospital",
@@ -61,7 +61,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
           "7" ~ NA,
           "8" ~ NA,
           "9" ~ NA,
-          .default = .data$LOCNASC
+          default = .data$LOCNASC
         )
       ) %>%
       dplyr::mutate(LOCNASC = as.factor(.data$LOCNASC))
@@ -71,11 +71,11 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   if ("IDADEMAE" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        IDADEMAE = dplyr::case_match(
+        IDADEMAE = dplyr::recode_values(
           .data$IDADEMAE,
           "0" ~ NA,
           "99" ~ NA,
-          .default = .data$IDADEMAE
+          default = .data$IDADEMAE
         )
       ) %>%
       dplyr::mutate(IDADEMAE = as.factor(.data$IDADEMAE))
@@ -85,7 +85,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   if ("ESTCIVMAE" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ESTCIVMAE = dplyr::case_match(
+        ESTCIVMAE = dplyr::recode_values(
           .data$ESTCIVMAE,
           "0" ~ NA,
           "1" ~ "Solteira",
@@ -97,7 +97,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
           "7" ~ NA,
           "8" ~ NA,
           "9" ~ NA,
-          .default = .data$ESTCIVMAE
+          default = .data$ESTCIVMAE
         )
       ) %>%
       dplyr::mutate(ESTCIVMAE = as.factor(.data$ESTCIVMAE))
@@ -107,7 +107,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   if ("ESCMAE" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ESCMAE = dplyr::case_match(
+        ESCMAE = dplyr::recode_values(
           .data$ESCMAE,
           "1" ~ "Nenhum",
           "2" ~ "1 a 3 anos",
@@ -118,7 +118,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
           "7" ~ NA,
           "8" ~ NA,
           "9" ~ NA,
-          .default = .data$ESCMAE
+          default = .data$ESCMAE
         )
       ) %>%
       dplyr::mutate(ESCMAE = as.factor(.data$ESCMAE))
@@ -151,10 +151,10 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   if ("QTDFILVIVO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        QTDFILVIVO = dplyr::case_match(
+        QTDFILVIVO = dplyr::recode_values(
           .data$QTDFILVIVO,
           "99" ~ NA,
-          .default = .data$QTDFILVIVO
+          default = .data$QTDFILVIVO
         )
       ) %>%
       dplyr::mutate(QTDFILVIVO = as.numeric(.data$QTDFILVIVO))
@@ -164,10 +164,10 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   if ("QTDFILMORT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        QTDFILMORT = dplyr::case_match(
+        QTDFILMORT = dplyr::recode_values(
           .data$QTDFILMORT,
           "99" ~ NA,
-          .default = .data$QTDFILMORT
+          default = .data$QTDFILMORT
         )
       ) %>%
       dplyr::mutate(QTDFILMORT = as.numeric(.data$QTDFILMORT))
@@ -186,7 +186,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   if ("GESTACAO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        GESTACAO = dplyr::case_match(
+        GESTACAO = dplyr::recode_values(
           .data$GESTACAO,
           "0" ~ NA,
           "1" ~ "Menos de 22 semanas",
@@ -198,7 +198,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
           "7" ~ NA,
           "8" ~ NA,
           "9" ~ NA,
-          .default = .data$GESTACAO
+          default = .data$GESTACAO
         )
       ) %>%
       dplyr::mutate(GESTACAO = as.factor(.data$GESTACAO))
@@ -208,7 +208,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   if ("GRAVIDEZ" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        GRAVIDEZ = dplyr::case_match(
+        GRAVIDEZ = dplyr::recode_values(
           .data$GRAVIDEZ,
           "0" ~ NA,
           "1" ~ "\\u00fanica",
@@ -220,7 +220,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
           "7" ~ NA,
           "8" ~ NA,
           "9" ~ NA,
-          .default = .data$GRAVIDEZ
+          default = .data$GRAVIDEZ
         )
       ) %>%
       dplyr::mutate(GRAVIDEZ = as.factor(.data$GRAVIDEZ))
@@ -230,7 +230,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   if ("PARTO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        PARTO = dplyr::case_match(
+        PARTO = dplyr::recode_values(
           .data$PARTO,
           "0" ~ NA,
           "1" ~ "Vaginal",
@@ -242,7 +242,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
           "7" ~ NA,
           "8" ~ NA,
           "9" ~ NA,
-          .default = .data$PARTO
+          default = .data$PARTO
         )
       ) %>%
       dplyr::mutate(PARTO = as.factor(.data$PARTO))
@@ -252,7 +252,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   if ("CONSULTAS" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CONSULTAS = dplyr::case_match(
+        CONSULTAS = dplyr::recode_values(
           .data$CONSULTAS,
           "0" ~ NA,
           "1" ~ "Nenhuma",
@@ -264,7 +264,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
           "7" ~ NA,
           "8" ~ NA,
           "9" ~ NA,
-          .default = .data$CONSULTAS
+          default = .data$CONSULTAS
         )
       ) %>%
       dplyr::mutate(CONSULTAS = as.factor(.data$CONSULTAS))
@@ -274,7 +274,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   if ("SEXO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        SEXO = dplyr::case_match(
+        SEXO = dplyr::recode_values(
           .data$SEXO,
           "0" ~ NA,
           "1" ~ "Masculino",
@@ -283,7 +283,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
           "F" ~ "Feminino",
           "9" ~ NA,
           "I" ~ NA,
-          .default = .data$SEXO
+          default = .data$SEXO
         )
       ) %>%
       dplyr::mutate(SEXO = as.factor(.data$SEXO))
@@ -293,10 +293,10 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   if ("APGAR1" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        APGAR1 = dplyr::case_match(
+        APGAR1 = dplyr::recode_values(
           .data$APGAR1,
           "99" ~ NA,
-          .default = .data$APGAR1
+          default = .data$APGAR1
         )
       ) %>%
       dplyr::mutate(APGAR1 = as.numeric(.data$APGAR1))
@@ -306,10 +306,10 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   if ("APGAR5" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        APGAR5 = dplyr::case_match(
+        APGAR5 = dplyr::recode_values(
           .data$APGAR5,
           "99" ~ NA,
-          .default = .data$APGAR5
+          default = .data$APGAR5
         )
       ) %>%
       dplyr::mutate(APGAR5 = as.numeric(.data$APGAR5))
@@ -319,7 +319,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   if ("RACACOR" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        RACACOR = dplyr::case_match(
+        RACACOR = dplyr::recode_values(
           .data$RACACOR,
           "1" ~ "Branca",
           "2" ~ "Preta",
@@ -327,7 +327,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
           "4" ~ "Parda",
           "5" ~ "Ind\\u00edgena",
           "9" ~ NA,
-          .default = .data$RACACOR
+          default = .data$RACACOR
         )
       ) %>%
       dplyr::mutate(RACACOR = as.factor(.data$RACACOR))
@@ -337,7 +337,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   if ("PESO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        PESO = dplyr::case_match(
+        PESO = dplyr::recode_values(
           .data$PESO,
           "0" ~ NA,
           "9999" ~ NA
@@ -350,7 +350,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   if ("IDANOMAL" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        IDANOMAL = dplyr::case_match(
+        IDANOMAL = dplyr::recode_values(
           .data$IDANOMAL,
           "1" ~ "Sim",
           "2" ~ "N\\u00e3o",
@@ -361,7 +361,7 @@ process_sinasc <- function(data, municipality_data = TRUE) {
           "7" ~ NA,
           "8" ~ NA,
           "9" ~ NA,
-          .default = .data$IDANOMAL
+          default = .data$IDANOMAL
         )
       ) %>%
       dplyr::mutate(IDANOMAL = as.factor(.data$IDANOMAL))
@@ -419,14 +419,14 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   if ("RACACORMAE" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        RACACORMAE = dplyr::case_match(
+        RACACORMAE = dplyr::recode_values(
           .data$RACACORMAE,
           "1" ~ "Branca",
           "2" ~ "Preta",
           "3" ~ "Amarela",
           "4" ~ "Parda",
           "5" ~ "Ind\\u00edgena",
-          .default = .data$RACACORMAE
+          default = .data$RACACORMAE
         )
       ) %>%
       dplyr::mutate(RACACORMAE = as.factor(.data$RACACORMAE))
@@ -454,11 +454,11 @@ process_sinasc <- function(data, municipality_data = TRUE) {
   if ("IDADEPAI" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        IDADEPAI = dplyr::case_match(
+        IDADEPAI = dplyr::recode_values(
           .data$IDADEPAI,
           "0" ~ NA,
           "99" ~ NA,
-          .default = .data$IDADEPAI
+          default = .data$IDADEPAI
         )
       ) %>%
       dplyr::mutate(IDADEPAI = as.numeric(.data$IDADEPAI))

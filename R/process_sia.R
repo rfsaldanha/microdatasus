@@ -46,7 +46,7 @@ process_sia <- function(
     if ("PA_REGCT" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          PA_REGCT = dplyr::case_match(
+          PA_REGCT = dplyr::recode_values(
             .data$PA_REGCT,
             "7100" ~
               "TAB.DE N\u00c3O GERA\u00c7\u00c3O CR\u00c9DITO P/PROD.INTERN./AMBULAT.",
@@ -73,7 +73,7 @@ process_sia <- function(
             "7117" ~
               "ESTAB.SA\u00daDE S/GER DE CR\u00c9D. M\u00c9D COMP(EXCETO OPM)-CER",
             "0000" ~ "SEM REGRA CONTRATUAL",
-            .default = .data$PA_REGCT
+            default = .data$PA_REGCT
           )
         )
     }
@@ -104,7 +104,7 @@ process_sia <- function(
     if ("PA_TPUPS" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          PA_TPUPS = dplyr::case_match(
+          PA_TPUPS = dplyr::recode_values(
             .data$PA_TPUPS,
             "74" ~ "ACADEMIA DA SA\u00daDE",
             "81" ~ "CENTRAL DE REGULA\u00c7\u00c3O",
@@ -150,7 +150,7 @@ process_sia <- function(
             "75" ~ "TELESA\u00daDE",
             "09" ~ "PRONTO SOCORRO DE HOSPITAL GERAL (ANTIGO)",
             "12" ~ "PRONTO SOCORRO TRAUMATO-ORTOPEDICO (ANTIGO)",
-            .default = .data$PA_TPUPS
+            default = .data$PA_TPUPS
           )
         ) %>%
         dplyr::mutate(PA_TPUPS = as.factor(.data$PA_TPUPS))
@@ -160,7 +160,7 @@ process_sia <- function(
     if ("PA_TIPPRE" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          PA_TIPPRE = dplyr::case_match(
+          PA_TIPPRE = dplyr::recode_values(
             .data$PA_TIPPRE,
             "20" ~ "PRIVADO COM FINS LUCRATIVOS",
             "22" ~ "PRIVADO OPTANTE PELO SIMPLES",
@@ -170,7 +170,7 @@ process_sia <- function(
             "60" ~ "PRIVADO SEM FINS LUCRATIVOS",
             "61" ~ "FILANTROPICO COM CNAS VALIDO",
             "80" ~ "SINDICATO",
-            .default = .data$PA_TIPPRE
+            default = .data$PA_TIPPRE
           )
         ) %>%
         dplyr::mutate(PA_TIPPRE = as.factor(.data$PA_TIPPRE))
@@ -180,11 +180,11 @@ process_sia <- function(
     if ("PA_MN_IND" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          PA_MN_IND = dplyr::case_match(
+          PA_MN_IND = dplyr::recode_values(
             .data$PA_MN_IND,
             "M" ~ "Mantida",
             "I" ~ "Individual",
-            .default = .data$PA_MN_IND
+            default = .data$PA_MN_IND
           )
         )
     }
@@ -199,7 +199,7 @@ process_sia <- function(
     if ("PA_TPFIN" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          PA_TPFIN = dplyr::case_match(
+          PA_TPFIN = dplyr::recode_values(
             .data$PA_TPFIN,
             "01" ~ "Aten\u00e7\u00e3o B\u00e1sica (PAB)",
             "02" ~ "Assist\u00eancia Farmac\u00eautica",
@@ -208,7 +208,7 @@ process_sia <- function(
             "05" ~ "Incentivo - MAC",
             "06" ~ "M\u00e9dia e Alta Complexidade (MAC)",
             "07" ~ "Vigil\u00e2ncia em Sa\u00fade",
-            .default = .data$PA_TPFIN
+            default = .data$PA_TPFIN
           )
         ) %>%
         dplyr::mutate(PA_TPFIN = as.factor(.data$PA_TPFIN))
@@ -218,13 +218,13 @@ process_sia <- function(
     if ("PA_NIVCPL" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          PA_NIVCPL = dplyr::case_match(
+          PA_NIVCPL = dplyr::recode_values(
             .data$PA_NIVCPL,
             "0" ~ "N\u00e3o se Aplica",
             "1" ~ "Aten\u00e7\u00e3o B\u00e1sica",
             "2" ~ "M\u00e9dia Complexidade",
             "3" ~ "Alta Complexidade",
-            .default = .data$PA_NIVCPL
+            default = .data$PA_NIVCPL
           )
         ) %>%
         dplyr::mutate(PA_NIVCPL = as.factor(.data$PA_NIVCPL))
@@ -234,7 +234,7 @@ process_sia <- function(
     if ("PA_DOCORIG" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          PA_DOCORIG = dplyr::case_match(
+          PA_DOCORIG = dplyr::recode_values(
             .data$PA_DOCORIG,
             "C" ~ "BPA-C",
             "I" ~ "BPA-I",
@@ -242,7 +242,7 @@ process_sia <- function(
             "S" ~ "APAC - Procedimento Secund\u00e1rio",
             "A" ~ "RAAS - Aten\u00e7\u00e3o Domiciliar",
             "B" ~ "RAAS - Psicossocial",
-            .default = .data$PA_DOCORIG
+            default = .data$PA_DOCORIG
           )
         ) %>%
         dplyr::mutate(PA_DOCORIG = as.factor(.data$PA_DOCORIG))
@@ -262,7 +262,7 @@ process_sia <- function(
     if ("PA_MOTSAI" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          PA_MOTSAI = dplyr::case_match(
+          PA_MOTSAI = dplyr::recode_values(
             .data$PA_MOTSAI,
             "11" ~ "ALTA CURADO",
             "12" ~ "ALTA MELHORADO",
@@ -294,7 +294,7 @@ process_sia <- function(
             "51" ~ "ENCERRAMENTO ADMINSTRATIVO",
             "00" ~
               "PRODU\u00c7\u00c3O SEM MOTIVO DE SA\u00cdDA (BPA-C / BPA-I)",
-            .default = .data$PA_MOTSAI
+            default = .data$PA_MOTSAI
           )
         ) %>%
         dplyr::mutate(PA_MOTSAI = as.factor(.data$PA_MOTSAI))
@@ -304,11 +304,11 @@ process_sia <- function(
     if ("PA_OBITO" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          PA_OBITO = dplyr::case_match(
+          PA_OBITO = dplyr::recode_values(
             .data$PA_OBITO,
             "1" ~ "Sim (motivo de sa\u00edda-\u00d3BITO)",
             "0" ~ "Nao houve \u00d3BITO",
-            .default = .data$PA_OBITO
+            default = .data$PA_OBITO
           )
         ) %>%
         dplyr::mutate(PA_OBITO = as.factor(.data$PA_OBITO))
@@ -318,11 +318,11 @@ process_sia <- function(
     if ("PA_ENCERR" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          PA_ENCERR = dplyr::case_match(
+          PA_ENCERR = dplyr::recode_values(
             .data$PA_ENCERR,
             "1" ~ "Sim (motivo de sa\u00edda-ENCERRAMENTO)",
             "0" ~ "Nao houve ENCERRAMENTO",
-            .default = .data$PA_ENCERR
+            default = .data$PA_ENCERR
           )
         ) %>%
         dplyr::mutate(PA_ENCERR = as.factor(.data$PA_ENCERR))
@@ -332,11 +332,11 @@ process_sia <- function(
     if ("PA_PERMAN" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          PA_PERMAN = dplyr::case_match(
+          PA_PERMAN = dplyr::recode_values(
             .data$PA_PERMAN,
             "1" ~ "Sim (motivo de sa\u00edda-PERMAN\u00caNCIA)",
             "0" ~ "Nao houve a PERMAN\u00caNCIA do paciente na unidade",
-            .default = .data$PA_PERMAN
+            default = .data$PA_PERMAN
           )
         ) %>%
         dplyr::mutate(as.factor(.data$PA_PERMAN))
@@ -346,11 +346,11 @@ process_sia <- function(
     if ("PA_ALTA" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          PA_ALTA = dplyr::case_match(
+          PA_ALTA = dplyr::recode_values(
             .data$PA_ALTA,
             "1" ~ "Sim (motivo de sa\u00edda-PERMAN\u00caNCIA)",
             "0" ~ "Nao houve a PERMAN\u00caNCIA do paciente na unidade",
-            .default = .data$PA_ALTA
+            default = .data$PA_ALTA
           )
         ) %>%
         dplyr::mutate(as.factor(.data$PA_ALTA))
@@ -360,11 +360,11 @@ process_sia <- function(
     if ("PA_TRANSF" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          PA_TRANSF = dplyr::case_match(
+          PA_TRANSF = dplyr::recode_values(
             .data$PA_TRANSF,
             "1" ~ "Sim (motivo de sa\u00edda-TRANSFER\u00caNCIA)",
             "0" ~ "Nao houve TRANSFER\u00caNCIA do paciente",
-            .default = .data$PA_TRANSF
+            default = .data$PA_TRANSF
           )
         ) %>%
         dplyr::mutate(as.factor(.data$PA_TRANSF))
@@ -374,7 +374,7 @@ process_sia <- function(
     if ("PA_CATEND" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          PA_CATEND = dplyr::case_match(
+          PA_CATEND = dplyr::recode_values(
             .data$PA_CATEND,
             "01" ~ "ELETIVO",
             "02" ~ "URG\u00caNCIA",
@@ -391,7 +391,7 @@ process_sia <- function(
             "53" ~ "CARATER DE ATENDIMENTO INVALIDO",
             "54" ~ "CARATER DE ATENDIMENTO INVALIDO",
             "57" ~ "CARATER DE ATENDIMENTO INVALIDO",
-            .default = .data$PA_CATEND
+            default = .data$PA_CATEND
           )
         ) %>%
         dplyr::mutate(as.factor(.data$PA_CATEND))
@@ -402,10 +402,10 @@ process_sia <- function(
       data <- data %>%
         dplyr::mutate(PA_IDADE = as.numeric(.data$PA_IDADE)) %>%
         dplyr::mutate(
-          PA_IDADE = dplyr::case_match(
+          PA_IDADE = dplyr::recode_values(
             .data$PA_IDADE,
             999 ~ NA,
-            .default = .data$PA_IDADE
+            default = .data$PA_IDADE
           )
         )
     }
@@ -426,14 +426,14 @@ process_sia <- function(
     if ("PA_FLIDADE" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          PA_FLIDADE = dplyr::case_match(
+          PA_FLIDADE = dplyr::recode_values(
             .data$PA_FLIDADE,
             "0" ~ "IDADE N\u00c3O EXIGIDA",
             "1" ~ "IDADE COMPATIVEL COM O SIGTAP",
             "2" ~ "IDADE FORA DA FAIXA DO SIGTAP",
             "3" ~ "IDADE INEXISTENTE",
             "4" ~ "IDADE EM BRANCO",
-            .default = .data$PA_FLIDADE
+            default = .data$PA_FLIDADE
           )
         ) %>%
         dplyr::mutate(as.factor(.data$PA_FLIDADE))
@@ -443,12 +443,12 @@ process_sia <- function(
     if ("PA_SEXO" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          PA_SEXO = dplyr::case_match(
+          PA_SEXO = dplyr::recode_values(
             .data$PA_SEXO,
             "0" ~ "N\u00e3o exigido",
             "M" ~ "Masculino",
             "F" ~ "Feminino",
-            .default = .data$PA_SEXO
+            default = .data$PA_SEXO
           )
         ) %>%
         dplyr::mutate(as.factor(.data$PA_SEXO))
@@ -458,7 +458,7 @@ process_sia <- function(
     if ("PA_RACACOR" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          PA_RACACOR = dplyr::case_match(
+          PA_RACACOR = dplyr::recode_values(
             .data$PA_RACACOR,
             "00" ~ "RA\u00c7A/COR N\u00c3O EXIGIDO",
             "01" ~ "BRANCA",
@@ -475,7 +475,7 @@ process_sia <- function(
             "DE" ~ "RA\u00c7A/COR  (OUTROS INDEVIDOS)",
             "D" ~ "RA\u00c7A/COR  (OUTROS INDEVIDOS)",
             "87" ~ "RA\u00c7A/COR  (OUTROS INDEVIDOS)",
-            .default = .data$PA_RACACOR
+            default = .data$PA_RACACOR
           )
         ) %>%
         dplyr::mutate(as.factor(.data$PA_RACACOR))
@@ -517,11 +517,11 @@ process_sia <- function(
     if ("PA_UFDIF" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          PA_UFDIF = dplyr::case_match(
+          PA_UFDIF = dplyr::recode_values(
             .data$PA_UFDIF,
             "1" ~ "Sim (houve invas\u00e3o)",
             "0" ~ "N\u00e3o houve invas\u00e3o",
-            .default = .data$PA_UFDIF
+            default = .data$PA_UFDIF
           )
         ) %>%
         dplyr::mutate(as.factor(.data$PA_UFDIF))
@@ -531,11 +531,11 @@ process_sia <- function(
     if ("PA_MNDIF" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          PA_MNDIF = dplyr::case_match(
+          PA_MNDIF = dplyr::recode_values(
             .data$PA_MNDIF,
             "1" ~ "Sim (houve invas\u00e3o)",
             "0" ~ "N\u00e3o houve invas\u00e3o",
-            .default = .data$PA_MNDIF
+            default = .data$PA_MNDIF
           )
         ) %>%
         dplyr::mutate(as.factor(.data$PA_MNDIF))
@@ -563,12 +563,12 @@ process_sia <- function(
     if ("PA_INDICA" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          PA_INDICA = dplyr::case_match(
+          PA_INDICA = dplyr::recode_values(
             .data$PA_INDICA,
             "5" ~ "Aprovado totalmente",
             "6" ~ "Aprovado parcialmente",
             "0" ~ "N\u00e3o aprovado",
-            .default = .data$PA_INDICA
+            default = .data$PA_INDICA
           )
         ) %>%
         dplyr::mutate(as.factor(.data$PA_INDICA))
@@ -578,7 +578,7 @@ process_sia <- function(
     if ("PA_ETNIA" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          PA_ETNIA = dplyr::case_match(
+          PA_ETNIA = dplyr::recode_values(
             .data$PA_ETNIA,
             "0001" ~ "ACONA (WAKONAS, NACONAS, JAKONA, ACORANES)",
             "0002" ~ "AIKANA (AIKANA, MAS SAKA,TUBARAO)",
@@ -990,7 +990,7 @@ process_sia <- function(
             "X403" ~ "SAKIRIABAR",
             "X404" ~ "TATZ",
             "X405" ~ "SEM INFORMACAO",
-            .default = .data$PA_ETNIA
+            default = .data$PA_ETNIA
           )
         ) %>%
         dplyr::mutate(as.factor(.data$PA_ETNIA))

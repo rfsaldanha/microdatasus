@@ -74,11 +74,11 @@ process_cnes <- function(
     if ("PF_PJ" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          PF_PJ = dplyr::case_match(
+          PF_PJ = dplyr::recode_values(
             .data$PF_PJ,
             "1" ~ "Pessoa f\u00edsica",
             "3" ~ "Pessoa jur\u00eddica",
-            .default = .data$PF_PJ
+            default = .data$PF_PJ
           )
         ) %>%
         dplyr::mutate(PF_PJ = as.factor(.data$PF_PJ))
@@ -88,11 +88,11 @@ process_cnes <- function(
     if ("NIV_DEP" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          NIV_DEP = dplyr::case_match(
+          NIV_DEP = dplyr::recode_values(
             .data$NIV_DEP,
             "1" ~ "Individual",
             "3" ~ "Mantida",
-            .default = .data$NIV_DEP
+            default = .data$NIV_DEP
           )
         ) %>%
         dplyr::mutate(NIV_DEP = as.factor(.data$NIV_DEP))
@@ -108,7 +108,7 @@ process_cnes <- function(
     if ("COD_IR" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          COD_IR = dplyr::case_match(
+          COD_IR = dplyr::recode_values(
             .data$COD_IR,
             "0" ~ NA,
             "10" ~ "Estabelecimento p\u00fablico",
@@ -119,7 +119,7 @@ process_cnes <- function(
             "15" ~ "Estabelecimento sindical",
             "16" ~ "Estabelecimento pessoa f\u00edsica",
             "19" ~ "Estabelecimento Ret.Manten.c\u00f3digo 19",
-            .default = .data$COD_IR
+            default = .data$COD_IR
           )
         ) %>%
         dplyr::mutate(COD_IR = as.factor(.data$COD_IR))
@@ -149,12 +149,12 @@ process_cnes <- function(
     if ("VINC_SUS" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          VINC_SUS = dplyr::case_match(
+          VINC_SUS = dplyr::recode_values(
             .data$VINC_SUS,
             "0" ~ "N\u00e3o",
             "1" ~ "Sim",
             "2" ~ "N\u00e3o",
-            .default = .data$VINC_SUS
+            default = .data$VINC_SUS
           )
         ) %>%
         dplyr::mutate(VINC_SUS = as.factor(.data$VINC_SUS))
@@ -164,14 +164,14 @@ process_cnes <- function(
     if ("TPGESTAO" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          TPGESTAO = dplyr::case_match(
+          TPGESTAO = dplyr::recode_values(
             .data$TPGESTAO,
             "D" ~ "Dupla",
             "E" ~ "Estadual",
             "M" ~ "Municipal",
             "Z" ~ "Sem gest\u00e3o",
             "S" ~ "Sem gest\u00e3o",
-            .default = .data$TPGESTAO
+            default = .data$TPGESTAO
           )
         ) %>%
         dplyr::mutate(TPGESTAO = as.factor(.data$TPGESTAO))
@@ -181,14 +181,14 @@ process_cnes <- function(
     if ("ESFERA_A" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          ESFERA_A = dplyr::case_match(
+          ESFERA_A = dplyr::recode_values(
             .data$ESFERA_A,
             "1" ~ "Federal",
             "2" ~ "Estadual",
             "3" ~ "Municipal",
             "4" ~ "Privada",
             "-99" ~ NA,
-            .default = .data$ESFERA_A
+            default = .data$ESFERA_A
           )
         ) %>%
         dplyr::mutate(ESFERA_A = as.factor(.data$ESFERA_A))
@@ -198,7 +198,7 @@ process_cnes <- function(
     if ("RETENCAO" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          RETENCAO = dplyr::case_match(
+          RETENCAO = dplyr::recode_values(
             .data$RETENCAO,
             "0" ~ NA,
             "10" ~ "Estabelecimento p\u00fablico",
@@ -208,7 +208,7 @@ process_cnes <- function(
             "14" ~ "Estabelecimento privado luvrativa",
             "15" ~ "Estabelecimento sindical",
             "16" ~ "Estabelecimento pessoa f\u00edsica",
-            .default = .data$RETENCAO
+            default = .data$RETENCAO
           )
         ) %>%
         dplyr::mutate(RETENCAO = as.factor(.data$RETENCAO))
@@ -218,7 +218,7 @@ process_cnes <- function(
     if ("ATIVIDAD" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          ATIVIDAD = dplyr::case_match(
+          ATIVIDAD = dplyr::recode_values(
             .data$ATIVIDAD,
             "-99" ~ NA,
             "1" ~ "Unidade Universit\u00e1ria",
@@ -226,7 +226,7 @@ process_cnes <- function(
             "3" ~ "Unidade Auxiliar de Ensino",
             "4" ~ "Unidade sem atividade de Ensino",
             "5" ~ "Hospital de ensino",
-            .default = .data$ATIVIDAD
+            default = .data$ATIVIDAD
           )
         ) %>%
         dplyr::mutate(ATIVIDAD = as.factor(.data$ATIVIDAD))
@@ -236,7 +236,7 @@ process_cnes <- function(
     if ("NATUREZA" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          NATUREZA = dplyr::case_match(
+          NATUREZA = dplyr::recode_values(
             .data$NATUREZA,
             "-99" ~ NA,
             "1" ~
@@ -254,7 +254,7 @@ process_cnes <- function(
             "12" ~ "Economia Mista",
             "13" ~ "Sindicato",
             "0" ~ "Natureza inexistente",
-            .default = .data$NATUREZA
+            default = .data$NATUREZA
           )
         ) %>%
         dplyr::mutate(NATUREZA = as.factor(.data$NATUREZA))
@@ -264,7 +264,7 @@ process_cnes <- function(
     if ("NAT_JUR" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          NAT_JUR = dplyr::case_match(
+          NAT_JUR = dplyr::recode_values(
             .data$NAT_JUR,
             "1015" ~ "\u00d3rg\u00e3o P\u00fablico do Poder Executivo Federal",
             "1023" ~
@@ -374,7 +374,7 @@ process_cnes <- function(
             "5029" ~ "Representa\u00e7\u00e3o Diplom\u00e1tica Estrangeira",
             "5037" ~ "Outras Institui\u00e7\u00f5es Extraterritoriais",
             "0" ~ "N\u00e3o especificado ou ignorado",
-            .default = .data$NAT_JUR
+            default = .data$NAT_JUR
           )
         ) %>%
         dplyr::mutate(NAT_JUR = as.factor(.data$NAT_JUR))
@@ -384,14 +384,14 @@ process_cnes <- function(
     if ("CLIENTEL" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          CLIENTEL = dplyr::case_match(
+          CLIENTEL = dplyr::recode_values(
             .data$CLIENTEL,
             "-99" ~ NA,
             "1" ~ "Atendimento de demanda espont\u00e2nea",
             "2" ~ "Atendimento de demanda referenciada",
             "3" ~ "Atendimento de demanda espont\u00e2nea e referenciada",
             "0" ~ "Fluxo de Clientela n\u00e3o exigido",
-            .default = .data$CLIENTEL
+            default = .data$CLIENTEL
           )
         ) %>%
         dplyr::mutate(CLIENTEL = as.factor(.data$CLIENTEL))
@@ -401,7 +401,7 @@ process_cnes <- function(
     if ("TP_UNID" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          TP_UNID = dplyr::case_match(
+          TP_UNID = dplyr::recode_values(
             .data$TP_UNID,
             "1" ~ "Posto de sa\u00fade",
             "01" ~ "Posto de sa\u00fade",
@@ -461,7 +461,7 @@ process_cnes <- function(
               "P\u00f3lo de preven\u00e7\u00e3o de doen\u00e7as e agravos e promo\u00e7\u00e3o da sa\u00fade",
             "84" ~ "Central de abastecimento",
             "85" ~ "Centro de imuniza\u00e7\u00e3o",
-            .default = .data$TP_UNID
+            default = .data$TP_UNID
           )
         ) %>%
         dplyr::mutate(TP_UNID = as.factor(.data$TP_UNID))
@@ -471,7 +471,7 @@ process_cnes <- function(
     if ("TURNO_AT" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          TURNO_AT = dplyr::case_match(
+          TURNO_AT = dplyr::recode_values(
             .data$TURNO_AT,
             "-99" ~ NA,
             "1" ~ "Turnos intermitentes",
@@ -481,7 +481,7 @@ process_cnes <- function(
             "5" ~ "Tarde",
             "6" ~ "Manh\u00e3 / Tarde",
             "7" ~ "Noite",
-            .default = .data$TURNO_AT
+            default = .data$TURNO_AT
           )
         ) %>%
         dplyr::mutate(TURNO_AT = as.factor(.data$TURNO_AT))
@@ -491,7 +491,7 @@ process_cnes <- function(
     if ("NIV_HIER" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          NIV_HIER = dplyr::case_match(
+          NIV_HIER = dplyr::recode_values(
             .data$NIV_HIER,
             "0" ~ NA,
             "-99" ~ NA,
@@ -503,7 +503,7 @@ process_cnes <- function(
             "6" ~ "M\u00e9dia M2 e M3",
             "7" ~ "M\u00e9dia M3",
             "8" ~ "Alta complexidade hospitalar / ambulatorial",
-            .default = .data$NIV_HIER
+            default = .data$NIV_HIER
           )
         ) %>%
         dplyr::mutate(NIV_HIER = as.factor(.data$NIV_HIER))
@@ -513,7 +513,7 @@ process_cnes <- function(
     if ("TP_PREST" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          TP_PREST = dplyr::case_match(
+          TP_PREST = dplyr::recode_values(
             .data$TP_PREST,
             "-99" ~ NA,
             "30" ~ "P\u00fablico federal",
@@ -524,7 +524,7 @@ process_cnes <- function(
             "20" ~ "Privado com fins lucrativos",
             "22" ~ "Privado optantes pelo simples",
             "60" ~ "Privado sem fins lucrativos",
-            .default = .data$TP_PREST
+            default = .data$TP_PREST
           )
         ) %>%
         dplyr::mutate(TP_PREST = as.factor(.data$TP_PREST))
@@ -588,11 +588,11 @@ process_cnes <- function(
     if ("ORGEXPED" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          ORGEXPED = dplyr::case_match(
+          ORGEXPED = dplyr::recode_values(
             .data$ORGEXPED,
             "1" ~ "SES",
             "2" ~ "SMS",
-            .default = .data$ORGEXPED
+            default = .data$ORGEXPED
           )
         ) %>%
         dplyr::mutate(ORGEXPED = as.factor(.data$ORGEXPED))
@@ -602,12 +602,12 @@ process_cnes <- function(
     if ("AV_ACRED" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AV_ACRED = dplyr::case_match(
+          AV_ACRED = dplyr::recode_values(
             .data$AV_ACRED,
             "1" ~ "Sim",
             "2" ~ "N\u00e3o",
             "0" ~ "N\u00e3o",
-            .default = .data$AV_ACRED
+            default = .data$AV_ACRED
           )
         ) %>%
         dplyr::mutate(AV_ACRED = as.factor(.data$AV_ACRED))
@@ -617,14 +617,14 @@ process_cnes <- function(
     if ("CLASAVAL" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          CLASAVAL = dplyr::case_match(
+          CLASAVAL = dplyr::recode_values(
             .data$CLASAVAL,
             "-9" ~ NA,
             "1" ~ "Acreditado no n\u00edvel 1",
             "2" ~ "Acreditado no n\u00edvel 2",
             "3" ~ "Acreditado no n\u00edvel 3",
             "0" ~ "N\u00e3o atendeu aos padr\u00f5es m\u00ednimos",
-            .default = .data$CLASAVAL
+            default = .data$CLASAVAL
           )
         ) %>%
         dplyr::mutate(CLASAVAL = as.factor(.data$CLASAVAL))
@@ -640,12 +640,12 @@ process_cnes <- function(
     if ("AV_PNASS" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AV_PNASS = dplyr::case_match(
+          AV_PNASS = dplyr::recode_values(
             .data$AV_PNASS,
             "1" ~ "Sim",
             "2" ~ "N\u00e3o",
             "0" ~ "N\u00e3o",
-            .default = .data$AV_PNASS
+            default = .data$AV_PNASS
           )
         ) %>%
         dplyr::mutate(AV_PNASS = as.factor(.data$AV_PNASS))
@@ -669,12 +669,12 @@ process_cnes <- function(
     if ("GESPRG1M" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          GESPRG1M = dplyr::case_match(
+          GESPRG1M = dplyr::recode_values(
             .data$GESPRG1M,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$GESPRG1M
+            default = .data$GESPRG1M
           )
         ) %>%
         dplyr::mutate(GESPRG1M = as.factor(.data$GESPRG1M))
@@ -684,12 +684,12 @@ process_cnes <- function(
     if ("GESPRG2E" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          GESPRG2E = dplyr::case_match(
+          GESPRG2E = dplyr::recode_values(
             .data$GESPRG2E,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$GESPRG2E
+            default = .data$GESPRG2E
           )
         ) %>%
         dplyr::mutate(GESPRG2E = as.factor(.data$GESPRG2E))
@@ -699,12 +699,12 @@ process_cnes <- function(
     if ("GESPRG2M" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          GESPRG2M = dplyr::case_match(
+          GESPRG2M = dplyr::recode_values(
             .data$GESPRG2M,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$GESPRG2M
+            default = .data$GESPRG2M
           )
         ) %>%
         dplyr::mutate(GESPRG2M = as.factor(.data$GESPRG2M))
@@ -714,12 +714,12 @@ process_cnes <- function(
     if ("GESPRG4E" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          GESPRG4E = dplyr::case_match(
+          GESPRG4E = dplyr::recode_values(
             .data$GESPRG4E,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$GESPRG4E
+            default = .data$GESPRG4E
           )
         ) %>%
         dplyr::mutate(GESPRG4E = as.factor(.data$GESPRG4E))
@@ -729,12 +729,12 @@ process_cnes <- function(
     if ("GESPRG4M" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          GESPRG4M = dplyr::case_match(
+          GESPRG4M = dplyr::recode_values(
             .data$GESPRG4M,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$GESPRG4M
+            default = .data$GESPRG4M
           )
         ) %>%
         dplyr::mutate(GESPRG4M = as.factor(.data$GESPRG4M))
@@ -744,12 +744,12 @@ process_cnes <- function(
     if ("NIVATE_A" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          NIVATE_A = dplyr::case_match(
+          NIVATE_A = dplyr::recode_values(
             .data$NIVATE_A,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$NIVATE_A
+            default = .data$NIVATE_A
           )
         ) %>%
         dplyr::mutate(NIVATE_A = as.factor(.data$NIVATE_A))
@@ -759,12 +759,12 @@ process_cnes <- function(
     if ("GESPRG3E" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          GESPRG3E = dplyr::case_match(
+          GESPRG3E = dplyr::recode_values(
             .data$GESPRG3E,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$GESPRG3E
+            default = .data$GESPRG3E
           )
         ) %>%
         dplyr::mutate(GESPRG3E = as.factor(.data$GESPRG3E))
@@ -774,12 +774,12 @@ process_cnes <- function(
     if ("GESPRG3M" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          GESPRG3M = dplyr::case_match(
+          GESPRG3M = dplyr::recode_values(
             .data$GESPRG3M,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$GESPRG3M
+            default = .data$GESPRG3M
           )
         ) %>%
         dplyr::mutate(GESPRG3M = as.factor(.data$GESPRG3M))
@@ -789,12 +789,12 @@ process_cnes <- function(
     if ("GESPRG5E" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          GESPRG5E = dplyr::case_match(
+          GESPRG5E = dplyr::recode_values(
             .data$GESPRG5E,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$GESPRG5E
+            default = .data$GESPRG5E
           )
         ) %>%
         dplyr::mutate(GESPRG5E = as.factor(.data$GESPRG5E))
@@ -804,12 +804,12 @@ process_cnes <- function(
     if ("GESPRG5M" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          GESPRG5M = dplyr::case_match(
+          GESPRG5M = dplyr::recode_values(
             .data$GESPRG5M,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$GESPRG5M
+            default = .data$GESPRG5M
           )
         ) %>%
         dplyr::mutate(GESPRG5M = as.factor(.data$GESPRG5M))
@@ -819,12 +819,12 @@ process_cnes <- function(
     if ("GESPRG6E" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          GESPRG6E = dplyr::case_match(
+          GESPRG6E = dplyr::recode_values(
             .data$GESPRG6E,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$GESPRG6E
+            default = .data$GESPRG6E
           )
         ) %>%
         dplyr::mutate(GESPRG6E = as.factor(.data$GESPRG6E))
@@ -834,12 +834,12 @@ process_cnes <- function(
     if ("GESPRG6M" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          GESPRG6M = dplyr::case_match(
+          GESPRG6M = dplyr::recode_values(
             .data$GESPRG6M,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$GESPRG6M
+            default = .data$GESPRG6M
           )
         ) %>%
         dplyr::mutate(GESPRG6M = as.factor(.data$GESPRG6M))
@@ -849,12 +849,12 @@ process_cnes <- function(
     if ("NIVATE_H" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          NIVATE_H = dplyr::case_match(
+          NIVATE_H = dplyr::recode_values(
             .data$NIVATE_H,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$NIVATE_H
+            default = .data$NIVATE_H
           )
         ) %>%
         dplyr::mutate(NIVATE_H = as.factor(.data$NIVATE_H))
@@ -864,12 +864,12 @@ process_cnes <- function(
     if ("URGEMERG" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          URGEMERG = dplyr::case_match(
+          URGEMERG = dplyr::recode_values(
             .data$URGEMERG,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$URGEMERG
+            default = .data$URGEMERG
           )
         ) %>%
         dplyr::mutate(URGEMERG = as.factor(.data$URGEMERG))
@@ -879,12 +879,12 @@ process_cnes <- function(
     if ("ATENDAMB" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          ATENDAMB = dplyr::case_match(
+          ATENDAMB = dplyr::recode_values(
             .data$ATENDAMB,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$ATENDAMB
+            default = .data$ATENDAMB
           )
         ) %>%
         dplyr::mutate(ATENDAMB = as.factor(.data$ATENDAMB))
@@ -894,12 +894,12 @@ process_cnes <- function(
     if ("CENTROBS" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          CENTROBS = dplyr::case_match(
+          CENTROBS = dplyr::recode_values(
             .data$CENTROBS,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$CENTROBS
+            default = .data$CENTROBS
           )
         ) %>%
         dplyr::mutate(CENTROBS = as.factor(.data$CENTROBS))
@@ -909,12 +909,12 @@ process_cnes <- function(
     if ("CENTRNEO" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          CENTRNEO = dplyr::case_match(
+          CENTRNEO = dplyr::recode_values(
             .data$CENTRNEO,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$CENTRNEO
+            default = .data$CENTRNEO
           )
         ) %>%
         dplyr::mutate(CENTRNEO = as.factor(.data$CENTRNEO))
@@ -924,12 +924,12 @@ process_cnes <- function(
     if ("ATENDHOS" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          ATENDHOS = dplyr::case_match(
+          ATENDHOS = dplyr::recode_values(
             .data$ATENDHOS,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$ATENDHOS
+            default = .data$ATENDHOS
           )
         ) %>%
         dplyr::mutate(ATENDHOS = as.factor(.data$ATENDHOS))
@@ -939,12 +939,12 @@ process_cnes <- function(
     if ("SERAP01P" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          SERAP01P = dplyr::case_match(
+          SERAP01P = dplyr::recode_values(
             .data$SERAP01P,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$SERAP01P
+            default = .data$SERAP01P
           )
         ) %>%
         dplyr::mutate(SERAP01P = as.factor(.data$SERAP01P))
@@ -954,12 +954,12 @@ process_cnes <- function(
     if ("SERAP01T" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          SERAP01T = dplyr::case_match(
+          SERAP01T = dplyr::recode_values(
             .data$SERAP01T,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$SERAP01T
+            default = .data$SERAP01T
           )
         ) %>%
         dplyr::mutate(SERAP01T = as.factor(.data$SERAP01T))
@@ -969,12 +969,12 @@ process_cnes <- function(
     if ("SERAP02P" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          SERAP02P = dplyr::case_match(
+          SERAP02P = dplyr::recode_values(
             .data$SERAP02P,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$SERAP02P
+            default = .data$SERAP02P
           )
         ) %>%
         dplyr::mutate(SERAP02P = as.factor(.data$SERAP02P))
@@ -984,12 +984,12 @@ process_cnes <- function(
     if ("SERAP02T" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          SERAP02T = dplyr::case_match(
+          SERAP02T = dplyr::recode_values(
             .data$SERAP02T,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$SERAP02T
+            default = .data$SERAP02T
           )
         ) %>%
         dplyr::mutate(SERAP02T = as.factor(.data$SERAP02T))
@@ -999,12 +999,12 @@ process_cnes <- function(
     if ("SERAP03P" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          SERAP03P = dplyr::case_match(
+          SERAP03P = dplyr::recode_values(
             .data$SERAP03P,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$SERAP03P
+            default = .data$SERAP03P
           )
         ) %>%
         dplyr::mutate(SERAP03P = as.factor(.data$SERAP03P))
@@ -1014,12 +1014,12 @@ process_cnes <- function(
     if ("SERAP03T" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          SERAP03T = dplyr::case_match(
+          SERAP03T = dplyr::recode_values(
             .data$SERAP03T,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$SERAP03T
+            default = .data$SERAP03T
           )
         ) %>%
         dplyr::mutate(SERAP03T = as.factor(.data$SERAP03T))
@@ -1029,12 +1029,12 @@ process_cnes <- function(
     if ("SERAP04P" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          SERAP04P = dplyr::case_match(
+          SERAP04P = dplyr::recode_values(
             .data$SERAP04P,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$SERAP04P
+            default = .data$SERAP04P
           )
         ) %>%
         dplyr::mutate(SERAP04P = as.factor(.data$SERAP04P))
@@ -1044,12 +1044,12 @@ process_cnes <- function(
     if ("SERAP04T" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          SERAP04T = dplyr::case_match(
+          SERAP04T = dplyr::recode_values(
             .data$SERAP04T,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$SERAP04T
+            default = .data$SERAP04T
           )
         ) %>%
         dplyr::mutate(SERAP04T = as.factor(.data$SERAP04T))
@@ -1059,12 +1059,12 @@ process_cnes <- function(
     if ("SERAP05P" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          SERAP05P = dplyr::case_match(
+          SERAP05P = dplyr::recode_values(
             .data$SERAP05P,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$SERAP05P
+            default = .data$SERAP05P
           )
         ) %>%
         dplyr::mutate(SERAP05P = as.factor(.data$SERAP05P))
@@ -1074,12 +1074,12 @@ process_cnes <- function(
     if ("SERAP05T" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          SERAP05T = dplyr::case_match(
+          SERAP05T = dplyr::recode_values(
             .data$SERAP05T,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$SERAP05T
+            default = .data$SERAP05T
           )
         ) %>%
         dplyr::mutate(SERAP05T = as.factor(.data$SERAP05T))
@@ -1089,12 +1089,12 @@ process_cnes <- function(
     if ("SERAP06P" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          SERAP06P = dplyr::case_match(
+          SERAP06P = dplyr::recode_values(
             .data$SERAP06P,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$SERAP06P
+            default = .data$SERAP06P
           )
         ) %>%
         dplyr::mutate(SERAP06P = as.factor(.data$SERAP06P))
@@ -1104,12 +1104,12 @@ process_cnes <- function(
     if ("SERAP06T" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          SERAP06T = dplyr::case_match(
+          SERAP06T = dplyr::recode_values(
             .data$SERAP06T,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$SERAP06T
+            default = .data$SERAP06T
           )
         ) %>%
         dplyr::mutate(SERAP06T = as.factor(.data$SERAP06T))
@@ -1119,12 +1119,12 @@ process_cnes <- function(
     if ("SERAP07P" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          SERAP07P = dplyr::case_match(
+          SERAP07P = dplyr::recode_values(
             .data$SERAP07P,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$SERAP07P
+            default = .data$SERAP07P
           )
         ) %>%
         dplyr::mutate(SERAP07P = as.factor(.data$SERAP07P))
@@ -1134,12 +1134,12 @@ process_cnes <- function(
     if ("SERAP07T" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          SERAP07T = dplyr::case_match(
+          SERAP07T = dplyr::recode_values(
             .data$SERAP07T,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$SERAP07T
+            default = .data$SERAP07T
           )
         ) %>%
         dplyr::mutate(SERAP07T = as.factor(.data$SERAP07T))
@@ -1149,12 +1149,12 @@ process_cnes <- function(
     if ("SERAP08P" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          SERAP08P = dplyr::case_match(
+          SERAP08P = dplyr::recode_values(
             .data$SERAP08P,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$SERAP08P
+            default = .data$SERAP08P
           )
         ) %>%
         dplyr::mutate(SERAP08P = as.factor(.data$SERAP08P))
@@ -1164,12 +1164,12 @@ process_cnes <- function(
     if ("SERAP08T" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          SERAP08T = dplyr::case_match(
+          SERAP08T = dplyr::recode_values(
             .data$SERAP08T,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$SERAP08T
+            default = .data$SERAP08T
           )
         ) %>%
         dplyr::mutate(SERAP08T = as.factor(.data$SERAP08T))
@@ -1179,12 +1179,12 @@ process_cnes <- function(
     if ("SERAP09P" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          SERAP09P = dplyr::case_match(
+          SERAP09P = dplyr::recode_values(
             .data$SERAP09P,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$SERAP09P
+            default = .data$SERAP09P
           )
         ) %>%
         dplyr::mutate(SERAP09P = as.factor(.data$SERAP09P))
@@ -1194,12 +1194,12 @@ process_cnes <- function(
     if ("SERAP09T" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          SERAP09T = dplyr::case_match(
+          SERAP09T = dplyr::recode_values(
             .data$SERAP09T,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$SERAP09T
+            default = .data$SERAP09T
           )
         ) %>%
         dplyr::mutate(SERAP09T = as.factor(.data$SERAP09T))
@@ -1209,12 +1209,12 @@ process_cnes <- function(
     if ("SERAP10P" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          SERAP10P = dplyr::case_match(
+          SERAP10P = dplyr::recode_values(
             .data$SERAP10P,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$SERAP10P
+            default = .data$SERAP10P
           )
         ) %>%
         dplyr::mutate(SERAP10P = as.factor(.data$SERAP10P))
@@ -1224,12 +1224,12 @@ process_cnes <- function(
     if ("SERAP10T" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          SERAP10T = dplyr::case_match(
+          SERAP10T = dplyr::recode_values(
             .data$SERAP10T,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$SERAP10T
+            default = .data$SERAP10T
           )
         ) %>%
         dplyr::mutate(SERAP10T = as.factor(.data$SERAP10T))
@@ -1239,12 +1239,12 @@ process_cnes <- function(
     if ("SERAP11P" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          SERAP11P = dplyr::case_match(
+          SERAP11P = dplyr::recode_values(
             .data$SERAP11P,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$SERAP11P
+            default = .data$SERAP11P
           )
         ) %>%
         dplyr::mutate(SERAP11P = as.factor(.data$SERAP11P))
@@ -1254,12 +1254,12 @@ process_cnes <- function(
     if ("SERAP11T" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          SERAP11T = dplyr::case_match(
+          SERAP11T = dplyr::recode_values(
             .data$SERAP11T,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$SERAP11T
+            default = .data$SERAP11T
           )
         ) %>%
         dplyr::mutate(SERAP11T = as.factor(.data$SERAP11T))
@@ -1269,12 +1269,12 @@ process_cnes <- function(
     if ("SERAPOIO" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          SERAPOIO = dplyr::case_match(
+          SERAPOIO = dplyr::recode_values(
             .data$SERAPOIO,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$SERAPOIO
+            default = .data$SERAPOIO
           )
         ) %>%
         dplyr::mutate(SERAPOIO = as.factor(.data$SERAPOIO))
@@ -1284,12 +1284,12 @@ process_cnes <- function(
     if ("RES_BIOL" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          RES_BIOL = dplyr::case_match(
+          RES_BIOL = dplyr::recode_values(
             .data$RES_BIOL,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$RES_BIOL
+            default = .data$RES_BIOL
           )
         ) %>%
         dplyr::mutate(RES_BIOL = as.factor(.data$RES_BIOL))
@@ -1299,12 +1299,12 @@ process_cnes <- function(
     if ("RES_QUIM" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          RES_QUIM = dplyr::case_match(
+          RES_QUIM = dplyr::recode_values(
             .data$RES_QUIM,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$RES_QUIM
+            default = .data$RES_QUIM
           )
         ) %>%
         dplyr::mutate(RES_QUIM = as.factor(.data$RES_QUIM))
@@ -1314,12 +1314,12 @@ process_cnes <- function(
     if ("RES_RADI" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          RES_RADI = dplyr::case_match(
+          RES_RADI = dplyr::recode_values(
             .data$RES_RADI,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$RES_RADI
+            default = .data$RES_RADI
           )
         ) %>%
         dplyr::mutate(RES_RADI = as.factor(.data$RES_RADI))
@@ -1329,12 +1329,12 @@ process_cnes <- function(
     if ("RES_COMU" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          RES_COMU = dplyr::case_match(
+          RES_COMU = dplyr::recode_values(
             .data$RES_COMU,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$RES_COMU
+            default = .data$RES_COMU
           )
         ) %>%
         dplyr::mutate(RES_COMU = as.factor(.data$RES_COMU))
@@ -1344,12 +1344,12 @@ process_cnes <- function(
     if ("COLETRES" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          COLETRES = dplyr::case_match(
+          COLETRES = dplyr::recode_values(
             .data$COLETRES,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$COLETRES
+            default = .data$COLETRES
           )
         ) %>%
         dplyr::mutate(COLETRES = as.factor(.data$COLETRES))
@@ -1359,12 +1359,12 @@ process_cnes <- function(
     if ("COMISS01" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          COMISS01 = dplyr::case_match(
+          COMISS01 = dplyr::recode_values(
             .data$COMISS01,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$COMISS01
+            default = .data$COMISS01
           )
         ) %>%
         dplyr::mutate(COMISS01 = as.factor(.data$COMISS01))
@@ -1374,12 +1374,12 @@ process_cnes <- function(
     if ("COMISS02" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          COMISS02 = dplyr::case_match(
+          COMISS02 = dplyr::recode_values(
             .data$COMISS02,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$COMISS02
+            default = .data$COMISS02
           )
         ) %>%
         dplyr::mutate(COMISS02 = as.factor(.data$COMISS02))
@@ -1389,12 +1389,12 @@ process_cnes <- function(
     if ("COMISS03" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          COMISS03 = dplyr::case_match(
+          COMISS03 = dplyr::recode_values(
             .data$COMISS03,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$COMISS03
+            default = .data$COMISS03
           )
         ) %>%
         dplyr::mutate(COMISS03 = as.factor(.data$COMISS03))
@@ -1404,12 +1404,12 @@ process_cnes <- function(
     if ("COMISS04" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          COMISS04 = dplyr::case_match(
+          COMISS04 = dplyr::recode_values(
             .data$COMISS04,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$COMISS04
+            default = .data$COMISS04
           )
         ) %>%
         dplyr::mutate(COMISS04 = as.factor(.data$COMISS04))
@@ -1419,12 +1419,12 @@ process_cnes <- function(
     if ("COMISS05" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          COMISS05 = dplyr::case_match(
+          COMISS05 = dplyr::recode_values(
             .data$COMISS05,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$COMISS05
+            default = .data$COMISS05
           )
         ) %>%
         dplyr::mutate(COMISS05 = as.factor(.data$COMISS05))
@@ -1434,12 +1434,12 @@ process_cnes <- function(
     if ("COMISS06" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          COMISS06 = dplyr::case_match(
+          COMISS06 = dplyr::recode_values(
             .data$COMISS06,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$COMISS06
+            default = .data$COMISS06
           )
         ) %>%
         dplyr::mutate(COMISS06 = as.factor(.data$COMISS06))
@@ -1449,12 +1449,12 @@ process_cnes <- function(
     if ("COMISS07" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          COMISS07 = dplyr::case_match(
+          COMISS07 = dplyr::recode_values(
             .data$COMISS07,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$COMISS07
+            default = .data$COMISS07
           )
         ) %>%
         dplyr::mutate(COMISS07 = as.factor(.data$COMISS07))
@@ -1464,12 +1464,12 @@ process_cnes <- function(
     if ("COMISS08" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          COMISS08 = dplyr::case_match(
+          COMISS08 = dplyr::recode_values(
             .data$COMISS08,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$COMISS08
+            default = .data$COMISS08
           )
         ) %>%
         dplyr::mutate(COMISS08 = as.factor(.data$COMISS08))
@@ -1479,12 +1479,12 @@ process_cnes <- function(
     if ("COMISS09" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          COMISS09 = dplyr::case_match(
+          COMISS09 = dplyr::recode_values(
             .data$COMISS09,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$COMISS09
+            default = .data$COMISS09
           )
         ) %>%
         dplyr::mutate(COMISS09 = as.factor(.data$COMISS09))
@@ -1494,12 +1494,12 @@ process_cnes <- function(
     if ("COMISS10" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          COMISS10 = dplyr::case_match(
+          COMISS10 = dplyr::recode_values(
             .data$COMISS10,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$COMISS10
+            default = .data$COMISS10
           )
         ) %>%
         dplyr::mutate(COMISS10 = as.factor(.data$COMISS10))
@@ -1509,12 +1509,12 @@ process_cnes <- function(
     if ("COMISS11" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          COMISS11 = dplyr::case_match(
+          COMISS11 = dplyr::recode_values(
             .data$COMISS11,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$COMISS11
+            default = .data$COMISS11
           )
         ) %>%
         dplyr::mutate(COMISS11 = as.factor(.data$COMISS11))
@@ -1524,12 +1524,12 @@ process_cnes <- function(
     if ("COMISS12" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          COMISS12 = dplyr::case_match(
+          COMISS12 = dplyr::recode_values(
             .data$COMISS12,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$COMISS12
+            default = .data$COMISS12
           )
         ) %>%
         dplyr::mutate(COMISS12 = as.factor(.data$COMISS12))
@@ -1539,12 +1539,12 @@ process_cnes <- function(
     if ("COMISSAO" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          COMISSAO = dplyr::case_match(
+          COMISSAO = dplyr::recode_values(
             .data$COMISSAO,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$COMISSAO
+            default = .data$COMISSAO
           )
         ) %>%
         dplyr::mutate(COMISSAO = as.factor(.data$COMISSAO))
@@ -1554,12 +1554,12 @@ process_cnes <- function(
     if ("AP01CV01" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP01CV01 = dplyr::case_match(
+          AP01CV01 = dplyr::recode_values(
             .data$AP01CV01,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP01CV01
+            default = .data$AP01CV01
           )
         ) %>%
         dplyr::mutate(AP01CV01 = as.factor(.data$AP01CV01))
@@ -1569,12 +1569,12 @@ process_cnes <- function(
     if ("AP01CV02" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP01CV02 = dplyr::case_match(
+          AP01CV02 = dplyr::recode_values(
             .data$AP01CV02,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP01CV02
+            default = .data$AP01CV02
           )
         ) %>%
         dplyr::mutate(AP01CV02 = as.factor(.data$AP01CV02))
@@ -1584,12 +1584,12 @@ process_cnes <- function(
     if ("AP01CV05" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP01CV05 = dplyr::case_match(
+          AP01CV05 = dplyr::recode_values(
             .data$AP01CV05,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP01CV05
+            default = .data$AP01CV05
           )
         ) %>%
         dplyr::mutate(AP01CV05 = as.factor(.data$AP01CV05))
@@ -1599,12 +1599,12 @@ process_cnes <- function(
     if ("AP01CV06" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP01CV06 = dplyr::case_match(
+          AP01CV06 = dplyr::recode_values(
             .data$AP01CV06,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP01CV06
+            default = .data$AP01CV06
           )
         ) %>%
         dplyr::mutate(AP01CV06 = as.factor(.data$AP01CV06))
@@ -1614,12 +1614,12 @@ process_cnes <- function(
     if ("AP01CV03" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP01CV03 = dplyr::case_match(
+          AP01CV03 = dplyr::recode_values(
             .data$AP01CV03,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP01CV03
+            default = .data$AP01CV03
           )
         ) %>%
         dplyr::mutate(AP01CV03 = as.factor(.data$AP01CV03))
@@ -1629,12 +1629,12 @@ process_cnes <- function(
     if ("AP01CV04" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP01CV04 = dplyr::case_match(
+          AP01CV04 = dplyr::recode_values(
             .data$AP01CV04,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP01CV04
+            default = .data$AP01CV04
           )
         ) %>%
         dplyr::mutate(AP01CV04 = as.factor(.data$AP01CV04))
@@ -1644,12 +1644,12 @@ process_cnes <- function(
     if ("AP02CV01" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP02CV01 = dplyr::case_match(
+          AP02CV01 = dplyr::recode_values(
             .data$AP02CV01,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP02CV01
+            default = .data$AP02CV01
           )
         ) %>%
         dplyr::mutate(AP02CV01 = as.factor(.data$AP02CV01))
@@ -1659,12 +1659,12 @@ process_cnes <- function(
     if ("AP02CV02" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP02CV02 = dplyr::case_match(
+          AP02CV02 = dplyr::recode_values(
             .data$AP02CV02,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP02CV02
+            default = .data$AP02CV02
           )
         ) %>%
         dplyr::mutate(AP02CV02 = as.factor(.data$AP02CV02))
@@ -1674,12 +1674,12 @@ process_cnes <- function(
     if ("AP02CV05" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP02CV05 = dplyr::case_match(
+          AP02CV05 = dplyr::recode_values(
             .data$AP02CV05,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP02CV05
+            default = .data$AP02CV05
           )
         ) %>%
         dplyr::mutate(AP02CV05 = as.factor(.data$AP02CV05))
@@ -1689,12 +1689,12 @@ process_cnes <- function(
     if ("AP02CV06" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP02CV06 = dplyr::case_match(
+          AP02CV06 = dplyr::recode_values(
             .data$AP02CV06,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP02CV06
+            default = .data$AP02CV06
           )
         ) %>%
         dplyr::mutate(AP02CV06 = as.factor(.data$AP02CV06))
@@ -1704,12 +1704,12 @@ process_cnes <- function(
     if ("AP02CV03" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP02CV03 = dplyr::case_match(
+          AP02CV03 = dplyr::recode_values(
             .data$AP02CV03,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP02CV03
+            default = .data$AP02CV03
           )
         ) %>%
         dplyr::mutate(AP02CV03 = as.factor(.data$AP02CV03))
@@ -1719,12 +1719,12 @@ process_cnes <- function(
     if ("AP02CV04" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP02CV04 = dplyr::case_match(
+          AP02CV04 = dplyr::recode_values(
             .data$AP02CV04,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP02CV04
+            default = .data$AP02CV04
           )
         ) %>%
         dplyr::mutate(AP02CV04 = as.factor(.data$AP02CV04))
@@ -1734,12 +1734,12 @@ process_cnes <- function(
     if ("AP03CV01" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP03CV01 = dplyr::case_match(
+          AP03CV01 = dplyr::recode_values(
             .data$AP03CV01,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP03CV01
+            default = .data$AP03CV01
           )
         ) %>%
         dplyr::mutate(AP03CV01 = as.factor(.data$AP03CV01))
@@ -1749,12 +1749,12 @@ process_cnes <- function(
     if ("AP03CV02" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP03CV02 = dplyr::case_match(
+          AP03CV02 = dplyr::recode_values(
             .data$AP03CV02,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP03CV02
+            default = .data$AP03CV02
           )
         ) %>%
         dplyr::mutate(AP03CV02 = as.factor(.data$AP03CV02))
@@ -1764,12 +1764,12 @@ process_cnes <- function(
     if ("AP03CV05" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP03CV05 = dplyr::case_match(
+          AP03CV05 = dplyr::recode_values(
             .data$AP03CV05,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP03CV05
+            default = .data$AP03CV05
           )
         ) %>%
         dplyr::mutate(AP03CV05 = as.factor(.data$AP03CV05))
@@ -1779,12 +1779,12 @@ process_cnes <- function(
     if ("AP03CV06" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP03CV06 = dplyr::case_match(
+          AP03CV06 = dplyr::recode_values(
             .data$AP03CV06,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP03CV06
+            default = .data$AP03CV06
           )
         ) %>%
         dplyr::mutate(AP03CV06 = as.factor(.data$AP03CV06))
@@ -1794,12 +1794,12 @@ process_cnes <- function(
     if ("AP03CV03" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP03CV03 = dplyr::case_match(
+          AP03CV03 = dplyr::recode_values(
             .data$AP03CV03,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP03CV03
+            default = .data$AP03CV03
           )
         ) %>%
         dplyr::mutate(AP03CV03 = as.factor(.data$AP03CV03))
@@ -1809,12 +1809,12 @@ process_cnes <- function(
     if ("AP03CV04" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP03CV04 = dplyr::case_match(
+          AP03CV04 = dplyr::recode_values(
             .data$AP03CV04,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP03CV04
+            default = .data$AP03CV04
           )
         ) %>%
         dplyr::mutate(AP03CV04 = as.factor(.data$AP03CV04))
@@ -1824,12 +1824,12 @@ process_cnes <- function(
     if ("AP04CV01" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP04CV01 = dplyr::case_match(
+          AP04CV01 = dplyr::recode_values(
             .data$AP04CV01,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP04CV01
+            default = .data$AP04CV01
           )
         ) %>%
         dplyr::mutate(AP04CV01 = as.factor(.data$AP04CV01))
@@ -1839,12 +1839,12 @@ process_cnes <- function(
     if ("AP04CV02" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP04CV02 = dplyr::case_match(
+          AP04CV02 = dplyr::recode_values(
             .data$AP04CV02,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP04CV02
+            default = .data$AP04CV02
           )
         ) %>%
         dplyr::mutate(AP04CV02 = as.factor(.data$AP04CV02))
@@ -1854,12 +1854,12 @@ process_cnes <- function(
     if ("AP04CV05" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP04CV05 = dplyr::case_match(
+          AP04CV05 = dplyr::recode_values(
             .data$AP04CV05,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP04CV05
+            default = .data$AP04CV05
           )
         ) %>%
         dplyr::mutate(AP04CV05 = as.factor(.data$AP04CV05))
@@ -1869,12 +1869,12 @@ process_cnes <- function(
     if ("AP04CV06" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP04CV06 = dplyr::case_match(
+          AP04CV06 = dplyr::recode_values(
             .data$AP04CV06,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP04CV06
+            default = .data$AP04CV06
           )
         ) %>%
         dplyr::mutate(AP04CV06 = as.factor(.data$AP04CV06))
@@ -1884,12 +1884,12 @@ process_cnes <- function(
     if ("AP04CV03" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP04CV03 = dplyr::case_match(
+          AP04CV03 = dplyr::recode_values(
             .data$AP04CV03,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP04CV03
+            default = .data$AP04CV03
           )
         ) %>%
         dplyr::mutate(AP04CV03 = as.factor(.data$AP04CV03))
@@ -1899,12 +1899,12 @@ process_cnes <- function(
     if ("AP04CV04" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP04CV04 = dplyr::case_match(
+          AP04CV04 = dplyr::recode_values(
             .data$AP04CV04,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP04CV04
+            default = .data$AP04CV04
           )
         ) %>%
         dplyr::mutate(AP04CV04 = as.factor(.data$AP04CV04))
@@ -1914,12 +1914,12 @@ process_cnes <- function(
     if ("AP05CV01" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP05CV01 = dplyr::case_match(
+          AP05CV01 = dplyr::recode_values(
             .data$AP05CV01,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP05CV01
+            default = .data$AP05CV01
           )
         ) %>%
         dplyr::mutate(AP05CV01 = as.factor(.data$AP05CV01))
@@ -1929,12 +1929,12 @@ process_cnes <- function(
     if ("AP05CV02" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP05CV02 = dplyr::case_match(
+          AP05CV02 = dplyr::recode_values(
             .data$AP05CV02,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP05CV02
+            default = .data$AP05CV02
           )
         ) %>%
         dplyr::mutate(AP05CV02 = as.factor(.data$AP05CV02))
@@ -1944,12 +1944,12 @@ process_cnes <- function(
     if ("AP05CV05" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP05CV05 = dplyr::case_match(
+          AP05CV05 = dplyr::recode_values(
             .data$AP05CV05,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP05CV05
+            default = .data$AP05CV05
           )
         ) %>%
         dplyr::mutate(AP05CV05 = as.factor(.data$AP05CV05))
@@ -1959,12 +1959,12 @@ process_cnes <- function(
     if ("AP05CV06" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP05CV06 = dplyr::case_match(
+          AP05CV06 = dplyr::recode_values(
             .data$AP05CV06,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP05CV06
+            default = .data$AP05CV06
           )
         ) %>%
         dplyr::mutate(AP05CV06 = as.factor(.data$AP05CV06))
@@ -1974,12 +1974,12 @@ process_cnes <- function(
     if ("AP05CV03" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP05CV03 = dplyr::case_match(
+          AP05CV03 = dplyr::recode_values(
             .data$AP05CV03,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP05CV03
+            default = .data$AP05CV03
           )
         ) %>%
         dplyr::mutate(AP05CV03 = as.factor(.data$AP05CV03))
@@ -1989,12 +1989,12 @@ process_cnes <- function(
     if ("AP05CV04" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP05CV04 = dplyr::case_match(
+          AP05CV04 = dplyr::recode_values(
             .data$AP05CV04,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP05CV04
+            default = .data$AP05CV04
           )
         ) %>%
         dplyr::mutate(AP05CV04 = as.factor(.data$AP05CV04))
@@ -2004,12 +2004,12 @@ process_cnes <- function(
     if ("AP06CV01" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP06CV01 = dplyr::case_match(
+          AP06CV01 = dplyr::recode_values(
             .data$AP06CV01,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP06CV01
+            default = .data$AP06CV01
           )
         ) %>%
         dplyr::mutate(AP06CV01 = as.factor(.data$AP06CV01))
@@ -2019,12 +2019,12 @@ process_cnes <- function(
     if ("AP06CV02" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP06CV02 = dplyr::case_match(
+          AP06CV02 = dplyr::recode_values(
             .data$AP06CV02,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP06CV02
+            default = .data$AP06CV02
           )
         ) %>%
         dplyr::mutate(AP06CV02 = as.factor(.data$AP06CV02))
@@ -2034,12 +2034,12 @@ process_cnes <- function(
     if ("AP06CV05" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP06CV05 = dplyr::case_match(
+          AP06CV05 = dplyr::recode_values(
             .data$AP06CV05,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP06CV05
+            default = .data$AP06CV05
           )
         ) %>%
         dplyr::mutate(AP06CV05 = as.factor(.data$AP06CV05))
@@ -2049,12 +2049,12 @@ process_cnes <- function(
     if ("AP06CV06" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP06CV06 = dplyr::case_match(
+          AP06CV06 = dplyr::recode_values(
             .data$AP06CV06,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP06CV06
+            default = .data$AP06CV06
           )
         ) %>%
         dplyr::mutate(AP06CV06 = as.factor(.data$AP06CV06))
@@ -2064,12 +2064,12 @@ process_cnes <- function(
     if ("AP06CV03" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP06CV03 = dplyr::case_match(
+          AP06CV03 = dplyr::recode_values(
             .data$AP06CV03,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP06CV03
+            default = .data$AP06CV03
           )
         ) %>%
         dplyr::mutate(AP06CV03 = as.factor(.data$AP06CV03))
@@ -2079,12 +2079,12 @@ process_cnes <- function(
     if ("AP06CV04" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP06CV04 = dplyr::case_match(
+          AP06CV04 = dplyr::recode_values(
             .data$AP06CV04,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP06CV04
+            default = .data$AP06CV04
           )
         ) %>%
         dplyr::mutate(AP06CV04 = as.factor(.data$AP06CV04))
@@ -2094,12 +2094,12 @@ process_cnes <- function(
     if ("AP07CV01" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP07CV01 = dplyr::case_match(
+          AP07CV01 = dplyr::recode_values(
             .data$AP07CV01,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP07CV01
+            default = .data$AP07CV01
           )
         ) %>%
         dplyr::mutate(AP07CV01 = as.factor(.data$AP07CV01))
@@ -2109,12 +2109,12 @@ process_cnes <- function(
     if ("AP07CV02" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP07CV02 = dplyr::case_match(
+          AP07CV02 = dplyr::recode_values(
             .data$AP07CV02,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP07CV02
+            default = .data$AP07CV02
           )
         ) %>%
         dplyr::mutate(AP07CV02 = as.factor(.data$AP07CV02))
@@ -2124,12 +2124,12 @@ process_cnes <- function(
     if ("AP07CV05" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP07CV05 = dplyr::case_match(
+          AP07CV05 = dplyr::recode_values(
             .data$AP07CV05,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP07CV05
+            default = .data$AP07CV05
           )
         ) %>%
         dplyr::mutate(AP07CV05 = as.factor(.data$AP07CV05))
@@ -2139,12 +2139,12 @@ process_cnes <- function(
     if ("AP07CV06" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP07CV06 = dplyr::case_match(
+          AP07CV06 = dplyr::recode_values(
             .data$AP07CV06,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP07CV06
+            default = .data$AP07CV06
           )
         ) %>%
         dplyr::mutate(AP07CV06 = as.factor(.data$AP07CV06))
@@ -2154,12 +2154,12 @@ process_cnes <- function(
     if ("AP07CV03" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP07CV03 = dplyr::case_match(
+          AP07CV03 = dplyr::recode_values(
             .data$AP07CV03,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP07CV03
+            default = .data$AP07CV03
           )
         ) %>%
         dplyr::mutate(AP07CV03 = as.factor(.data$AP07CV03))
@@ -2169,12 +2169,12 @@ process_cnes <- function(
     if ("AP07CV04" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          AP07CV04 = dplyr::case_match(
+          AP07CV04 = dplyr::recode_values(
             .data$AP07CV04,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$AP07CV04
+            default = .data$AP07CV04
           )
         ) %>%
         dplyr::mutate(AP07CV04 = as.factor(.data$AP07CV04))
@@ -2184,12 +2184,12 @@ process_cnes <- function(
     if ("ATEND_PR" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          ATEND_PR = dplyr::case_match(
+          ATEND_PR = dplyr::recode_values(
             .data$ATEND_PR,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$ATEND_PR
+            default = .data$ATEND_PR
           )
         ) %>%
         dplyr::mutate(ATEND_PR = as.factor(.data$ATEND_PR))
@@ -2232,14 +2232,14 @@ process_cnes <- function(
     if ("TPGESTAO" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          TPGESTAO = dplyr::case_match(
+          TPGESTAO = dplyr::recode_values(
             .data$TPGESTAO,
             "D" ~ "Dupla",
             "E" ~ "Estadual",
             "M" ~ "Municipal",
             "Z" ~ "Sem gest\u00e3o",
             "S" ~ "Sem gest\u00e3o",
-            .default = .data$TPGESTAO
+            default = .data$TPGESTAO
           )
         ) %>%
         dplyr::mutate(TPGESTAO = as.factor(.data$TPGESTAO))
@@ -2249,11 +2249,11 @@ process_cnes <- function(
     if ("PF_PJ" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          PF_PJ = dplyr::case_match(
+          PF_PJ = dplyr::recode_values(
             .data$PF_PJ,
             "1" ~ "Pessoa f\u00edsica",
             "3" ~ "Pessoa jur\u00eddica",
-            .default = .data$PF_PJ
+            default = .data$PF_PJ
           )
         ) %>%
         dplyr::mutate(PF_PJ = as.factor(.data$PF_PJ))
@@ -2269,11 +2269,11 @@ process_cnes <- function(
     if ("NIV_DEP" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          NIV_DEP = dplyr::case_match(
+          NIV_DEP = dplyr::recode_values(
             .data$NIV_DEP,
             "1" ~ "Individual",
             "3" ~ "Mantida",
-            .default = .data$NIV_DEP
+            default = .data$NIV_DEP
           )
         ) %>%
         dplyr::mutate(NIV_DEP = as.factor(.data$NIV_DEP))
@@ -2289,14 +2289,14 @@ process_cnes <- function(
     if ("ESFERA_A" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          ESFERA_A = dplyr::case_match(
+          ESFERA_A = dplyr::recode_values(
             .data$ESFERA_A,
             "-99" ~ NA,
             "1" ~ "Federal",
             "2" ~ "Estadual",
             "3" ~ "Municipal",
             "4" ~ "Privada",
-            .default = .data$ESFERA_A
+            default = .data$ESFERA_A
           )
         ) %>%
         dplyr::mutate(ESFERA_A = as.factor(.data$ESFERA_A))
@@ -2306,7 +2306,7 @@ process_cnes <- function(
     if ("ATIVIDAD" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          ATIVIDAD = dplyr::case_match(
+          ATIVIDAD = dplyr::recode_values(
             .data$ATIVIDAD,
             "-99" ~ NA,
             "1" ~ "Unidade Universit\u00e1ria",
@@ -2314,7 +2314,7 @@ process_cnes <- function(
             "3" ~ "Unidade Auxiliar de Ensino",
             "4" ~ "Unidade sem atividade de Ensino",
             "5" ~ "Hospital de ensino",
-            .default = .data$ATIVIDAD
+            default = .data$ATIVIDAD
           )
         ) %>%
         dplyr::mutate(ATIVIDAD = as.factor(.data$ATIVIDAD))
@@ -2324,7 +2324,7 @@ process_cnes <- function(
     if ("RETENCAO" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          RETENCAO = dplyr::case_match(
+          RETENCAO = dplyr::recode_values(
             .data$RETENCAO,
             "0" ~ NA,
             "10" ~ "Estabelecimento p\u00fablico",
@@ -2334,7 +2334,7 @@ process_cnes <- function(
             "14" ~ "Estabelecimento privado luvrativa",
             "15" ~ "Estabelecimento sindical",
             "16" ~ "Estabelecimento pessoa f\u00edsica",
-            .default = .data$RETENCAO
+            default = .data$RETENCAO
           )
         ) %>%
         dplyr::mutate(RETENCAO = as.factor(.data$RETENCAO))
@@ -2344,7 +2344,7 @@ process_cnes <- function(
     if ("NATUREZA" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          NATUREZA = dplyr::case_match(
+          NATUREZA = dplyr::recode_values(
             .data$NATUREZA,
             "-99" ~ NA,
             "1" ~
@@ -2362,7 +2362,7 @@ process_cnes <- function(
             "12" ~ "Economia Mista",
             "13" ~ "Sindicato",
             "0" ~ "Natureza inexistente",
-            .default = .data$NATUREZA
+            default = .data$NATUREZA
           )
         ) %>%
         dplyr::mutate(NATUREZA = as.factor(.data$NATUREZA))
@@ -2372,14 +2372,14 @@ process_cnes <- function(
     if ("CLIENTEL" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          CLIENTEL = dplyr::case_match(
+          CLIENTEL = dplyr::recode_values(
             .data$CLIENTEL,
             "-99" ~ NA,
             "1" ~ "Atendimento de demanda espont\u00e2nea",
             "2" ~ "Atendimento de demanda referenciada",
             "3" ~ "Atendimento de demanda espont\u00e2nea e referenciada",
             "0" ~ "Fluxo de Clientela n\u00e3o exigido",
-            .default = .data$CLIENTEL
+            default = .data$CLIENTEL
           )
         ) %>%
         dplyr::mutate(CLIENTEL = as.factor(.data$CLIENTEL))
@@ -2389,7 +2389,7 @@ process_cnes <- function(
     if ("TP_UNID" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          TP_UNID = dplyr::case_match(
+          TP_UNID = dplyr::recode_values(
             .data$TP_UNID,
             "1" ~ "Posto de sa\u00fade",
             "2" ~ "Centro de sa\u00fade / Unidade b\u00e1sica",
@@ -2441,7 +2441,7 @@ process_cnes <- function(
               "Central de notifica\u00e7\u00e3o, capta\u00e7\u00e3o e distribui\u00e7\u00e3o de \u00f3rg\u00e3os estadual",
             "83" ~
               "P\u00f3lo de preven\u00e7\u00e3o de doen\u00e7as e agravos e promo\u00e7\u00e3o da sa\u00fade",
-            .default = .data$TP_UNID
+            default = .data$TP_UNID
           )
         ) %>%
         dplyr::mutate(TP_UNID = as.factor(.data$TP_UNID))
@@ -2451,7 +2451,7 @@ process_cnes <- function(
     if ("TURNO_AT" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          TURNO_AT = dplyr::case_match(
+          TURNO_AT = dplyr::recode_values(
             .data$TURNO_AT,
             "-99" ~ NA,
             "1" ~ "Turnos intermitentes",
@@ -2461,7 +2461,7 @@ process_cnes <- function(
             "5" ~ "Tarde",
             "6" ~ "Manh\u00e3 / Tarde",
             "7" ~ "Noite",
-            .default = .data$TURNO_AT
+            default = .data$TURNO_AT
           )
         ) %>%
         dplyr::mutate(TURNO_AT = as.factor(.data$TURNO_AT))
@@ -2471,7 +2471,7 @@ process_cnes <- function(
     if ("NIV_HIER" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          NIV_HIER = dplyr::case_match(
+          NIV_HIER = dplyr::recode_values(
             .data$NIV_HIER,
             "-99" ~ NA,
             "99" ~ NA,
@@ -2484,7 +2484,7 @@ process_cnes <- function(
             "6" ~ "M\u00e9dia M2 e M3",
             "7" ~ "M\u00e9dia M3",
             "8" ~ "Alta complexidade hospitalar / ambulatorial",
-            .default = .data$NIV_HIER
+            default = .data$NIV_HIER
           )
         ) %>%
         dplyr::mutate(NIV_HIER = as.factor(.data$NIV_HIER))
@@ -2494,12 +2494,12 @@ process_cnes <- function(
     if ("TERCEIRO" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          TERCEIRO = dplyr::case_match(
+          TERCEIRO = dplyr::recode_values(
             .data$TERCEIRO,
             "1" ~ "Sim",
             "0" ~ "N\u00e3o",
             "2" ~ "N\u00e3o",
-            .default = .data$TERCEIRO
+            default = .data$TERCEIRO
           )
         ) %>%
         dplyr::mutate(TERCEIRO = as.factor(.data$TERCEIRO))
@@ -2509,11 +2509,11 @@ process_cnes <- function(
     if ("CPF_PROF" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          CPF_PROF = dplyr::case_match(
+          CPF_PROF = dplyr::recode_values(
             .data$CPF_PROF,
             "99999999999" ~ NA,
             "00000000000000" ~ NA,
-            .default = .data$CPF_PROF
+            default = .data$CPF_PROF
           )
         ) %>%
         dplyr::mutate(CPF_PROF = as.factor(.data$CPF_PROF))
@@ -2536,12 +2536,12 @@ process_cnes <- function(
     if ("VINCULAC" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          VINCULAC = dplyr::case_match(
+          VINCULAC = dplyr::recode_values(
             .data$VINCULAC,
             "1" ~ "Profissional CONTRATADO",
             "2" ~ "Profissional AUT\u00d4NOMO",
             "3" ~ "Profissional V\u00cdNCULO N\u00c3O IDENTIFICADO",
-            .default = .data$VINCULAC
+            default = .data$VINCULAC
           )
         ) %>%
         dplyr::mutate(VINCULAC = as.factor(.data$VINCULAC))
@@ -2551,7 +2551,7 @@ process_cnes <- function(
     if ("NAT_JUR" %in% variables_names) {
       data <- data %>%
         dplyr::mutate(
-          NAT_JUR = dplyr::case_match(
+          NAT_JUR = dplyr::recode_values(
             .data$NAT_JUR,
             "0" ~ NA,
             "1000" ~ "Administra\u00e7\u00e3o P\u00fablica",
@@ -2667,7 +2667,7 @@ process_cnes <- function(
             "5010" ~ "Organiza\u00e7\u00e3o Internacional",
             "5029" ~ "Representa\u00e7\u00e3o Diplom\u00e1tica Estrangeira",
             "5037" ~ "Outras Institui\u00e7\u00f5es Extraterritoriais",
-            .default = .data$NAT_JUR
+            default = .data$NAT_JUR
           )
         ) %>%
         dplyr::mutate(NAT_JUR = as.factor(.data$NAT_JUR))

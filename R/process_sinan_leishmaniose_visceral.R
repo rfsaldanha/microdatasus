@@ -28,13 +28,13 @@ process_sinan_leishmaniose_visceral <- function(
   if ("TP_NOT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        TP_NOT = dplyr::case_match(
+        TP_NOT = dplyr::recode_values(
           .data$TP_NOT,
           "1" ~ "Negativa",
           "2" ~ "Individual",
           "3" ~ "Surto",
           "4" ~ "Agregado",
-          .default = .data$TP_NOT
+          default = .data$TP_NOT
         )
       ) %>%
       dplyr::mutate(TP_NOT = as.factor(.data$TP_NOT))
@@ -98,7 +98,7 @@ process_sinan_leishmaniose_visceral <- function(
   if ("SEM_NOT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        SEM_NOT = dplyr::case_match(
+        SEM_NOT = dplyr::recode_values(
           .data$SEM_NOT,
           "1" ~ "Semana 1",
           "2" ~ "Semana 2",
@@ -154,7 +154,7 @@ process_sinan_leishmaniose_visceral <- function(
           "52" ~ "Semana 52",
           "53" ~ "Semana 53",
           "54" ~ "Em branco",
-          .default = .data$SEM_NOT
+          default = .data$SEM_NOT
         )
       ) %>%
       dplyr::mutate(SEM_NOT = as.factor(.data$SEM_NOT))
@@ -164,7 +164,7 @@ process_sinan_leishmaniose_visceral <- function(
   if ("SG_UF_NOT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        SG_UF_NOT = dplyr::case_match(
+        SG_UF_NOT = dplyr::recode_values(
           .data$SG_UF_NOT,
           "0" ~ "Ignorado",
           "99" ~ "Ignorado",
@@ -195,7 +195,7 @@ process_sinan_leishmaniose_visceral <- function(
           "51" ~ "Mato Grosso",
           "52" ~ "Goi\u00e1s",
           "53" ~ "Distrito Federal",
-          .default = .data$SG_UF_NOT
+          default = .data$SG_UF_NOT
         )
       ) %>%
       dplyr::mutate(SG_UF_NOT = as.factor(.data$SG_UF_NOT))
@@ -205,7 +205,7 @@ process_sinan_leishmaniose_visceral <- function(
   if ("SEM_PRI" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        SEM_PRI = dplyr::case_match(
+        SEM_PRI = dplyr::recode_values(
           .data$SEM_PRI,
           "1" ~ "Semana 1",
           "2" ~ "Semana 2",
@@ -261,7 +261,7 @@ process_sinan_leishmaniose_visceral <- function(
           "52" ~ "Semana 52",
           "53" ~ "Semana 53",
           "54" ~ "Em branco",
-          .default = .data$SEM_PRI
+          default = .data$SEM_PRI
         )
       ) %>%
       dplyr::mutate(SEM_PRI = as.factor(.data$SEM_PRI))
@@ -271,10 +271,10 @@ process_sinan_leishmaniose_visceral <- function(
   if ("NU_IDADE_N" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        NU_IDADE_N = dplyr::case_match(
+        NU_IDADE_N = dplyr::recode_values(
           .data$NU_IDADE_N,
           999 ~ NA,
-          .default = .data$NU_IDADE_N
+          default = .data$NU_IDADE_N
         )
       ) %>%
       # Codigo e valor
@@ -283,39 +283,39 @@ process_sinan_leishmaniose_visceral <- function(
         idade_value = as.numeric(substr(.data$NU_IDADE_N, 2, 3)),
       ) %>%
       dplyr::mutate(
-        IDADEminutos = dplyr::case_match(
+        IDADEminutos = dplyr::recode_values(
           .data$idade_cod,
           "0" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEhoras = dplyr::case_match(
+        IDADEhoras = dplyr::recode_values(
           .data$idade_cod,
           "1" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEdias = dplyr::case_match(
+        IDADEdias = dplyr::recode_values(
           .data$idade_cod,
           "2" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEmeses = dplyr::case_match(
+        IDADEmeses = dplyr::recode_values(
           .data$idade_cod,
           "3" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEanos = dplyr::case_match(
+        IDADEanos = dplyr::recode_values(
           .data$idade_cod,
           "4" ~ idade_value,
           "5" ~ idade_value + 100,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::select(-"idade_cod", -"idade_value")
@@ -326,24 +326,24 @@ process_sinan_leishmaniose_visceral <- function(
         idade_value = as.numeric(substr(.data$NU_IDADE, 2, 4)),
       ) %>%
       dplyr::mutate(
-        IDADEdias = dplyr::case_match(
+        IDADEdias = dplyr::recode_values(
           .data$idade_cod,
           "D" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEmeses = dplyr::case_match(
+        IDADEmeses = dplyr::recode_values(
           .data$idade_cod,
           "M" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEanos = dplyr::case_match(
+        IDADEanos = dplyr::recode_values(
           .data$idade_cod,
           "A" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::select(-"idade_cod", -"idade_value")
@@ -353,12 +353,12 @@ process_sinan_leishmaniose_visceral <- function(
   if ("CS_SEXO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CS_SEXO = dplyr::case_match(
+        CS_SEXO = dplyr::recode_values(
           .data$CS_SEXO,
           "M" ~ "Masculino",
           "F" ~ "Feminino",
           "I" ~ "Ignorado",
-          .default = .data$CS_SEXO
+          default = .data$CS_SEXO
         )
       ) %>%
       dplyr::mutate(CS_SEXO = as.factor(.data$CS_SEXO))
@@ -368,7 +368,7 @@ process_sinan_leishmaniose_visceral <- function(
   if ("CS_GESTANT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CS_GESTANT = dplyr::case_match(
+        CS_GESTANT = dplyr::recode_values(
           .data$CS_GESTANT,
           "1" ~ "1o trimestre",
           "2" ~ "2o trimestre",
@@ -377,7 +377,7 @@ process_sinan_leishmaniose_visceral <- function(
           "5" ~ "N\u00e3o",
           "6" ~ "N\u00e3o se aplica",
           "9" ~ "Ignorado",
-          .default = .data$CS_GESTANT
+          default = .data$CS_GESTANT
         )
       ) %>%
       dplyr::mutate(CS_GESTANT = as.factor(.data$CS_GESTANT))
@@ -387,7 +387,7 @@ process_sinan_leishmaniose_visceral <- function(
   if ("CS_RACA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CS_RACA = dplyr::case_match(
+        CS_RACA = dplyr::recode_values(
           .data$CS_RACA,
           "1" ~ "Branca",
           "2" ~ "Preta",
@@ -395,7 +395,7 @@ process_sinan_leishmaniose_visceral <- function(
           "4" ~ "Parda",
           "5" ~ "Ind\u00edgena",
           "9" ~ "Ignorado",
-          .default = .data$CS_RACA
+          default = .data$CS_RACA
         )
       ) %>%
       dplyr::mutate(CS_RACA = as.factor(.data$CS_RACA))
@@ -405,7 +405,7 @@ process_sinan_leishmaniose_visceral <- function(
   if ("CS_ESCOL_N" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CS_ESCOL_N = dplyr::case_match(
+        CS_ESCOL_N = dplyr::recode_values(
           .data$CS_ESCOL_N,
           "1" ~ "1a a 4a s\u00e9rie incompleta do EF",
           "2" ~ "4a s\u00e9rie completa do EF (antigo 1o grau)",
@@ -418,7 +418,7 @@ process_sinan_leishmaniose_visceral <- function(
           "8" ~ "Educa\u00e7\u00e3o superior completa",
           "9" ~ "Ignorado",
           "10" ~ "N\u00e3o se aplica",
-          .default = .data$CS_ESCOL_N
+          default = .data$CS_ESCOL_N
         )
       ) %>%
       dplyr::mutate(CS_ESCOL_N = as.factor(.data$CS_ESCOL_N))
@@ -428,7 +428,7 @@ process_sinan_leishmaniose_visceral <- function(
   if ("SG_UF" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        SG_UF = dplyr::case_match(
+        SG_UF = dplyr::recode_values(
           .data$SG_UF,
           "0" ~ "Ignorado",
           "99" ~ "Ignorado",
@@ -459,7 +459,7 @@ process_sinan_leishmaniose_visceral <- function(
           "51" ~ "Mato Grosso",
           "52" ~ "Goi\u00e1s",
           "53" ~ "Distrito Federal",
-          .default = .data$SG_UF
+          default = .data$SG_UF
         )
       ) %>%
       dplyr::mutate(SG_UF = as.factor(.data$SG_UF))
@@ -489,12 +489,12 @@ process_sinan_leishmaniose_visceral <- function(
   if ("FEBRE" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        FEBRE = dplyr::case_match(
+        FEBRE = dplyr::recode_values(
           .data$FEBRE,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$FEBRE
+          default = .data$FEBRE
         )
       ) %>%
       dplyr::mutate(FEBRE = as.factor(.data$FEBRE))
@@ -504,12 +504,12 @@ process_sinan_leishmaniose_visceral <- function(
   if ("FRAQUEZA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        FRAQUEZA = dplyr::case_match(
+        FRAQUEZA = dplyr::recode_values(
           .data$FRAQUEZA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$FRAQUEZA
+          default = .data$FRAQUEZA
         )
       ) %>%
       dplyr::mutate(FRAQUEZA = as.factor(.data$FRAQUEZA))
@@ -519,12 +519,12 @@ process_sinan_leishmaniose_visceral <- function(
   if ("EDEMA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        EDEMA = dplyr::case_match(
+        EDEMA = dplyr::recode_values(
           .data$EDEMA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$EDEMA
+          default = .data$EDEMA
         )
       ) %>%
       dplyr::mutate(EDEMA = as.factor(.data$EDEMA))
@@ -534,12 +534,12 @@ process_sinan_leishmaniose_visceral <- function(
   if ("EMAGRA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        EMAGRA = dplyr::case_match(
+        EMAGRA = dplyr::recode_values(
           .data$EMAGRA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$EMAGRA
+          default = .data$EMAGRA
         )
       ) %>%
       dplyr::mutate(EMAGRA = as.factor(.data$EMAGRA))
@@ -549,12 +549,12 @@ process_sinan_leishmaniose_visceral <- function(
   if ("TOSSE" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        TOSSE = dplyr::case_match(
+        TOSSE = dplyr::recode_values(
           .data$TOSSE,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$TOSSE
+          default = .data$TOSSE
         )
       ) %>%
       dplyr::mutate(TOSSE = as.factor(.data$TOSSE))
@@ -564,12 +564,12 @@ process_sinan_leishmaniose_visceral <- function(
   if ("PALIDEZ" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        PALIDEZ = dplyr::case_match(
+        PALIDEZ = dplyr::recode_values(
           .data$PALIDEZ,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$PALIDEZ
+          default = .data$PALIDEZ
         )
       ) %>%
       dplyr::mutate(PALIDEZ = as.factor(.data$PALIDEZ))
@@ -579,12 +579,12 @@ process_sinan_leishmaniose_visceral <- function(
   if ("BACO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        BACO = dplyr::case_match(
+        BACO = dplyr::recode_values(
           .data$BACO,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$BACO
+          default = .data$BACO
         )
       ) %>%
       dplyr::mutate(BACO = as.factor(.data$BACO))
@@ -594,12 +594,12 @@ process_sinan_leishmaniose_visceral <- function(
   if ("INFECCIOSO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        INFECCIOSO = dplyr::case_match(
+        INFECCIOSO = dplyr::recode_values(
           .data$INFECCIOSO,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$INFECCIOSO
+          default = .data$INFECCIOSO
         )
       ) %>%
       dplyr::mutate(INFECCIOSO = as.factor(.data$INFECCIOSO))
@@ -609,12 +609,12 @@ process_sinan_leishmaniose_visceral <- function(
   if ("FEN_HEMORR" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        FEN_HEMORR = dplyr::case_match(
+        FEN_HEMORR = dplyr::recode_values(
           .data$FEN_HEMORR,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$FEN_HEMORR
+          default = .data$FEN_HEMORR
         )
       ) %>%
       dplyr::mutate(FEN_HEMORR = as.factor(.data$FEN_HEMORR))
@@ -624,12 +624,12 @@ process_sinan_leishmaniose_visceral <- function(
   if ("FIGADO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        FIGADO = dplyr::case_match(
+        FIGADO = dplyr::recode_values(
           .data$FIGADO,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$FIGADO
+          default = .data$FIGADO
         )
       ) %>%
       dplyr::mutate(FIGADO = as.factor(.data$FIGADO))
@@ -639,12 +639,12 @@ process_sinan_leishmaniose_visceral <- function(
   if ("ICTERICIA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ICTERICIA = dplyr::case_match(
+        ICTERICIA = dplyr::recode_values(
           .data$ICTERICIA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$ICTERICIA
+          default = .data$ICTERICIA
         )
       ) %>%
       dplyr::mutate(ICTERICIA = as.factor(.data$ICTERICIA))
@@ -654,12 +654,12 @@ process_sinan_leishmaniose_visceral <- function(
   if ("OUTROS" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        OUTROS = dplyr::case_match(
+        OUTROS = dplyr::recode_values(
           .data$OUTROS,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$OUTROS
+          default = .data$OUTROS
         )
       ) %>%
       dplyr::mutate(OUTROS = as.factor(.data$OUTROS))
@@ -669,12 +669,12 @@ process_sinan_leishmaniose_visceral <- function(
   if ("HIV" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        HIV = dplyr::case_match(
+        HIV = dplyr::recode_values(
           .data$HIV,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$HIV
+          default = .data$HIV
         )
       ) %>%
       dplyr::mutate(HIV = as.factor(.data$HIV))
@@ -684,13 +684,13 @@ process_sinan_leishmaniose_visceral <- function(
   if ("DIAG_PAR_N" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        DIAG_PAR_N = dplyr::case_match(
+        DIAG_PAR_N = dplyr::recode_values(
           .data$DIAG_PAR_N,
           "9" ~ NA,
           "1" ~ "Positivo",
           "2" ~ "Negativo",
           "3" ~ "N\\u00e3o realizado",
-          .default = .data$DIAG_PAR_N
+          default = .data$DIAG_PAR_N
         )
       ) %>%
       dplyr::mutate(DIAG_PAR_N = as.factor(.data$DIAG_PAR_N))
@@ -700,13 +700,13 @@ process_sinan_leishmaniose_visceral <- function(
   if ("IFI" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        IFI = dplyr::case_match(
+        IFI = dplyr::recode_values(
           .data$IFI,
           "9" ~ NA,
           "1" ~ "Positivo",
           "2" ~ "Negativo",
           "3" ~ "N\\u00e3o realizado",
-          .default = .data$IFI
+          default = .data$IFI
         )
       ) %>%
       dplyr::mutate(IFI = as.factor(.data$IFI))
@@ -716,13 +716,13 @@ process_sinan_leishmaniose_visceral <- function(
   if ("OUTRO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        OUTRO = dplyr::case_match(
+        OUTRO = dplyr::recode_values(
           .data$OUTRO,
           "9" ~ NA,
           "1" ~ "Positivo",
           "2" ~ "Negativo",
           "3" ~ "N\\u00e3o realizado",
-          .default = .data$OUTRO
+          default = .data$OUTRO
         )
       ) %>%
       dplyr::mutate(OUTRO = as.factor(.data$OUTRO))
@@ -732,13 +732,13 @@ process_sinan_leishmaniose_visceral <- function(
   if ("ENTRADA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ENTRADA = dplyr::case_match(
+        ENTRADA = dplyr::recode_values(
           .data$ENTRADA,
           "9" ~ NA,
           "1" ~ "Caso novo",
           "2" ~ "Recidiva",
           "3" ~ "Transfer\\u00eancia",
-          .default = .data$ENTRADA
+          default = .data$ENTRADA
         )
       ) %>%
       dplyr::mutate(ENTRADA = as.factor(.data$ENTRADA))
@@ -748,7 +748,7 @@ process_sinan_leishmaniose_visceral <- function(
   if ("DROGA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        DROGA = dplyr::case_match(
+        DROGA = dplyr::recode_values(
           .data$DROGA,
           "9" ~ NA,
           "1" ~ "Antimonial Pentavalente",
@@ -756,7 +756,7 @@ process_sinan_leishmaniose_visceral <- function(
           "3" ~ "Pentamidina",
           "4" ~ "Anfotericina b lipossomal",
           "5" ~ "Outras drogas",
-          .default = .data$DROGA
+          default = .data$DROGA
         )
       ) %>%
       dplyr::mutate(DROGA = as.factor(.data$DROGA))
@@ -766,13 +766,13 @@ process_sinan_leishmaniose_visceral <- function(
   if ("FALENCIA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        FALENCIA = dplyr::case_match(
+        FALENCIA = dplyr::recode_values(
           .data$FALENCIA,
           "9" ~ NA,
           "1" ~ "Anfotericina b",
           "2" ~ "Anfotericina b lipossomal",
           "3" ~ "Outras drogas",
-          .default = .data$FALENCIA
+          default = .data$FALENCIA
         )
       ) %>%
       dplyr::mutate(FALENCIA = as.factor(.data$FALENCIA))
@@ -782,13 +782,13 @@ process_sinan_leishmaniose_visceral <- function(
   if ("CLASSI_FIN" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CLASSI_FIN = dplyr::case_match(
+        CLASSI_FIN = dplyr::recode_values(
           .data$CLASSI_FIN,
           "9" ~ NA,
           "1" ~ "Confirmado",
           "2" ~ "Descartado",
           "8" ~ "Inconclusivo",
-          .default = .data$CLASSI_FIN
+          default = .data$CLASSI_FIN
         )
       ) %>%
       dplyr::mutate(CLASSI_FIN = as.factor(.data$CLASSI_FIN))
@@ -798,12 +798,12 @@ process_sinan_leishmaniose_visceral <- function(
   if ("CRITERIO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CRITERIO = dplyr::case_match(
+        CRITERIO = dplyr::recode_values(
           .data$CRITERIO,
           "9" ~ NA,
           "1" ~ "Laboratorial",
           "2" ~ "Cl\\u00ednico-epidemiol\\u00f3gico",
-          .default = .data$CRITERIO
+          default = .data$CRITERIO
         )
       ) %>%
       dplyr::mutate(CRITERIO = as.factor(.data$CRITERIO))
@@ -813,13 +813,13 @@ process_sinan_leishmaniose_visceral <- function(
   if ("TPAUTOCTO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        TPAUTOCTO = dplyr::case_match(
+        TPAUTOCTO = dplyr::recode_values(
           .data$TPAUTOCTO,
           "9" ~ NA,
           "1" ~ "Sim",
           "2" ~ "N\\u00e3o",
           "3" ~ "Indeterminado",
-          .default = .data$TPAUTOCTO
+          default = .data$TPAUTOCTO
         )
       ) %>%
       dplyr::mutate(TPAUTOCTO = as.factor(.data$TPAUTOCTO))
@@ -829,7 +829,7 @@ process_sinan_leishmaniose_visceral <- function(
   if ("COUFINF" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        COUFINF = dplyr::case_match(
+        COUFINF = dplyr::recode_values(
           .data$COUFINF,
           "0" ~ "Ignorado",
           "99" ~ "Ignorado",
@@ -860,7 +860,7 @@ process_sinan_leishmaniose_visceral <- function(
           "51" ~ "Mato Grosso",
           "52" ~ "Goi\u00e1s",
           "53" ~ "Distrito Federal",
-          .default = .data$COUFINF
+          default = .data$COUFINF
         )
       ) %>%
       dplyr::mutate(COUFINF = as.factor(.data$COUFINF))
@@ -879,12 +879,12 @@ process_sinan_leishmaniose_visceral <- function(
   if ("DOENCA_TRA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        DOENCA_TRA = dplyr::case_match(
+        DOENCA_TRA = dplyr::recode_values(
           .data$DOENCA_TRA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$DOENCA_TRA
+          default = .data$DOENCA_TRA
         )
       ) %>%
       dplyr::mutate(DOENCA_TRA = as.factor(.data$DOENCA_TRA))
@@ -894,7 +894,7 @@ process_sinan_leishmaniose_visceral <- function(
   if ("EVOLUCAO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        EVOLUCAO = dplyr::case_match(
+        EVOLUCAO = dplyr::recode_values(
           .data$EVOLUCAO,
           "9" ~ NA,
           "1" ~ "Cura",
@@ -902,7 +902,7 @@ process_sinan_leishmaniose_visceral <- function(
           "3" ~ "\\u00d3bito por LV",
           "4" ~ "\\u00d3bito por outra causa",
           "5" ~ "Transfer\\u00eancia",
-          .default = .data$EVOLUCAO
+          default = .data$EVOLUCAO
         )
       ) %>%
       dplyr::mutate(EVOLUCAO = as.factor(.data$EVOLUCAO))

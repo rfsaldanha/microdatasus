@@ -25,13 +25,13 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("TP_NOT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        TP_NOT = dplyr::case_match(
+        TP_NOT = dplyr::recode_values(
           .data$TP_NOT,
           "1" ~ "Negativa",
           "2" ~ "Individual",
           "3" ~ "Surto",
           "4" ~ "Agregado",
-          .default = .data$TP_NOT
+          default = .data$TP_NOT
         )
       ) %>%
       dplyr::mutate(TP_NOT = as.factor(.data$TP_NOT))
@@ -155,7 +155,7 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("SEM_NOT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        SEM_NOT = dplyr::case_match(
+        SEM_NOT = dplyr::recode_values(
           .data$SEM_NOT,
           "1" ~ "Semana 1",
           "2" ~ "Semana 2",
@@ -211,7 +211,7 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
           "52" ~ "Semana 52",
           "53" ~ "Semana 53",
           "54" ~ "Em branco",
-          .default = .data$SEM_NOT
+          default = .data$SEM_NOT
         )
       ) %>%
       dplyr::mutate(SEM_NOT = as.factor(.data$SEM_NOT))
@@ -221,7 +221,7 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("SG_UF_NOT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        SG_UF_NOT = dplyr::case_match(
+        SG_UF_NOT = dplyr::recode_values(
           .data$SG_UF_NOT,
           "0" ~ "Ignorado",
           "99" ~ "Ignorado",
@@ -252,7 +252,7 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
           "51" ~ "Mato Grosso",
           "52" ~ "Goi\u00e1s",
           "53" ~ "Distrito Federal",
-          .default = .data$SG_UF_NOT
+          default = .data$SG_UF_NOT
         )
       ) %>%
       dplyr::mutate(SG_UF_NOT = as.factor(.data$SG_UF_NOT))
@@ -262,7 +262,7 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("SEM_PRI" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        SEM_PRI = dplyr::case_match(
+        SEM_PRI = dplyr::recode_values(
           .data$SEM_PRI,
           "1" ~ "Semana 1",
           "2" ~ "Semana 2",
@@ -318,7 +318,7 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
           "52" ~ "Semana 52",
           "53" ~ "Semana 53",
           "54" ~ "Em branco",
-          .default = .data$SEM_PRI
+          default = .data$SEM_PRI
         )
       ) %>%
       dplyr::mutate(SEM_PRI = as.factor(.data$SEM_PRI))
@@ -328,10 +328,10 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("NU_IDADE_N" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        NU_IDADE_N = dplyr::case_match(
+        NU_IDADE_N = dplyr::recode_values(
           .data$NU_IDADE_N,
           999 ~ NA,
-          .default = .data$NU_IDADE_N
+          default = .data$NU_IDADE_N
         )
       ) %>%
       # Codigo e valor
@@ -340,39 +340,39 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
         idade_value = as.numeric(substr(.data$NU_IDADE_N, 2, 3)),
       ) %>%
       dplyr::mutate(
-        IDADEminutos = dplyr::case_match(
+        IDADEminutos = dplyr::recode_values(
           .data$idade_cod,
           "0" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEhoras = dplyr::case_match(
+        IDADEhoras = dplyr::recode_values(
           .data$idade_cod,
           "1" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEdias = dplyr::case_match(
+        IDADEdias = dplyr::recode_values(
           .data$idade_cod,
           "2" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEmeses = dplyr::case_match(
+        IDADEmeses = dplyr::recode_values(
           .data$idade_cod,
           "3" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEanos = dplyr::case_match(
+        IDADEanos = dplyr::recode_values(
           .data$idade_cod,
           "4" ~ idade_value,
           "5" ~ idade_value + 100,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::select(-"idade_cod", -"idade_value")
@@ -383,24 +383,24 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
         idade_value = as.numeric(substr(.data$NU_IDADE, 2, 4)),
       ) %>%
       dplyr::mutate(
-        IDADEdias = dplyr::case_match(
+        IDADEdias = dplyr::recode_values(
           .data$idade_cod,
           "D" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEmeses = dplyr::case_match(
+        IDADEmeses = dplyr::recode_values(
           .data$idade_cod,
           "M" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::mutate(
-        IDADEanos = dplyr::case_match(
+        IDADEanos = dplyr::recode_values(
           .data$idade_cod,
           "A" ~ idade_value,
-          .default = NA
+          default = NA
         )
       ) %>%
       dplyr::select(-"idade_cod", -"idade_value")
@@ -410,12 +410,12 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("CS_SEXO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CS_SEXO = dplyr::case_match(
+        CS_SEXO = dplyr::recode_values(
           .data$CS_SEXO,
           "M" ~ "Masculino",
           "F" ~ "Feminino",
           "I" ~ "Ignorado",
-          .default = .data$CS_SEXO
+          default = .data$CS_SEXO
         )
       ) %>%
       dplyr::mutate(CS_SEXO = as.factor(.data$CS_SEXO))
@@ -425,7 +425,7 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("CS_GESTANT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CS_GESTANT = dplyr::case_match(
+        CS_GESTANT = dplyr::recode_values(
           .data$CS_GESTANT,
           "1" ~ "1o trimestre",
           "2" ~ "2o trimestre",
@@ -434,7 +434,7 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
           "5" ~ "N\u00e3o",
           "6" ~ "N\u00e3o se aplica",
           "9" ~ "Ignorado",
-          .default = .data$CS_GESTANT
+          default = .data$CS_GESTANT
         )
       ) %>%
       dplyr::mutate(CS_GESTANT = as.factor(.data$CS_GESTANT))
@@ -444,7 +444,7 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("CS_RACA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CS_RACA = dplyr::case_match(
+        CS_RACA = dplyr::recode_values(
           .data$CS_RACA,
           "1" ~ "Branca",
           "2" ~ "Preta",
@@ -452,7 +452,7 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
           "4" ~ "Parda",
           "5" ~ "Ind\u00edgena",
           "9" ~ "Ignorado",
-          .default = .data$CS_RACA
+          default = .data$CS_RACA
         )
       ) %>%
       dplyr::mutate(CS_RACA = as.factor(.data$CS_RACA))
@@ -462,7 +462,7 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("CS_ESCOL_N" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CS_ESCOL_N = dplyr::case_match(
+        CS_ESCOL_N = dplyr::recode_values(
           .data$CS_ESCOL_N,
           "1" ~ "1a a 4a s\u00e9rie incompleta do EF",
           "2" ~ "4a s\u00e9rie completa do EF (antigo 1o grau)",
@@ -475,7 +475,7 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
           "8" ~ "Educa\u00e7\u00e3o superior completa",
           "9" ~ "Ignorado",
           "10" ~ "N\u00e3o se aplica",
-          .default = .data$CS_ESCOL_N
+          default = .data$CS_ESCOL_N
         )
       ) %>%
       dplyr::mutate(CS_ESCOL_N = as.factor(.data$CS_ESCOL_N))
@@ -485,7 +485,7 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("SG_UF" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        SG_UF = dplyr::case_match(
+        SG_UF = dplyr::recode_values(
           .data$SG_UF,
           "0" ~ "Ignorado",
           "99" ~ "Ignorado",
@@ -516,7 +516,7 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
           "51" ~ "Mato Grosso",
           "52" ~ "Goi\u00e1s",
           "53" ~ "Distrito Federal",
-          .default = .data$SG_UF
+          default = .data$SG_UF
         )
       ) %>%
       dplyr::mutate(SG_UF = as.factor(.data$SG_UF))
@@ -546,13 +546,13 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("PRESENCA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        PRESENCA = dplyr::case_match(
+        PRESENCA = dplyr::recode_values(
           .data$PRESENCA,
           "9" ~ NA,
           "1" ~ "Sim",
           "2" ~ "N\\u00e3o",
           "3" ~ "N\\u00e3o se aplica",
-          .default = .data$PRESENCA
+          default = .data$PRESENCA
         )
       ) %>%
       dplyr::mutate(PRESENCA = as.factor(.data$PRESENCA))
@@ -562,12 +562,12 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("HISTORIA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        HISTORIA = dplyr::case_match(
+        HISTORIA = dplyr::recode_values(
           .data$HISTORIA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$HISTORIA
+          default = .data$HISTORIA
         )
       ) %>%
       dplyr::mutate(HISTORIA = as.factor(.data$HISTORIA))
@@ -577,12 +577,12 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("CONTROLE" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CONTROLE = dplyr::case_match(
+        CONTROLE = dplyr::recode_values(
           .data$CONTROLE,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$CONTROLE
+          default = .data$CONTROLE
         )
       ) %>%
       dplyr::mutate(CONTROLE = as.factor(.data$CONTROLE))
@@ -592,13 +592,13 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("MANIPULA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        MANIPULA = dplyr::case_match(
+        MANIPULA = dplyr::recode_values(
           .data$MANIPULA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "3" ~ "N\u00e3o se aplica",
           "9" ~ NA,
-          .default = .data$MANIPULA
+          default = .data$MANIPULA
         )
       ) %>%
       dplyr::mutate(MANIPULA = as.factor(.data$MANIPULA))
@@ -608,13 +608,13 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("MAECHAGA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        MAECHAGA = dplyr::case_match(
+        MAECHAGA = dplyr::recode_values(
           .data$MAECHAGA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "3" ~ "N\u00e3o se aplica",
           "9" ~ NA,
-          .default = .data$MAECHAGA
+          default = .data$MAECHAGA
         )
       ) %>%
       dplyr::mutate(MAECHAGA = as.factor(.data$MAECHAGA))
@@ -624,12 +624,12 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("ORAL" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ORAL = dplyr::case_match(
+        ORAL = dplyr::recode_values(
           .data$ORAL,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$ORAL
+          default = .data$ORAL
         )
       ) %>%
       dplyr::mutate(ORAL = as.factor(.data$ORAL))
@@ -639,12 +639,12 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("ASSINTOMA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ASSINTOMA = dplyr::case_match(
+        ASSINTOMA = dplyr::recode_values(
           .data$ASSINTOMA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$ASSINTOMA
+          default = .data$ASSINTOMA
         )
       ) %>%
       dplyr::mutate(ASSINTOMA = as.factor(.data$ASSINTOMA))
@@ -654,12 +654,12 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("EDEMA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        EDEMA = dplyr::case_match(
+        EDEMA = dplyr::recode_values(
           .data$EDEMA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$EDEMA
+          default = .data$EDEMA
         )
       ) %>%
       dplyr::mutate(EDEMA = as.factor(.data$EDEMA))
@@ -669,12 +669,12 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("MENINGOE" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        MENINGOE = dplyr::case_match(
+        MENINGOE = dplyr::recode_values(
           .data$MENINGOE,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$MENINGOE
+          default = .data$MENINGOE
         )
       ) %>%
       dplyr::mutate(MENINGOE = as.factor(.data$MENINGOE))
@@ -684,12 +684,12 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("FEBRE" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        FEBRE = dplyr::case_match(
+        FEBRE = dplyr::recode_values(
           .data$FEBRE,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$FEBRE
+          default = .data$FEBRE
         )
       ) %>%
       dplyr::mutate(FEBRE = as.factor(.data$FEBRE))
@@ -699,12 +699,12 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("HEPATOME" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        HEPATOME = dplyr::case_match(
+        HEPATOME = dplyr::recode_values(
           .data$HEPATOME,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$HEPATOME
+          default = .data$HEPATOME
         )
       ) %>%
       dplyr::mutate(HEPATOME = as.factor(.data$HEPATOME))
@@ -714,12 +714,12 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("SINAIS_ICC" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        SINAIS_ICC = dplyr::case_match(
+        SINAIS_ICC = dplyr::recode_values(
           .data$SINAIS_ICC,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$SINAIS_ICC
+          default = .data$SINAIS_ICC
         )
       ) %>%
       dplyr::mutate(SINAIS_ICC = as.factor(.data$SINAIS_ICC))
@@ -729,12 +729,12 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("ARRITMIAS" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ARRITMIAS = dplyr::case_match(
+        ARRITMIAS = dplyr::recode_values(
           .data$ARRITMIAS,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$ARRITMIAS
+          default = .data$ARRITMIAS
         )
       ) %>%
       dplyr::mutate(ARRITMIAS = as.factor(.data$ARRITMIAS))
@@ -744,12 +744,12 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("ASTENIA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ASTENIA = dplyr::case_match(
+        ASTENIA = dplyr::recode_values(
           .data$ASTENIA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$ASTENIA
+          default = .data$ASTENIA
         )
       ) %>%
       dplyr::mutate(ASTENIA = as.factor(.data$ASTENIA))
@@ -759,12 +759,12 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("ESPLENOM" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ESPLENOM = dplyr::case_match(
+        ESPLENOM = dplyr::recode_values(
           .data$ESPLENOM,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$ESPLENOM
+          default = .data$ESPLENOM
         )
       ) %>%
       dplyr::mutate(ESPLENOM = as.factor(.data$ESPLENOM))
@@ -774,12 +774,12 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("CHAGOMA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CHAGOMA = dplyr::case_match(
+        CHAGOMA = dplyr::recode_values(
           .data$CHAGOMA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$CHAGOMA
+          default = .data$CHAGOMA
         )
       ) %>%
       dplyr::mutate(CHAGOMA = as.factor(.data$CHAGOMA))
@@ -789,13 +789,13 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("EXAME" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        EXAME = dplyr::case_match(
+        EXAME = dplyr::recode_values(
           .data$EXAME,
           "1" ~ "Positivo",
           "2" ~ "Negativo",
           "3" ~ "N\u00e3o realizado",
           "9" ~ NA,
-          .default = .data$EXAME
+          default = .data$EXAME
         )
       ) %>%
       dplyr::mutate(EXAME = as.factor(.data$EXAME))
@@ -805,13 +805,13 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("MICRO_HEMA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        MICRO_HEMA = dplyr::case_match(
+        MICRO_HEMA = dplyr::recode_values(
           .data$MICRO_HEMA,
           "1" ~ "Positivo",
           "2" ~ "Negativo",
           "3" ~ "N\u00e3o realizado",
           "9" ~ NA,
-          .default = .data$MICRO_HEMA
+          default = .data$MICRO_HEMA
         )
       ) %>%
       dplyr::mutate(MICRO_HEMA = as.factor(.data$MICRO_HEMA))
@@ -821,13 +821,13 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("OUTRO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        OUTRO = dplyr::case_match(
+        OUTRO = dplyr::recode_values(
           .data$OUTRO,
           "1" ~ "Positivo",
           "2" ~ "Negativo",
           "3" ~ "N\u00e3o realizado",
           "9" ~ NA,
-          .default = .data$OUTRO
+          default = .data$OUTRO
         )
       ) %>%
       dplyr::mutate(OUTRO = as.factor(.data$OUTRO))
@@ -837,13 +837,13 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("XENODIAG" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        XENODIAG = dplyr::case_match(
+        XENODIAG = dplyr::recode_values(
           .data$XENODIAG,
           "1" ~ "Positivo",
           "2" ~ "Negativo",
           "3" ~ "N\u00e3o realizado",
           "9" ~ NA,
-          .default = .data$XENODIAG
+          default = .data$XENODIAG
         )
       ) %>%
       dplyr::mutate(XENODIAG = as.factor(.data$XENODIAG))
@@ -853,13 +853,13 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("HEMOCULT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        HEMOCULT = dplyr::case_match(
+        HEMOCULT = dplyr::recode_values(
           .data$HEMOCULT,
           "1" ~ "Positivo",
           "2" ~ "Negativo",
           "3" ~ "N\u00e3o realizado",
           "9" ~ NA,
-          .default = .data$HEMOCULT
+          default = .data$HEMOCULT
         )
       ) %>%
       dplyr::mutate(HEMOCULT = as.factor(.data$HEMOCULT))
@@ -869,14 +869,14 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("ELI_IGM_S1" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ELI_IGM_S1 = dplyr::case_match(
+        ELI_IGM_S1 = dplyr::recode_values(
           .data$ELI_IGM_S1,
           "1" ~ "Reagente",
           "2" ~ "N\u00e3o reagente",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
           "9" ~ NA,
-          .default = .data$ELI_IGM_S1
+          default = .data$ELI_IGM_S1
         )
       ) %>%
       dplyr::mutate(ELI_IGM_S1 = as.factor(.data$ELI_IGM_S1))
@@ -886,14 +886,14 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("ELI_IGG_S1" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ELI_IGG_S1 = dplyr::case_match(
+        ELI_IGG_S1 = dplyr::recode_values(
           .data$ELI_IGG_S1,
           "1" ~ "Reagente",
           "2" ~ "N\u00e3o reagente",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
           "9" ~ NA,
-          .default = .data$ELI_IGG_S1
+          default = .data$ELI_IGG_S1
         )
       ) %>%
       dplyr::mutate(ELI_IGG_S1 = as.factor(.data$ELI_IGG_S1))
@@ -903,14 +903,14 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("ELI_IGM_S2" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ELI_IGM_S2 = dplyr::case_match(
+        ELI_IGM_S2 = dplyr::recode_values(
           .data$ELI_IGM_S2,
           "1" ~ "Reagente",
           "2" ~ "N\u00e3o reagente",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
           "9" ~ NA,
-          .default = .data$ELI_IGM_S2
+          default = .data$ELI_IGM_S2
         )
       ) %>%
       dplyr::mutate(ELI_IGM_S2 = as.factor(.data$ELI_IGM_S2))
@@ -920,14 +920,14 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("ELI_IGG_S2" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ELI_IGG_S2 = dplyr::case_match(
+        ELI_IGG_S2 = dplyr::recode_values(
           .data$ELI_IGG_S2,
           "1" ~ "Reagente",
           "2" ~ "N\u00e3o reagente",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
           "9" ~ NA,
-          .default = .data$ELI_IGG_S2
+          default = .data$ELI_IGG_S2
         )
       ) %>%
       dplyr::mutate(ELI_IGG_S2 = as.factor(.data$ELI_IGG_S2))
@@ -937,14 +937,14 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("HEM_IGM_S1" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        HEM_IGM_S1 = dplyr::case_match(
+        HEM_IGM_S1 = dplyr::recode_values(
           .data$HEM_IGM_S1,
           "1" ~ "Reagente",
           "2" ~ "N\u00e3o reagente",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
           "9" ~ NA,
-          .default = .data$HEM_IGM_S1
+          default = .data$HEM_IGM_S1
         )
       ) %>%
       dplyr::mutate(HEM_IGM_S1 = as.factor(.data$HEM_IGM_S1))
@@ -954,14 +954,14 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("HEM_IGG_S1" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        HEM_IGG_S1 = dplyr::case_match(
+        HEM_IGG_S1 = dplyr::recode_values(
           .data$HEM_IGG_S1,
           "1" ~ "Reagente",
           "2" ~ "N\u00e3o reagente",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
           "9" ~ NA,
-          .default = .data$HEM_IGM_S1
+          default = .data$HEM_IGM_S1
         )
       ) %>%
       dplyr::mutate(HEM_IGG_S1 = as.factor(.data$HEM_IGG_S1))
@@ -971,14 +971,14 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("HEM_IGM_S2" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        HEM_IGM_S2 = dplyr::case_match(
+        HEM_IGM_S2 = dplyr::recode_values(
           .data$HEM_IGM_S2,
           "1" ~ "Reagente",
           "2" ~ "N\u00e3o reagente",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
           "9" ~ NA,
-          .default = .data$HEM_IGM_S1
+          default = .data$HEM_IGM_S1
         )
       ) %>%
       dplyr::mutate(HEM_IGM_S2 = as.factor(.data$HEM_IGM_S2))
@@ -988,14 +988,14 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("HEM_IGG_S2" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        HEM_IGG_S2 = dplyr::case_match(
+        HEM_IGG_S2 = dplyr::recode_values(
           .data$HEM_IGG_S2,
           "1" ~ "Reagente",
           "2" ~ "N\u00e3o reagente",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
           "9" ~ NA,
-          .default = .data$HEM_IGM_S1
+          default = .data$HEM_IGM_S1
         )
       ) %>%
       dplyr::mutate(HEM_IGG_S2 = as.factor(.data$HEM_IGG_S2))
@@ -1005,14 +1005,14 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("IMU_IGM_S1" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        IMU_IGM_S1 = dplyr::case_match(
+        IMU_IGM_S1 = dplyr::recode_values(
           .data$IMU_IGM_S1,
           "1" ~ "Reagente",
           "2" ~ "N\u00e3o reagente",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
           "9" ~ NA,
-          .default = .data$IMU_IGM_S1
+          default = .data$IMU_IGM_S1
         )
       ) %>%
       dplyr::mutate(IMU_IGM_S1 = as.factor(.data$IMU_IGM_S1))
@@ -1022,14 +1022,14 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("TIT_IGM_S1" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        TIT_IGM_S1 = dplyr::case_match(
+        TIT_IGM_S1 = dplyr::recode_values(
           .data$TIT_IGM_S1,
           "1" ~ "Reagente",
           "2" ~ "N\u00e3o reagente",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
           "9" ~ NA,
-          .default = .data$TIT_IGM_S1
+          default = .data$TIT_IGM_S1
         )
       ) %>%
       dplyr::mutate(TIT_IGM_S1 = as.factor(.data$TIT_IGM_S1))
@@ -1039,14 +1039,14 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("IMU_IGM_S2" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        IMU_IGM_S2 = dplyr::case_match(
+        IMU_IGM_S2 = dplyr::recode_values(
           .data$IMU_IGM_S2,
           "1" ~ "Reagente",
           "2" ~ "N\u00e3o reagente",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
           "9" ~ NA,
-          .default = .data$IMU_IGM_S2
+          default = .data$IMU_IGM_S2
         )
       ) %>%
       dplyr::mutate(IMU_IGM_S2 = as.factor(.data$IMU_IGM_S2))
@@ -1056,14 +1056,14 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("TIT_IGM_S2" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        TIT_IGM_S2 = dplyr::case_match(
+        TIT_IGM_S2 = dplyr::recode_values(
           .data$TIT_IGM_S2,
           "1" ~ "Reagente",
           "2" ~ "N\u00e3o reagente",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
           "9" ~ NA,
-          .default = .data$TIT_IGM_S2
+          default = .data$TIT_IGM_S2
         )
       ) %>%
       dplyr::mutate(TIT_IGM_S2 = as.factor(.data$TIT_IGM_S2))
@@ -1073,14 +1073,14 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("IMU_IGG_S1" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        IMU_IGG_S1 = dplyr::case_match(
+        IMU_IGG_S1 = dplyr::recode_values(
           .data$IMU_IGG_S1,
           "1" ~ "Reagente",
           "2" ~ "N\u00e3o reagente",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
           "9" ~ NA,
-          .default = .data$IMU_IGG_S1
+          default = .data$IMU_IGG_S1
         )
       ) %>%
       dplyr::mutate(IMU_IGG_S1 = as.factor(.data$IMU_IGG_S1))
@@ -1090,14 +1090,14 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("TIT_IGG_S1" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        TIT_IGG_S1 = dplyr::case_match(
+        TIT_IGG_S1 = dplyr::recode_values(
           .data$TIT_IGG_S1,
           "1" ~ "Reagente",
           "2" ~ "N\u00e3o reagente",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
           "9" ~ NA,
-          .default = .data$TIT_IGG_S1
+          default = .data$TIT_IGG_S1
         )
       ) %>%
       dplyr::mutate(TIT_IGG_S1 = as.factor(.data$TIT_IGG_S1))
@@ -1107,14 +1107,14 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("IMU_IGG_S2" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        IMU_IGG_S2 = dplyr::case_match(
+        IMU_IGG_S2 = dplyr::recode_values(
           .data$IMU_IGG_S2,
           "1" ~ "Reagente",
           "2" ~ "N\u00e3o reagente",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
           "9" ~ NA,
-          .default = .data$IMU_IGG_S2
+          default = .data$IMU_IGG_S2
         )
       ) %>%
       dplyr::mutate(IMU_IGG_S2 = as.factor(.data$IMU_IGG_S2))
@@ -1124,14 +1124,14 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("TIT_IGG_S2" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        TIT_IGG_S2 = dplyr::case_match(
+        TIT_IGG_S2 = dplyr::recode_values(
           .data$TIT_IGG_S2,
           "1" ~ "Reagente",
           "2" ~ "N\u00e3o reagente",
           "3" ~ "Inconclusivo",
           "4" ~ "N\u00e3o realizado",
           "9" ~ NA,
-          .default = .data$TIT_IGG_S2
+          default = .data$TIT_IGG_S2
         )
       ) %>%
       dplyr::mutate(TIT_IGG_S2 = as.factor(.data$TIT_IGG_S2))
@@ -1141,13 +1141,13 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("RES_HIST" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        RES_HIST = dplyr::case_match(
+        RES_HIST = dplyr::recode_values(
           .data$RES_HIST,
           "1" ~ "Positivo",
           "2" ~ "Negativo",
           "3" ~ "N\u00e3o realizado",
           "9" ~ NA,
-          .default = .data$RES_HIST
+          default = .data$RES_HIST
         )
       ) %>%
       dplyr::mutate(RES_HIST = as.factor(.data$RES_HIST))
@@ -1157,12 +1157,12 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("ESPECIFICO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        ESPECIFICO = dplyr::case_match(
+        ESPECIFICO = dplyr::recode_values(
           .data$ESPECIFICO,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$ESPECIFICO
+          default = .data$ESPECIFICO
         )
       ) %>%
       dplyr::mutate(ESPECIFICO = as.factor(.data$ESPECIFICO))
@@ -1172,12 +1172,12 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("SINTOMATIC" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        SINTOMATIC = dplyr::case_match(
+        SINTOMATIC = dplyr::recode_values(
           .data$SINTOMATIC,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$SINTOMATIC
+          default = .data$SINTOMATIC
         )
       ) %>%
       dplyr::mutate(SINTOMATIC = as.factor(.data$SINTOMATIC))
@@ -1187,12 +1187,12 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("DROGA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        DROGA = dplyr::case_match(
+        DROGA = dplyr::recode_values(
           .data$DROGA,
           "1" ~ "Benznidazol",
           "2" ~ "Outro",
           "9" ~ NA,
-          .default = .data$DROGA
+          default = .data$DROGA
         )
       ) %>%
       dplyr::mutate(DROGA = as.factor(.data$DROGA))
@@ -1202,13 +1202,13 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("CON_TRIAT" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CON_TRIAT = dplyr::case_match(
+        CON_TRIAT = dplyr::recode_values(
           .data$CON_TRIAT,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "3" ~ "N\u00e3o se aplica",
           "9" ~ NA,
-          .default = .data$CON_TRIAT
+          default = .data$CON_TRIAT
         )
       ) %>%
       dplyr::mutate(CON_TRIAT = as.factor(.data$CON_TRIAT))
@@ -1218,13 +1218,13 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("BIOSSEG" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        BIOSSEG = dplyr::case_match(
+        BIOSSEG = dplyr::recode_values(
           .data$BIOSSEG,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "3" ~ "N\u00e3o se aplica",
           "9" ~ NA,
-          .default = .data$BIOSSEG
+          default = .data$BIOSSEG
         )
       ) %>%
       dplyr::mutate(BIOSSEG = as.factor(.data$BIOSSEG))
@@ -1234,13 +1234,13 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("FISCALIZA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        FISCALIZA = dplyr::case_match(
+        FISCALIZA = dplyr::recode_values(
           .data$FISCALIZA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "3" ~ "N\u00e3o se aplica",
           "9" ~ NA,
-          .default = .data$FISCALIZA
+          default = .data$FISCALIZA
         )
       ) %>%
       dplyr::mutate(FISCALIZA = as.factor(.data$FISCALIZA))
@@ -1250,13 +1250,13 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("MED_OUTRO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        MED_OUTRO = dplyr::case_match(
+        MED_OUTRO = dplyr::recode_values(
           .data$MED_OUTRO,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "3" ~ "N\u00e3o se aplica",
           "9" ~ NA,
-          .default = .data$MED_OUTRO
+          default = .data$MED_OUTRO
         )
       ) %>%
       dplyr::mutate(MED_OUTRO = as.factor(.data$MED_OUTRO))
@@ -1266,13 +1266,13 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("CLASSI_FIN" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CLASSI_FIN = dplyr::case_match(
+        CLASSI_FIN = dplyr::recode_values(
           .data$CLASSI_FIN,
           "9" ~ NA,
           "1" ~ "Confirmado",
           "2" ~ "Descartado",
           "8" ~ "Inconclusivo",
-          .default = .data$CLASSI_FIN
+          default = .data$CLASSI_FIN
         )
       ) %>%
       dplyr::mutate(CLASSI_FIN = as.factor(.data$CLASSI_FIN))
@@ -1282,12 +1282,12 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("CRITERIO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CRITERIO = dplyr::case_match(
+        CRITERIO = dplyr::recode_values(
           .data$CRITERIO,
           "9" ~ NA,
           "1" ~ "Laboratorial",
           "2" ~ "Cl\\u00ednico-epidemiol\\u00f3gico",
-          .default = .data$CRITERIO
+          default = .data$CRITERIO
         )
       ) %>%
       dplyr::mutate(CRITERIO = as.factor(.data$CRITERIO))
@@ -1297,7 +1297,7 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("CON_PROVAV" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CON_PROVAV = dplyr::case_match(
+        CON_PROVAV = dplyr::recode_values(
           .data$CON_PROVAV,
           "9" ~ NA,
           "1" ~ "Transfusional",
@@ -1306,7 +1306,7 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
           "4" ~ "Acidental",
           "5" ~ "Oral",
           "6" ~ "Outro",
-          .default = .data$CON_PROVAV
+          default = .data$CON_PROVAV
         )
       ) %>%
       dplyr::mutate(CON_PROVAV = as.factor(.data$CON_PROVAV))
@@ -1316,14 +1316,14 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("CON_LOCAL" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        CON_LOCAL = dplyr::case_match(
+        CON_LOCAL = dplyr::recode_values(
           .data$CON_LOCAL,
           "9" ~ NA,
           "1" ~ "Unidade de Hemoterapia",
           "2" ~ "Domic\\u00edlio",
           "3" ~ "Laborat\\u00f3rio",
           "4" ~ "Outro",
-          .default = .data$CON_LOCAL
+          default = .data$CON_LOCAL
         )
       ) %>%
       dplyr::mutate(CON_LOCAL = as.factor(.data$CON_LOCAL))
@@ -1333,13 +1333,13 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("TPAUTOCTO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        TPAUTOCTO = dplyr::case_match(
+        TPAUTOCTO = dplyr::recode_values(
           .data$TPAUTOCTO,
           "9" ~ NA,
           "1" ~ "Sim",
           "2" ~ "N\\u00e3o",
           "3" ~ "Indeterminado",
-          .default = .data$TPAUTOCTO
+          default = .data$TPAUTOCTO
         )
       ) %>%
       dplyr::mutate(TPAUTOCTO = as.factor(.data$TPAUTOCTO))
@@ -1349,7 +1349,7 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("COUFINF" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        COUFINF = dplyr::case_match(
+        COUFINF = dplyr::recode_values(
           .data$COUFINF,
           "0" ~ "Ignorado",
           "99" ~ "Ignorado",
@@ -1380,7 +1380,7 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
           "51" ~ "Mato Grosso",
           "52" ~ "Goi\u00e1s",
           "53" ~ "Distrito Federal",
-          .default = .data$COUFINF
+          default = .data$COUFINF
         )
       ) %>%
       dplyr::mutate(COUFINF = as.factor(.data$COUFINF))
@@ -1399,12 +1399,12 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("DOENCA_TRA" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        DOENCA_TRA = dplyr::case_match(
+        DOENCA_TRA = dplyr::recode_values(
           .data$DOENCA_TRA,
           "1" ~ "Sim",
           "2" ~ "N\u00e3o",
           "9" ~ NA,
-          .default = .data$DOENCA_TRA
+          default = .data$DOENCA_TRA
         )
       ) %>%
       dplyr::mutate(DOENCA_TRA = as.factor(.data$DOENCA_TRA))
@@ -1414,13 +1414,13 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
   if ("EVOLUCAO" %in% variables_names) {
     data <- data %>%
       dplyr::mutate(
-        EVOLUCAO = dplyr::case_match(
+        EVOLUCAO = dplyr::recode_values(
           .data$EVOLUCAO,
           "9" ~ NA,
           "1" ~ "Vivo",
           "2" ~ "\\u00d3bito pelo agravo notificado",
           "3" ~ "\\u00d3bito por outra causa",
-          .default = .data$EVOLUCAO
+          default = .data$EVOLUCAO
         )
       ) %>%
       dplyr::mutate(EVOLUCAO = as.factor(.data$EVOLUCAO))
