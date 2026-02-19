@@ -90,7 +90,7 @@ process_sinan_malaria <- function(data, municipality_data = TRUE) {
       dplyr::mutate(
         NU_IDADE_N = dplyr::case_match(
           .data$NU_IDADE_N,
-          999 ~ NA,
+          999 ~ NA_integer_,
           .default = .data$NU_IDADE_N
         )
       ) %>%
