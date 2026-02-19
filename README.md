@@ -15,24 +15,7 @@ Para saber mais sobre os Sistemas de Informação em Saúde do Brasil, [acesse o
 # install.packages("remotes")
 remotes::install_github("rfsaldanha/microdatasus")
 ```
-### Windows
-
-Para instalar o pacote no Windows, é necessário instalar antes o pacote `read.dbc`. 
-
-Você pode instalar a última versão já compilada para Windows
-
-```r
-install.packages("read.dbc", repos = "https://packagemanager.posit.co/cran/2024-07-05")
-```
-
-E depois instalar o `microdatasus`
-
-```r
-remotes::install_github("rfsaldanha/microdatasus")
-```
-
-
-Ou instalar o [Rtools](https://cran.r-project.org/bin/windows/Rtools/) e compilar locamente.
+*A versão atual apresenta funções internas para leitura dos arquivos DBC, copiadas do pacote [healthbR](https://github.com/SidneyBissoli/healthbR)*
 
 ## Utilização
 
@@ -53,7 +36,7 @@ dados <- process_sim(dados)
 
 ## Agradecimento
 
-O desenvolvimento deste pacote não seria possível sem o pacote [*read.dbc*](https://cran.r-project.org/web/packages/read.dbc/index.html), criado por Daniela Petruzalek.
+O desenvolvimento e manutenção deste pacote não seria possível sem os pacotes [*read.dbc*](https://cran.r-project.org/web/packages/read.dbc/index.html), criado por Daniela Petruzalek, e [*healthbR*](https://github.com/SidneyBissoli/healthbR), criado por Sidney Bissoli.
 
 ## Como citar
 
