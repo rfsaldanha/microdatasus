@@ -1,0 +1,178 @@
+# microdatasus
+
+Este pacote para o R apresenta funções para download e pré-processamento
+dos arquivos de microdados do DataSUS (formato *DBC*). Nesta última
+etapa, os rótulos e formato das variáveis são atribuídos e tratados.
+
+Para saber mais sobre os Sistemas de Informação em Saúde do Brasil,
+[acesse o e-book](https://rfsaldanha.github.io/sis/).
+
+## Instalação
+
+``` r
+# install.packages("remotes")
+remotes::install_github("rfsaldanha/microdatasus")
+```
+
+### Windows
+
+Para instalar o pacote no Windows, é necessário instalar antes o pacote
+`read.dbc`.
+
+Você pode instalar a última versão já compilada para Windows
+
+``` r
+install.packages("read.dbc", repos = "https://packagemanager.posit.co/cran/2024-07-05")
+```
+
+E depois instalar o `microdatasus`
+
+``` r
+remotes::install_github("rfsaldanha/microdatasus")
+```
+
+Ou instalar o [Rtools](https://cran.r-project.org/bin/windows/Rtools/) e
+compilar locamente.
+
+## Utilização
+
+A utilizaço do pacote consiste, em geral, no uso de duas funções: uma
+realiza o download dos dados e outra o pré-processamento dos mesmos.
+
+### Exemplo
+
+``` r
+library(microdatasus)
+dados <- fetch_datasus(year_start = 2013, year_end = 2014, uf = "RJ", information_system = "SIM-DO")
+dados <- process_sim(dados)
+```
+
+## Sistemas de Informação em Saúde suportados
+
+- Download: SIM, SINASC, SIH, CNES, SIA, SINAN-DENGUE,
+  SINAN-CHIKUNGUNYA, SINAN-ZIKA, SINAN-MALARIA, SINAN-CHAGAS,
+  SINAN-LEISHMANIOSE-VISCERAL, SINAN-LEISHMANIOSE-TEGUMENTAR,
+  SINAN-LEPTOSPIROSE.
+- Pré-processamento: SIM, SINASC, SIH, CNES, SIA, SINAN-DENGUE,
+  SINAN-CHIKUNGUNYA, SINAN-ZIKA, SINAN-MALARIA, SINAN-CHAGAS,
+  SINAN-LEISHMANIOSE-TEGUMENTAR, SINAN-LEISHMANNIOSE-VISCERAL.
+
+## Agradecimento
+
+O desenvolvimento deste pacote não seria possível sem o pacote
+[*read.dbc*](https://cran.r-project.org/web/packages/read.dbc/index.html),
+criado por Daniela Petruzalek.
+
+## Como citar
+
+Peço aos usuários que citem o pacote sempre que ele for utilizado.
+
+> SALDANHA, Raphael de Freitas; BASTOS, Ronaldo Rocha; BARCELLOS,
+> Christovam. Microdatasus: pacote para download e pré-processamento de
+> microdados do Departamento de Informática do SUS (DATASUS). Cad. Saúde
+> Pública, Rio de Janeiro , v. 35, n. 9, e00032419, 2019. Available from
+> <https://doi.org/10.1590/0102-311x00032419>.
+
+## Dúvidas e sugestões
+
+Crie uma [issue](https://github.com/rfsaldanha/microdatasus/issues) no
+projeto ou envie um e-mail para `raphael.saldanha@fiocruz.br`
+
+# Package index
+
+## The package
+
+- [`microdatasus-package`](https://rfsaldanha.github.io/microdatasus/reference/microdatasus.md)
+  [`microdatasus`](https://rfsaldanha.github.io/microdatasus/reference/microdatasus.md)
+  : microdatasus: Download and preprocess DataSUS files
+
+## Fetch data
+
+- [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+  : Fetch and read microdata files from DataSUS
+- [`fetch_sigtab()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_sigtab.md)
+  : Fetch SIGTAB table
+- [`fetch_cadger()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_cadger.md)
+  : Fetch CADGER table
+
+## Process data
+
+- [`process_sim()`](https://rfsaldanha.github.io/microdatasus/reference/process_sim.md)
+  : Process SIM variables from DataSUS
+- [`process_sinasc()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinasc.md)
+  : Process SINASC variables from DataSUS
+- [`process_sih()`](https://rfsaldanha.github.io/microdatasus/reference/process_sih.md)
+  : Process SIH variables from DataSUS
+- [`process_sia()`](https://rfsaldanha.github.io/microdatasus/reference/process_sia.md)
+  : Process SIA variables from DataSUS
+- [`process_cnes()`](https://rfsaldanha.github.io/microdatasus/reference/process_cnes.md)
+  : Process CNES variables from DataSUS
+- [`process_sinan_dengue()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan_dengue.md)
+  : Process SINAN Dengue variables from DataSUS
+- [`process_sinan_zika()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan_zika.md)
+  : Process SINAN Zika variables from DataSUS
+- [`process_sinan_chikungunya()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan_chikungunya.md)
+  : Process SINAN Chikungunya variables from DataSUS
+- [`process_sinan_malaria()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan_malaria.md)
+  : Process SINAN Malaria variables from DataSUS
+- [`process_sinan_chagas()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan_chagas.md)
+  : Process SINAN Chagas variables from DataSUS
+- [`process_sinan_leishmaniose_tegumentar()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan_leishmaniose_tegumentar.md)
+  : Process SINAN Leishmaniose Tegumentar variables from DataSUS
+- [`process_sinan_leishmaniose_visceral()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan_leishmaniose_visceral.md)
+  : Process SINAN Leishmaniose Visceral variables from DataSUS
+
+## Sample datasets
+
+- [`sim_do_sample`](https://rfsaldanha.github.io/microdatasus/reference/sim_do_sample.md)
+  : SIM-DO sample
+- [`sinasc_sample`](https://rfsaldanha.github.io/microdatasus/reference/sinasc_sample.md)
+  : SINASC sample
+- [`sih_rd_sample`](https://rfsaldanha.github.io/microdatasus/reference/sih_rd_sample.md)
+  : SIH-RD sample
+- [`sia_pa_sample`](https://rfsaldanha.github.io/microdatasus/reference/sia_pa_sample.md)
+  : SIA-PA sample
+- [`cnes_st_sample`](https://rfsaldanha.github.io/microdatasus/reference/cnes_st_sample.md)
+  : CNES-ST sample
+- [`cnes_pf_sample`](https://rfsaldanha.github.io/microdatasus/reference/cnes_pf_sample.md)
+  : CNES-PF sample
+- [`sinan_dengue_sample`](https://rfsaldanha.github.io/microdatasus/reference/sinan_dengue_sample.md)
+  : SINAN Dengue sample
+- [`sinan_zika_sample`](https://rfsaldanha.github.io/microdatasus/reference/sinan_zika_sample.md)
+  : SINAN Zika sample
+- [`sinan_chikungunya_sample`](https://rfsaldanha.github.io/microdatasus/reference/sinan_chikungunya_sample.md)
+  : SINAN Chikungunya sample
+- [`sinan_malaria_sample`](https://rfsaldanha.github.io/microdatasus/reference/sinan_malaria_sample.md)
+  : SINAN Malaria sample
+- [`sinan_chagas_sample`](https://rfsaldanha.github.io/microdatasus/reference/sinan_chagas_sample.md)
+  : SINAN Chagas sample
+- [`sinan_leishmaniose_tegumentar_sample`](https://rfsaldanha.github.io/microdatasus/reference/sinan_leishmaniose_tegumentar_sample.md)
+  : SINAN Leishmaniose Tegumentar sample
+- [`sinan_leishmaniose_visceral_sample`](https://rfsaldanha.github.io/microdatasus/reference/sinan_leishmaniose_visceral_sample.md)
+  : SINAN Leishmaniose Visceral sample
+
+## Reference datasets
+
+- [`tabMun`](https://rfsaldanha.github.io/microdatasus/reference/tabMun.md)
+  : Municipalities table
+- [`paisnet`](https://rfsaldanha.github.io/microdatasus/reference/paisnet.md)
+  : paisnet table
+- [`sigtab`](https://rfsaldanha.github.io/microdatasus/reference/sigtab.md)
+  : Procediments table
+- [`tabNaturalidade`](https://rfsaldanha.github.io/microdatasus/reference/tabNaturalidade.md)
+  : Naturalidade table
+- [`equipe`](https://rfsaldanha.github.io/microdatasus/reference/equipe.md)
+  : Equipe table
+- [`tabOcupacao`](https://rfsaldanha.github.io/microdatasus/reference/tabOcupacao.md)
+  : Ocupations table
+- [`tabCBO`](https://rfsaldanha.github.io/microdatasus/reference/tabCBO.md)
+  : CBO table
+
+# Articles
+
+### All vignettes
+
+- [Exemplos de
+  uso](https://rfsaldanha.github.io/microdatasus/articles/exemplos.md):
+- [Perguntas
+  frequentes](https://rfsaldanha.github.io/microdatasus/articles/FAQ.md):

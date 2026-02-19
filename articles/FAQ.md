@@ -1,0 +1,133 @@
+# Perguntas frequentes
+
+## Data e local de processamento e data e local de ocorrência do evento
+
+Os arquivos disponibilizados pelo DataSUS são organizados segundo data e
+local de processamento. Assim, ao se consultar por exemplo, os dados do
+SIM para 2020 no RJ, são obtidos os dados dos óbitos que foram
+processados no estado do Rio de Janeiro no ano de 2020.
+
+O local e data de processamento pode ser diferente do local e data de
+ocorrência do evento. Por exemplo, um óbito ocorrido em Dezembro de 2019
+pode ser processado pelas Secretariais de Saúde e pelo DataSUS apenas no
+mês seguinte, indo para o arquivo de Janeiro de 2020.
+
+Desta forma, para garantir que você tem os dados de todos em eventos
+ocorridos em um ano e/ou mês específico, recomenda-se baixar os dados
+aos anos e mêses vizinhos, filtrando posteriormente os registros pela
+data de ocorrência desejada.
+
+Exemplo: Para se computador os óbitos ocorridos no Acre em 2020,
+recomenda-se baixar os dados de 2019, 2020 e 2021.
+
+``` r
+library(microdatasus)
+library(dplyr)
+library(lubridate)
+
+sim_raw <- fetch_datasus(
+  year_start = 2019, year_end = 2021, 
+  uf = "AC", 
+  information_system = "SIM-DO"
+)
+
+sim_p <- process_sim(sim_raw)
+
+sim_f <- sim_p %>%
+  filter(year(DTOBITO) == 2020)
+```
+
+## Download timeout
+
+Por padrão, o R espera que um arquivo seja baixado em até 60 segundos.
+Ao baixar algum arquivo muito grande ou com uma conexão com a Internet
+lenta, o tempo necessário para download será maior. Neste caso, você
+verá uma mensagem de *warning* semelhante a esta:
+
+    1: In utils::download.file(file, temp, mode = "wb", method = "libcurl") :
+      downloaded length 12260742 != reported length 30474112
+    2: In utils::download.file(file, temp, mode = "wb", method = "libcurl") :
+      URL 'ftp://ftp.datasus.gov.br/dissemin/publicos/SINAN/DADOS/FINAIS/DENGBR10.dbc': Timeout of 60 seconds was reached
+
+Para corrigir isto, é bem simples: aumente o tempo de tolerância do R
+para downloads. Exemplo: tolerância de 2 minutos.
+
+``` r
+options(timeout = 120)
+```
+
+## Download de muitos dados
+
+O download dos dados através do pacote é realizado em memória. Isto
+significa que cada arquivo baixado do DataSUS é lido e armazenado na
+memória RAM do computador. Caso você esteja baixando muitos arquivos,
+para vários estados e anos, você irá precisar de mais memória RAM
+disponível.
+
+Um modo de contornar este problema é a realizar o download e armazenar
+os resultados em um banco de dados, como SQLite, DuckDB ou outro. Abaixo
+segue um exemplo de como fazer isso.
+
+### Pacotes
+
+``` r
+library(microdatasus)
+library(tidyverse)
+library(dbplyr)
+library(DBI)
+library(RSQLite)
+```
+
+### Cria conexão com o banco de dados
+
+``` r
+conn <- dbConnect(RSQLite::SQLite(), "sih.SQLite")
+```
+
+### Realiza download e pré-processamento dos dados em loop
+
+``` r
+anos <- c(2019, 2020)
+meses <- 1:12
+ufs <- c("AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", 
+         "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", 
+         "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", 
+         "TO")
+```
+
+``` r
+for(ano in anos){
+  for(mes in meses){
+    for(uf in ufs){
+      # Baixa o dado para um ano, mês e UF específico
+      tmp <- fetch_datasus(
+        year_start = ano, year_end = ano, 
+        month_start = mes, month_end = mes,
+        uf = uf, information_system = "SIH-RD"
+      )
+      
+      # Pré-processamento dos dados
+      tmp <- process_sih(data = tmp)
+      
+      # Escreve na tabela "sih" no banco de dados, 
+      # apensando os dados de cada ano e mês
+      dbWriteTable(conn = conn, name = "sih", value = tmp, append = TRUE)
+      
+      # Remove a tabela temporária
+      rm(tmp)
+    }
+  }
+}
+```
+
+### Exemplo de consulta ao banco de dados,
+
+Uma tabela de quantidade de registrosm, por sexo e causa básica
+
+``` r
+tbl(conn, "sih") %>%
+  group_by(SEXO, COMPLEX) %>%
+  summarise(freq = n()) %>%
+  ungroup() %>%
+  collect()
+```
