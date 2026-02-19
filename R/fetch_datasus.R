@@ -3142,7 +3142,7 @@ fetch_datasus <- function(
     tryCatch(
       {
         utils::download.file(file, temp, mode = "wb", method = "libcurl")
-        partial <- read.dbc::read.dbc(temp, as.is = TRUE)
+        partial <- read_dbc(file = temp, as_character = TRUE)
         file.remove(temp)
       },
       error = function(cond) {
@@ -3166,8 +3166,9 @@ fetch_datasus <- function(
         partial$source <- basename(file)
       }
 
-      if (!all(vars %in% names(partial)))
+      if (!all(vars %in% names(partial))) {
         cli::cli_abort("One or more variables names are unknown. Typo?")
+      }
       if (is.null(vars)) {
         data <- dplyr::bind_rows(data, partial)
       } else {
