@@ -1,4 +1,5 @@
-# dbc functions, copied from healthbR package (https://github.com/SidneyBissoli/healthbR/)
+# DBC functions adapted from the healthbR package:
+# https://github.com/SidneyBissoli/healthbR/
 
 # ============================================================================
 # .dbc2dbf - decompress .dbc to .dbf
@@ -18,12 +19,24 @@
 #'
 #' @noRd
 .dbc2dbf <- function(input_file, output_file) {
+  if (!is.character(input_file) ||
+      length(input_file) != 1L ||
+      is.na(input_file) ||
+      !nzchar(input_file)) {
+    cli::cli_abort("{.arg input_file} must be a single, non-empty file path.")
+  }
+  if (!is.character(output_file) ||
+      length(output_file) != 1L ||
+      is.na(output_file) ||
+      !nzchar(output_file)) {
+    cli::cli_abort("{.arg output_file} must be a single, non-empty file path.")
+  }
   if (!file.exists(input_file)) {
     cli::cli_abort("File not found: {.file {input_file}}")
   }
 
   result <- .C(
-    "microdatasus_dbc2dbf",
+    microdatasus_dbc2dbf,
     input = as.character(normalizePath(input_file, mustWork = TRUE)),
     output = as.character(path.expand(output_file)),
     ret_code = as.integer(0L),
@@ -31,61 +44,64 @@
   )
 
   if (result$ret_code != 0L) {
-    cli::cli_warn(c(
-      "DBC decompression failed.",
+    cli::cli_abort(c(
+      "Failed to decompress the DBC file.",
       "x" = "Error: {result$error_str}",
       "i" = "File: {.file {input_file}}"
     ))
-    return(FALSE)
   }
 
-  file.exists(output_file) && file.size(output_file) > 0
+  if (!file.exists(output_file) || file.size(output_file) == 0) {
+    cli::cli_abort("DBC decompression produced no output.")
+  }
+
+  invisible(TRUE)
 }
 
 
 # ============================================================================
-# .read_dbc - read a .dbc file into a tibble
+# read_dbc - read a .dbc file into a tibble
 # ============================================================================
 
-#' Read a .dbc file into a tibble (internal)
+#' Read a DBC file
 #'
-#' Original function from `healthbR` package.
+#' Decompresses a DataSUS DBC file to a temporary DBF file and reads it into
+#' a tibble. The implementation was adapted from the `healthbR` package.
 #'
-#' Decompresses a DATASUS .dbc file to a temporary .dbf, reads it with
-#' foreign::read.dbf(), and converts all columns to character for safety.
+#' @param file A single character string with the path to a DBC file.
+#' @param as_character If `TRUE` (the default), converts every column to
+#'   character. If `FALSE`, preserves the types inferred from the DBF metadata.
 #'
-#' @param file character. Path to the .dbc file.
-#' @param as_character logical. If `TRUE`, convert all variables to character.
-#'
-#' @return A tibble with all columns as character.
+#' @return A tibble.
 #'
 #' @export
 read_dbc <- function(file, as_character = TRUE) {
+  if (!is.character(file) ||
+      length(file) != 1L ||
+      is.na(file) ||
+      !nzchar(file)) {
+    cli::cli_abort("{.arg file} must be a single, non-empty file path.")
+  }
+  if (!is.logical(as_character) ||
+      length(as_character) != 1L ||
+      is.na(as_character)) {
+    cli::cli_abort("{.arg as_character} must be `TRUE` or `FALSE`.")
+  }
   if (!file.exists(file)) {
     cli::cli_abort("File not found: {.file {file}}")
   }
 
-  # create temporary .dbf file
+  # Create a temporary DBF file.
   temp_dbf <- tempfile(fileext = ".dbf")
-  on.exit(if (file.exists(temp_dbf)) file.remove(temp_dbf), add = TRUE)
+  on.exit(unlink(temp_dbf), add = TRUE)
 
-  # decompress .dbc to .dbf
-  success <- .dbc2dbf(file, temp_dbf)
-
-  if (!success) {
-    cli::cli_abort(c(
-      "Failed to decompress .dbc file.",
-      "x" = "File: {.file {file}}",
-      "i" = "The file may be corrupted or in an unexpected format."
-    ))
-  }
-
-  # read .dbf with foreign::read.dbf (returns data.frame)
+  # Decompress the DBC file and read the resulting DBF.
+  .dbc2dbf(file, temp_dbf)
   df <- foreign::read.dbf(temp_dbf, as.is = TRUE)
 
-  # convert all columns to character (preserves leading zeros, etc.)
-  df[] <- lapply(df, as.character)
+  if (as_character) {
+    df[] <- lapply(df, as.character)
+  }
 
-  # return as tibble
   tibble::as_tibble(df)
 }

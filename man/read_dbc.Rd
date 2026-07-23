@@ -2,22 +2,20 @@
 % Please edit documentation in R/dbc_functions.R
 \name{read_dbc}
 \alias{read_dbc}
-\title{Read a .dbc file into a tibble (internal)}
+\title{Read a DBC file}
 \usage{
 read_dbc(file, as_character = TRUE)
 }
 \arguments{
-\item{file}{character. Path to the .dbc file.}
+\item{file}{A single character string with the path to a DBC file.}
 
-\item{as_character}{logical. If \code{TRUE}, convert all variables to character.}
+\item{as_character}{If \code{TRUE} (the default), converts every column to
+character. If \code{FALSE}, preserves the types inferred from the DBF metadata.}
 }
 \value{
-A tibble with all columns as character.
+A tibble.
 }
 \description{
-Original function from \code{healthbR} package.
-}
-\details{
-Decompresses a DATASUS .dbc file to a temporary .dbf, reads it with
-foreign::read.dbf(), and converts all columns to character for safety.
+Decompresses a DataSUS DBC file to a temporary DBF file and reads it into
+a tibble. The implementation was adapted from the \code{healthbR} package.
 }

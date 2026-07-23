@@ -17,4 +17,5 @@ void R_init_microdatasus(DllInfo *dll)
 {
     R_registerRoutines(dll, CEntries, NULL, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
+    R_forceSymbols(dll, TRUE);
 }

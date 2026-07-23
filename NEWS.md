@@ -1,6 +1,9 @@
 # microdatasus 3.0.0
-* Remove dependence from `read.dbc` package and use copied functions from `healthbR` package to deal with DBC files internally. Thanks Sidney Bissoli for the open source code.
-* Adopts `dplyr::recode_values()` since `dplyr::case_match` is now deprecated.
+* Removes the dependency on `read.dbc` and reads DBC files with vendored C code
+  adapted from `healthbR`. Thanks to Sidney Bissoli for the open-source code.
+* Adds `read_dbc()` with optional preservation of DBF column types.
+* Adopts `dplyr::recode_values()` since `dplyr::case_match()` is now deprecated.
+* Requires R 4.1.0 or later.
 
 # microdatasus 2.5.0
 * Function `process_sinan_malaria`, fix variable type when pre-processing the variable `NU_IDADE_N` (#132)

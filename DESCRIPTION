@@ -2,15 +2,30 @@ Package: microdatasus
 Title: Download and Process 'DataSUS' Files
 Version: 3.0.0
 Authors@R: 
-    person(given = "Raphael",
-           family = "Saldanha",
-           role = c("aut", "cre"),
-           email = "raphael.saldanha@fiocruz.br",
-           comment = c(ORCID = "0000-0003-0652-8466"))
+    c(person(given = "Raphael",
+             family = "Saldanha",
+             role = c("aut", "cre"),
+             email = "raphael.saldanha@fiocruz.br",
+             comment = c(ORCID = "0000-0003-0652-8466")),
+      person(given = "Sidney da Silva Pereira",
+             family = "Bissoli",
+             role = c("ctb", "cph"),
+             comment = "DBC decompression code"),
+      person(given = "Mark",
+             family = "Adler",
+             role = c("ctb", "cph"),
+             comment = "blast decompressor"))
 URL: https://github.com/rfsaldanha/microdatasus, https://rfsaldanha.github.io/microdatasus/
 BugReports: https://github.com/rfsaldanha/microdatasus/issues
-Description: Downloads data files from 'DataSUS' health information systems from <ftp.datasus.gov.br> and process the data, including labeling categorical variables.
+Description: Downloads and processes health microdata from Brazilian Unified
+    Health System ('DataSUS') information systems. It handles the compressed
+    'DBC' format internally and provides functions to organize variables and
+    add labels to categorical fields from mortality, live births, hospital
+    admissions, outpatient care, health facilities, and notifiable diseases
+    data. For details, see Saldanha et al. (2019)
+    <doi:10.1590/0102-311x00032419>.
 License: MIT + file LICENSE
+Copyright: See file inst/COPYRIGHTS.
 Encoding: UTF-8
 LazyData: true
 LazyDataCompression: xz
@@ -21,7 +36,7 @@ Imports:
     cli,
     curl,
     data.table,
-    dplyr,
+    dplyr (>= 1.2.0),
     foreign,
     lubridate,
     magrittr,
@@ -35,5 +50,5 @@ Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Depends: 
-    R (>= 3.5)
+    R (>= 4.1.0)
 Config/Needs/website: rmarkdown

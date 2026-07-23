@@ -12,14 +12,27 @@ Para saber mais sobre os Sistemas de Informação em Saúde do Brasil, [acesse o
 ## Instalação
 
 ```r
+# Versão estável
+install.packages("microdatasus")
+
+# Versão de desenvolvimento
 # install.packages("remotes")
 remotes::install_github("rfsaldanha/microdatasus")
 ```
-*A versão atual apresenta funções internas para leitura dos arquivos DBC, copiadas do pacote [healthbR](https://github.com/SidneyBissoli/healthbR)*
+
+A leitura de arquivos DBC foi internalizada e não depende mais do pacote
+`read.dbc`. A implementação foi adaptada do pacote
+[healthbR](https://github.com/SidneyBissoli/healthbR).
+
+No Windows, a instalação da versão de desenvolvimento pelo GitHub requer uma
+versão do [Rtools](https://cran.r-project.org/bin/windows/Rtools/) compatível
+com a versão instalada do R. A versão binária distribuída pelo CRAN não requer
+ferramentas de compilação.
 
 ## Utilização
 
-A utilizaço do pacote consiste, em geral, no uso de duas funções: uma realiza o download dos dados e outra o pré-processamento dos mesmos.
+A utilização do pacote consiste, em geral, no uso de duas funções: uma realiza
+o download dos dados e outra faz o pré-processamento.
 
 ### Exemplo
 
@@ -36,7 +49,7 @@ dados <- process_sim(dados)
 
 ## Agradecimento
 
-O desenvolvimento e manutenção deste pacote não seria possível sem os pacotes [*read.dbc*](https://cran.r-project.org/web/packages/read.dbc/index.html), criado por Daniela Petruzalek, e [*healthbR*](https://github.com/SidneyBissoli/healthbR), criado por Sidney Bissoli.
+O desenvolvimento e manutenção deste pacote não seria possível sem os pacotes [*read.dbc*](https://CRAN.R-project.org/package=read.dbc), criado por Daniela Petruzalek, e [*healthbR*](https://github.com/SidneyBissoli/healthbR), criado por Sidney Bissoli.
 
 ## Como citar
 

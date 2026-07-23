@@ -2,6 +2,7 @@
  * Copyright (C) 2003, 2012, 2013 Mark Adler
  * For conditions of distribution and use, see copyright notice in blast.h
  * version 1.3, 24 Aug 2013
+ * Modified for microdatasus in 2026 to use per-call decoding tables.
  *
  * blast.c decompresses data compressed by the PKWare Compression Library.
  * This function provides functionality similar to the explode() function of
@@ -287,13 +288,12 @@ local int decomp(struct state *s)
     unsigned dist;      /* distance for copy */
     int copy;           /* copy counter */
     unsigned char *from, *to;   /* copy pointers */
-    static int virgin = 1;                              /* build tables once */
-    static short litcnt[MAXBITS+1], litsym[256];        /* litcode memory */
-    static short lencnt[MAXBITS+1], lensym[16];         /* lencode memory */
-    static short distcnt[MAXBITS+1], distsym[64];       /* distcode memory */
-    static struct huffman litcode = {litcnt, litsym};   /* length code */
-    static struct huffman lencode = {lencnt, lensym};   /* length code */
-    static struct huffman distcode = {distcnt, distsym};/* distance code */
+    short litcnt[MAXBITS+1], litsym[256];               /* litcode memory */
+    short lencnt[MAXBITS+1], lensym[16];                /* lencode memory */
+    short distcnt[MAXBITS+1], distsym[64];              /* distcode memory */
+    struct huffman litcode = {litcnt, litsym};          /* length code */
+    struct huffman lencode = {lencnt, lensym};          /* length code */
+    struct huffman distcode = {distcnt, distsym};       /* distance code */
         /* bit lengths of literal codes */
     static const unsigned char litlen[] = {
         11, 124, 8, 7, 28, 7, 188, 13, 76, 4, 10, 8, 12, 10, 12, 10, 8, 23, 8,
@@ -311,13 +311,10 @@ local int decomp(struct state *s)
     static const char extra[16] = {     /* extra bits for length codes */
         0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8};
 
-    /* set up decoding tables (once--might not be thread-safe) */
-    if (virgin) {
-        construct(&litcode, litlen, sizeof(litlen));
-        construct(&lencode, lenlen, sizeof(lenlen));
-        construct(&distcode, distlen, sizeof(distlen));
-        virgin = 0;
-    }
+    /* set up per-call decoding tables */
+    construct(&litcode, litlen, sizeof(litlen));
+    construct(&lencode, lenlen, sizeof(lenlen));
+    construct(&distcode, distlen, sizeof(distlen));
 
     /* read header */
     lit = bits(s, 8);

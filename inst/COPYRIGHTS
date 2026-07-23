@@ -1,0 +1,9 @@
+The package includes third-party source code used to decompress DBC files:
+
+- src/blast.c and src/blast.h:
+  Copyright (C) 2003, 2012, 2013 Mark Adler.
+  Distributed under the permissive license included in src/blast.h.
+
+- src/dbc2dbf.c:
+  Copyright (C) 2025 Sidney Bissoli (healthbR package).
+  Distributed under the MIT license.

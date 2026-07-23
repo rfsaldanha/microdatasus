@@ -61,8 +61,7 @@ The files are downloaded to a temporary folder and deleted after the reading pro
 }
 
 \examples{
-\dontshow{if (curl::has_internet() & RCurl::url.exists("ftp.datasus.gov.br", .opts = list(timeout = 3))) withAutoprint(\{ # examplesIf}
-\donttest{
+\dontshow{if (interactive() && curl::has_internet()) withAutoprint(\{ # examplesIf}
 # Fetch two years of data from SIM-DO
 res <- fetch_datasus(year_start = 2010, year_end = 2011, uf = "AC",
                      information_system = "SIM-DO")
@@ -77,6 +76,5 @@ res <- fetch_datasus(year_start = 2014, month_start = 1,
                      year_end = 2014, month_end = 2,
                      uf = c("AC", "RR"),
                      information_system = "SIH-RD")
-}
 \dontshow{\}) # examplesIf}
 }

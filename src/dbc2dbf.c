@@ -21,12 +21,17 @@
 #include <stdint.h>
 #include "blast.h"
 
-/* input callback for blast(): reads from a FILE* */
+struct input_state {
+    FILE *file;
+    unsigned char buffer[16384];
+};
+
+/* input callback for blast(): reads from a per-call buffer */
 static unsigned inf(void *how, unsigned char **buf)
 {
-    static unsigned char hold[16384];
-    *buf = hold;
-    return (unsigned)fread(hold, 1, sizeof(hold), (FILE *)how);
+    struct input_state *input = (struct input_state *)how;
+    *buf = input->buffer;
+    return (unsigned)fread(input->buffer, 1, sizeof(input->buffer), input->file);
 }
 
 /* output callback for blast(): writes to a FILE* */
@@ -54,6 +59,7 @@ void dbc2dbf(char **input_file, char **output_file,
     uint16_t hdr_size;
     size_t nread, nwritten;
     int blast_ret;
+    struct input_state input;
 
     *ret_code = 0;
     *error_str = "";
@@ -81,6 +87,7 @@ void dbc2dbf(char **input_file, char **output_file,
         *error_str = "failed to seek to header offset in .dbc file";
         fclose(fin);
         fclose(fout);
+        remove(*output_file);
         return;
     }
 
@@ -90,16 +97,18 @@ void dbc2dbf(char **input_file, char **output_file,
         *error_str = "failed to read header size from .dbc file (file too small)";
         fclose(fin);
         fclose(fout);
+        remove(*output_file);
         return;
     }
 
     hdr_size = (uint16_t)raw_hdr[0] | ((uint16_t)raw_hdr[1] << 8);
 
-    if (hdr_size == 0 || hdr_size > 65535u) {
+    if (hdr_size < 33u) {
         *ret_code = 4;
         *error_str = "invalid DBF header size in .dbc file";
         fclose(fin);
         fclose(fout);
+        remove(*output_file);
         return;
     }
 
@@ -109,6 +118,7 @@ void dbc2dbf(char **input_file, char **output_file,
         *error_str = "failed to rewind .dbc file";
         fclose(fin);
         fclose(fout);
+        remove(*output_file);
         return;
     }
 
@@ -118,6 +128,7 @@ void dbc2dbf(char **input_file, char **output_file,
         *error_str = "memory allocation failed for DBF header";
         fclose(fin);
         fclose(fout);
+        remove(*output_file);
         return;
     }
 
@@ -128,6 +139,7 @@ void dbc2dbf(char **input_file, char **output_file,
         free(buf);
         fclose(fin);
         fclose(fout);
+        remove(*output_file);
         return;
     }
 
@@ -138,6 +150,7 @@ void dbc2dbf(char **input_file, char **output_file,
         *error_str = "failed to write DBF header to output file";
         fclose(fin);
         fclose(fout);
+        remove(*output_file);
         return;
     }
 
@@ -147,21 +160,48 @@ void dbc2dbf(char **input_file, char **output_file,
         *error_str = "failed to seek past CRC in .dbc file";
         fclose(fin);
         fclose(fout);
+        remove(*output_file);
         return;
     }
 
     /* decompress the remaining data using blast */
-    blast_ret = blast(inf, fin, outf, fout, NULL, NULL);
+    input.file = fin;
+    blast_ret = blast(inf, &input, outf, fout, NULL, NULL);
     if (blast_ret != 0) {
         *ret_code = 8;
-        *error_str = "blast decompression failed";
+        switch (blast_ret) {
+        case 2:
+            *error_str = "compressed data ended unexpectedly";
+            break;
+        case 1:
+            *error_str = "failed to write decompressed data";
+            break;
+        case -1:
+            *error_str = "invalid literal flag in compressed data";
+            break;
+        case -2:
+            *error_str = "invalid dictionary size in compressed data";
+            break;
+        case -3:
+            *error_str = "invalid backward distance in compressed data";
+            break;
+        default:
+            *error_str = "blast decompression failed";
+            break;
+        }
         fclose(fin);
         fclose(fout);
+        remove(*output_file);
         return;
     }
 
     fclose(fin);
-    fclose(fout);
+    if (fclose(fout) != 0) {
+        *ret_code = 9;
+        *error_str = "failed to finalize output .dbf file";
+        remove(*output_file);
+        return;
+    }
 
     *ret_code = 0;
     *error_str = "";

@@ -28,8 +28,7 @@
 #'
 #' The files are downloaded to a temporary folder and deleted after the reading process.
 #'
-#' @examplesIf curl::has_internet() & RCurl::url.exists("ftp.datasus.gov.br", .opts = list(timeout = 3))
-#' \donttest{
+#' @examplesIf interactive() && curl::has_internet()
 #' # Fetch two years of data from SIM-DO
 #' res <- fetch_datasus(year_start = 2010, year_end = 2011, uf = "AC",
 #'                      information_system = "SIM-DO")
@@ -44,7 +43,6 @@
 #'                      year_end = 2014, month_end = 2,
 #'                      uf = c("AC", "RR"),
 #'                      information_system = "SIH-RD")
-#'}
 #' @return a \code{data.frame} with the contents of the DBC files.
 #'
 #' @export
@@ -3143,7 +3141,6 @@ fetch_datasus <- function(
       {
         utils::download.file(file, temp, mode = "wb", method = "libcurl")
         partial <- read_dbc(file = temp, as_character = TRUE)
-        file.remove(temp)
       },
       error = function(cond) {
         cli::cli_alert_info(paste("Something went wrong with this URL:", file))
@@ -3157,7 +3154,8 @@ fetch_datasus <- function(
         if (stop_on_error == TRUE) {
           cli::cli_abort("Stopping download.")
         }
-      }
+      },
+      finally = unlink(temp)
     )
 
     # Merge files
