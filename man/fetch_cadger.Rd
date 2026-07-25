@@ -7,11 +7,12 @@
 fetch_cadger(timeout = 240)
 }
 \arguments{
-\item{timeout}{sets the download timeout reference. Defaults to 240}
+\item{timeout}{A positive numeric scalar. Download and connection timeout,
+in seconds.}
 }
 \value{
-a data.frame
+A data frame with \code{CNES} and \code{FANTASIA} columns.
 }
 \description{
-This function fetchs an updated CADGER table from DataSUS
+Downloads the current CADGER establishment table from DataSUS.
 }

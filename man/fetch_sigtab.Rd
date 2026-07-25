@@ -7,11 +7,12 @@
 fetch_sigtab(timeout = 240)
 }
 \arguments{
-\item{timeout}{sets the download timeout reference. Defaults to 240}
+\item{timeout}{A positive numeric scalar. Download and connection timeout,
+in seconds.}
 }
 \value{
-a data.frame
+A data frame with \code{COD} and \code{nome_proced} columns.
 }
 \description{
-This function fetchs an updated table of procedures (SIGTAB) from DatasSUS
+Downloads the current SIGTAB procedure table from DataSUS.
 }

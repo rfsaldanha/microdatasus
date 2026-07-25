@@ -530,3 +530,49 @@
     "i" = paste(failures, collapse = "\n")
   ))
 }
+
+.datasus_fetch_zip_dbf <- function(url, internal_file, timeout) {
+  .datasus_assert_number(timeout, "timeout", lower = .Machine$double.eps)
+
+  work_dir <- tempfile("microdatasus-auxiliary-")
+  if (!dir.create(work_dir, recursive = TRUE)) {
+    cli::cli_abort("Could not create a temporary download directory.")
+  }
+  on.exit(unlink(work_dir, recursive = TRUE, force = TRUE), add = TRUE)
+
+  archive <- file.path(work_dir, "download.zip")
+  .datasus_download_file(url, archive, timeout)
+
+  extracted <- tryCatch(
+    zip::unzip(
+      zipfile = archive,
+      files = internal_file,
+      exdir = work_dir,
+      overwrite = TRUE
+    ),
+    error = identity
+  )
+  if (inherits(extracted, "error")) {
+    cli::cli_abort(c(
+      "Could not extract the DataSUS auxiliary table.",
+      "i" = conditionMessage(extracted)
+    ))
+  }
+
+  dbf <- file.path(work_dir, internal_file)
+  if (!file.exists(dbf) || is.na(file.size(dbf)) || file.size(dbf) == 0) {
+    cli::cli_abort(
+      "The archive does not contain a valid {.file {internal_file}} file."
+    )
+  }
+
+  tryCatch(
+    foreign::read.dbf(dbf, as.is = TRUE),
+    error = function(error) {
+      cli::cli_abort(c(
+        "Could not read the DataSUS auxiliary table.",
+        "i" = conditionMessage(error)
+      ))
+    }
+  )
+}
