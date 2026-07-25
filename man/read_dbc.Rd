@@ -7,7 +7,8 @@
 read_dbc(file, as_character = TRUE)
 }
 \arguments{
-\item{file}{A single character string with the path to a DBC file.}
+\item{file}{A single character string with the path to a readable, non-empty
+DBC file.}
 
 \item{as_character}{If \code{TRUE} (the default), converts every column to
 character. If \code{FALSE}, preserves the types inferred from the DBF metadata.}
@@ -27,6 +28,9 @@ Decompression is performed through the package's bundled DBC implementation.
 The intermediate DBF file is created in the R temporary directory and removed
 before the function returns or aborts. The implementation was adapted from
 the \code{healthbR} package.
+
+Invalid input files, decompression failures, and DBF reading failures abort
+with errors in the \code{microdatasus_dbc_error} family.
 }
 \references{
 Saldanha, R. F. (2026). \href{https://rfsaldanha.github.io/sis/}{\emph{Sistemas de Informação em Saúde no Brasil}}.

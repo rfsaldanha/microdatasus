@@ -99,6 +99,70 @@ test_that("read_dbc validates its arguments", {
   expect_error(read_dbc(tempfile(fileext = ".dbc")), "File not found")
 })
 
+test_that("read_dbc rejects directories and empty files before decompression", {
+  directory <- tempfile("dbc-directory-")
+  empty <- tempfile(fileext = ".dbc")
+  dir.create(directory)
+  file.create(empty)
+  on.exit(unlink(c(directory, empty), recursive = TRUE), add = TRUE)
+
+  expect_error(
+    read_dbc(directory),
+    "must refer to a regular file",
+    class = "microdatasus_dbc_file_error"
+  )
+  expect_error(
+    microdatasus:::.dbc2dbf(directory, tempfile(fileext = ".dbf")),
+    "must refer to a regular file",
+    class = "microdatasus_dbc_file_error"
+  )
+  expect_error(
+    read_dbc(empty),
+    "is empty",
+    class = "microdatasus_dbc_file_error"
+  )
+  expect_error(
+    microdatasus:::.dbc2dbf(empty, tempfile(fileext = ".dbf")),
+    "is empty",
+    class = "microdatasus_dbc_file_error"
+  )
+})
+
+test_that("read_dbc rejects unreadable files when permissions are enforced", {
+  skip_on_os("windows")
+  path <- dbc_fixture()
+  on.exit({
+    Sys.chmod(path, mode = "0600")
+    unlink(path)
+  }, add = TRUE)
+  Sys.chmod(path, mode = "0000")
+  skip_if(
+    file.access(path, mode = 4L) == 0L,
+    "Current user can read files regardless of permission bits."
+  )
+
+  expect_error(
+    read_dbc(path),
+    "not readable",
+    class = "microdatasus_dbc_file_error"
+  )
+})
+
+test_that("read_dbc rejects files whose size cannot be determined", {
+  path <- dbc_fixture()
+  on.exit(unlink(path), add = TRUE)
+  local_mocked_bindings(
+    .dbc_file_size = function(file) NA_real_,
+    .package = "microdatasus"
+  )
+
+  expect_error(
+    read_dbc(path),
+    "Could not determine the size",
+    class = "microdatasus_dbc_file_error"
+  )
+})
+
 test_that("DBC decompressor validates input and output paths", {
   input <- dbc_fixture()
   output <- tempfile(fileext = ".dbf")
@@ -136,7 +200,8 @@ test_that("read_dbc rejects invalid DBC files", {
 
   expect_error(
     microdatasus:::.dbc2dbf(path, output),
-    "Failed to decompress the DBC file"
+    "Failed to decompress the DBC file",
+    class = "microdatasus_dbc_decompression_error"
   )
   expect_false(file.exists(output))
 })
@@ -184,6 +249,7 @@ test_that("DBC decompressor reports specific malformed-file errors", {
     expect_error(
       microdatasus:::.dbc2dbf(paths[[index]], output),
       cases[[index]]$regexp,
+      class = "microdatasus_dbc_error",
       info = paste("Malformed DBC case", index)
     )
     expect_false(file.exists(output))
@@ -191,7 +257,8 @@ test_that("DBC decompressor reports specific malformed-file errors", {
 
   expect_error(
     read_dbc(paths[[1L]]),
-    "Failed to decompress the DBC file"
+    "Failed to decompress the DBC file",
+    class = "microdatasus_dbc_decompression_error"
   )
 })
 
@@ -206,6 +273,40 @@ test_that("DBC decompressor reports output paths that cannot be created", {
     "cannot open output"
   )
   expect_false(file.exists(output))
+})
+
+test_that("DBC decompressor rejects a zero-sized output target", {
+  skip_on_os("windows")
+  skip_if_not(file.exists("/dev/null"))
+  input <- dbc_fixture()
+  on.exit(unlink(input), add = TRUE)
+
+  expect_error(
+    microdatasus:::.dbc2dbf(input, "/dev/null"),
+    "produced no valid output",
+    class = "microdatasus_dbc_decompression_error"
+  )
+})
+
+test_that("DBC decompressor rejects output whose size cannot be determined", {
+  input <- dbc_fixture()
+  output <- tempfile(fileext = ".dbf")
+  on.exit(unlink(c(input, output)), add = TRUE)
+  local_mocked_bindings(
+    .dbc_file_size = function(file) {
+      if (identical(file, output)) {
+        return(NA_real_)
+      }
+      unname(file.info(file)$size)
+    },
+    .package = "microdatasus"
+  )
+
+  expect_error(
+    microdatasus:::.dbc2dbf(input, output),
+    "produced no valid output",
+    class = "microdatasus_dbc_decompression_error"
+  )
 })
 
 test_that("read_dbc removes its temporary DBF after successful reading", {
@@ -270,6 +371,15 @@ test_that("read_dbc removes its temporary DBF after DBF reading failure", {
     .package = "microdatasus"
   )
 
-  expect_error(read_dbc(input))
+  error <- tryCatch(read_dbc(input), error = identity)
+
+  expect_s3_class(error, "microdatasus_dbc_read_error")
+  expect_s3_class(error, "microdatasus_dbc_error")
+  expect_match(
+    conditionMessage(error),
+    "Failed to read the decompressed DBF file"
+  )
+  expect_match(conditionMessage(error), basename(input), fixed = TRUE)
+  expect_s3_class(error$parent, "error")
   expect_false(file.exists(temporary))
 })
