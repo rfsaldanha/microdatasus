@@ -37,7 +37,6 @@ Imports:
     data.table,
     dplyr (>= 1.2.0),
     foreign,
-    lubridate,
     magrittr,
     RCurl,
     rlang,
@@ -46,6 +45,7 @@ Imports:
     utils,
     zip
 Suggests: 
+    lubridate,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Depends: 

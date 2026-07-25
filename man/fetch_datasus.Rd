@@ -18,63 +18,73 @@ fetch_datasus(
 )
 }
 \arguments{
-\item{year_start, year_end}{numeric. Start and end year of files in the format yyyy.}
+\item{year_start, year_end}{Numeric scalars. First and last requested years.}
 
-\item{month_start, month_end}{numeric. Start and end month in the format mm. Those parameters are only used with the healh information systems SIH, CNES and SIA. There parameter are ignored if the information health system is SIM or SINASC.}
+\item{month_start, month_end}{Numeric scalars. First and last requested
+months. Required for SIH, CNES and SIA and ignored for annual systems.}
 
-\item{uf}{an optional string or a vector of strings. By default all UFs ("Unidades Federativas") are download. See \emph{Details}.}
+\item{uf}{A state abbreviation, a vector of abbreviations, or \code{"all"}.}
 
-\item{information_system}{string. The abbreviation of the health information system to be accessed. See \emph{Details}.}
+\item{information_system}{A supported information-system abbreviation.}
 
-\item{vars}{an optional string or a vector of strings. By default, all variables read and stored, unless a list of desired variables is informed by this parameter.}
+\item{vars}{An optional character vector containing variables to retain.}
 
-\item{stop_on_error}{logical. If TRUE, the download process will be stopped if an error occurs.}
+\item{stop_on_error}{If \code{TRUE}, stop when a file cannot be downloaded or
+read. Otherwise, return all files that were successfully read.}
 
-\item{timeout}{numeric (seconds). Sets a timeout tolerance for downloads, usefull on large files and/or slow connections. Defaults to 240 seconds.}
+\item{timeout}{Download and connection timeout, in seconds.}
 
-\item{track_source}{logical. If \code{TRUE}, adds a column called \code{source} with the downloaded file name.}
+\item{track_source}{If \code{TRUE}, append a \code{source} column containing the
+original DBC file name.}
 }
 \value{
-a \code{data.frame} with the contents of the DBC files.
+A tibble containing the combined DBC files, or \code{NULL} when no file
+could be read.
 }
 \description{
-\code{fetch_datasus} downloads microdata (DBC) files from DataSUS and reads them.
+\code{fetch_datasus()} downloads DBC microdata files published by DataSUS,
+reads them and combines their rows in a single data frame.
 }
 \details{
-This function downloads DBC files from DataSUS following parameters about start date, end date, UF and health information system abbreviation. After the download process, the files are merged into a unique \code{data.frame} object.
+The supported state abbreviations are "AC", "AL", "AP", "AM", "BA", "CE",
+"DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI",
+"RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE" and "TO".
 
-A specific UF or a vector of UFs can be informed using the following abbreviations: "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO".
-
-The following systems are implemented: "SIH-RD", "SIH-RJ", "SIH-SP", "SIH-ER", "SIM-DO", "SIM-DOFET", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT", "SINASC", "CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR", "CNES-HB", "CNES-PF", "CNES-EP", "CNES-RC", "CNES-IN", "CNES-EE", "CNES-EF", "CNES-GM", "SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD", "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS", "SIA-SAD", "SINAN-DENGUE", "SINAN-CHIKUNGUNYA", "SINAN-ZIKA", "SINAN-MALARIA", "SINAN-CHAGAS", "SINAN-LEISHMANIOSE-VISCERAL", "SINAN-LEISHMANIOSE-TEGUMENTAR", "SINAN-LEPTOSPIROSE".
+The following systems are implemented: "SIH-RD", "SIH-RJ", "SIH-SP",
+"SIH-ER", "SIM-DO", "SIM-DOFET", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT",
+"SINASC", "CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR",
+"CNES-HB", "CNES-PF", "CNES-EP", "CNES-RC", "CNES-IN", "CNES-EE",
+"CNES-EF", "CNES-GM", "SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD",
+"SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS",
+"SIA-SAD", "SINAN-DENGUE", "SINAN-CHIKUNGUNYA", "SINAN-ZIKA",
+"SINAN-MALARIA", "SINAN-CHAGAS", "SINAN-LEISHMANIOSE-VISCERAL",
+"SINAN-LEISHMANIOSE-TEGUMENTAR" and "SINAN-LEPTOSPIROSE".
 }
 \section{Warning}{
 
-A Internet connection is needed to use this function.
-
-Currently, DataSUS FTP server is restricting download calls from some countries, except Brazil.
-
-The year and month used to download the files regards the processing month and year of the cases by DataSUS.
-
-The UF regards where the cases were processed by DataSUS.
-
-The files are downloaded to a temporary folder and deleted after the reading process.
+An Internet connection is required. DataSUS may restrict FTP access from
+some countries. Dates refer to DataSUS processing periods and state
+abbreviations refer to the place where records were processed. Downloaded
+files are temporary and are removed after being read.
 }
 
 \examples{
 \dontshow{if (interactive() && curl::has_internet()) withAutoprint(\{ # examplesIf}
-# Fetch two years of data from SIM-DO
-res <- fetch_datasus(year_start = 2010, year_end = 2011, uf = "AC",
-                     information_system = "SIM-DO")
+sim <- fetch_datasus(
+  year_start = 2014,
+  year_end = 2014,
+  uf = "AC",
+  information_system = "SIM-DO",
+  vars = c("CODMUNRES", "DTOBITO", "CAUSABAS")
+)
 
-# Fetch one year of data from SIM-DO and keep only three variables
-res <- fetch_datasus(year_start = 2014, year_end = 2014,
-                     information_system = "SIM-DO", uf = "AC",
-                     vars = c("CODMUNRES", "DTOBITO", "CAUSABAS"))
-
-# Fetch some months' data from SIH-RD for four states
-res <- fetch_datasus(year_start = 2014, month_start = 1,
-                     year_end = 2014, month_end = 2,
-                     uf = c("AC", "RR"),
-                     information_system = "SIH-RD")
+sih <- fetch_datasus(
+  year_start = 2014,
+  month_start = 1,
+  year_end = 2014,
+  month_end = 2,
+  uf = c("AC", "RR"),
+  information_system = "SIH-RD"
+)
 \dontshow{\}) # examplesIf}
 }
