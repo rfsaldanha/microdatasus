@@ -1,5 +1,8 @@
 ---
-title: "Exemplos de uso"
+title: "Primeiros passos e exemplos por sistema"
+description: >
+  Fluxo básico de download e processamento para SIM, SINASC, SIH, SIA, CNES e
+  SINAN.
 ---
 
 ```{r, include = FALSE}
@@ -14,175 +17,218 @@ knitr::opts_chunk$set(
 library(microdatasus)
 ```
 
-## Sistema de Informações de Mortalidade (SIM)
+## Fluxo básico
 
-O SIM é o sistema de informações em saúde brasileiro mais antigo em funcionamento. Ele apresenta um grande conjunto de características sobre os óbitos ocorridos em território nacional.
+O uso do `microdatasus` normalmente segue três passos:
 
--   Instrumento de registro: Declaração de Óbito (DO)
-
--   Cobertura: dimensões pública e privada do SUS
-
--   Arquivos: anual por UF
-
--   Atualização: anual
-
--   Defasagem de atualização: entre 1 a 2 anos, podendo ser divulgados arquivos preliminares pelo DataSUS
-
-### Exemplo
-
-Óbitos processados no estado do Rio de Janeiro em 2021.
+1. definir o sistema, o período e a abrangência geográfica;
+2. baixar os arquivos com `fetch_datasus()`;
+3. aplicar o processador específico e converter explicitamente os tipos
+   necessários à análise.
 
 ```{r}
 sim_raw <- fetch_datasus(
-  year_start = 2021, year_end = 2021, 
-  uf = "RJ", 
+  year_start = 2022,
+  year_end = 2022,
+  uf = "AC",
+  information_system = "SIM-DO",
+  vars = c("CODMUNRES", "DTOBITO", "CAUSABAS"),
+  track_source = TRUE
+)
+
+sim <- process_sim(sim_raw)
+sim$DTOBITO <- as.Date(sim$DTOBITO)
+```
+
+As funções `process_*()` normalizam textos e substituem códigos conhecidos por
+descrições. Ao final, suas colunas são retornadas como texto; datas e números
+usados na análise devem ser convertidos explicitamente.
+
+Os argumentos de período e UF identificam as partições publicadas pelo
+DataSUS. Eles não substituem a escolha da variável temporal ou territorial
+adequada à pergunta de pesquisa. O livro
+[*Sistemas de Informação em Saúde no Brasil*](https://rfsaldanha.github.io/sis/)
+apresenta a unidade de análise, a cobertura, os fluxos e os cuidados de cada
+sistema.
+
+## SIM — mortalidade
+
+O Sistema de Informação sobre Mortalidade registra óbitos e tem como documento
+básico a Declaração de Óbito. O
+[capítulo sobre o SIM](https://rfsaldanha.github.io/sis/sim.html) discute, entre
+outros temas, causa básica, causas múltiplas, residência, ocorrência e análise
+temporal.
+
+Os arquivos `SIM-DO` são anuais e organizados por UF:
+
+```{r}
+sim_raw <- fetch_datasus(
+  year_start = 2021,
+  year_end = 2021,
+  uf = "RJ",
   information_system = "SIM-DO"
 )
 
-sim_p <- process_sim(sim_raw)
+sim <- process_sim(sim_raw)
 ```
 
-## Sistema de Informações de Nascidos Vivos (SINASC)
+Também podem ser baixados os subconjuntos nacionais `SIM-DOFET`, `SIM-DOEXT`,
+`SIM-DOINF` e `SIM-DOMAT`. A função `process_sim()` deve ser usada apenas
+quando o layout for compatível com as variáveis que ela conhece.
 
-O SINASC é responsável por apresentar dados sobre nascidos vivos no Brasil. Segundo a Organização Mundial da Saúde (OMS), nascido vivo é "a expulsão ou extração completa do corpo da mãe, independentemente da duração da gravidez, de um produto de concepção que, depois da separação, respire ou apresente qualquer outro sinal de vida, tal como batimentos do coração, pulsações do cordão umbilical ou movimentos efetivos dos músculos de contração voluntária, estando ou não cortado o cordão umbilical e estando ou não desprendida da placenta. Cada produto de um nascimento que reúna essas condições se considera como uma criança viva"
+## SINASC — nascidos vivos
 
--   Instrumento de registro: Declaração de Nascido Vivo (DN)
+O SINASC registra nascidos vivos a partir da Declaração de Nascido Vivo. Veja
+o [capítulo sobre o
+SINASC](https://rfsaldanha.github.io/sis/sinasc.html) para conhecer seu fluxo,
+cobertura e cuidados analíticos.
 
--   Cobertura: dimensões pública e privada do SUS
-
--   Arquivos: anual por UF
-
--   Atualização: anual
-
--   Defasagem de atualização: entre 1 a 2 anos, podendo ser divulgados arquivos preliminares pelo DataSUS
-
-### Exemplo
-
-Nascidos vivos processados no Paraná em 2008.
+Seus arquivos são anuais e organizados por UF:
 
 ```{r}
 sinasc_raw <- fetch_datasus(
-  year_start = 2008, year_end = 2008, 
-  uf = "PR", 
+  year_start = 2020,
+  year_end = 2020,
+  uf = "PR",
   information_system = "SINASC"
 )
 
-sinasc_p <- process_sinasc(sinasc_raw)
+sinasc <- process_sinasc(sinasc_raw)
+sinasc$DTNASC <- as.Date(sinasc$DTNASC)
 ```
 
-## Sistema de Informações Hospitalares (SIH)
+## SIH — internações hospitalares
 
-O SIH apresenta informações sobre internações hospitalares realizadas no SUS.
+O SIH registra internações financiadas pelo SUS por meio da Autorização de
+Internação Hospitalar. O [capítulo sobre o
+SIH](https://rfsaldanha.github.io/sis/sih.html) detalha a AIH, a unidade de
+análise e os limites de interpretação da produção hospitalar.
 
--   Instrumento de registro: Autorização de Internação Hospitalar (AIH)
-
--   Cobertura: dimensão pública do SUS
-
--   Arquivos: mensal por UF
-
--   Atualização: mensal
-
--   Defasagem de atualização: entre 1 a 2 meses
-
-### Exemplo
-
-Internações hospitalares no SUS processadas entre janeiro e fevereiro de 2019 na Paraíba.
+SIH é mensal, portanto os meses são obrigatórios:
 
 ```{r}
 sih_raw <- fetch_datasus(
-  year_start = 2019, year_end = 2019, 
-  month_start = 1, month_end = 2,
-  uf = "PB", 
+  year_start = 2019,
+  month_start = 1,
+  year_end = 2019,
+  month_end = 2,
+  uf = "PB",
   information_system = "SIH-RD"
 )
 
-sih_p <- process_sih(sih_raw)
+sih <- process_sih(sih_raw)
 ```
 
-## Sistema de Informações Ambulatoriais (SIA)
+`process_sih()` processa atualmente o layout reduzido `SIH-RD`. Os layouts
+`SIH-RJ`, `SIH-SP` e `SIH-ER` podem ser baixados, mas não têm processadores
+específicos.
 
-O SIA apresenta dados sobre atendimentos ambulatoriais realizados no SUS.
+## SIA — produção ambulatorial
 
--   Instrumento de registro: Boletins de Atendimento Ambulatorial (BPA)
+O SIA reúne diferentes instrumentos e layouts da produção ambulatorial do SUS.
+O [capítulo sobre o SIA](https://rfsaldanha.github.io/sis/sia.html) ajuda a
+escolher o arquivo apropriado e a interpretar procedimentos, produção e
+instrumentos de registro.
 
--   Cobertura: dimensão pública do SUS
-
--   Arquivos: mensal por UF
-
--   Atualização: mensal
-
--   Defasagem de atualização: entre 1 a 2 meses
-
-### Exemplo
-
-Atendimentos ambulatoriais processados em Roraima entre março e abril de 2020.
+O exemplo abaixo baixa a produção individualizada `SIA-PA` de dois meses:
 
 ```{r}
 sia_raw <- fetch_datasus(
-  year_start = 2020, year_end = 2020, 
-  month_start = 3, month_end = 4,
-  uf = "RR", 
+  year_start = 2020,
+  month_start = 3,
+  year_end = 2020,
+  month_end = 4,
+  uf = "RR",
   information_system = "SIA-PA"
 )
 
-sia_p <- process_sih(sia_raw)
+# FALSE evita um segundo download da tabela SIGTAB neste exemplo
+sia <- process_sia(sia_raw, nome_proced = FALSE)
 ```
 
-## Cadastro Nacional de Estabelecimentos de Saúde (CNES)
+`process_sia()` processa atualmente apenas `SIA-PA`. Quando
+`nome_proced = TRUE`, seu valor padrão, a função baixa a SIGTAB atual e
+acrescenta os nomes dos procedimentos.
 
-O CNES apresenta dados sobre estabelecimentos de saúde, profissionais, equipamentos e outros elementos do SUS.
+## CNES — estabelecimentos e profissionais
 
--   Instrumento de registro: cadastro
+O CNES é um cadastro atualizado continuamente. Cada arquivo mensal representa
+uma posição do cadastro, não um conjunto de eventos ocorridos durante o mês. O
+[capítulo sobre o CNES](https://rfsaldanha.github.io/sis/cnes.html) discute
+estabelecimentos, profissionais, leitos, equipamentos e mudanças cadastrais.
 
--   Cobertura: dimensão pública e privada do SUS
-
--   Arquivos: mensal, todo o Brasil
-
--   Atualização: mensal
-
--   Defasagem de atualização: entre 1 a 2 meses
-
-Cada arquivo representa uma "fotografia" do cadastro para um ano e mês.
-
-### Exemplo
-
-Estabelecimentos de saúde de Belém do Pará em outubro de 2021.
+Estabelecimentos:
 
 ```{r}
 cnes_st_raw <- fetch_datasus(
-  year_start = 2021, year_end = 2021, 
-  month_start = 10, month_end = 10,
-  uf = "PA", 
+  year_start = 2021,
+  month_start = 10,
+  year_end = 2021,
+  month_end = 10,
+  uf = "PA",
   information_system = "CNES-ST"
 )
 
-cnes_st_p <- process_cnes(cnes_st_raw, information_system = "CNES-ST")
+cnes_st <- process_cnes(
+  cnes_st_raw,
+  information_system = "CNES-ST",
+  nomes = FALSE
+)
 ```
 
-## Sistema de Informações de Agravos de Notificação (SINAN)
-
-O SINAN é responsável por receber e disseminar dados sobre doenças e agravos de saúde de interesse. Para doenças, a notificação se inicia na suspeita do caso, que é acompanhada no sistema até o seu desfecho.
-
--   Instrumento de registro: notificação de caso suspeito
-
--   Cobertura: dimensão pública e privada do SUS
-
--   Arquivos: anual, todo o Brasil
-
--   Atualização: anual
-
--   Defasagem de atualização: entre 1 a 2 anos, podendo ser divulgados arquivos preliminares pelo DataSUS
-
-### Exemplo
-
-Casos suspeitos de Dengue em 2010.
+Profissionais:
 
 ```{r}
-sinan_dengue_raw <- fetch_datasus(
-  year_start = 2010, year_end = 2010,
-  uf = "CE", 
+cnes_pf_raw <- fetch_datasus(
+  year_start = 2021,
+  month_start = 10,
+  year_end = 2021,
+  month_end = 10,
+  uf = "PA",
+  information_system = "CNES-PF"
+)
+
+cnes_pf <- process_cnes(
+  cnes_pf_raw,
+  information_system = "CNES-PF"
+)
+```
+
+Em `CNES-ST`, `nomes = TRUE` baixa a tabela CADGER atual para acrescentar o
+nome fantasia do estabelecimento.
+
+## SINAN — agravos de notificação
+
+Os arquivos SINAN suportados são anuais e nacionais. O argumento `uf` é
+ignorado, e a seleção territorial deve ser feita depois do download usando as
+variáveis adequadas. Consulte o [capítulo sobre o
+SINAN](https://rfsaldanha.github.io/sis/sinan.html) para compreender
+notificação, investigação, encerramento e diferenças entre agravos.
+
+Exemplo com dengue:
+
+```{r}
+sinan_raw <- fetch_datasus(
+  year_start = 2019,
+  year_end = 2019,
   information_system = "SINAN-DENGUE"
 )
 
-sinan_dengue_p <- process_sinan_dengue(sinan_dengue_raw)
+sinan_dengue <- process_sinan_dengue(sinan_raw)
 ```
+
+Há download e processamento para dengue, chikungunya, Zika, malária, Chagas e
+leishmanioses tegumentar e visceral. Leptospirose pode ser baixada, mas ainda
+não possui uma função de processamento específica.
+
+## Próximos passos
+
+- Veja [Download e
+  rastreabilidade](download-e-rastreabilidade.html) para múltiplas UFs,
+  `vars`, `track_source`, timeouts e falhas parciais.
+- Consulte as [Perguntas frequentes](FAQ.html) para períodos, tipos de retorno,
+  memória, bancos de dados e arquivos DBC locais.
+- Para códigos territoriais, leia o [apêndice sobre códigos de
+  municípios](https://rfsaldanha.github.io/sis/codmun.html).
+- Para causas e diagnósticos, consulte o [apêndice sobre a
+  CID](https://rfsaldanha.github.io/sis/cid.html).

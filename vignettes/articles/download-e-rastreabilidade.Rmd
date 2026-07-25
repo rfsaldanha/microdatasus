@@ -1,0 +1,257 @@
+---
+title: "Download e rastreabilidade"
+description: >
+  Como controlar períodos, UFs, variáveis, origem dos registros, timeouts e
+  falhas parciais em fetch_datasus().
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+```{r setup}
+library(microdatasus)
+```
+
+## Como `fetch_datasus()` trabalha
+
+`fetch_datasus()` lista os diretórios necessários, cria um manifesto com os
+arquivos realmente publicados pelo DataSUS, baixa cada arquivo e combina os
+registros. Se houver mais de uma publicação para a mesma combinação de sistema,
+período, UF e fragmento, dados definitivos ou atuais têm prioridade sobre dados
+preliminares e cópias históricas.
+
+Os downloads são sequenciais para evitar sobrecarga no servidor. Arquivos
+temporários são removidos depois da leitura, inclusive quando ocorre uma falha.
+Não há cache persistente: uma nova chamada consulta novamente o DataSUS.
+
+## Argumentos principais
+
+| Argumento | Uso |
+|---|---|
+| `year_start`, `year_end` | Primeiro e último ano, inclusive |
+| `month_start`, `month_end` | Obrigatórios para SIH, SIA e CNES; ignorados nos sistemas anuais |
+| `uf` | Uma UF, várias UFs ou `"all"` |
+| `information_system` | Identificador do sistema e do layout |
+| `vars` | Colunas que devem ser mantidas |
+| `track_source` | Acrescenta o nome do arquivo DBC de origem |
+| `timeout` | Limite, em segundos, de cada operação de rede |
+| `stop_on_error` | Define se uma falha interrompe toda a solicitação |
+
+A referência de [`fetch_datasus()`](../reference/fetch_datasus.html) contém a
+lista completa dos identificadores aceitos e seus limites históricos.
+
+## Sistemas anuais
+
+SIM, SINASC e SINAN usam intervalos anuais. Não informe meses:
+
+```{r}
+sim_raw <- fetch_datasus(
+  year_start = 2020,
+  year_end = 2022,
+  uf = "AC",
+  information_system = "SIM-DO"
+)
+```
+
+Os arquivos `SIM-DO` e `SINASC` são organizados por UF. Os subconjuntos
+especiais do SIM e os agravos SINAN suportados são nacionais; nesses casos,
+`uf` é ignorado.
+
+Para escolher corretamente a dimensão temporal e territorial da análise,
+consulte os capítulos de [SIM](https://rfsaldanha.github.io/sis/sim.html),
+[SINASC](https://rfsaldanha.github.io/sis/sinasc.html) e
+[SINAN](https://rfsaldanha.github.io/sis/sinan.html).
+
+## Sistemas mensais
+
+SIH, SIA e CNES exigem os dois meses, mesmo quando apenas um mês é solicitado:
+
+```{r}
+sih_raw <- fetch_datasus(
+  year_start = 2023,
+  month_start = 12,
+  year_end = 2024,
+  month_end = 2,
+  uf = "MG",
+  information_system = "SIH-RD"
+)
+```
+
+O intervalo pode atravessar anos. Os capítulos de
+[SIH](https://rfsaldanha.github.io/sis/sih.html),
+[SIA](https://rfsaldanha.github.io/sis/sia.html) e
+[CNES](https://rfsaldanha.github.io/sis/cnes.html) explicam o significado de
+competência, produção e posição cadastral em cada sistema.
+
+## Uma, várias ou todas as UFs
+
+Uma UF:
+
+```{r}
+uf = "RJ"
+```
+
+Várias UFs, na ordem desejada:
+
+```{r}
+uf = c("AC", "RO", "AM")
+```
+
+Todas as UFs:
+
+```{r}
+uf = "all"
+```
+
+`"all"` não pode ser combinado com UFs individuais. Solicitações amplas podem
+consumir muita rede, memória e tempo; prefira dividir o trabalho em lotes quando
+for necessário persistir grandes volumes.
+
+O [apêndice sobre códigos de
+municípios](https://rfsaldanha.github.io/sis/codmun.html) ajuda a interpretar e
+compatibilizar campos territoriais.
+
+## Selecionar variáveis
+
+`vars` é aplicado a cada arquivo antes da combinação final. Isso reduz a memória
+necessária quando apenas parte do layout é relevante:
+
+```{r}
+sim_raw <- fetch_datasus(
+  year_start = 2022,
+  year_end = 2022,
+  uf = "SP",
+  information_system = "SIM-DO",
+  vars = c("DTOBITO", "CODMUNRES", "CAUSABAS", "IDADE", "SEXO")
+)
+```
+
+Nomes inexistentes produzem erro para evitar uma seleção silenciosamente
+incompleta. Se o estudo usa causas ou diagnósticos, consulte também o
+[apêndice sobre a CID](https://rfsaldanha.github.io/sis/cid.html).
+
+## Rastrear o arquivo de origem
+
+Com `track_source = TRUE`, cada registro recebe uma coluna `source` com o nome
+do DBC:
+
+```{r}
+sih_raw <- fetch_datasus(
+  year_start = 2023,
+  month_start = 1,
+  year_end = 2023,
+  month_end = 2,
+  uf = c("AC", "RO"),
+  information_system = "SIH-RD",
+  vars = c("MUNIC_RES", "DT_INTER", "DIAG_PRINC"),
+  track_source = TRUE
+)
+
+table(sih_raw$source)
+```
+
+`source` é preservada mesmo quando não aparece em `vars`. Se o arquivo original
+já contiver uma coluna com esse nome, a função interrompe a operação para não
+sobrescrever dados.
+
+## Timeout e novas tentativas
+
+Use o argumento `timeout` da própria função. Não é necessário alterar
+`options(timeout)`:
+
+```{r}
+sia_raw <- fetch_datasus(
+  year_start = 2023,
+  month_start = 1,
+  year_end = 2023,
+  month_end = 1,
+  uf = "BA",
+  information_system = "SIA-PA",
+  timeout = 600
+)
+```
+
+Falhas transitórias de rede recebem até duas novas tentativas. Arquivo
+inexistente, vazio ou DBC inválido não é baixado repetidamente.
+
+## Sucesso parcial ou interrupção
+
+O padrão `stop_on_error = FALSE` tenta aproveitar os arquivos válidos. Ao final,
+as falhas são reunidas em um único diagnóstico:
+
+```{r}
+dados <- fetch_datasus(
+  year_start = 2023,
+  month_start = 1,
+  year_end = 2023,
+  month_end = 12,
+  uf = c("AC", "RO"),
+  information_system = "SIH-RD",
+  stop_on_error = FALSE
+)
+```
+
+O retorno é `NULL` quando nenhum arquivo pode ser obtido. Sempre verifique antes
+de processar ou persistir:
+
+```{r}
+if (!is.null(dados)) {
+  dados <- process_sih(dados)
+}
+```
+
+Use `stop_on_error = TRUE` quando o conjunto só for válido se todos os arquivos
+forem obtidos:
+
+```{r}
+dados <- fetch_datasus(
+  year_start = 2023,
+  month_start = 1,
+  year_end = 2023,
+  month_end = 12,
+  uf = "AC",
+  information_system = "SIH-RD",
+  stop_on_error = TRUE
+)
+```
+
+## Dados atuais, históricos e preliminares
+
+A escolha entre publicações é automática. Para a mesma unidade solicitada, a
+função prefere dados definitivos ou atuais; preliminares e históricos são
+usados quando são a publicação disponível. Mensagens informam quando o
+manifesto inclui arquivos preliminares ou diretórios históricos.
+
+Mudanças de formulário, classificação e cobertura podem afetar séries longas.
+Antes de combinar anos distantes, consulte a linha do tempo e a seção de
+estrutura de dados do capítulo correspondente no
+[livro de SIS](https://rfsaldanha.github.io/sis/).
+
+## Ler um DBC local
+
+Se o arquivo já foi obtido por outro meio, use `read_dbc()`:
+
+```{r}
+dados <- read_dbc("arquivo.dbc")
+dados_tipados <- read_dbc("arquivo.dbc", as_character = FALSE)
+```
+
+O arquivo DBF intermediário é temporário e removido automaticamente.
+
+## Boas práticas para downloads grandes
+
+- Solicite somente os períodos e layouts necessários.
+- Use `vars` sempre que a análise não precisar do layout completo.
+- Divida consultas nacionais ou de muitos anos em lotes recuperáveis.
+- Registre os argumentos, a data de extração e, quando necessário,
+  `track_source`.
+- Confira avisos de períodos, UFs e arquivos ausentes antes da análise.
+- Não dispare chamadas paralelas contra o FTP do DataSUS.
+
+Veja as [Perguntas frequentes](FAQ.html) para um exemplo de persistência
+incremental em SQLite.

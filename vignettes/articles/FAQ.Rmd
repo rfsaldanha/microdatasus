@@ -1,5 +1,8 @@
 ---
 title: "Perguntas frequentes"
+description: >
+  Respostas sobre períodos, UFs, timeout, falhas parciais, tipos, memória e
+  arquivos DBC.
 ---
 
 ```{r, include = FALSE}
@@ -10,119 +13,284 @@ knitr::opts_chunk$set(
 )
 ```
 
-## Data e local de processamento e data e local de ocorrência do evento
+## O período e a UF do download são necessariamente os do evento?
 
-Os arquivos disponibilizados pelo DataSUS são organizados segundo data e local de processamento. Assim, ao se consultar por exemplo, os dados do SIM para 2020 no RJ, são obtidos os dados dos óbitos que foram processados no estado do Rio de Janeiro no ano de 2020.
+Não. Os argumentos de `fetch_datasus()` selecionam as partições em que o
+DataSUS publicou os registros. A pergunta analítica pode exigir outra dimensão,
+como município de residência, município de ocorrência, competência, data da
+notificação ou data de encerramento.
 
-O local e data de processamento pode ser diferente do local e data de ocorrência do evento. Por exemplo, um óbito ocorrido em Dezembro de 2019 pode ser processado pelas Secretariais de Saúde e pelo DataSUS apenas no mês seguinte, indo para o arquivo de Janeiro de 2020.
-
-Desta forma, para garantir que você tem os dados de todos em eventos ocorridos em um ano e/ou mês específico, recomenda-se baixar os dados aos anos e mêses vizinhos, filtrando posteriormente os registros pela data de ocorrência desejada.
-
-Exemplo: Para se computador os óbitos ocorridos no Acre em 2020, recomenda-se baixar os dados de 2019, 2020 e 2021.
+Escolha e filtre as variáveis do próprio registro depois do download. Em uma
+análise de óbitos ocorridos em 2020, por exemplo:
 
 ```{r}
 library(microdatasus)
-library(dplyr)
-library(lubridate)
 
 sim_raw <- fetch_datasus(
-  year_start = 2019, year_end = 2021, 
-  uf = "AC", 
+  year_start = 2019,
+  year_end = 2021,
+  uf = "AC",
   information_system = "SIM-DO"
 )
 
-sim_p <- process_sim(sim_raw)
+sim <- process_sim(sim_raw)
+sim$DTOBITO <- as.Date(sim$DTOBITO)
 
-sim_f <- sim_p %>%
-  filter(year(DTOBITO) == 2020)
+sim_2020 <- sim[format(sim$DTOBITO, "%Y") == "2020", ]
 ```
 
-## Download timeout
+Os capítulos do livro sobre
+[SIM](https://rfsaldanha.github.io/sis/sim.html),
+[SINASC](https://rfsaldanha.github.io/sis/sinasc.html),
+[SIH](https://rfsaldanha.github.io/sis/sih.html),
+[SIA](https://rfsaldanha.github.io/sis/sia.html),
+[SINAN](https://rfsaldanha.github.io/sis/sinan.html) e
+[CNES](https://rfsaldanha.github.io/sis/cnes.html) explicam quais dimensões
+temporais e territoriais existem em cada sistema.
 
-Por padrão, o R espera que um arquivo seja baixado em até 60 segundos. Ao baixar algum arquivo muito grande ou com uma conexão com a Internet lenta, o tempo necessário para download será maior. Neste caso, você verá uma mensagem de *warning* semelhante a esta:
+## Quando devo informar os meses?
 
-```         
-1: In utils::download.file(file, temp, mode = "wb", method = "libcurl") :
-  downloaded length 12260742 != reported length 30474112
-2: In utils::download.file(file, temp, mode = "wb", method = "libcurl") :
-  URL 'ftp://ftp.datasus.gov.br/dissemin/publicos/SINAN/DADOS/FINAIS/DENGBR10.dbc': Timeout of 60 seconds was reached
-```
-Para corrigir isto, é bem simples: aumente o tempo de tolerância do R para downloads. Exemplo: tolerância de 2 minutos.
+SIH, SIA e CNES são mensais e exigem `month_start` e `month_end`. SIM, SINASC e
+SINAN são anuais; meses informados para esses sistemas são ignorados com uma
+mensagem.
+
+Um único mês ainda precisa aparecer nos dois argumentos:
 
 ```{r}
-options(timeout = 120)
+dados <- fetch_datasus(
+  year_start = 2023,
+  month_start = 4,
+  year_end = 2023,
+  month_end = 4,
+  uf = "PE",
+  information_system = "SIH-RD"
+)
 ```
 
+## Como aumentar o timeout?
 
-## Download de muitos dados
+Use `timeout` em `fetch_datasus()`, `fetch_cadger()` ou `fetch_sigtab()`. A
+função aplica o valor diretamente a cada operação de rede e não altera
+`options(timeout)`:
 
-O download dos dados através do pacote é realizado em memória. Isto significa que cada arquivo baixado do DataSUS é lido e armazenado na memória RAM do computador. Caso você esteja baixando muitos arquivos, para vários estados e anos, você irá precisar de mais memória RAM disponível.
-
-Um modo de contornar este problema é a realizar o download e armazenar os resultados em um banco de dados, como SQLite, DuckDB ou outro. Abaixo segue um exemplo de como fazer isso.
-
-### Pacotes
-
-```{r eval=FALSE}
-library(microdatasus)
-library(tidyverse)
-library(dbplyr)
-library(DBI)
-library(RSQLite)
+```{r}
+dados <- fetch_datasus(
+  year_start = 2023,
+  month_start = 1,
+  year_end = 2023,
+  month_end = 1,
+  uf = "SP",
+  information_system = "SIA-PA",
+  timeout = 600
+)
 ```
 
-### Cria conexão com o banco de dados 
+Falhas transitórias recebem até duas novas tentativas. Aumentar o timeout ajuda
+com arquivos grandes ou conexões lentas, mas não corrige um arquivo ausente ou
+inválido.
 
-```{r eval=FALSE}
-conn <- dbConnect(RSQLite::SQLite(), "sih.SQLite")
-```
+## O que acontece quando apenas parte do download falha?
 
+Com `stop_on_error = FALSE`, que é o padrão, os arquivos válidos são retornados
+e as falhas são resumidas ao final. Se nenhum arquivo for lido, o retorno é
+`NULL`.
 
+```{r}
+dados <- fetch_datasus(
+  year_start = 2023,
+  month_start = 1,
+  year_end = 2023,
+  month_end = 12,
+  uf = c("AC", "RO"),
+  information_system = "SIH-RD",
+  stop_on_error = FALSE
+)
 
-### Realiza download e pré-processamento dos dados em loop
-
-```{r eval=FALSE}
-anos <- c(2019, 2020)
-meses <- 1:12
-ufs <- c("AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", 
-         "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", 
-         "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", 
-         "TO")
-```
-
-```{r eval=FALSE}
-for(ano in anos){
-  for(mes in meses){
-    for(uf in ufs){
-      # Baixa o dado para um ano, mês e UF específico
-      tmp <- fetch_datasus(
-        year_start = ano, year_end = ano, 
-        month_start = mes, month_end = mes,
-        uf = uf, information_system = "SIH-RD"
-      )
-      
-      # Pré-processamento dos dados
-      tmp <- process_sih(data = tmp)
-      
-      # Escreve na tabela "sih" no banco de dados, 
-      # apensando os dados de cada ano e mês
-      dbWriteTable(conn = conn, name = "sih", value = tmp, append = TRUE)
-      
-      # Remove a tabela temporária
-      rm(tmp)
-    }
-  }
+if (is.null(dados)) {
+  message("Nenhum arquivo foi obtido.")
 }
 ```
 
+Com `stop_on_error = TRUE`, uma falha de listagem, download ou leitura
+interrompe a chamada.
 
-### Exemplo de consulta ao banco de dados,
+## Como saber de qual arquivo veio cada linha?
 
-Uma tabela de quantidade de registrosm, por sexo e causa básica
+Use `track_source = TRUE`:
 
-```{r eval=FALSE}
-tbl(conn, "sih") %>%
-  group_by(SEXO, COMPLEX) %>%
-  summarise(freq = n()) %>%
-  ungroup() %>%
-  collect()
+```{r}
+dados <- fetch_datasus(
+  year_start = 2023,
+  month_start = 1,
+  year_end = 2023,
+  month_end = 2,
+  uf = c("AC", "RO"),
+  information_system = "SIH-RD",
+  track_source = TRUE
+)
+
+unique(dados$source)
 ```
+
+Essa coluna é preservada quando `vars` é usado. A função não sobrescreve uma
+coluna `source` já existente no DBC.
+
+## Como reduzir o uso de memória?
+
+Comece selecionando apenas as colunas necessárias:
+
+```{r}
+dados <- fetch_datasus(
+  year_start = 2022,
+  year_end = 2022,
+  uf = "MG",
+  information_system = "SIM-DO",
+  vars = c("DTOBITO", "CODMUNRES", "CAUSABAS", "IDADE", "SEXO")
+)
+```
+
+Para muitos anos, meses ou UFs, baixe lotes menores e grave cada lote em um
+banco de dados. O exemplo abaixo usa SQLite:
+
+```{r}
+library(DBI)
+library(RSQLite)
+
+con <- dbConnect(SQLite(), "sih.sqlite")
+
+grade <- expand.grid(
+  ano = 2022:2023,
+  mes = 1:12,
+  uf = c("AC", "RO"),
+  stringsAsFactors = FALSE
+)
+
+for (i in seq_len(nrow(grade))) {
+  lote <- fetch_datasus(
+    year_start = grade$ano[i],
+    month_start = grade$mes[i],
+    year_end = grade$ano[i],
+    month_end = grade$mes[i],
+    uf = grade$uf[i],
+    information_system = "SIH-RD",
+    vars = c("MUNIC_RES", "DT_INTER", "DIAG_PRINC", "SEXO"),
+    track_source = TRUE,
+    timeout = 600,
+    stop_on_error = FALSE
+  )
+
+  if (is.null(lote)) {
+    next
+  }
+
+  lote <- process_sih(lote)
+  dbWriteTable(
+    con,
+    "sih",
+    lote,
+    append = dbExistsTable(con, "sih")
+  )
+}
+
+dbDisconnect(con)
+```
+
+Consulte depois sem carregar toda a tabela:
+
+```{r}
+library(dplyr)
+
+con <- dbConnect(SQLite(), "sih.sqlite")
+
+tbl(con, "sih") |>
+  count(SEXO, DIAG_PRINC) |>
+  arrange(desc(n)) |>
+  collect()
+
+dbDisconnect(con)
+```
+
+## Por que as colunas processadas são texto?
+
+As funções `process_*()` recodificam valores conhecidos e normalizam sequências
+Unicode em todas as colunas. Essa etapa final retorna um tibble de colunas
+`character`.
+
+Converta somente o que a análise exige:
+
+```{r}
+sim <- process_sim(sim_raw)
+
+sim$DTOBITO <- as.Date(sim$DTOBITO)
+sim$IDADEanos <- as.integer(sim$IDADEanos)
+```
+
+Faça a conversão depois de inspecionar códigos especiais, ausências e mudanças
+de layout. O livro de SIS apresenta checklists e seções de estrutura dos dados
+para cada sistema.
+
+## Posso baixar várias UFs de uma vez?
+
+Sim:
+
+```{r}
+dados <- fetch_datasus(
+  year_start = 2023,
+  month_start = 1,
+  year_end = 2023,
+  month_end = 1,
+  uf = c("AC", "RO", "AM"),
+  information_system = "CNES-ST"
+)
+```
+
+Use `uf = "all"` para todas as UFs. Não combine `"all"` com códigos
+individuais. Nos sistemas nacionais, como SINAN, `uf` é ignorado; filtre a
+variável territorial do registro depois do download.
+
+O [apêndice de códigos de
+municípios](https://rfsaldanha.github.io/sis/codmun.html) discute códigos IBGE,
+códigos usados nos SIS e mudanças territoriais.
+
+## Como são escolhidos dados atuais, históricos e preliminares?
+
+A escolha é automática para cada período, UF e fragmento. Dados definitivos ou
+atuais têm prioridade sobre preliminares; cópias atuais têm prioridade sobre
+diretórios históricos. A função informa quando usa publicações preliminares ou
+históricas.
+
+Essas versões podem diferir em cobertura, crítica e layout. Para séries
+temporais, consulte a linha do tempo e os cuidados de interpretação do capítulo
+correspondente no [livro de SIS](https://rfsaldanha.github.io/sis/).
+
+## Posso ler um arquivo DBC que já tenho?
+
+Sim:
+
+```{r}
+dados <- read_dbc("arquivo.dbc")
+```
+
+Por padrão, todas as colunas são texto. Para manter os tipos inferidos do DBF:
+
+```{r}
+dados <- read_dbc("arquivo.dbc", as_character = FALSE)
+```
+
+O DBF intermediário é temporário e removido automaticamente.
+
+## Por que o DataSUS não está acessível?
+
+O download depende de acesso FTP ao servidor do DataSUS. Indisponibilidade
+temporária, bloqueios de rede corporativa e restrições geográficas podem
+impedir a conexão. Verifique o diagnóstico consolidado da função, tente outro
+momento ou outra rede e evite múltiplas chamadas paralelas.
+
+## Onde encontro mais informações?
+
+- [Primeiros passos e exemplos por sistema](exemplos.html)
+- [Download e rastreabilidade](download-e-rastreabilidade.html)
+- [Referência das funções](../reference/index.html)
+- [Livro *Sistemas de Informação em Saúde no
+  Brasil*](https://rfsaldanha.github.io/sis/)
+- [Apêndice sobre a CID](https://rfsaldanha.github.io/sis/cid.html)

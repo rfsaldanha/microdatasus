@@ -1,24 +1,50 @@
 url: https://rfsaldanha.github.io/microdatasus/
+lang: pt
+
 template:
   bootstrap: 5
   params:
     ganalytics: G-2M7VLSRDCB
 
+home:
+  title: "microdatasus — acesso a microdados do DataSUS"
+  description: >
+    Download, leitura e preparação de microdados dos Sistemas de Informação em
+    Saúde publicados pelo DataSUS.
+
 navbar:
   structure:
-    right: [github]
+    left: [reference, articles, news, livro]
+    right: [search, lightswitch, github]
+  components:
+    news:
+      text: "Novidades"
+      href: news/index.html
+    livro:
+      text: "Livro de SIS"
+      href: https://rfsaldanha.github.io/sis/
+
+articles:
+- title: "Guias"
+  navbar: "Guias"
+  contents:
+  - articles/exemplos
+  - articles/download-e-rastreabilidade
+- title: "Ajuda"
+  contents:
+  - articles/FAQ
 
 reference:
-- title: "The package"
+- title: "Pacote"
   contents:
   - microdatasus
-- title: "Fetch data"
+- title: "Download e leitura"
   contents:
   - fetch_datasus
   - fetch_sigtab
   - fetch_cadger
   - read_dbc
-- title: "Process data"
+- title: "Processamento"
   contents:
   - process_sim
   - process_sinasc
@@ -32,7 +58,7 @@ reference:
   - process_sinan_chagas
   - process_sinan_leishmaniose_tegumentar
   - process_sinan_leishmaniose_visceral
-- title: "Sample datasets"
+- title: "Dados de exemplo"
   contents:
   - sim_do_sample
   - sinasc_sample
@@ -47,7 +73,7 @@ reference:
   - sinan_chagas_sample
   - sinan_leishmaniose_tegumentar_sample
   - sinan_leishmaniose_visceral_sample
-- title: "Reference datasets"
+- title: "Tabelas de referência"
   contents:
   - tabMun
   - paisnet
