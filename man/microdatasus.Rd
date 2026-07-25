@@ -20,4 +20,15 @@ Useful links:
 \author{
 \strong{Maintainer}: Raphael Saldanha \email{raphael.saldanha@fiocruz.br} (\href{https://orcid.org/0000-0003-0652-8466}{ORCID})
 
+Authors:
+\itemize{
+  \item Raphael Saldanha \email{raphael.saldanha@fiocruz.br} (\href{https://orcid.org/0000-0003-0652-8466}{ORCID})
+}
+
+Other contributors:
+\itemize{
+  \item Sidney da Silva Pereira Bissoli (DBC decompression code) [contributor, copyright holder]
+  \item Mark Adler (blast decompressor) [contributor, copyright holder]
+}
+
 }
