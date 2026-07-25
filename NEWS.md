@@ -56,9 +56,11 @@
   Brasil*.
 * Replaces skipped download tests with deterministic simulated listings and
   transfers. The suite now covers supported systems, historical, current, and
-  preliminary files, multipart data, retries, timeouts, cleanup, corrupt and
-  empty files, partial success, `vars`, `track_source`, multiple states, and
-  auxiliary-table schema validation. Live smoke tests remain opt-in.
+  preliminary files, multipart data, complete argument validation, retries,
+  timeouts, empty listings and manifests, cleanup, corrupt and empty files,
+  partial success, `vars`, `track_source`, multiple states, and auxiliary-table
+  schema validation. Local `file://` fixtures exercise `curl` without network
+  access; live DataSUS smoke tests remain opt-in and are always skipped on CRAN.
 * Runs the active GitHub Actions R CMD check workflow for pushes and pull
   requests involving the `dev` branch as well as `main` and `master`.
 * Requires R 4.1.0 or later.
