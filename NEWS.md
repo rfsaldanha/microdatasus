@@ -1,8 +1,57 @@
 # microdatasus 3.0.0
+
+## Downloads
+
+* Reworks `fetch_datasus()` around an internal registry of supported systems and
+  manifests built from the files actually published by DataSUS. Each relevant
+  FTP directory is listed only once per call, avoiding redundant connections
+  and URLs for files that do not exist.
+* Selects a single file for each system, period, state, and file part.
+  Definitive/current data take precedence over preliminary data, and current
+  data take precedence over historical copies. Results retain deterministic
+  period, state, and file-part order.
+* Uses `curl` directly for directory listings and downloads, with per-operation
+  timeouts and up to two retries for transient network failures. Downloads
+  remain sequential and no longer modify the global `options("timeout")`.
+* Downloads through temporary partial files, validates file size and DBC
+  contents, and reliably removes temporary files. With `stop_on_error = FALSE`,
+  successfully read files are returned after a consolidated warning; with
+  `stop_on_error = TRUE`, any failure aborts the operation.
+* Applies `vars` before accumulating results and combines files only once,
+  reducing repeated copies. When `track_source = TRUE`, the `source` column is
+  retained even when `vars` is supplied, and an existing `source` column now
+  produces a clear error.
+* Strengthens validation of years, months, states, logical arguments, `vars`,
+  and fractional `timeout` values. Monthly systems require months, annual
+  systems ignore them with one warning, and `"all"` can no longer be combined
+  with individual states.
+* Replaces the former global 1996 lower-year restriction with historical limits
+  specific to each information system. The public arguments, their order, and
+  their defaults remain unchanged.
+* Hardens `fetch_cadger()` and `fetch_sigtab()` with shared timeout, retry, and
+  temporary-file cleanup logic, and adds ZIP integrity and schema validation.
+
+## DBC support
+
 * Removes the dependency on `read.dbc` and reads DBC files with vendored C code
   adapted from `healthbR`. Thanks to Sidney Bissoli for the open-source code.
-* Adds `read_dbc()` with optional preservation of DBF column types.
-* Adopts `dplyr::recode_values()` since `dplyr::case_match()` is now deprecated.
+* Adds `read_dbc()` for local DBC files, with optional preservation of the
+  column types inferred from DBF metadata.
+
+## Processing, documentation, and testing
+
+* Adopts `dplyr::recode_values()` because `dplyr::case_match()` is deprecated.
+* Expands and corrects the documentation for all public functions, including
+  network behavior, actual return types, compatibility arguments, and links to
+  the corresponding chapters of the book *Sistemas de Informação em Saúde no
+  Brasil*.
+* Replaces skipped download tests with deterministic simulated listings and
+  transfers. The suite now covers supported systems, historical, current, and
+  preliminary files, multipart data, retries, timeouts, cleanup, corrupt and
+  empty files, partial success, `vars`, `track_source`, multiple states, and
+  auxiliary-table schema validation. Live smoke tests remain opt-in.
+* Runs the active GitHub Actions R CMD check workflow for pushes and pull
+  requests involving the `dev` branch as well as `main` and `master`.
 * Requires R 4.1.0 or later.
 
 # microdatasus 2.5.0
