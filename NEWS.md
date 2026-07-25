@@ -46,6 +46,9 @@
   adapted from `healthbR`. Thanks to Sidney Bissoli for the open-source code.
 * Adds `read_dbc()` for local DBC files, with optional preservation of the
   column types inferred from DBF metadata.
+* Expands local, CRAN-safe DBC tests for argument validation, type preservation,
+  leading zeros, paths with spaces, repeat reads, temporary-file cleanup, and
+  specific malformed header and compressed-stream errors.
 
 ## Processing, documentation, and testing
 
