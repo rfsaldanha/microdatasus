@@ -25,6 +25,10 @@
 #'   the original DBC file name. This column is retained even when `vars` is
 #'   supplied. The function aborts if the downloaded data already contain a
 #'   column named `source`.
+#' @param quiet Logical scalar. If `FALSE` (the default), display the transfer
+#'   progress reported by [curl::curl_download()] and announce each file before
+#'   downloading it. If `TRUE`, suppress status messages, per-file
+#'   announcements, and progress meters. Warnings and errors are not suppressed.
 #'
 #' @return A tibble containing all successfully read records, or `NULL` if no
 #'   requested file could be read. No diagnostic attributes are added.
@@ -36,10 +40,11 @@
 #' precedence over preliminary data, and current data take precedence over
 #' historical copies.
 #'
-#' Downloads are sequential. Transient network failures are retried up to two
-#' times; missing, empty, invalid DBC, and incompatible-schema files are not
-#' retried. Partial files and other temporary files are removed before the
-#' function returns or aborts.
+#' Downloads are sequential. Unless `quiet = TRUE`, transfer progress is
+#' displayed by [curl::curl_download()]. Transient network failures are retried
+#' up to two times; missing, empty, invalid DBC, and incompatible-schema files
+#' are not retried. Partial files and other temporary files are removed before
+#' the function returns or aborts.
 #'
 #' Years and state abbreviations refer to DataSUS processing periods and places
 #' of processing, which may differ from dates or places of occurrence and
@@ -109,7 +114,8 @@ fetch_datasus <- function(
   vars = NULL,
   stop_on_error = FALSE,
   timeout = 240,
-  track_source = FALSE
+  track_source = FALSE,
+  quiet = FALSE
 ) {
   request <- .datasus_validate_arguments(
     year_start = year_start,
@@ -121,12 +127,14 @@ fetch_datasus <- function(
     vars = vars,
     stop_on_error = stop_on_error,
     timeout = timeout,
-    track_source = track_source
+    track_source = track_source,
+    quiet = quiet
   )
   spec <- request$spec
 
   if (
-    identical(spec$geography, "national") &&
+    !quiet &&
+      identical(spec$geography, "national") &&
       !identical(uf, "all")
   ) {
     cli::cli_alert_info(
@@ -134,7 +142,9 @@ fetch_datasus <- function(
     )
   }
 
-  cli::cli_alert_info("Discovering files available from DataSUS...")
+  if (!quiet) {
+    cli::cli_alert_info("Discovering files available from DataSUS...")
+  }
   discovery <- .datasus_build_manifest(
     spec = spec,
     periods = request$periods,
@@ -190,13 +200,13 @@ fetch_datasus <- function(
   }
 
   preliminary <- unique(manifest$period[manifest$release == "preliminary"])
-  if (length(preliminary)) {
+  if (!quiet && length(preliminary)) {
     cli::cli_alert_info(
       "Preliminary periods: {paste(preliminary, collapse = ', ')}."
     )
   }
   old <- unique(manifest$period[manifest$release == "old"])
-  if (length(old)) {
+  if (!quiet && length(old)) {
     cli::cli_alert_info(
       paste0(
         "Periods from historical directories may contain incompatible codes: ",
@@ -206,9 +216,11 @@ fetch_datasus <- function(
     )
   }
 
-  cli::cli_alert_info(
-    "Downloading and reading {nrow(manifest)} DataSUS file{?s}..."
-  )
+  if (!quiet) {
+    cli::cli_alert_info(
+      "Downloading and reading {nrow(manifest)} DataSUS file{?s}..."
+    )
+  }
   parts <- list()
   failures <- character()
 
@@ -216,9 +228,20 @@ fetch_datasus <- function(
     remote <- manifest[index, , drop = FALSE]
     temporary <- tempfile(fileext = ".dbc.part")
 
+    if (!quiet) {
+      cli::cli_alert_info(
+        "Downloading file {index}/{nrow(manifest)}: {.file {remote$file}}"
+      )
+    }
+
     result <- tryCatch(
       {
-        .datasus_download_file(remote$url, temporary, timeout)
+        .datasus_download_file(
+          remote$url,
+          temporary,
+          timeout,
+          quiet = quiet
+        )
         partial <- read_dbc(file = temporary, as_character = TRUE)
 
         if (track_source && "source" %in% names(partial)) {

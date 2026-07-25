@@ -25,9 +25,12 @@ registros. Se houver mais de uma publicação para a mesma combinação de siste
 período, UF e fragmento, dados definitivos ou atuais têm prioridade sobre dados
 preliminares e cópias históricas.
 
-Os downloads são sequenciais para evitar sobrecarga no servidor. Arquivos
-temporários são removidos depois da leitura, inclusive quando ocorre uma falha.
-Não há cache persistente: uma nova chamada consulta novamente o DataSUS.
+Os downloads são sequenciais para evitar sobrecarga no servidor. Antes de cada
+transferência, a função anuncia o nome do arquivo e exibe o progresso informado
+pelo `curl`. Use `quiet = TRUE` quando quiser ocultar o progresso e todas as
+mensagens de status; avisos e erros permanecem visíveis. Arquivos temporários são
+removidos depois da leitura, inclusive quando ocorre uma falha. Não há cache
+persistente: uma nova chamada consulta novamente o DataSUS.
 
 ## Argumentos principais
 
@@ -40,6 +43,7 @@ Não há cache persistente: uma nova chamada consulta novamente o DataSUS.
 | `vars` | Colunas que devem ser mantidas |
 | `track_source` | Acrescenta o nome do arquivo DBC de origem |
 | `timeout` | Limite, em segundos, de cada operação de rede |
+| `quiet` | Oculta mensagens de status e progresso quando `TRUE` |
 | `stop_on_error` | Define se uma falha interrompe toda a solicitação |
 
 A referência de [`fetch_datasus()`](../reference/fetch_datasus.html) contém a

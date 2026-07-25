@@ -181,7 +181,8 @@
   vars,
   stop_on_error,
   timeout,
-  track_source
+  track_source,
+  quiet
 ) {
   registry <- .datasus_registry()
   if (
@@ -201,6 +202,7 @@
   .datasus_assert_number(timeout, "timeout", lower = .Machine$double.eps)
   .datasus_assert_flag(stop_on_error, "stop_on_error")
   .datasus_assert_flag(track_source, "track_source")
+  .datasus_assert_flag(quiet, "quiet")
 
   validate_month <- function(x, argument, required) {
     if (is.null(x)) {
@@ -222,8 +224,13 @@
   validate_month(month_start, "month_start", monthly)
   validate_month(month_end, "month_end", monthly)
   if (!monthly && (!is.null(month_start) || !is.null(month_end))) {
-    cli::cli_alert_info(
-      "Month arguments are ignored for annual information systems."
+    month_arguments <- c(
+      if (!is.null(month_start)) "month_start",
+      if (!is.null(month_end)) "month_end"
+    )
+    verb <- if (length(month_arguments) == 1L) "is" else "are"
+    cli::cli_alert_warning(
+      "{.arg {month_arguments}} {verb} ignored for annual information systems."
     )
   }
 
@@ -495,7 +502,12 @@
   list(manifest = manifest, errors = errors)
 }
 
-.datasus_transfer_file <- function(url, destination, timeout) {
+.datasus_transfer_file <- function(
+  url,
+  destination,
+  timeout,
+  quiet = FALSE
+) {
   unlink(destination)
   handle <- curl::new_handle()
   curl::handle_setopt(
@@ -507,16 +519,28 @@
   curl::curl_download(
     url,
     destfile = destination,
-    quiet = TRUE,
+    quiet = quiet,
     mode = "wb",
     handle = handle
   )
   invisible(destination)
 }
 
-.datasus_download_file <- function(url, destination, timeout) {
+.datasus_download_file <- function(
+  url,
+  destination,
+  timeout,
+  quiet = FALSE
+) {
   .datasus_retry(
-    function() .datasus_transfer_file(url, destination, timeout),
+    function() {
+      .datasus_transfer_file(
+        url,
+        destination,
+        timeout,
+        quiet = quiet
+      )
+    },
     retry_if = .datasus_is_transient_curl_error
   )
   if (!file.exists(destination) || is.na(file.size(destination)) ||

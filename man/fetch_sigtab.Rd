@@ -21,8 +21,8 @@ Downloads and reads the current SIA procedure table distributed by DataSUS.
 \section{Network access}{
 
 This function downloads the current \code{TAB_SIA.zip} archive from DataSUS.
-The temporary archive and extracted files are removed before the function
-returns or aborts.
+Transfer progress is displayed by default. The temporary archive and
+extracted files are removed before the function returns or aborts.
 }
 
 \references{

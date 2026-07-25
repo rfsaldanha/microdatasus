@@ -11,8 +11,8 @@
 #'
 #' @section Network access:
 #' This function downloads the current `TAB_SIA.zip` archive from DataSUS.
-#' The temporary archive and extracted files are removed before the function
-#' returns or aborts.
+#' Transfer progress is displayed by default. The temporary archive and
+#' extracted files are removed before the function returns or aborts.
 #'
 #' @references
 #' Saldanha, R. F. (2026). [SIA -- Sistema de Informações Ambulatoriais do

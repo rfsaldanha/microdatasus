@@ -12,7 +12,8 @@
   period, state, and file-part order.
 * Uses `curl` directly for directory listings and downloads, with per-operation
   timeouts and up to two retries for transient network failures. Downloads
-  remain sequential and no longer modify the global `options("timeout")`.
+  remain sequential, display transfer progress by default, and no longer modify
+  the global `options("timeout")`.
 * Downloads through temporary partial files, validates file size and DBC
   contents, and reliably removes temporary files. With `stop_on_error = FALSE`,
   successfully read files are returned after a consolidated warning; with
@@ -26,8 +27,11 @@
   systems ignore them with one warning, and `"all"` can no longer be combined
   with individual states.
 * Replaces the former global 1996 lower-year restriction with historical limits
-  specific to each information system. The public arguments, their order, and
-  their defaults remain unchanged.
+  specific to each information system. Existing public arguments, their order,
+  and their defaults remain unchanged.
+* Adds `quiet` at the end of the `fetch_datasus()` signature. Transfer progress
+  and status messages, including each file name, are displayed by default; set
+  `quiet = TRUE` to hide them. Warnings and errors remain visible.
 * Hardens `fetch_cadger()` and `fetch_sigtab()` with shared timeout, retry, and
   temporary-file cleanup logic, and adds ZIP integrity and schema validation.
 

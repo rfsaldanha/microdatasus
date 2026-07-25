@@ -11,7 +11,8 @@ test_that("fetch_datasus public signature remains compatible", {
       vars = NULL,
       stop_on_error = FALSE,
       timeout = 240,
-      track_source = FALSE
+      track_source = FALSE,
+      quiet = FALSE
     ))
   )
 })
@@ -240,9 +241,10 @@ test_that("download validates empty files without retrying them", {
   destination <- tempfile()
   on.exit(unlink(destination), add = TRUE)
   local_mocked_bindings(
-    .datasus_transfer_file = function(url, destination, timeout) {
+    .datasus_transfer_file = function(url, destination, timeout, quiet) {
       attempts <<- attempts + 1L
       seen_timeout <<- timeout
+      expect_false(quiet)
       file.create(destination)
       invisible(destination)
     },
@@ -261,6 +263,13 @@ test_that("download validates empty files without retrying them", {
   expect_equal(seen_timeout, 17)
 })
 
+test_that("transfers display curl download progress by default", {
+  expect_identical(
+    formals(microdatasus:::.datasus_transfer_file)$quiet,
+    FALSE
+  )
+})
+
 mock_manifest <- function(files, periods = rep("2022", length(files))) {
   data.frame(
     file = files,
@@ -277,7 +286,7 @@ mock_manifest <- function(files, periods = rep("2022", length(files))) {
 
 mock_fetch_dependencies <- function(manifest, reader = NULL, downloader = NULL) {
   if (is.null(downloader)) {
-    downloader <- function(url, destination, timeout) {
+    downloader <- function(url, destination, timeout, quiet) {
       writeBin(charToRaw(url), destination)
       invisible(destination)
     }
@@ -319,6 +328,98 @@ test_that("fetch selects variables once and always preserves source tracking", {
   expect_equal(result$source, c("DOAC2022.dbc", "DOAC2023.dbc"))
 })
 
+test_that("fetch passes quiet to every download", {
+  seen_quiet <- logical()
+  mock_fetch_dependencies(
+    mock_manifest(c("one.dbc", "two.dbc")),
+    downloader = function(url, destination, timeout, quiet) {
+      seen_quiet <<- c(seen_quiet, quiet)
+      writeBin(charToRaw(url), destination)
+      invisible(destination)
+    }
+  )
+
+  fetch_datasus(
+    2022,
+    year_end = 2022,
+    uf = "AC",
+    information_system = "SIM-DO",
+    quiet = TRUE
+  )
+
+  expect_identical(seen_quiet, c(TRUE, TRUE))
+})
+
+test_that("quiet suppresses status messages and per-file announcements", {
+  mock_fetch_dependencies(mock_manifest(c("one.dbc", "two.dbc")))
+
+  visible <- testthat::capture_messages(fetch_datasus(
+    2022,
+    year_end = 2022,
+    uf = "AC",
+    information_system = "SIM-DO",
+    quiet = FALSE
+  ))
+  silent <- testthat::capture_messages(fetch_datasus(
+    2022,
+    year_end = 2022,
+    uf = "AC",
+    information_system = "SIM-DO",
+    quiet = TRUE
+  ))
+
+  visible <- paste(visible, collapse = "\n")
+  expect_match(visible, "Downloading file 1/2: 'one[.]dbc'")
+  expect_match(visible, "Downloading file 2/2: 'two[.]dbc'")
+  expect_length(silent, 0L)
+})
+
+test_that("ignored-month alerts precede downloads and use CLI formatting", {
+  manifest <- mock_manifest("DENGBR22.dbc")
+  manifest$uf <- NA_character_
+  manifest$release <- "preliminary"
+  mock_fetch_dependencies(manifest)
+
+  alerts <- testthat::capture_messages(fetch_datasus(
+    2022,
+    month_start = 1,
+    year_end = 2022,
+    month_end = 12,
+    uf = "AC",
+    information_system = "SINAN-DENGUE",
+    quiet = TRUE
+  ))
+  single_alert <- testthat::capture_messages(fetch_datasus(
+    2022,
+    month_start = 1,
+    year_end = 2022,
+    uf = "AC",
+    information_system = "SINAN-DENGUE",
+    quiet = TRUE
+  ))
+  visible <- testthat::capture_messages(fetch_datasus(
+    2022,
+    month_start = 1,
+    year_end = 2022,
+    month_end = 12,
+    uf = "AC",
+    information_system = "SINAN-DENGUE",
+    quiet = FALSE
+  ))
+
+  expect_length(alerts, 1L)
+  expect_match(
+    alerts,
+    "`month_start` and `month_end` are ignored for annual"
+  )
+  expect_length(single_alert, 1L)
+  expect_match(single_alert, "`month_start` is ignored for annual")
+  expect_lt(
+    grep("are ignored for annual", visible),
+    grep("Downloading file 1/1", visible)
+  )
+})
+
 test_that("source conflicts and unknown variables always abort", {
   mock_fetch_dependencies(
     mock_manifest("DOAC2022.dbc"),
@@ -354,7 +455,7 @@ test_that("partial failures return valid files and temporary files are removed",
   temporary_paths <- character()
   mock_fetch_dependencies(
     mock_manifest(c("good.dbc", "bad.dbc")),
-    downloader = function(url, destination, timeout) {
+    downloader = function(url, destination, timeout, quiet) {
       temporary_paths <<- c(temporary_paths, destination)
       if (grepl("bad", url, fixed = TRUE)) {
         stop("network failure")
@@ -369,7 +470,8 @@ test_that("partial failures return valid files and temporary files are removed",
       2022,
       year_end = 2022,
       uf = "AC",
-      information_system = "SIM-DO"
+      information_system = "SIM-DO",
+      quiet = TRUE
     ),
     "could not be processed"
   )
@@ -403,7 +505,9 @@ test_that("invalid DBC files are reported without download retries", {
 test_that("stop_on_error controls file failures", {
   mock_fetch_dependencies(
     mock_manifest("bad.dbc"),
-    downloader = function(url, destination, timeout) stop("network failure")
+    downloader = function(url, destination, timeout, quiet) {
+      stop("network failure")
+    }
   )
 
   expect_error(
@@ -471,6 +575,15 @@ test_that("argument validation covers scalar and system-specific rules", {
       information_system = "SIM-DO"
     ),
     "single whole number"
+  )
+  expect_error(
+    fetch_datasus(
+      2022,
+      year_end = 2022,
+      information_system = "SIM-DO",
+      quiet = NA
+    ),
+    "quiet.*TRUE.*FALSE"
   )
   expect_error(
     fetch_datasus(

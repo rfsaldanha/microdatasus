@@ -14,7 +14,8 @@ fetch_datasus(
   vars = NULL,
   stop_on_error = FALSE,
   timeout = 240,
-  track_source = FALSE
+  track_source = FALSE,
+  quiet = FALSE
 )
 }
 \arguments{
@@ -47,6 +48,11 @@ timeout, in seconds, for each network attempt.}
 the original DBC file name. This column is retained even when \code{vars} is
 supplied. The function aborts if the downloaded data already contain a
 column named \code{source}.}
+
+\item{quiet}{Logical scalar. If \code{FALSE} (the default), display the transfer
+progress reported by \code{\link[curl:curl_download]{curl::curl_download()}} and announce each file before
+downloading it. If \code{TRUE}, suppress status messages, per-file
+announcements, and progress meters. Warnings and errors are not suppressed.}
 }
 \value{
 A tibble containing all successfully read records, or \code{NULL} if no
@@ -63,10 +69,11 @@ the same system, period, state, and file part, definitive/current data take
 precedence over preliminary data, and current data take precedence over
 historical copies.
 
-Downloads are sequential. Transient network failures are retried up to two
-times; missing, empty, invalid DBC, and incompatible-schema files are not
-retried. Partial files and other temporary files are removed before the
-function returns or aborts.
+Downloads are sequential. Unless \code{quiet = TRUE}, transfer progress is
+displayed by \code{\link[curl:curl_download]{curl::curl_download()}}. Transient network failures are retried
+up to two times; missing, empty, invalid DBC, and incompatible-schema files
+are not retried. Partial files and other temporary files are removed before
+the function returns or aborts.
 
 Years and state abbreviations refer to DataSUS processing periods and places
 of processing, which may differ from dates or places of occurrence and

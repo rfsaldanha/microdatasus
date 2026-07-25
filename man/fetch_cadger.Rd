@@ -21,8 +21,8 @@ DataSUS. \code{\link[=process_cnes]{process_cnes()}} can use this table to add e
 \section{Network access}{
 
 This function downloads the current \code{TAB_CNES.zip} archive from DataSUS.
-The temporary archive and extracted files are removed before the function
-returns or aborts.
+Transfer progress is displayed by default. The temporary archive and
+extracted files are removed before the function returns or aborts.
 }
 
 \references{

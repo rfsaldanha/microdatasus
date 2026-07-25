@@ -125,6 +125,8 @@ Algumas opções úteis de `fetch_datasus()`:
 - `track_source = TRUE` acrescenta o nome do DBC de origem de cada registro.
 - `timeout` controla o limite de cada operação de rede, sem alterar opções
   globais do R.
+- o nome do arquivo e o progresso de cada transferência são exibidos; use
+  `quiet = TRUE` para ocultar o progresso e todas as mensagens de status.
 - `stop_on_error = FALSE` preserva sucessos parciais; `TRUE` interrompe a
   solicitação na primeira falha.
 - `uf` aceita uma UF, várias UFs ou `"all"`. Arquivos nacionais, como os do
