@@ -223,6 +223,17 @@ test_that("retry stops immediately for permanent errors", {
   expect_equal(attempts, 1L)
 })
 
+test_that("fractional timeouts are preserved in milliseconds", {
+  expect_equal(microdatasus:::.datasus_timeout_ms(0.001), 1L)
+  expect_equal(microdatasus:::.datasus_timeout_ms(0.0001), 1L)
+  expect_equal(microdatasus:::.datasus_timeout_ms(1.5), 1500L)
+  expect_equal(microdatasus:::.datasus_timeout_ms(240), 240000L)
+  expect_equal(
+    microdatasus:::.datasus_timeout_ms(.Machine$double.xmax),
+    .Machine$integer.max
+  )
+})
+
 test_that("download validates empty files without retrying them", {
   attempts <- 0L
   seen_timeout <- NULL

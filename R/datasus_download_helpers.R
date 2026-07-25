@@ -325,6 +325,11 @@
   Sys.sleep(seconds)
 }
 
+.datasus_timeout_ms <- function(timeout) {
+  milliseconds <- min(ceiling(timeout * 1000), .Machine$integer.max)
+  max(1L, as.integer(milliseconds))
+}
+
 .datasus_is_transient_curl_error <- function(error) {
   if (!inherits(error, "curl_error")) {
     return(FALSE)
@@ -347,8 +352,8 @@
       handle,
       dirlistonly = TRUE,
       ftp_use_epsv = TRUE,
-      timeout = timeout,
-      connecttimeout = min(timeout, 30)
+      timeout_ms = .datasus_timeout_ms(timeout),
+      connecttimeout_ms = .datasus_timeout_ms(min(timeout, 30))
     )
     response <- curl::curl_fetch_memory(url, handle = handle)
     rawToChar(response$content)
@@ -495,8 +500,8 @@
   handle <- curl::new_handle()
   curl::handle_setopt(
     handle,
-    timeout = timeout,
-    connecttimeout = min(timeout, 30),
+    timeout_ms = .datasus_timeout_ms(timeout),
+    connecttimeout_ms = .datasus_timeout_ms(min(timeout, 30)),
     ftp_use_epsv = TRUE
   )
   curl::curl_download(
