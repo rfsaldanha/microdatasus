@@ -2,7 +2,7 @@
 % Please edit documentation in R/fetch_cadger.R
 \name{fetch_cadger}
 \alias{fetch_cadger}
-\title{Fetch CADGER table}
+\title{Download the current CADGER table}
 \usage{
 fetch_cadger(timeout = 240)
 }
@@ -11,8 +11,23 @@ fetch_cadger(timeout = 240)
 in seconds.}
 }
 \value{
-A data frame with \code{CNES} and \code{FANTASIA} columns.
+A data frame with character columns \code{CNES} (establishment code) and
+\code{FANTASIA} (trade name).
 }
 \description{
-Downloads the current CADGER establishment table from DataSUS.
+Downloads and reads the current CNES establishment-name table distributed by
+DataSUS. \code{\link[=process_cnes]{process_cnes()}} can use this table to add establishment names.
+}
+\section{Network access}{
+
+This function downloads the current \code{TAB_CNES.zip} archive from DataSUS.
+The temporary archive and extracted files are removed before the function
+returns or aborts.
+}
+
+\references{
+Saldanha, R. F. (2026). \href{https://rfsaldanha.github.io/sis/cnes.html}{CNES -- Cadastro Nacional de Estabelecimentos de Saúde}.
+}
+\seealso{
+\code{\link[=process_cnes]{process_cnes()}}, \code{\link[=fetch_datasus]{fetch_datasus()}}
 }

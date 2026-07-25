@@ -1,11 +1,24 @@
-#' Fetch CADGER table
+#' Download the current CADGER table
 #'
-#' Downloads the current CADGER establishment table from DataSUS.
+#' Downloads and reads the current CNES establishment-name table distributed by
+#' DataSUS. [process_cnes()] can use this table to add establishment names.
 #'
 #' @param timeout A positive numeric scalar. Download and connection timeout,
 #'   in seconds.
 #'
-#' @return A data frame with `CNES` and `FANTASIA` columns.
+#' @return A data frame with character columns `CNES` (establishment code) and
+#'   `FANTASIA` (trade name).
+#'
+#' @section Network access:
+#' This function downloads the current `TAB_CNES.zip` archive from DataSUS.
+#' The temporary archive and extracted files are removed before the function
+#' returns or aborts.
+#'
+#' @references
+#' Saldanha, R. F. (2026). [CNES -- Cadastro Nacional de Estabelecimentos de
+#' Saúde](https://rfsaldanha.github.io/sis/cnes.html).
+#'
+#' @seealso [process_cnes()], [fetch_datasus()]
 #' @export
 fetch_cadger <- function(timeout = 240) {
   cadger_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Auxiliar/TAB_CNES.zip"

@@ -1,19 +1,33 @@
-#' Process SIH variables from DataSUS
+#' Prepare SIH hospital-admission microdata
 #'
-#' \code{process_SIH} processes SIH variables retrieved by \code{fetch_datasus()}.
+#' Recodes supported fields from reduced hospital-admission records
+#' (`"SIH-RD"`) into descriptive values and normalizes escaped Unicode text.
 #'
-#' This function processes SIH variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
+#' Columns not explicitly recoded are retained, but Unicode normalization is
+#' applied to every column and consequently the returned tibble contains
+#' character columns. Other SIH layouts downloadable with [fetch_datasus()] are
+#' not currently supported by this processing function.
 #'
-#' Currently, only "SIH-RD" is supported.
-#'
-#' @param data \code{data.frame} created by \code{fetch_datasus()}.
-#' @param information_system string. The abbreviation of the health information system. See \emph{Details}.
-#' @param municipality_data optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.
+#' @param data A data frame returned by [fetch_datasus()] with
+#'   `information_system = "SIH-RD"`, or a compatible layout.
+#' @param information_system A single character string. Currently only
+#'   `"SIH-RD"` is supported.
+#' @param municipality_data Logical scalar. If `TRUE`, add municipality names
+#'   and available territorial attributes for supported municipality-code
+#'   columns.
 #'
 #' @examples
 #' process_sih(sih_rd_sample)
 #'
-#' @return a \code{data.frame} with the processed data.
+#' @return A tibble with character columns. Supported codes are replaced with
+#'   descriptions, and municipality fields are added when requested and
+#'   available.
+#'
+#' @references
+#' Saldanha, R. F. (2026). [SIH -- Sistema de Informações Hospitalares do
+#' SUS](https://rfsaldanha.github.io/sis/sih.html).
+#'
+#' @seealso [fetch_datasus()]
 #'
 #' @export
 

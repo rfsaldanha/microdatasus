@@ -2,7 +2,7 @@
 % Please edit documentation in R/fetch_sigtab.R
 \name{fetch_sigtab}
 \alias{fetch_sigtab}
-\title{Fetch SIGTAB table}
+\title{Download the current SIGTAB table}
 \usage{
 fetch_sigtab(timeout = 240)
 }
@@ -11,8 +11,23 @@ fetch_sigtab(timeout = 240)
 in seconds.}
 }
 \value{
-A data frame with \code{COD} and \code{nome_proced} columns.
+A data frame with character columns \code{COD} (procedure code) and
+\code{nome_proced} (procedure name).
 }
 \description{
-Downloads the current SIGTAB procedure table from DataSUS.
+Downloads and reads the current SIA procedure table distributed by DataSUS.
+\code{\link[=process_sia]{process_sia()}} can use this table to add procedure descriptions.
+}
+\section{Network access}{
+
+This function downloads the current \code{TAB_SIA.zip} archive from DataSUS.
+The temporary archive and extracted files are removed before the function
+returns or aborts.
+}
+
+\references{
+Saldanha, R. F. (2026). \href{https://rfsaldanha.github.io/sis/sia.html}{SIA -- Sistema de Informações Ambulatoriais do SUS}.
+}
+\seealso{
+\code{\link[=process_sia]{process_sia()}}, \code{\link[=fetch_datasus]{fetch_datasus()}}
 }

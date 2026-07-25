@@ -1,11 +1,24 @@
-#' Fetch SIGTAB table
+#' Download the current SIGTAB table
 #'
-#' Downloads the current SIGTAB procedure table from DataSUS.
+#' Downloads and reads the current SIA procedure table distributed by DataSUS.
+#' [process_sia()] can use this table to add procedure descriptions.
 #'
 #' @param timeout A positive numeric scalar. Download and connection timeout,
 #'   in seconds.
 #'
-#' @return A data frame with `COD` and `nome_proced` columns.
+#' @return A data frame with character columns `COD` (procedure code) and
+#'   `nome_proced` (procedure name).
+#'
+#' @section Network access:
+#' This function downloads the current `TAB_SIA.zip` archive from DataSUS.
+#' The temporary archive and extracted files are removed before the function
+#' returns or aborts.
+#'
+#' @references
+#' Saldanha, R. F. (2026). [SIA -- Sistema de Informações Ambulatoriais do
+#' SUS](https://rfsaldanha.github.io/sis/sia.html).
+#'
+#' @seealso [process_sia()], [fetch_datasus()]
 #' @export
 fetch_sigtab <- function(timeout = 240) {
   sigtab_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/Auxiliar/TAB_SIA.zip"

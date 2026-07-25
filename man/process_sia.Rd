@@ -2,7 +2,7 @@
 % Please edit documentation in R/process_sia.R
 \name{process_sia}
 \alias{process_sia}
-\title{Process SIA variables from DataSUS}
+\title{Prepare SIA outpatient-production microdata}
 \usage{
 process_sia(
   data,
@@ -14,30 +14,50 @@ process_sia(
 )
 }
 \arguments{
-\item{data}{\code{data.frame} created by \code{fetch_datasus()}.}
+\item{data}{A data frame returned by \code{\link[=fetch_datasus]{fetch_datasus()}} with
+\code{information_system = "SIA-PA"}, or a compatible layout.}
 
-\item{information_system}{string. The abbreviation of the health information system. See \emph{Details}.}
+\item{information_system}{A single character string. Currently only
+\code{"SIA-PA"} is supported.}
 
-\item{nome_proced}{optional logical. \code{TRUE} by default, add  \code{PA_PROCED_NOME} to the dataset. This setting will start to download a file from DataSUS to retrive the updates list of procesures (SIGTAB).}
+\item{nome_proced}{Logical scalar. If \code{TRUE}, download the current SIGTAB
+table with \code{\link[=fetch_sigtab]{fetch_sigtab()}} and join procedure names. This requires network
+access.}
 
-\item{nome_ocupacao}{optional logical. \code{TRUE} by default, add  \code{OCUPACAO} name to the dataset.}
+\item{nome_ocupacao}{Logical scalar. If \code{TRUE}, join occupation descriptions
+for supported occupation-code columns.}
 
-\item{nome_equipe}{optional logical. \code{TRUE} by default, add  \code{EQUIPE} name to the dataset.}
+\item{nome_equipe}{Logical scalar retained for API compatibility. Team
+descriptions are currently joined whenever \code{PA_INE} is present, regardless
+of this value.}
 
-\item{municipality_data}{optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.}
+\item{municipality_data}{Logical scalar. If \code{TRUE}, add municipality names
+and available territorial attributes for supported municipality-code
+columns.}
 }
 \value{
-a \code{data.frame} with the processed data.
+A tibble with character columns. Supported codes are replaced with
+descriptions, and requested lookup fields are added where applicable.
 }
 \description{
-\code{process_sia} processes SIA variables retrieved by \code{fetch_datasus()}.
+Recodes supported fields from SIA individual outpatient-production records
+(\code{"SIA-PA"}) into descriptive values and normalizes escaped Unicode text.
+Lookup joins can add procedure, occupation, team, and municipality
+descriptions.
 }
 \details{
-This function processes SIA variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
-
-Currently, only "SIA-PA" is supported.
+Columns not explicitly recoded are retained, but Unicode normalization is
+applied to every column and consequently the returned tibble contains
+character columns. Other SIA layouts downloadable with \code{\link[=fetch_datasus]{fetch_datasus()}} are
+not currently supported by this processing function.
 }
 \examples{
 process_sia(sia_pa_sample, nome_proced = FALSE)
 
+}
+\references{
+Saldanha, R. F. (2026). \href{https://rfsaldanha.github.io/sis/sia.html}{SIA -- Sistema de Informações Ambulatoriais do SUS}.
+}
+\seealso{
+\code{\link[=fetch_datasus]{fetch_datasus()}}, \code{\link[=fetch_sigtab]{fetch_sigtab()}}
 }

@@ -2,25 +2,36 @@
 % Please edit documentation in R/process_sinan_chikungunya.R
 \name{process_sinan_chikungunya}
 \alias{process_sinan_chikungunya}
-\title{Process SINAN Chikungunya variables from DataSUS}
+\title{Prepare SINAN chikungunya microdata}
 \usage{
 process_sinan_chikungunya(data, municipality_data = TRUE)
 }
 \arguments{
-\item{data}{\code{data.frame} created by \code{fetch_datasus()}.}
+\item{data}{A data frame returned by \code{\link[=fetch_datasus]{fetch_datasus()}} with
+\code{information_system = "SINAN-CHIKUNGUNYA"}, or a compatible layout.}
 
-\item{municipality_data}{optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.}
+\item{municipality_data}{Logical scalar. If \code{TRUE}, add municipality names
+and available territorial attributes for supported municipality-code
+columns.}
 }
 \value{
-a \code{data.frame} with the processed data.
+A tibble with character columns. Supported codes are replaced with
+descriptions, and municipality fields are added when requested and
+available.
 }
 \description{
-\code{process_sinan_chikungunya} processes SINAN Chikungunya variables retrieved by \code{fetch_datasus()}.
-}
-\details{
-This function processes SINAN Chikungunya variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
+Recodes supported fields from SINAN chikungunya notifications into
+descriptive values and normalizes escaped Unicode text. Columns not
+explicitly recoded are retained, but the returned tibble contains character
+columns.
 }
 \examples{
 process_sinan_chikungunya(sinan_chikungunya_sample)
 
+}
+\references{
+Saldanha, R. F. (2026). \href{https://rfsaldanha.github.io/sis/sinan.html}{SINAN -- Sistema de Informação de Agravos de Notificação}.
+}
+\seealso{
+\code{\link[=fetch_datasus]{fetch_datasus()}}
 }

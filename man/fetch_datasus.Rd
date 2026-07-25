@@ -2,7 +2,7 @@
 % Please edit documentation in R/fetch_datasus.R
 \name{fetch_datasus}
 \alias{fetch_datasus}
-\title{Fetch and read microdata files from DataSUS}
+\title{Download DataSUS microdata}
 \usage{
 fetch_datasus(
   year_start,
@@ -18,54 +18,84 @@ fetch_datasus(
 )
 }
 \arguments{
-\item{year_start, year_end}{Numeric scalars. First and last requested years.}
+\item{year_start, year_end}{Numeric scalars giving the first and last requested
+years, inclusive.}
 
-\item{month_start, month_end}{Numeric scalars. First and last requested
-months. Required for SIH, CNES and SIA and ignored for annual systems.}
+\item{month_start, month_end}{Numeric scalars giving the first and last
+requested months, inclusive. Months are required for SIH, SIA, and CNES
+systems and ignored, with a warning, for annual systems.}
 
-\item{uf}{A state abbreviation, a vector of abbreviations, or \code{"all"}.}
+\item{uf}{A Brazilian state abbreviation, a character vector of
+abbreviations, or \code{"all"}. \code{"all"} cannot be combined with individual
+states. This argument is ignored for systems published only as national
+files.}
 
-\item{information_system}{A supported information-system abbreviation.}
+\item{information_system}{A single system identifier listed in
+\strong{Supported systems}.}
 
-\item{vars}{An optional character vector containing variables to retain.}
+\item{vars}{\code{NULL}, or a character vector of column names to retain. Selection
+is applied to each file before the files are combined.}
 
-\item{stop_on_error}{If \code{TRUE}, stop when a file cannot be downloaded or
-read. Otherwise, return all files that were successfully read.}
+\item{stop_on_error}{Logical scalar. If \code{TRUE}, abort after any listing,
+download, or read failure. If \code{FALSE}, warn and return the files that could
+be read successfully.}
 
-\item{timeout}{Download and connection timeout, in seconds.}
+\item{timeout}{A positive numeric scalar giving the connection and transfer
+timeout, in seconds, for each network attempt.}
 
-\item{track_source}{If \code{TRUE}, append a \code{source} column containing the
-original DBC file name.}
+\item{track_source}{Logical scalar. If \code{TRUE}, append a \code{source} column with
+the original DBC file name. This column is retained even when \code{vars} is
+supplied. The function aborts if the downloaded data already contain a
+column named \code{source}.}
 }
 \value{
-A tibble containing the combined DBC files, or \code{NULL} when no file
-could be read.
+A tibble containing all successfully read records, or \code{NULL} if no
+requested file could be read. No diagnostic attributes are added.
 }
 \description{
-\code{fetch_datasus()} downloads DBC microdata files published by DataSUS,
-reads them and combines their rows in a single data frame.
+Downloads published DBC files from DataSUS, reads them with \code{\link[=read_dbc]{read_dbc()}},
+and combines the records in deterministic period, state, and file-part order.
 }
 \details{
-The supported state abbreviations are "AC", "AL", "AP", "AM", "BA", "CE",
-"DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI",
-"RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE" and "TO".
+The function first lists the relevant DataSUS directories and downloads only
+files present in those listings. When more than one publication represents
+the same system, period, state, and file part, definitive/current data take
+precedence over preliminary data, and current data take precedence over
+historical copies.
 
-The following systems are implemented: "SIH-RD", "SIH-RJ", "SIH-SP",
-"SIH-ER", "SIM-DO", "SIM-DOFET", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT",
-"SINASC", "CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR",
-"CNES-HB", "CNES-PF", "CNES-EP", "CNES-RC", "CNES-IN", "CNES-EE",
-"CNES-EF", "CNES-GM", "SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD",
-"SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS",
-"SIA-SAD", "SINAN-DENGUE", "SINAN-CHIKUNGUNYA", "SINAN-ZIKA",
-"SINAN-MALARIA", "SINAN-CHAGAS", "SINAN-LEISHMANIOSE-VISCERAL",
-"SINAN-LEISHMANIOSE-TEGUMENTAR" and "SINAN-LEPTOSPIROSE".
+Downloads are sequential. Transient network failures are retried up to two
+times; missing, empty, invalid DBC, and incompatible-schema files are not
+retried. Partial files and other temporary files are removed before the
+function returns or aborts.
+
+Years and state abbreviations refer to DataSUS processing periods and places
+of processing, which may differ from dates or places of occurrence and
+residence contained in the records.
 }
-\section{Warning}{
+\section{Supported systems}{
 
-An Internet connection is required. DataSUS may restrict FTP access from
-some countries. Dates refer to DataSUS processing periods and state
-abbreviations refer to the place where records were processed. Downloaded
-files are temporary and are removed after being read.
+\itemize{
+\item \strong{SIH:} \code{"SIH-RD"}, \code{"SIH-RJ"}, \code{"SIH-SP"}, and \code{"SIH-ER"}.
+\item \strong{SIM:} \code{"SIM-DO"}, \code{"SIM-DOFET"}, \code{"SIM-DOEXT"}, \code{"SIM-DOINF"}, and
+\code{"SIM-DOMAT"}.
+\item \strong{SINASC:} \code{"SINASC"}.
+\item \strong{CNES:} \code{"CNES-LT"}, \code{"CNES-ST"}, \code{"CNES-DC"}, \code{"CNES-EQ"},
+\code{"CNES-SR"}, \code{"CNES-HB"}, \code{"CNES-PF"}, \code{"CNES-EP"}, \code{"CNES-RC"},
+\code{"CNES-IN"}, \code{"CNES-EE"}, \code{"CNES-EF"}, and \code{"CNES-GM"}.
+\item \strong{SIA:} \code{"SIA-AB"}, \code{"SIA-ABO"}, \code{"SIA-ACF"}, \code{"SIA-AD"}, \code{"SIA-AN"},
+\code{"SIA-AM"}, \code{"SIA-AQ"}, \code{"SIA-AR"}, \code{"SIA-ATD"}, \code{"SIA-PA"}, \code{"SIA-PS"},
+and \code{"SIA-SAD"}.
+\item \strong{SINAN:} \code{"SINAN-DENGUE"}, \code{"SINAN-CHIKUNGUNYA"}, \code{"SINAN-ZIKA"},
+\code{"SINAN-MALARIA"}, \code{"SINAN-CHAGAS"},
+\code{"SINAN-LEISHMANIOSE-VISCERAL"},
+\code{"SINAN-LEISHMANIOSE-TEGUMENTAR"}, and \code{"SINAN-LEPTOSPIROSE"}.
+}
+}
+
+\section{Network access}{
+
+An Internet connection and FTP access to DataSUS are required. DataSUS may
+restrict FTP access from some countries.
 }
 
 \examples{
@@ -87,4 +117,18 @@ sih <- fetch_datasus(
   information_system = "SIH-RD"
 )
 \dontshow{\}) # examplesIf}
+}
+\references{
+Saldanha, R. F. (2026). \href{https://rfsaldanha.github.io/sis/}{\emph{Sistemas de Informação em Saúde no Brasil}}, especially the chapters on
+\href{https://rfsaldanha.github.io/sis/sim.html}{SIM},
+\href{https://rfsaldanha.github.io/sis/sinasc.html}{SINASC},
+\href{https://rfsaldanha.github.io/sis/sih.html}{SIH},
+\href{https://rfsaldanha.github.io/sis/sia.html}{SIA},
+\href{https://rfsaldanha.github.io/sis/sinan.html}{SINAN}, and
+\href{https://rfsaldanha.github.io/sis/cnes.html}{CNES}.
+}
+\seealso{
+\code{\link[=read_dbc]{read_dbc()}} for local DBC files; \code{\link[=process_sim]{process_sim()}}, \code{\link[=process_sinasc]{process_sinasc()}},
+\code{\link[=process_sih]{process_sih()}}, \code{\link[=process_sia]{process_sia()}}, \code{\link[=process_cnes]{process_cnes()}}, and the
+\verb{process_sinan_*()} functions for system-specific recoding.
 }

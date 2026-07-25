@@ -66,13 +66,28 @@
 #' Read a DBC file
 #'
 #' Decompresses a DataSUS DBC file to a temporary DBF file and reads it into
-#' a tibble. The implementation was adapted from the `healthbR` package.
+#' a tibble. Use this function for a DBC file already available locally; use
+#' [fetch_datasus()] to discover and download files from DataSUS.
 #'
 #' @param file A single character string with the path to a DBC file.
 #' @param as_character If `TRUE` (the default), converts every column to
 #'   character. If `FALSE`, preserves the types inferred from the DBF metadata.
 #'
-#' @return A tibble.
+#' @return A tibble with one column per DBF field. By default, all columns are
+#'   character vectors; with `as_character = FALSE`, DBF-inferred types are
+#'   retained.
+#'
+#' @details
+#' Decompression is performed through the package's bundled DBC implementation.
+#' The intermediate DBF file is created in the R temporary directory and removed
+#' before the function returns or aborts. The implementation was adapted from
+#' the `healthbR` package.
+#'
+#' @references
+#' Saldanha, R. F. (2026). [*Sistemas de Informação em Saúde no
+#' Brasil*](https://rfsaldanha.github.io/sis/).
+#'
+#' @seealso [fetch_datasus()]
 #'
 #' @export
 read_dbc <- function(file, as_character = TRUE) {

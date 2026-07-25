@@ -2,7 +2,7 @@
 % Please edit documentation in R/process_cnes.R
 \name{process_cnes}
 \alias{process_cnes}
-\title{Process CNES variables from DataSUS}
+\title{Prepare CNES microdata}
 \usage{
 process_cnes(
   data,
@@ -12,25 +12,43 @@ process_cnes(
 )
 }
 \arguments{
-\item{data}{\code{data.frame} created by \code{fetch_datasus()}.}
+\item{data}{A data frame returned by \code{\link[=fetch_datasus]{fetch_datasus()}} or another data frame
+with a compatible CNES layout.}
 
-\item{information_system}{\code{string}. \code{CNES-ST} or \code{CNES-PF}}
+\item{information_system}{A single character string: \code{"CNES-ST"} for
+establishments or \code{"CNES-PF"} for professionals.}
 
-\item{nomes}{optional logical. \code{FALSE} by default, downloads extra data and add  \code{FANTASIA} names to the dataset.}
+\item{nomes}{Logical scalar. For \code{"CNES-ST"} data, if \code{TRUE}, download the
+current CADGER table with \code{\link[=fetch_cadger]{fetch_cadger()}} and add establishment trade
+names. This requires network access. It has no effect for \code{"CNES-PF"}.}
 
-\item{municipality_data}{optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.}
+\item{municipality_data}{Logical scalar. If \code{TRUE}, add municipality names
+and available territorial attributes for supported municipality-code
+columns.}
 }
 \value{
-a \code{data.frame} with the processed data.
+A tibble with character columns. Supported codes are replaced with
+descriptions, and requested lookup fields are added where applicable.
 }
 \description{
-\code{process_cnes} processes CNES variables retrieved by \code{fetch_datasus()}.
+Recodes supported CNES fields into descriptive values and normalizes escaped
+Unicode text. Establishment (\code{"CNES-ST"}) and professional (\code{"CNES-PF"})
+records have different layouts and are processed accordingly.
 }
 \details{
-This function processes CNES-ST (Estabelecimentos) or CNES-PF (Pessoa f\\u00edsica) variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
+Columns not explicitly recoded are retained, but Unicode normalization is
+applied to every column and consequently the returned tibble contains
+character columns. Lookup joins can add establishment, occupation, and
+municipality information.
 }
 \examples{
 process_cnes(cnes_st_sample, information_system = "CNES-ST")
 process_cnes(cnes_pf_sample, information_system = "CNES-PF")
 
+}
+\references{
+Saldanha, R. F. (2026). \href{https://rfsaldanha.github.io/sis/cnes.html}{CNES -- Cadastro Nacional de Estabelecimentos de Saúde}.
+}
+\seealso{
+\code{\link[=fetch_datasus]{fetch_datasus()}}, \code{\link[=fetch_cadger]{fetch_cadger()}}
 }

@@ -1,19 +1,37 @@
-#' Process CNES variables from DataSUS
+#' Prepare CNES microdata
 #'
-#' \code{process_cnes} processes CNES variables retrieved by \code{fetch_datasus()}.
+#' Recodes supported CNES fields into descriptive values and normalizes escaped
+#' Unicode text. Establishment (`"CNES-ST"`) and professional (`"CNES-PF"`)
+#' records have different layouts and are processed accordingly.
 #'
-#' This function processes CNES-ST (Estabelecimentos) or CNES-PF (Pessoa f\\u00edsica) variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
+#' Columns not explicitly recoded are retained, but Unicode normalization is
+#' applied to every column and consequently the returned tibble contains
+#' character columns. Lookup joins can add establishment, occupation, and
+#' municipality information.
 #'
-#' @param data \code{data.frame} created by \code{fetch_datasus()}.
-#' @param information_system \code{string}. \code{CNES-ST} or \code{CNES-PF}
-#' @param nomes optional logical. \code{FALSE} by default, downloads extra data and add  \code{FANTASIA} names to the dataset.
-#' @param municipality_data optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.
+#' @param data A data frame returned by [fetch_datasus()] or another data frame
+#'   with a compatible CNES layout.
+#' @param information_system A single character string: `"CNES-ST"` for
+#'   establishments or `"CNES-PF"` for professionals.
+#' @param nomes Logical scalar. For `"CNES-ST"` data, if `TRUE`, download the
+#'   current CADGER table with [fetch_cadger()] and add establishment trade
+#'   names. This requires network access. It has no effect for `"CNES-PF"`.
+#' @param municipality_data Logical scalar. If `TRUE`, add municipality names
+#'   and available territorial attributes for supported municipality-code
+#'   columns.
 #'
 #' @examples
 #' process_cnes(cnes_st_sample, information_system = "CNES-ST")
 #' process_cnes(cnes_pf_sample, information_system = "CNES-PF")
 #'
-#' @return a \code{data.frame} with the processed data.
+#' @return A tibble with character columns. Supported codes are replaced with
+#'   descriptions, and requested lookup fields are added where applicable.
+#'
+#' @references
+#' Saldanha, R. F. (2026). [CNES -- Cadastro Nacional de Estabelecimentos de
+#' Saúde](https://rfsaldanha.github.io/sis/cnes.html).
+#'
+#' @seealso [fetch_datasus()], [fetch_cadger()]
 #'
 #' @export
 

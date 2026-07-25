@@ -2,25 +2,35 @@
 % Please edit documentation in R/process_sinan_dengue.R
 \name{process_sinan_dengue}
 \alias{process_sinan_dengue}
-\title{Process SINAN Dengue variables from DataSUS}
+\title{Prepare SINAN dengue microdata}
 \usage{
 process_sinan_dengue(data, municipality_data = TRUE)
 }
 \arguments{
-\item{data}{\code{data.frame} created by \code{fetch_datasus()}.}
+\item{data}{A data frame returned by \code{\link[=fetch_datasus]{fetch_datasus()}} with
+\code{information_system = "SINAN-DENGUE"}, or a compatible layout.}
 
-\item{municipality_data}{optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.}
+\item{municipality_data}{Logical scalar. If \code{TRUE}, add municipality names
+and available territorial attributes for supported municipality-code
+columns.}
 }
 \value{
-a \code{data.frame} with the processed data.
+A tibble with character columns. Supported codes are replaced with
+descriptions, and municipality fields are added when requested and
+available.
 }
 \description{
-\code{process_sinan_dengue} processes SINAN Dengue variables retrieved by \code{fetch_datasus()}.
-}
-\details{
-This function processes SINAN Dengue variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
+Recodes supported fields from SINAN dengue notifications into descriptive
+values and normalizes escaped Unicode text. Columns not explicitly recoded
+are retained, but the returned tibble contains character columns.
 }
 \examples{
 process_sinan_dengue(sinan_dengue_sample)
 
+}
+\references{
+Saldanha, R. F. (2026). \href{https://rfsaldanha.github.io/sis/sinan.html}{SINAN -- Sistema de Informação de Agravos de Notificação}.
+}
+\seealso{
+\code{\link[=fetch_datasus]{fetch_datasus()}}
 }

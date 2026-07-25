@@ -2,25 +2,39 @@
 % Please edit documentation in R/process_sim.R
 \name{process_sim}
 \alias{process_sim}
-\title{Process SIM variables from DataSUS}
+\title{Prepare SIM mortality microdata}
 \usage{
 process_sim(data, municipality_data = TRUE)
 }
 \arguments{
-\item{data}{\code{data.frame} created by \code{fetch_datasus()}.}
+\item{data}{A data frame returned by \code{\link[=fetch_datasus]{fetch_datasus()}} for a SIM mortality
+system, or another data frame with a compatible layout.}
 
-\item{municipality_data}{optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.}
+\item{municipality_data}{Logical scalar. If \code{TRUE}, add municipality names
+and available territorial attributes for supported municipality-code
+columns.}
 }
 \value{
-a \code{data.frame} with the processed data.
+A tibble with character columns. Supported codes are replaced with
+descriptions, and municipality fields are added when requested and
+available.
 }
 \description{
-\code{process_sim} processes SIM variables retrieved by \code{fetch_datasus()}.
+Recodes supported SIM mortality fields into descriptive values and normalizes
+escaped Unicode text. Codes without a documented conversion are retained.
 }
 \details{
-This function processes SIM variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
+Columns not explicitly recoded are retained, but Unicode normalization is
+applied to every column and consequently the returned tibble contains
+character columns.
 }
 \examples{
 process_sim(sim_do_sample)
 
+}
+\references{
+Saldanha, R. F. (2026). \href{https://rfsaldanha.github.io/sis/sim.html}{SIM -- Sistema de Informação sobre Mortalidade}.
+}
+\seealso{
+\code{\link[=fetch_datasus]{fetch_datasus()}}
 }

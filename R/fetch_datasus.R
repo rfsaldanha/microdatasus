@@ -1,42 +1,84 @@
-#' Fetch and read microdata files from DataSUS
+#' Download DataSUS microdata
 #'
-#' `fetch_datasus()` downloads DBC microdata files published by DataSUS,
-#' reads them and combines their rows in a single data frame.
+#' Downloads published DBC files from DataSUS, reads them with [read_dbc()],
+#' and combines the records in deterministic period, state, and file-part order.
 #'
-#' The supported state abbreviations are "AC", "AL", "AP", "AM", "BA", "CE",
-#' "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI",
-#' "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE" and "TO".
+#' @param year_start,year_end Numeric scalars giving the first and last requested
+#'   years, inclusive.
+#' @param month_start,month_end Numeric scalars giving the first and last
+#'   requested months, inclusive. Months are required for SIH, SIA, and CNES
+#'   systems and ignored, with a warning, for annual systems.
+#' @param uf A Brazilian state abbreviation, a character vector of
+#'   abbreviations, or `"all"`. `"all"` cannot be combined with individual
+#'   states. This argument is ignored for systems published only as national
+#'   files.
+#' @param information_system A single system identifier listed in
+#'   **Supported systems**.
+#' @param vars `NULL`, or a character vector of column names to retain. Selection
+#'   is applied to each file before the files are combined.
+#' @param stop_on_error Logical scalar. If `TRUE`, abort after any listing,
+#'   download, or read failure. If `FALSE`, warn and return the files that could
+#'   be read successfully.
+#' @param timeout A positive numeric scalar giving the connection and transfer
+#'   timeout, in seconds, for each network attempt.
+#' @param track_source Logical scalar. If `TRUE`, append a `source` column with
+#'   the original DBC file name. This column is retained even when `vars` is
+#'   supplied. The function aborts if the downloaded data already contain a
+#'   column named `source`.
 #'
-#' The following systems are implemented: "SIH-RD", "SIH-RJ", "SIH-SP",
-#' "SIH-ER", "SIM-DO", "SIM-DOFET", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT",
-#' "SINASC", "CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR",
-#' "CNES-HB", "CNES-PF", "CNES-EP", "CNES-RC", "CNES-IN", "CNES-EE",
-#' "CNES-EF", "CNES-GM", "SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD",
-#' "SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS",
-#' "SIA-SAD", "SINAN-DENGUE", "SINAN-CHIKUNGUNYA", "SINAN-ZIKA",
-#' "SINAN-MALARIA", "SINAN-CHAGAS", "SINAN-LEISHMANIOSE-VISCERAL",
-#' "SINAN-LEISHMANIOSE-TEGUMENTAR" and "SINAN-LEPTOSPIROSE".
+#' @return A tibble containing all successfully read records, or `NULL` if no
+#'   requested file could be read. No diagnostic attributes are added.
 #'
-#' @param year_start,year_end Numeric scalars. First and last requested years.
-#' @param month_start,month_end Numeric scalars. First and last requested
-#'   months. Required for SIH, CNES and SIA and ignored for annual systems.
-#' @param uf A state abbreviation, a vector of abbreviations, or `"all"`.
-#' @param information_system A supported information-system abbreviation.
-#' @param vars An optional character vector containing variables to retain.
-#' @param stop_on_error If `TRUE`, stop when a file cannot be downloaded or
-#'   read. Otherwise, return all files that were successfully read.
-#' @param timeout Download and connection timeout, in seconds.
-#' @param track_source If `TRUE`, append a `source` column containing the
-#'   original DBC file name.
+#' @details
+#' The function first lists the relevant DataSUS directories and downloads only
+#' files present in those listings. When more than one publication represents
+#' the same system, period, state, and file part, definitive/current data take
+#' precedence over preliminary data, and current data take precedence over
+#' historical copies.
 #'
-#' @return A tibble containing the combined DBC files, or `NULL` when no file
-#'   could be read.
+#' Downloads are sequential. Transient network failures are retried up to two
+#' times; missing, empty, invalid DBC, and incompatible-schema files are not
+#' retried. Partial files and other temporary files are removed before the
+#' function returns or aborts.
 #'
-#' @section Warning:
-#' An Internet connection is required. DataSUS may restrict FTP access from
-#' some countries. Dates refer to DataSUS processing periods and state
-#' abbreviations refer to the place where records were processed. Downloaded
-#' files are temporary and are removed after being read.
+#' Years and state abbreviations refer to DataSUS processing periods and places
+#' of processing, which may differ from dates or places of occurrence and
+#' residence contained in the records.
+#'
+#' @section Supported systems:
+#' - **SIH:** `"SIH-RD"`, `"SIH-RJ"`, `"SIH-SP"`, and `"SIH-ER"`.
+#' - **SIM:** `"SIM-DO"`, `"SIM-DOFET"`, `"SIM-DOEXT"`, `"SIM-DOINF"`, and
+#'   `"SIM-DOMAT"`.
+#' - **SINASC:** `"SINASC"`.
+#' - **CNES:** `"CNES-LT"`, `"CNES-ST"`, `"CNES-DC"`, `"CNES-EQ"`,
+#'   `"CNES-SR"`, `"CNES-HB"`, `"CNES-PF"`, `"CNES-EP"`, `"CNES-RC"`,
+#'   `"CNES-IN"`, `"CNES-EE"`, `"CNES-EF"`, and `"CNES-GM"`.
+#' - **SIA:** `"SIA-AB"`, `"SIA-ABO"`, `"SIA-ACF"`, `"SIA-AD"`, `"SIA-AN"`,
+#'   `"SIA-AM"`, `"SIA-AQ"`, `"SIA-AR"`, `"SIA-ATD"`, `"SIA-PA"`, `"SIA-PS"`,
+#'   and `"SIA-SAD"`.
+#' - **SINAN:** `"SINAN-DENGUE"`, `"SINAN-CHIKUNGUNYA"`, `"SINAN-ZIKA"`,
+#'   `"SINAN-MALARIA"`, `"SINAN-CHAGAS"`,
+#'   `"SINAN-LEISHMANIOSE-VISCERAL"`,
+#'   `"SINAN-LEISHMANIOSE-TEGUMENTAR"`, and `"SINAN-LEPTOSPIROSE"`.
+#'
+#' @section Network access:
+#' An Internet connection and FTP access to DataSUS are required. DataSUS may
+#' restrict FTP access from some countries.
+#'
+#' @references
+#' Saldanha, R. F. (2026). [*Sistemas de Informação em Saúde no
+#' Brasil*](https://rfsaldanha.github.io/sis/), especially the chapters on
+#' [SIM](https://rfsaldanha.github.io/sis/sim.html),
+#' [SINASC](https://rfsaldanha.github.io/sis/sinasc.html),
+#' [SIH](https://rfsaldanha.github.io/sis/sih.html),
+#' [SIA](https://rfsaldanha.github.io/sis/sia.html),
+#' [SINAN](https://rfsaldanha.github.io/sis/sinan.html), and
+#' [CNES](https://rfsaldanha.github.io/sis/cnes.html).
+#'
+#' @seealso
+#' [read_dbc()] for local DBC files; [process_sim()], [process_sinasc()],
+#' [process_sih()], [process_sia()], [process_cnes()], and the
+#' `process_sinan_*()` functions for system-specific recoding.
 #'
 #' @examplesIf interactive() && curl::has_internet()
 #' sim <- fetch_datasus(

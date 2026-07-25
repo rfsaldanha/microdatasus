@@ -13,9 +13,24 @@ read_dbc(file, as_character = TRUE)
 character. If \code{FALSE}, preserves the types inferred from the DBF metadata.}
 }
 \value{
-A tibble.
+A tibble with one column per DBF field. By default, all columns are
+character vectors; with \code{as_character = FALSE}, DBF-inferred types are
+retained.
 }
 \description{
 Decompresses a DataSUS DBC file to a temporary DBF file and reads it into
-a tibble. The implementation was adapted from the \code{healthbR} package.
+a tibble. Use this function for a DBC file already available locally; use
+\code{\link[=fetch_datasus]{fetch_datasus()}} to discover and download files from DataSUS.
+}
+\details{
+Decompression is performed through the package's bundled DBC implementation.
+The intermediate DBF file is created in the R temporary directory and removed
+before the function returns or aborts. The implementation was adapted from
+the \code{healthbR} package.
+}
+\references{
+Saldanha, R. F. (2026). \href{https://rfsaldanha.github.io/sis/}{\emph{Sistemas de Informação em Saúde no Brasil}}.
+}
+\seealso{
+\code{\link[=fetch_datasus]{fetch_datasus()}}
 }

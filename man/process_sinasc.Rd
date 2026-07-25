@@ -2,25 +2,40 @@
 % Please edit documentation in R/process_sinasc.R
 \name{process_sinasc}
 \alias{process_sinasc}
-\title{Process SINASC variables from DataSUS}
+\title{Prepare SINASC live-birth microdata}
 \usage{
 process_sinasc(data, municipality_data = TRUE)
 }
 \arguments{
-\item{data}{\code{data.frame} created by \code{fetch_datasus()}.}
+\item{data}{A data frame returned by \code{\link[=fetch_datasus]{fetch_datasus()}} with
+\code{information_system = "SINASC"}, or a compatible layout.}
 
-\item{municipality_data}{optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.}
+\item{municipality_data}{Logical scalar. If \code{TRUE}, add municipality names
+and available territorial attributes for supported municipality-code
+columns.}
 }
 \value{
-a \code{data.frame} with the processed data.
+A tibble with character columns. Supported codes are replaced with
+descriptions, and municipality fields are added when requested and
+available.
 }
 \description{
-\code{process_sinasc} processes SINASC variables retrieved by \code{fetch_datasus()}.
+Recodes supported SINASC live-birth fields into descriptive values and
+normalizes escaped Unicode text. Codes without a documented conversion are
+retained.
 }
 \details{
-This function processes SINASC variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
+Columns not explicitly recoded are retained, but Unicode normalization is
+applied to every column and consequently the returned tibble contains
+character columns.
 }
 \examples{
 process_sinasc(sinasc_sample)
 
+}
+\references{
+Saldanha, R. F. (2026). \href{https://rfsaldanha.github.io/sis/sinasc.html}{SINASC -- Sistema de Informação sobre Nascidos Vivos}.
+}
+\seealso{
+\code{\link[=fetch_datasus]{fetch_datasus()}}
 }

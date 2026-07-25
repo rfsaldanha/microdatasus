@@ -1,16 +1,30 @@
-#' Process SIM variables from DataSUS
+#' Prepare SIM mortality microdata
 #'
-#' \code{process_sim} processes SIM variables retrieved by \code{fetch_datasus()}.
+#' Recodes supported SIM mortality fields into descriptive values and normalizes
+#' escaped Unicode text. Codes without a documented conversion are retained.
 #'
-#' This function processes SIM variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
+#' Columns not explicitly recoded are retained, but Unicode normalization is
+#' applied to every column and consequently the returned tibble contains
+#' character columns.
 #'
-#' @param data \code{data.frame} created by \code{fetch_datasus()}.
-#' @param municipality_data optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.
+#' @param data A data frame returned by [fetch_datasus()] for a SIM mortality
+#'   system, or another data frame with a compatible layout.
+#' @param municipality_data Logical scalar. If `TRUE`, add municipality names
+#'   and available territorial attributes for supported municipality-code
+#'   columns.
 #'
 #' @examples
 #' process_sim(sim_do_sample)
 #'
-#' @return a \code{data.frame} with the processed data.
+#' @return A tibble with character columns. Supported codes are replaced with
+#'   descriptions, and municipality fields are added when requested and
+#'   available.
+#'
+#' @references
+#' Saldanha, R. F. (2026). [SIM -- Sistema de Informação sobre
+#' Mortalidade](https://rfsaldanha.github.io/sis/sim.html).
+#'
+#' @seealso [fetch_datasus()]
 #'
 #' @export
 

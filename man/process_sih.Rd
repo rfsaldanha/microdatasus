@@ -2,29 +2,43 @@
 % Please edit documentation in R/process_sih.R
 \name{process_sih}
 \alias{process_sih}
-\title{Process SIH variables from DataSUS}
+\title{Prepare SIH hospital-admission microdata}
 \usage{
 process_sih(data, information_system = "SIH-RD", municipality_data = TRUE)
 }
 \arguments{
-\item{data}{\code{data.frame} created by \code{fetch_datasus()}.}
+\item{data}{A data frame returned by \code{\link[=fetch_datasus]{fetch_datasus()}} with
+\code{information_system = "SIH-RD"}, or a compatible layout.}
 
-\item{information_system}{string. The abbreviation of the health information system. See \emph{Details}.}
+\item{information_system}{A single character string. Currently only
+\code{"SIH-RD"} is supported.}
 
-\item{municipality_data}{optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.}
+\item{municipality_data}{Logical scalar. If \code{TRUE}, add municipality names
+and available territorial attributes for supported municipality-code
+columns.}
 }
 \value{
-a \code{data.frame} with the processed data.
+A tibble with character columns. Supported codes are replaced with
+descriptions, and municipality fields are added when requested and
+available.
 }
 \description{
-\code{process_SIH} processes SIH variables retrieved by \code{fetch_datasus()}.
+Recodes supported fields from reduced hospital-admission records
+(\code{"SIH-RD"}) into descriptive values and normalizes escaped Unicode text.
 }
 \details{
-This function processes SIH variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
-
-Currently, only "SIH-RD" is supported.
+Columns not explicitly recoded are retained, but Unicode normalization is
+applied to every column and consequently the returned tibble contains
+character columns. Other SIH layouts downloadable with \code{\link[=fetch_datasus]{fetch_datasus()}} are
+not currently supported by this processing function.
 }
 \examples{
 process_sih(sih_rd_sample)
 
+}
+\references{
+Saldanha, R. F. (2026). \href{https://rfsaldanha.github.io/sis/sih.html}{SIH -- Sistema de Informações Hospitalares do SUS}.
+}
+\seealso{
+\code{\link[=fetch_datasus]{fetch_datasus()}}
 }

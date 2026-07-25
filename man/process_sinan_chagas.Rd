@@ -2,25 +2,34 @@
 % Please edit documentation in R/process_sinan_chagas.R
 \name{process_sinan_chagas}
 \alias{process_sinan_chagas}
-\title{Process SINAN Chagas variables from DataSUS}
+\title{Prepare SINAN Chagas disease microdata}
 \usage{
 process_sinan_chagas(data, municipality_data = TRUE)
 }
 \arguments{
-\item{data}{\code{data.frame} created by \code{fetch_datasus()}.}
+\item{data}{A data frame returned by \code{\link[=fetch_datasus]{fetch_datasus()}} with
+\code{information_system = "SINAN-CHAGAS"}, or a compatible layout.}
 
-\item{municipality_data}{optional logical. \code{TRUE} by default, creates new variables in the dataset informing the full name and other details about the municipality of residence.}
+\item{municipality_data}{Logical scalar retained for API compatibility. It is
+not currently used by this processing function.}
 }
 \value{
-a \code{data.frame} with the processed data.
+A tibble with character columns. Supported codes are replaced with
+descriptions.
 }
 \description{
-\code{process_sinan_chagas} processes SINAN Chagas variables retrieved by \code{fetch_datasus()}.
-}
-\details{
-This function processes SINAN Chagas variables retrieved by \code{fetch_datasus()}, informing labels for categoric variables including NA values.
+Recodes supported fields from SINAN Chagas disease notifications into
+descriptive values and normalizes escaped Unicode text. Columns not
+explicitly recoded are retained, but the returned tibble contains character
+columns.
 }
 \examples{
-process_sinan_malaria(sinan_chagas_sample)
+process_sinan_chagas(sinan_chagas_sample)
 
+}
+\references{
+Saldanha, R. F. (2026). \href{https://rfsaldanha.github.io/sis/sinan.html}{SINAN -- Sistema de Informação de Agravos de Notificação}.
+}
+\seealso{
+\code{\link[=fetch_datasus]{fetch_datasus()}}
 }
