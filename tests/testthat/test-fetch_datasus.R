@@ -369,8 +369,11 @@ test_that("quiet suppresses status messages and per-file announcements", {
   ))
 
   visible <- paste(visible, collapse = "\n")
-  expect_match(visible, "Downloading file 1/2: 'one[.]dbc'")
-  expect_match(visible, "Downloading file 2/2: 'two[.]dbc'")
+  expect_match(visible, "Downloading \\[1/2\\] 'one[.]dbc'")
+  expect_match(visible, "Downloading \\[2/2\\] 'two[.]dbc'")
+  expect_match(visible, "Reading \\[1/2\\] 'one[.]dbc'")
+  expect_match(visible, "Reading \\[2/2\\] 'two[.]dbc'")
+  expect_match(visible, "Downloaded and read 2 of 2 DataSUS files")
   expect_length(silent, 0L)
 })
 
@@ -385,7 +388,7 @@ test_that("ignored-month alerts precede downloads and use CLI formatting", {
     month_start = 1,
     year_end = 2022,
     month_end = 12,
-    uf = "AC",
+    uf = "all",
     information_system = "SINAN-DENGUE",
     quiet = TRUE
   ))
@@ -393,7 +396,7 @@ test_that("ignored-month alerts precede downloads and use CLI formatting", {
     2022,
     month_start = 1,
     year_end = 2022,
-    uf = "AC",
+    uf = "all",
     information_system = "SINAN-DENGUE",
     quiet = TRUE
   ))
@@ -402,7 +405,7 @@ test_that("ignored-month alerts precede downloads and use CLI formatting", {
     month_start = 1,
     year_end = 2022,
     month_end = 12,
-    uf = "AC",
+    uf = "all",
     information_system = "SINAN-DENGUE",
     quiet = FALSE
   ))
@@ -410,13 +413,36 @@ test_that("ignored-month alerts precede downloads and use CLI formatting", {
   expect_length(alerts, 1L)
   expect_match(
     alerts,
-    "`month_start` and `month_end` are ignored for annual"
+    "`month_start` and `month_end` are ignored because \"SINAN-DENGUE\" uses annual files"
   )
   expect_length(single_alert, 1L)
-  expect_match(single_alert, "`month_start` is ignored for annual")
+  expect_match(
+    single_alert,
+    "`month_start` is ignored because \"SINAN-DENGUE\" uses annual files"
+  )
   expect_lt(
-    grep("are ignored for annual", visible),
-    grep("Downloading file 1/1", visible)
+    grep("are ignored because", visible),
+    grep("Downloading \\[1/1\\]", visible)
+  )
+})
+
+test_that("national systems warn when a specific state is ignored", {
+  manifest <- mock_manifest("DENGBR22.dbc")
+  manifest$uf <- NA_character_
+  mock_fetch_dependencies(manifest)
+
+  alerts <- testthat::capture_messages(fetch_datasus(
+    2022,
+    year_end = 2022,
+    uf = "AC",
+    information_system = "SINAN-DENGUE",
+    quiet = TRUE
+  ))
+
+  expect_length(alerts, 1L)
+  expect_match(
+    alerts,
+    "`uf` is ignored because \"SINAN-DENGUE\" publishes national files[.]"
   )
 })
 

@@ -10,8 +10,8 @@
 #'   systems and ignored, with a warning, for annual systems.
 #' @param uf A Brazilian state abbreviation, a character vector of
 #'   abbreviations, or `"all"`. `"all"` cannot be combined with individual
-#'   states. This argument is ignored for systems published only as national
-#'   files.
+#'   states. A warning alert is displayed when this argument is ignored for
+#'   systems published only as national files.
 #' @param information_system A single system identifier listed in
 #'   **Supported systems**.
 #' @param vars `NULL`, or a character vector of column names to retain. Selection
@@ -133,17 +133,16 @@ fetch_datasus <- function(
   spec <- request$spec
 
   if (
-    !quiet &&
-      identical(spec$geography, "national") &&
+    identical(spec$geography, "national") &&
       !identical(uf, "all")
   ) {
-    cli::cli_alert_info(
-      "{information_system} files are national; ignoring {.arg uf}."
+    cli::cli_alert_warning(
+      "{.arg uf} is ignored because {.val {information_system}} publishes national files."
     )
   }
 
   if (!quiet) {
-    cli::cli_alert_info("Discovering files available from DataSUS...")
+    cli::cli_alert_info("Discovering available files on DataSUS...")
   }
   discovery <- .datasus_build_manifest(
     spec = spec,
@@ -156,7 +155,7 @@ fetch_datasus <- function(
   if (length(discovery$errors)) {
     message <- c(
       "Some DataSUS directories could not be listed.",
-      "i" = paste(discovery$errors, collapse = "\n")
+      .datasus_cli_bullets(discovery$errors)
     )
     if (stop_on_error) {
       cli::cli_abort(message)
@@ -171,9 +170,10 @@ fetch_datasus <- function(
   available_periods <- if (nrow(manifest)) unique(manifest$period) else character()
   missing_periods <- request$periods[!request$periods %in% available_periods]
   if (length(missing_periods)) {
-    cli::cli_warn(
-      "Periods unavailable from DataSUS: {paste(missing_periods, collapse = ', ')}."
-    )
+    cli::cli_warn(c(
+      "{length(missing_periods)} requested period{?s} unavailable from DataSUS.",
+      "i" = "Unavailable: {.val {missing_periods}}."
+    ))
   }
   if (nrow(manifest) && identical(spec$geography, "state")) {
     requested_keys <- as.vector(outer(
@@ -190,9 +190,10 @@ fetch_datasus <- function(
       } else {
         ""
       }
-      cli::cli_warn(
-        "State-period combinations unavailable from DataSUS: {paste(shown, collapse = ', ')}{suffix}."
-      )
+      cli::cli_warn(c(
+        "{length(missing_keys)} requested state-period combination{?s} unavailable from DataSUS.",
+        "i" = "Unavailable: {.val {shown}}{suffix}."
+      ))
     }
   }
   if (!nrow(manifest)) {
@@ -202,27 +203,24 @@ fetch_datasus <- function(
   preliminary <- unique(manifest$period[manifest$release == "preliminary"])
   if (!quiet && length(preliminary)) {
     cli::cli_alert_info(
-      "Preliminary periods: {paste(preliminary, collapse = ', ')}."
+      "Using preliminary data for {length(preliminary)} period{?s}: {.val {preliminary}}."
     )
   }
   old <- unique(manifest$period[manifest$release == "old"])
   if (!quiet && length(old)) {
     cli::cli_alert_info(
-      paste0(
-        "Periods from historical directories may contain incompatible codes: ",
-        paste(old, collapse = ", "),
-        "."
-      )
+      "Using historical data for {length(old)} period{?s}: {.val {old}}. Codes may be incompatible with current files."
     )
   }
 
   if (!quiet) {
     cli::cli_alert_info(
-      "Downloading and reading {nrow(manifest)} DataSUS file{?s}..."
+      "Preparing to download and read {nrow(manifest)} DataSUS file{?s}..."
     )
   }
   parts <- list()
   failures <- character()
+  processed_files <- 0L
 
   for (index in seq_len(nrow(manifest))) {
     remote <- manifest[index, , drop = FALSE]
@@ -230,7 +228,7 @@ fetch_datasus <- function(
 
     if (!quiet) {
       cli::cli_alert_info(
-        "Downloading file {index}/{nrow(manifest)}: {.file {remote$file}}"
+        "Downloading [{index}/{nrow(manifest)}] {.file {remote$file}}..."
       )
     }
 
@@ -242,6 +240,11 @@ fetch_datasus <- function(
           timeout,
           quiet = quiet
         )
+        if (!quiet) {
+          cli::cli_alert_info(
+            "Reading [{index}/{nrow(manifest)}] {.file {remote$file}}..."
+          )
+        }
         partial <- read_dbc(file = temporary, as_character = TRUE)
 
         if (track_source && "source" %in% names(partial)) {
@@ -261,7 +264,7 @@ fetch_datasus <- function(
         ) {
           unknown <- setdiff(requested_vars, names(partial))
           cli::cli_abort(
-            "Unknown variable name{?s}: {paste(unknown, collapse = ', ')}.",
+            "Unknown variable name{?s}: {.field {unknown}}.",
             class = "microdatasus_unknown_vars"
           )
         }
@@ -294,11 +297,23 @@ fetch_datasus <- function(
       failures <- c(failures, detail)
       next
     }
+    processed_files <- processed_files + 1L
     if (nrow(result) > 0L) {
       parts[[length(parts) + 1L]] <- result
     }
   }
 
+  if (!quiet && processed_files > 0L) {
+    completion <- paste0(
+      "Downloaded and read {processed_files} of {nrow(manifest)} ",
+      "DataSUS file{?s}."
+    )
+    if (length(failures)) {
+      cli::cli_alert_info(completion)
+    } else {
+      cli::cli_alert_success(completion)
+    }
+  }
   .datasus_summarize_failures(failures)
   if (!length(parts)) {
     return(NULL)

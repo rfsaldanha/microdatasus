@@ -32,6 +32,11 @@
 * Adds `quiet` at the end of the `fetch_datasus()` signature. Transfer progress
   and status messages, including each file name, are displayed by default; set
   `quiet = TRUE` to hide them. Warnings and errors remain visible.
+* Uses immediate `cli` warning alerts when month arguments or state selections
+  are ignored, including when `quiet = TRUE`.
+* Standardizes download messages across microdata and auxiliary tables, with
+  consistent status verbs, semantic `cli` formatting, indexed file progress,
+  and one diagnostic item per failed directory or file.
 * Hardens `fetch_cadger()` and `fetch_sigtab()` with shared timeout, retry, and
   temporary-file cleanup logic, and adds ZIP integrity and schema validation.
 

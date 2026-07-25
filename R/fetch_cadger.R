@@ -24,18 +24,23 @@ fetch_cadger <- function(timeout = 240) {
   cadger_url <- "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Auxiliar/TAB_CNES.zip"
   cadger_file <- file.path("DBF/CADGERBR.dbf")
 
-  cli::cli_alert_info("Downloading the current CADGER table from DataSUS...")
+  cli::cli_alert_info(
+    "Downloading DataSUS auxiliary table {.strong CADGER}..."
+  )
   tmp <- .datasus_fetch_zip_dbf(cadger_url, cadger_file, timeout)
   required <- c("CNES", "FANTASIA")
   missing <- setdiff(required, names(tmp))
   if (length(missing)) {
     cli::cli_abort(
-      "CADGER is missing required column{?s}: {paste(missing, collapse = ', ')}."
+      "The downloaded CADGER table is missing required column{?s}: {.field {missing}}."
     )
   }
   tmp <- tmp[, required, drop = FALSE]
   tmp$CNES <- as.character(tmp$CNES)
   tmp$FANTASIA <- stringi::stri_enc_toutf8(str = tmp$FANTASIA)
 
+  cli::cli_alert_success(
+    "Downloaded and read DataSUS auxiliary table {.strong CADGER}."
+  )
   tmp
 }

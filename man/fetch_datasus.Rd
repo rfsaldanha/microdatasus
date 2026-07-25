@@ -28,8 +28,8 @@ systems and ignored, with a warning, for annual systems.}
 
 \item{uf}{A Brazilian state abbreviation, a character vector of
 abbreviations, or \code{"all"}. \code{"all"} cannot be combined with individual
-states. This argument is ignored for systems published only as national
-files.}
+states. A warning alert is displayed when this argument is ignored for
+systems published only as national files.}
 
 \item{information_system}{A single system identifier listed in
 \strong{Supported systems}.}

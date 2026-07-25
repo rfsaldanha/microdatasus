@@ -151,6 +151,6 @@ test_that("ZIP helper rejects invalid timeout and archives", {
       file.path("DBF", "TABLE.dbf"),
       timeout = 20
     ),
-    "Could not extract"
+    "Failed to extract"
   )
 })

@@ -153,6 +153,12 @@
   invisible(x)
 }
 
+.datasus_cli_bullets <- function(x, type = "x") {
+  x <- gsub("{", "{{", x, fixed = TRUE)
+  x <- gsub("}", "}}", x, fixed = TRUE)
+  structure(x, names = rep(type, length(x)))
+}
+
 .datasus_assert_number <- function(x, argument, integer = FALSE, lower = NULL) {
   valid <- is.numeric(x) &&
     length(x) == 1L &&
@@ -230,7 +236,7 @@
     )
     verb <- if (length(month_arguments) == 1L) "is" else "are"
     cli::cli_alert_warning(
-      "{.arg {month_arguments}} {verb} ignored for annual information systems."
+      "{.arg {month_arguments}} {verb} ignored because {.val {information_system}} uses annual files."
     )
   }
 
@@ -545,7 +551,7 @@
   )
   if (!file.exists(destination) || is.na(file.size(destination)) ||
       file.size(destination) == 0) {
-    cli::cli_abort("The downloaded file is empty.")
+    cli::cli_abort("The file downloaded from {.url {url}} is empty.")
   }
   invisible(destination)
 }
@@ -556,7 +562,7 @@
   }
   cli::cli_warn(c(
     "{length(failures)} DataSUS file{?s} could not be processed.",
-    "i" = paste(failures, collapse = "\n")
+    .datasus_cli_bullets(failures)
   ))
 }
 
@@ -565,7 +571,7 @@
 
   work_dir <- tempfile("microdatasus-auxiliary-")
   if (!dir.create(work_dir, recursive = TRUE)) {
-    cli::cli_abort("Could not create a temporary download directory.")
+    cli::cli_abort("Failed to create a temporary download directory.")
   }
   on.exit(unlink(work_dir, recursive = TRUE, force = TRUE), add = TRUE)
 
@@ -583,7 +589,7 @@
   )
   if (inherits(extracted, "error")) {
     cli::cli_abort(c(
-      "Could not extract the DataSUS auxiliary table.",
+      "Failed to extract the DataSUS auxiliary table.",
       "i" = conditionMessage(extracted)
     ))
   }
@@ -591,7 +597,7 @@
   dbf <- file.path(work_dir, internal_file)
   if (!file.exists(dbf) || is.na(file.size(dbf)) || file.size(dbf) == 0) {
     cli::cli_abort(
-      "The archive does not contain a valid {.file {internal_file}} file."
+      "The downloaded archive does not contain a valid {.file {internal_file}} file."
     )
   }
 
@@ -599,7 +605,7 @@
     foreign::read.dbf(dbf, as.is = TRUE),
     error = function(error) {
       cli::cli_abort(c(
-        "Could not read the DataSUS auxiliary table.",
+        "Failed to read the DataSUS auxiliary table.",
         "i" = conditionMessage(error)
       ))
     }

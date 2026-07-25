@@ -245,8 +245,8 @@ dados <- fetch_datasus(
 ```
 
 Use `uf = "all"` para todas as UFs. Não combine `"all"` com códigos
-individuais. Nos sistemas nacionais, como SINAN, `uf` é ignorado; filtre a
-variável territorial do registro depois do download.
+individuais. Nos sistemas nacionais, como SINAN, `uf` é ignorado com um alerta;
+filtre a variável territorial do registro depois do download.
 
 O [apêndice de códigos de
 municípios](https://rfsaldanha.github.io/sis/codmun.html) discute códigos IBGE,

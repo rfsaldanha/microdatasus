@@ -27,10 +27,11 @@ preliminares e cópias históricas.
 
 Os downloads são sequenciais para evitar sobrecarga no servidor. Antes de cada
 transferência, a função anuncia o nome do arquivo e exibe o progresso informado
-pelo `curl`. Use `quiet = TRUE` quando quiser ocultar o progresso e todas as
-mensagens de status; avisos e erros permanecem visíveis. Arquivos temporários são
-removidos depois da leitura, inclusive quando ocorre uma falha. Não há cache
-persistente: uma nova chamada consulta novamente o DataSUS.
+pelo `curl`; depois, anuncia a leitura do DBC e apresenta um resumo final do
+lote. Use `quiet = TRUE` quando quiser ocultar o progresso e todas as mensagens
+de status; avisos e erros permanecem visíveis. Arquivos temporários são removidos
+depois da leitura, inclusive quando ocorre uma falha. Não há cache persistente:
+uma nova chamada consulta novamente o DataSUS.
 
 ## Argumentos principais
 
@@ -64,7 +65,7 @@ sim_raw <- fetch_datasus(
 
 Os arquivos `SIM-DO` e `SINASC` são organizados por UF. Os subconjuntos
 especiais do SIM e os agravos SINAN suportados são nacionais; nesses casos,
-`uf` é ignorado.
+`uf` é ignorado com um alerta.
 
 Para escolher corretamente a dimensão temporal e territorial da análise,
 consulte os capítulos de [SIM](https://rfsaldanha.github.io/sis/sim.html),
