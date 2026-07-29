@@ -1,8 +1,9 @@
-# Process SINAN Leishmaniose Tegumentar variables from DataSUS
+# Prepare SINAN tegumentary leishmaniasis microdata
 
-`process_sinan_leishmaniose_tegumentar` processes SINAN Leishmaniose
-Tegumentar variables retrieved by
-[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md).
+Recodes supported fields from SINAN tegumentary leishmaniasis
+notifications into descriptive values and normalizes escaped Unicode
+text. Columns not explicitly recoded are retained, but the returned
+tibble contains character columns.
 
 ## Usage
 
@@ -14,25 +15,29 @@ process_sinan_leishmaniose_tegumentar(data, municipality_data = TRUE)
 
 - data:
 
-  `data.frame` created by
-  [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md).
+  A data frame returned by
+  [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+  with `information_system = "SINAN-LEISHMANIOSE-TEGUMENTAR"`, or a
+  compatible layout.
 
 - municipality_data:
 
-  optional logical. `TRUE` by default, creates new variables in the
-  dataset informing the full name and other details about the
-  municipality of residence.
+  Logical scalar retained for API compatibility. It is not currently
+  used by this processing function.
 
 ## Value
 
-a `data.frame` with the processed data.
+A tibble with character columns. Supported codes are replaced with
+descriptions.
 
-## Details
+## References
 
-This function processes SINAN Leishmaniose Tegumentar variables
-retrieved by
-[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md),
-informing labels for categoric variables including NA values.
+Saldanha, R. F. (2026). [SINAN – Sistema de Informação de Agravos de
+Notificação](https://rfsaldanha.github.io/sis/sinan.html).
+
+## See also
+
+[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
 
 ## Examples
 

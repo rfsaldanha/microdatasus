@@ -1,7 +1,9 @@
-# Fetch and read microdata files from DataSUS
+# Download DataSUS microdata
 
-`fetch_datasus` downloads microdata (DBC) files from DataSUS and reads
-them.
+Downloads published DBC files from DataSUS, reads them with
+[`read_dbc()`](https://rfsaldanha.github.io/microdatasus/reference/read_dbc.md),
+and combines the records in deterministic period, state, and file-part
+order.
 
 ## Usage
 
@@ -16,7 +18,8 @@ fetch_datasus(
   vars = NULL,
   stop_on_error = FALSE,
   timeout = 240,
-  track_source = FALSE
+  track_source = FALSE,
+  quiet = FALSE
 )
 ```
 
@@ -24,113 +27,149 @@ fetch_datasus(
 
 - year_start, year_end:
 
-  numeric. Start and end year of files in the format yyyy.
+  Numeric scalars giving the first and last requested years, inclusive.
 
 - month_start, month_end:
 
-  numeric. Start and end month in the format mm. Those parameters are
-  only used with the healh information systems SIH, CNES and SIA. There
-  parameter are ignored if the information health system is SIM or
-  SINASC.
+  Numeric scalars giving the first and last requested months, inclusive.
+  Months are required for SIH, SIA, and CNES systems and ignored, with a
+  warning, for annual systems.
 
 - uf:
 
-  an optional string or a vector of strings. By default all UFs
-  ("Unidades Federativas") are download. See *Details*.
+  A Brazilian state abbreviation, a character vector of abbreviations,
+  or `"all"`. `"all"` cannot be combined with individual states. A
+  warning alert is displayed when this argument is ignored for systems
+  published only as national files.
 
 - information_system:
 
-  string. The abbreviation of the health information system to be
-  accessed. See *Details*.
+  A single system identifier listed in **Supported systems**.
 
 - vars:
 
-  an optional string or a vector of strings. By default, all variables
-  read and stored, unless a list of desired variables is informed by
-  this parameter.
+  `NULL`, or a character vector of column names to retain. Selection is
+  applied to each file before the files are combined.
 
 - stop_on_error:
 
-  logical. If TRUE, the download process will be stopped if an error
-  occurs.
+  Logical scalar. If `TRUE`, abort after any listing, download, or read
+  failure. If `FALSE`, warn and return the files that could be read
+  successfully.
 
 - timeout:
 
-  numeric (seconds). Sets a timeout tolerance for downloads, usefull on
-  large files and/or slow connections. Defaults to 240 seconds.
+  A positive numeric scalar giving the connection and transfer timeout,
+  in seconds, for each network attempt.
 
 - track_source:
 
-  logical. If `TRUE`, adds a column called `source` with the downloaded
-  file name.
+  Logical scalar. If `TRUE`, append a `source` column with the original
+  DBC file name. This column is retained even when `vars` is supplied.
+  The function aborts if the downloaded data already contain a column
+  named `source`.
+
+- quiet:
+
+  Logical scalar. If `FALSE` (the default), display the transfer
+  progress reported by
+  [`curl::curl_download()`](https://jeroen.r-universe.dev/curl/reference/curl_download.html)
+  and announce each file before downloading it. If `TRUE`, suppress
+  status messages, per-file announcements, and progress meters. Warnings
+  and errors are not suppressed.
 
 ## Value
 
-a `data.frame` with the contents of the DBC files.
+A tibble containing all successfully read records, or `NULL` if no
+requested file could be read. No diagnostic attributes are added.
 
 ## Details
 
-This function downloads DBC files from DataSUS following parameters
-about start date, end date, UF and health information system
-abbreviation. After the download process, the files are merged into a
-unique `data.frame` object.
+The function first lists the relevant DataSUS directories and downloads
+only files present in those listings. When more than one publication
+represents the same system, period, state, and file part,
+definitive/current data take precedence over preliminary data, and
+current data take precedence over historical copies.
 
-A specific UF or a vector of UFs can be informed using the following
-abbreviations: "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO",
-"MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS",
-"RO", "RR", "SC", "SP", "SE", "TO".
+Downloads are sequential. Unless `quiet = TRUE`, transfer progress is
+displayed by
+[`curl::curl_download()`](https://jeroen.r-universe.dev/curl/reference/curl_download.html).
+Transient network failures are retried up to two times; missing, empty,
+invalid DBC, and incompatible-schema files are not retried. Partial
+files and other temporary files are removed before the function returns
+or aborts.
 
-The following systems are implemented: "SIH-RD", "SIH-RJ", "SIH-SP",
-"SIH-ER", "SIM-DO", "SIM-DOFET", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT",
-"SINASC", "CNES-LT", "CNES-ST", "CNES-DC", "CNES-EQ", "CNES-SR",
-"CNES-HB", "CNES-PF", "CNES-EP", "CNES-RC", "CNES-IN", "CNES-EE",
-"CNES-EF", "CNES-GM", "SIA-AB", "SIA-ABO", "SIA-ACF", "SIA-AD",
-"SIA-AN", "SIA-AM", "SIA-AQ", "SIA-AR", "SIA-ATD", "SIA-PA", "SIA-PS",
-"SIA-SAD", "SINAN-DENGUE", "SINAN-CHIKUNGUNYA", "SINAN-ZIKA",
-"SINAN-MALARIA", "SINAN-CHAGAS", "SINAN-LEISHMANIOSE-VISCERAL",
-"SINAN-LEISHMANIOSE-TEGUMENTAR", "SINAN-LEPTOSPIROSE".
+Years and state abbreviations refer to DataSUS processing periods and
+places of processing, which may differ from dates or places of
+occurrence and residence contained in the records.
 
-## Warning
+## Supported systems
 
-A Internet connection is needed to use this function.
+- **SIH:** `"SIH-RD"`, `"SIH-RJ"`, `"SIH-SP"`, and `"SIH-ER"`.
 
-Currently, DataSUS FTP server is restricting download calls from some
-countries, except Brazil.
+- **SIM:** `"SIM-DO"`, `"SIM-DOFET"`, `"SIM-DOEXT"`, `"SIM-DOINF"`, and
+  `"SIM-DOMAT"`.
 
-The year and month used to download the files regards the processing
-month and year of the cases by DataSUS.
+- **SINASC:** `"SINASC"`.
 
-The UF regards where the cases were processed by DataSUS.
+- **CNES:** `"CNES-LT"`, `"CNES-ST"`, `"CNES-DC"`, `"CNES-EQ"`,
+  `"CNES-SR"`, `"CNES-HB"`, `"CNES-PF"`, `"CNES-EP"`, `"CNES-RC"`,
+  `"CNES-IN"`, `"CNES-EE"`, `"CNES-EF"`, and `"CNES-GM"`.
 
-The files are downloaded to a temporary folder and deleted after the
-reading process.
+- **SIA:** `"SIA-AB"`, `"SIA-ABO"`, `"SIA-ACF"`, `"SIA-AD"`, `"SIA-AN"`,
+  `"SIA-AM"`, `"SIA-AQ"`, `"SIA-AR"`, `"SIA-ATD"`, `"SIA-PA"`,
+  `"SIA-PS"`, and `"SIA-SAD"`.
+
+- **SINAN:** `"SINAN-DENGUE"`, `"SINAN-CHIKUNGUNYA"`, `"SINAN-ZIKA"`,
+  `"SINAN-MALARIA"`, `"SINAN-CHAGAS"`, `"SINAN-LEISHMANIOSE-VISCERAL"`,
+  `"SINAN-LEISHMANIOSE-TEGUMENTAR"`, and `"SINAN-LEPTOSPIROSE"`.
+
+## Network access
+
+An Internet connection and FTP access to DataSUS are required. DataSUS
+may restrict FTP access from some countries.
+
+## References
+
+Saldanha, R. F. (2026). [*Sistemas de Informação em Saúde no
+Brasil*](https://rfsaldanha.github.io/sis/), especially the chapters on
+[SIM](https://rfsaldanha.github.io/sis/sim.html),
+[SINASC](https://rfsaldanha.github.io/sis/sinasc.html),
+[SIH](https://rfsaldanha.github.io/sis/sih.html),
+[SIA](https://rfsaldanha.github.io/sis/sia.html),
+[SINAN](https://rfsaldanha.github.io/sis/sinan.html), and
+[CNES](https://rfsaldanha.github.io/sis/cnes.html).
+
+## See also
+
+[`read_dbc()`](https://rfsaldanha.github.io/microdatasus/reference/read_dbc.md)
+for local DBC files;
+[`process_sim()`](https://rfsaldanha.github.io/microdatasus/reference/process_sim.md),
+[`process_sinasc()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinasc.md),
+[`process_sih()`](https://rfsaldanha.github.io/microdatasus/reference/process_sih.md),
+[`process_sia()`](https://rfsaldanha.github.io/microdatasus/reference/process_sia.md),
+[`process_cnes()`](https://rfsaldanha.github.io/microdatasus/reference/process_cnes.md),
+and the `process_sinan_*()` functions for system-specific recoding.
 
 ## Examples
 
 ``` r
-# \donttest{
-# Fetch two years of data from SIM-DO
-res <- fetch_datasus(year_start = 2010, year_end = 2011, uf = "AC",
-                     information_system = "SIM-DO")
-#> ℹ Your local Internet connection seems to be ok.
-#> ℹ DataSUS FTP server seems to be up and reachable.
-#> ℹ Starting download...
+if (FALSE) { # interactive() && curl::has_internet()
+sim <- fetch_datasus(
+  year_start = 2014,
+  year_end = 2014,
+  uf = "AC",
+  information_system = "SIM-DO",
+  vars = c("CODMUNRES", "DTOBITO", "CAUSABAS")
+)
 
-# Fetch one year of data from SIM-DO and keep only three variables
-res <- fetch_datasus(year_start = 2014, year_end = 2014,
-                     information_system = "SIM-DO", uf = "AC",
-                     vars = c("CODMUNRES", "DTOBITO", "CAUSABAS"))
-#> ℹ Your local Internet connection seems to be ok.
-#> ℹ DataSUS FTP server seems to be up and reachable.
-#> ℹ Starting download...
-
-# Fetch some months' data from SIH-RD for four states
-res <- fetch_datasus(year_start = 2014, month_start = 1,
-                     year_end = 2014, month_end = 2,
-                     uf = c("AC", "RR"),
-                     information_system = "SIH-RD")
-#> ℹ Your local Internet connection seems to be ok.
-#> ℹ DataSUS FTP server seems to be up and reachable.
-#> ℹ Starting download...
-# }
+sih <- fetch_datasus(
+  year_start = 2014,
+  month_start = 1,
+  year_end = 2014,
+  month_end = 2,
+  uf = c("AC", "RR"),
+  information_system = "SIH-RD"
+)
+}
 ```

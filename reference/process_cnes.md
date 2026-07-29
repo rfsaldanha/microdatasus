@@ -1,7 +1,9 @@
-# Process CNES variables from DataSUS
+# Prepare CNES microdata
 
-`process_cnes` processes CNES variables retrieved by
-[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md).
+Recodes supported CNES fields into descriptive values and normalizes
+escaped Unicode text. Establishment (`"CNES-ST"`) and professional
+(`"CNES-PF"`) records have different layouts and are processed
+accordingly.
 
 ## Usage
 
@@ -18,34 +20,49 @@ process_cnes(
 
 - data:
 
-  `data.frame` created by
-  [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md).
+  A data frame returned by
+  [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+  or another data frame with a compatible CNES layout.
 
 - information_system:
 
-  `string`. `CNES-ST` or `CNES-PF`
+  A single character string: `"CNES-ST"` for establishments or
+  `"CNES-PF"` for professionals.
 
 - nomes:
 
-  optional logical. `FALSE` by default, downloads extra data and add
-  `FANTASIA` names to the dataset.
+  Logical scalar. For `"CNES-ST"` data, if `TRUE`, download the current
+  CADGER table with
+  [`fetch_cadger()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_cadger.md)
+  and add establishment trade names. This requires network access. It
+  has no effect for `"CNES-PF"`.
 
 - municipality_data:
 
-  optional logical. `TRUE` by default, creates new variables in the
-  dataset informing the full name and other details about the
-  municipality of residence.
+  Logical scalar. If `TRUE`, add municipality names and available
+  territorial attributes for supported municipality-code columns.
 
 ## Value
 
-a `data.frame` with the processed data.
+A tibble with character columns. Supported codes are replaced with
+descriptions, and requested lookup fields are added where applicable.
 
 ## Details
 
-This function processes CNES-ST (Estabelecimentos) or CNES-PF (Pessoa
-f\u00edsica) variables retrieved by
+Columns not explicitly recoded are retained, but Unicode normalization
+is applied to every column and consequently the returned tibble contains
+character columns. Lookup joins can add establishment, occupation, and
+municipality information.
+
+## References
+
+Saldanha, R. F. (2026). [CNES – Cadastro Nacional de Estabelecimentos de
+Saúde](https://rfsaldanha.github.io/sis/cnes.html).
+
+## See also
+
 [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md),
-informing labels for categoric variables including NA values.
+[`fetch_cadger()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_cadger.md)
 
 ## Examples
 

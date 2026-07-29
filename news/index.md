@@ -1,5 +1,100 @@
 # Changelog
 
+## microdatasus 3.0.0
+
+### Downloads
+
+- Reworks
+  [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+  around an internal registry of supported systems and manifests built
+  from the files actually published by DataSUS. Each relevant FTP
+  directory is listed only once per call, avoiding redundant connections
+  and URLs for files that do not exist.
+- Selects a single file for each system, period, state, and file part.
+  Definitive/current data take precedence over preliminary data, and
+  current data take precedence over historical copies. Results retain
+  deterministic period, state, and file-part order.
+- Uses `curl` directly for directory listings and downloads, with
+  per-operation timeouts and up to two retries for transient network
+  failures. Downloads remain sequential, display transfer progress by
+  default, and no longer modify the global `options("timeout")`.
+- Downloads through temporary partial files, validates file size and DBC
+  contents, and reliably removes temporary files. With
+  `stop_on_error = FALSE`, successfully read files are returned after a
+  consolidated warning; with `stop_on_error = TRUE`, any failure aborts
+  the operation.
+- Applies `vars` before accumulating results and combines files only
+  once, reducing repeated copies. When `track_source = TRUE`, the
+  `source` column is retained even when `vars` is supplied, and an
+  existing `source` column now produces a clear error.
+- Strengthens validation of years, months, states, logical arguments,
+  `vars`, and fractional `timeout` values. Monthly systems require
+  months, annual systems ignore them with one warning, and `"all"` can
+  no longer be combined with individual states.
+- Replaces the former global 1996 lower-year restriction with historical
+  limits specific to each information system. Existing public arguments,
+  their order, and their defaults remain unchanged.
+- Adds `quiet` at the end of the
+  [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+  signature. Transfer progress and status messages, including each file
+  name, are displayed by default; set `quiet = TRUE` to hide them.
+  Warnings and errors remain visible.
+- Uses immediate `cli` warning alerts when month arguments or state
+  selections are ignored, including when `quiet = TRUE`.
+- Standardizes download messages across microdata and auxiliary tables,
+  with consistent status verbs, semantic `cli` formatting, indexed file
+  progress, and one diagnostic item per failed directory or file.
+- Hardens
+  [`fetch_cadger()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_cadger.md)
+  and
+  [`fetch_sigtab()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_sigtab.md)
+  with shared timeout, retry, and temporary-file cleanup logic, and adds
+  ZIP integrity and schema validation.
+
+### DBC support
+
+- Removes the dependency on `read.dbc` and reads DBC files with vendored
+  C code adapted from `healthbR`. Thanks to Sidney Bissoli for the
+  open-source code.
+- Adds
+  [`read_dbc()`](https://rfsaldanha.github.io/microdatasus/reference/read_dbc.md)
+  for local DBC files, with optional preservation of the column types
+  inferred from DBF metadata.
+- Hardens
+  [`read_dbc()`](https://rfsaldanha.github.io/microdatasus/reference/read_dbc.md)
+  by rejecting directories and empty or unreadable input files before
+  decompression, validating missing, unknown-size, and empty
+  decompression output, and wrapping DBF read failures in contextual
+  errors with stable `microdatasus_dbc_error` subclasses.
+- Expands local, CRAN-safe DBC tests for argument validation, type
+  preservation, leading zeros, paths with spaces, repeat reads,
+  temporary-file cleanup, and specific malformed header and
+  compressed-stream errors.
+
+### Processing, documentation, and testing
+
+- Adopts
+  [`dplyr::recode_values()`](https://dplyr.tidyverse.org/reference/recode-and-replace-values.html)
+  because
+  [`dplyr::case_match()`](https://dplyr.tidyverse.org/reference/case_match.html)
+  is deprecated.
+- Expands and corrects the documentation for all public functions,
+  including network behavior, actual return types, compatibility
+  arguments, and links to the corresponding chapters of the book
+  *Sistemas de Informação em Saúde no Brasil*.
+- Replaces skipped download tests with deterministic simulated listings
+  and transfers. The suite now covers supported systems, historical,
+  current, and preliminary files, multipart data, complete argument
+  validation, retries, timeouts, empty listings and manifests, cleanup,
+  corrupt and empty files, partial success, `vars`, `track_source`,
+  multiple states, and auxiliary-table schema validation. Local
+  `file://` fixtures exercise `curl` without network access; live
+  DataSUS smoke tests remain opt-in and are always skipped on CRAN.
+- Runs the active GitHub Actions R CMD check workflow for pushes and
+  pull requests involving the `dev` branch as well as `main` and
+  `master`.
+- Requires R 4.1.0 or later.
+
 ## microdatasus 2.5.0
 
 - Function `process_sinan_malaria`, fix variable type when

@@ -5,6 +5,12 @@
 - **Raphael Saldanha**. Author, maintainer.
   [](https://orcid.org/0000-0003-0652-8466)
 
+- **Sidney da Silva Pereira Bissoli**. Contributor, copyright holder.  
+  DBC decompression code
+
+- **Mark Adler**. Contributor, copyright holder.  
+  blast decompressor
+
 ## Citation
 
 Source:

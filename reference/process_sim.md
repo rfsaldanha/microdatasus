@@ -1,7 +1,8 @@
-# Process SIM variables from DataSUS
+# Prepare SIM mortality microdata
 
-`process_sim` processes SIM variables retrieved by
-[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md).
+Recodes supported SIM mortality fields into descriptive values and
+normalizes escaped Unicode text. Codes without a documented conversion
+are retained.
 
 ## Usage
 
@@ -13,24 +14,36 @@ process_sim(data, municipality_data = TRUE)
 
 - data:
 
-  `data.frame` created by
-  [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md).
+  A data frame returned by
+  [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+  for a SIM mortality system, or another data frame with a compatible
+  layout.
 
 - municipality_data:
 
-  optional logical. `TRUE` by default, creates new variables in the
-  dataset informing the full name and other details about the
-  municipality of residence.
+  Logical scalar. If `TRUE`, add municipality names and available
+  territorial attributes for supported municipality-code columns.
 
 ## Value
 
-a `data.frame` with the processed data.
+A tibble with character columns. Supported codes are replaced with
+descriptions, and municipality fields are added when requested and
+available.
 
 ## Details
 
-This function processes SIM variables retrieved by
-[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md),
-informing labels for categoric variables including NA values.
+Columns not explicitly recoded are retained, but Unicode normalization
+is applied to every column and consequently the returned tibble contains
+character columns.
+
+## References
+
+Saldanha, R. F. (2026). [SIM – Sistema de Informação sobre
+Mortalidade](https://rfsaldanha.github.io/sis/sim.html).
+
+## See also
+
+[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
 
 ## Examples
 

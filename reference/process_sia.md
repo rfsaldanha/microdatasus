@@ -1,7 +1,9 @@
-# Process SIA variables from DataSUS
+# Prepare SIA outpatient-production microdata
 
-`process_sia` processes SIA variables retrieved by
-[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md).
+Recodes supported fields from SIA individual outpatient-production
+records (`"SIA-PA"`) into descriptive values and normalizes escaped
+Unicode text. Lookup joins can add procedure, occupation, team, and
+municipality descriptions.
 
 ## Usage
 
@@ -20,46 +22,58 @@ process_sia(
 
 - data:
 
-  `data.frame` created by
-  [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md).
+  A data frame returned by
+  [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+  with `information_system = "SIA-PA"`, or a compatible layout.
 
 - information_system:
 
-  string. The abbreviation of the health information system. See
-  *Details*.
+  A single character string. Currently only `"SIA-PA"` is supported.
 
 - nome_proced:
 
-  optional logical. `TRUE` by default, add `PA_PROCED_NOME` to the
-  dataset. This setting will start to download a file from DataSUS to
-  retrive the updates list of procesures (SIGTAB).
+  Logical scalar. If `TRUE`, download the current SIGTAB table with
+  [`fetch_sigtab()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_sigtab.md)
+  and join procedure names. This requires network access.
 
 - nome_ocupacao:
 
-  optional logical. `TRUE` by default, add `OCUPACAO` name to the
-  dataset.
+  Logical scalar. If `TRUE`, join occupation descriptions for supported
+  occupation-code columns.
 
 - nome_equipe:
 
-  optional logical. `TRUE` by default, add `EQUIPE` name to the dataset.
+  Logical scalar retained for API compatibility. Team descriptions are
+  currently joined whenever `PA_INE` is present, regardless of this
+  value.
 
 - municipality_data:
 
-  optional logical. `TRUE` by default, creates new variables in the
-  dataset informing the full name and other details about the
-  municipality of residence.
+  Logical scalar. If `TRUE`, add municipality names and available
+  territorial attributes for supported municipality-code columns.
 
 ## Value
 
-a `data.frame` with the processed data.
+A tibble with character columns. Supported codes are replaced with
+descriptions, and requested lookup fields are added where applicable.
 
 ## Details
 
-This function processes SIA variables retrieved by
-[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md),
-informing labels for categoric variables including NA values.
+Columns not explicitly recoded are retained, but Unicode normalization
+is applied to every column and consequently the returned tibble contains
+character columns. Other SIA layouts downloadable with
+[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+are not currently supported by this processing function.
 
-Currently, only "SIA-PA" is supported.
+## References
+
+Saldanha, R. F. (2026). [SIA – Sistema de Informações Ambulatoriais do
+SUS](https://rfsaldanha.github.io/sis/sia.html).
+
+## See also
+
+[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md),
+[`fetch_sigtab()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_sigtab.md)
 
 ## Examples
 

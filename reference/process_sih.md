@@ -1,7 +1,8 @@
-# Process SIH variables from DataSUS
+# Prepare SIH hospital-admission microdata
 
-`process_SIH` processes SIH variables retrieved by
-[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md).
+Recodes supported fields from reduced hospital-admission records
+(`"SIH-RD"`) into descriptive values and normalizes escaped Unicode
+text.
 
 ## Usage
 
@@ -13,31 +14,41 @@ process_sih(data, information_system = "SIH-RD", municipality_data = TRUE)
 
 - data:
 
-  `data.frame` created by
-  [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md).
+  A data frame returned by
+  [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+  with `information_system = "SIH-RD"`, or a compatible layout.
 
 - information_system:
 
-  string. The abbreviation of the health information system. See
-  *Details*.
+  A single character string. Currently only `"SIH-RD"` is supported.
 
 - municipality_data:
 
-  optional logical. `TRUE` by default, creates new variables in the
-  dataset informing the full name and other details about the
-  municipality of residence.
+  Logical scalar. If `TRUE`, add municipality names and available
+  territorial attributes for supported municipality-code columns.
 
 ## Value
 
-a `data.frame` with the processed data.
+A tibble with character columns. Supported codes are replaced with
+descriptions, and municipality fields are added when requested and
+available.
 
 ## Details
 
-This function processes SIH variables retrieved by
-[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md),
-informing labels for categoric variables including NA values.
+Columns not explicitly recoded are retained, but Unicode normalization
+is applied to every column and consequently the returned tibble contains
+character columns. Other SIH layouts downloadable with
+[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+are not currently supported by this processing function.
 
-Currently, only "SIH-RD" is supported.
+## References
+
+Saldanha, R. F. (2026). [SIH – Sistema de Informações Hospitalares do
+SUS](https://rfsaldanha.github.io/sis/sih.html).
+
+## See also
+
+[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
 
 ## Examples
 

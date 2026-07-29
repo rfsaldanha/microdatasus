@@ -1,48 +1,50 @@
 # Package index
 
-## The package
+## Pacote
 
-- [`microdatasus-package`](https://rfsaldanha.github.io/microdatasus/reference/microdatasus.md)
-  [`microdatasus`](https://rfsaldanha.github.io/microdatasus/reference/microdatasus.md)
-  : microdatasus: Download and preprocess DataSUS files
+- [`microdatasus`](https://rfsaldanha.github.io/microdatasus/reference/microdatasus-package.md)
+  [`microdatasus-package`](https://rfsaldanha.github.io/microdatasus/reference/microdatasus-package.md)
+  : microdatasus: Download and prepare DataSUS microdata
 
-## Fetch data
+## Download e leitura
 
 - [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
-  : Fetch and read microdata files from DataSUS
+  : Download DataSUS microdata
 - [`fetch_sigtab()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_sigtab.md)
-  : Fetch SIGTAB table
+  : Download the current SIGTAB table
 - [`fetch_cadger()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_cadger.md)
-  : Fetch CADGER table
+  : Download the current CADGER table
+- [`read_dbc()`](https://rfsaldanha.github.io/microdatasus/reference/read_dbc.md)
+  : Read a DBC file
 
-## Process data
+## Processamento
 
 - [`process_sim()`](https://rfsaldanha.github.io/microdatasus/reference/process_sim.md)
-  : Process SIM variables from DataSUS
+  : Prepare SIM mortality microdata
 - [`process_sinasc()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinasc.md)
-  : Process SINASC variables from DataSUS
+  : Prepare SINASC live-birth microdata
 - [`process_sih()`](https://rfsaldanha.github.io/microdatasus/reference/process_sih.md)
-  : Process SIH variables from DataSUS
+  : Prepare SIH hospital-admission microdata
 - [`process_sia()`](https://rfsaldanha.github.io/microdatasus/reference/process_sia.md)
-  : Process SIA variables from DataSUS
+  : Prepare SIA outpatient-production microdata
 - [`process_cnes()`](https://rfsaldanha.github.io/microdatasus/reference/process_cnes.md)
-  : Process CNES variables from DataSUS
+  : Prepare CNES microdata
 - [`process_sinan_dengue()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan_dengue.md)
-  : Process SINAN Dengue variables from DataSUS
+  : Prepare SINAN dengue microdata
 - [`process_sinan_zika()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan_zika.md)
-  : Process SINAN Zika variables from DataSUS
+  : Prepare SINAN Zika virus disease microdata
 - [`process_sinan_chikungunya()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan_chikungunya.md)
-  : Process SINAN Chikungunya variables from DataSUS
+  : Prepare SINAN chikungunya microdata
 - [`process_sinan_malaria()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan_malaria.md)
-  : Process SINAN Malaria variables from DataSUS
+  : Prepare SINAN malaria microdata
 - [`process_sinan_chagas()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan_chagas.md)
-  : Process SINAN Chagas variables from DataSUS
+  : Prepare SINAN Chagas disease microdata
 - [`process_sinan_leishmaniose_tegumentar()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan_leishmaniose_tegumentar.md)
-  : Process SINAN Leishmaniose Tegumentar variables from DataSUS
+  : Prepare SINAN tegumentary leishmaniasis microdata
 - [`process_sinan_leishmaniose_visceral()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan_leishmaniose_visceral.md)
-  : Process SINAN Leishmaniose Visceral variables from DataSUS
+  : Prepare SINAN visceral leishmaniasis microdata
 
-## Sample datasets
+## Dados de exemplo
 
 - [`sim_do_sample`](https://rfsaldanha.github.io/microdatasus/reference/sim_do_sample.md)
   : SIM-DO sample
@@ -71,7 +73,7 @@
 - [`sinan_leishmaniose_visceral_sample`](https://rfsaldanha.github.io/microdatasus/reference/sinan_leishmaniose_visceral_sample.md)
   : SINAN Leishmaniose Visceral sample
 
-## Reference datasets
+## Tabelas de referência
 
 - [`tabMun`](https://rfsaldanha.github.io/microdatasus/reference/tabMun.md)
   : Municipalities table

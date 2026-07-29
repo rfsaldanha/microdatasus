@@ -3,6 +3,7 @@
 <url><loc>https://rfsaldanha.github.io/microdatasus/LICENSE-text.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/LICENSE.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/articles/FAQ.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/articles/download-e-rastreabilidade.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/articles/exemplos.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/articles/index.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/authors.html</loc></url>
@@ -15,7 +16,7 @@
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/fetch_sigtab.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/index.html</loc></url>
-<url><loc>https://rfsaldanha.github.io/microdatasus/reference/microdatasus.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/microdatasus-package.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/paisnet.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/pipe.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_cnes.html</loc></url>
@@ -30,6 +31,7 @@
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinan_malaria.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinan_zika.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinasc.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/read_dbc.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/sia_pa_sample.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/sigtab.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/sih_rd_sample.html</loc></url>
