@@ -35,9 +35,11 @@ and available territorial attributes for the patient/residence field
 supported by the selected layout.}
 }
 \value{
-A tibble. Full dates are returned as \code{Date}, quantities as integer,
-values as double, labelled categorical fields as factors, and identifiers
-and free text as character.
+A tibble. Full dates are returned as \code{Date}; quantities and derived
+\code{IDADEdias}, \code{IDADEmeses}, and \code{IDADEanos} fields as integer; values as
+double; labelled categorical fields as factors; and identifiers and free
+text as character. Derived age fields are added whenever the selected
+layout contains patient-age information.
 }
 \description{
 Uses the official DataSUS TabWin definitions to label all twelve SIA file

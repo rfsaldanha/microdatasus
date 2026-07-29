@@ -282,6 +282,83 @@ test_that("process_sia selects historical PA definitions row by row", {
   )
 })
 
+test_that("process_sia standardizes patient age in every applicable layout", {
+  archive <- create_sia_tabwin_fixture()
+  on.exit(unlink(archive), add = TRUE)
+  local_mocked_bindings(
+    .datasus_download_file = function(
+      url,
+      destination,
+      timeout,
+      quiet = FALSE
+    ) {
+      file.copy(archive, destination)
+      invisible(destination)
+    },
+    .package = "microdatasus"
+  )
+  microdatasus:::.tabwin_clear_cache()
+  on.exit(restore_empty_tabwin_cache(), add = TRUE)
+
+  units <- c("2", "3", "4", "5", "0", "9")
+  values <- c("10", "5", "24", "1", "0", "99")
+  expected_days <- c(
+    10L, NA_integer_, NA_integer_, NA_integer_, NA_integer_, NA_integer_
+  )
+  expected_months <- c(
+    NA_integer_, 5L, NA_integer_, NA_integer_, NA_integer_, NA_integer_
+  )
+  expected_years <- c(
+    NA_integer_, NA_integer_, 24L, 101L, NA_integer_, NA_integer_
+  )
+
+  apac_systems <- setdiff(
+    microdatasus:::.sia_information_systems,
+    c("SIA-PA", "SIA-PS", "SIA-SAD")
+  )
+  for (information_system in apac_systems) {
+    result <- process_sia(
+      data.frame(AP_COIDADE = units, AP_NUIDADE = values),
+      information_system = information_system,
+      nome_proced = FALSE,
+      nome_ocupacao = FALSE,
+      nome_equipe = FALSE,
+      municipality_data = FALSE
+    )
+    expect_identical(result$AP_COIDADE, units)
+    expect_identical(result$AP_NUIDADE, as.integer(values))
+    expect_identical(result$IDADEdias, expected_days)
+    expect_identical(result$IDADEmeses, expected_months)
+    expect_identical(result$IDADEanos, expected_years)
+  }
+
+  for (information_system in c("SIA-PS", "SIA-SAD")) {
+    result <- process_sia(
+      data.frame(TPIDADEPAC = units, IDADEPAC = values),
+      information_system = information_system,
+      nome_proced = FALSE,
+      nome_ocupacao = FALSE,
+      nome_equipe = FALSE,
+      municipality_data = FALSE
+    )
+    expect_identical(result$TPIDADEPAC, units)
+    expect_identical(result$IDADEPAC, as.integer(values))
+    expect_identical(result$IDADEdias, expected_days)
+    expect_identical(result$IDADEmeses, expected_months)
+    expect_identical(result$IDADEanos, expected_years)
+  }
+
+  pa <- process_sia(
+    data.frame(PA_IDADE = c("0", "24", "130", "998", "999")),
+    nome_proced = FALSE,
+    nome_ocupacao = FALSE,
+    nome_equipe = FALSE,
+    municipality_data = FALSE
+  )
+  expect_identical(pa$PA_IDADE, c(0L, 24L, 130L, 998L, 999L))
+  expect_identical(pa$IDADEanos, c(0L, 24L, 130L, NA_integer_, NA_integer_))
+})
+
 test_that("process_sia validates layout and every compatibility flag", {
   expect_error(process_sia(data.frame(), "SIA-XX"), "must be one of")
   for (argument in c(

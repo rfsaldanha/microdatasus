@@ -30,6 +30,38 @@
   as.Date(as.character(x), format = format)
 }
 
+# Add one integer column for every supported unit without discarding the
+# original unit and value fields. More than one source code can target the same
+# output; this is how code 5 stores ages of 100 years or more in SIM, SIH, and
+# SIA while code 4 stores the ordinary year value.
+.process_add_age_fields <- function(
+  data,
+  unit,
+  value,
+  units,
+  century_units = character()
+) {
+  unit <- trimws(as.character(unit))
+  value <- suppressWarnings(as.integer(as.character(value)))
+  outputs <- unique(unname(units))
+
+  # Initialize every output explicitly as integer, including empty data sets.
+  for (output in outputs) {
+    data[[output]] <- rep(NA_integer_, length(value))
+  }
+
+  for (unit_code in names(units)) {
+    output <- unname(units[[unit_code]])
+    matches <- !is.na(unit) & unit == unit_code & !is.na(value)
+    adjusted <- value
+    if (unit_code %in% century_units) {
+      adjusted <- adjusted + 100L
+    }
+    data[[output]][matches] <- adjusted[matches]
+  }
+  data
+}
+
 .process_normalize_text <- function(data) {
   # Normalize only text and factor levels; numeric and Date columns retain the
   # types assigned by each processor.

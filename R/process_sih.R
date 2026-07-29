@@ -41,6 +41,29 @@
   "US_TOT", "SP_VALATO", "SP_M_HOSP", "SP_M_PAC"
 )
 
+.sih_add_age_fields <- function(data) {
+  unit_field <- .process_find_fields(data, "COD_IDADE")
+  value_field <- .process_find_fields(data, "IDADE")
+  if (!length(unit_field) || !length(value_field)) {
+    return(data)
+  }
+
+  # The official IDADEDET.CNV combines COD_IDADE with IDADE: 2 means days,
+  # 3 months, 4 years, and 5 means the stored value plus 100 years.
+  .process_add_age_fields(
+    data,
+    data[[unit_field[[1L]]]],
+    data[[value_field[[1L]]]],
+    units = c(
+      "2" = "IDADEdias",
+      "3" = "IDADEmeses",
+      "4" = "IDADEanos",
+      "5" = "IDADEanos"
+    ),
+    century_units = "5"
+  )
+}
+
 .sih_categorical_fields <- function(information_system) {
   switch(
     information_system,
@@ -119,9 +142,11 @@
 #' @examplesIf interactive() && curl::has_internet()
 #' process_sih(sih_rd_sample)
 #'
-#' @return A tibble. Dates are returned as `Date`, counts and quantities as
-#'   integer, monetary values as double, labelled categorical fields as
-#'   factors, and identifiers and free text as character.
+#' @return A tibble. Dates are returned as `Date`, counts, quantities, and
+#'   derived `IDADEdias`, `IDADEmeses`, and `IDADEanos` fields as integer,
+#'   monetary values as double, labelled categorical fields as factors, and
+#'   identifiers and free text as character. Derived age fields are added when
+#'   the source contains both `COD_IDADE` and `IDADE`.
 #'
 #' @references
 #' Saldanha, R. F. (2026). [SIH -- Sistema de Informações Hospitalares do
@@ -189,6 +214,8 @@ process_sih <- function(
   for (field in .process_find_fields(result, .sih_integer_fields)) {
     result[[field]] <- .process_as_integer(result[[field]])
   }
+
+  result <- .sih_add_age_fields(result)
 
   # Monetary columns share a VAL_ prefix in RD/RJ. Explicit SP and US fields
   # cover values whose names follow a different convention.

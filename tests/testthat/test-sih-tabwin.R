@@ -336,6 +336,37 @@ test_that("process_sih retains unknown codes and normalizes source factors", {
   )
 })
 
+test_that("process_sih decodes the patient age unit in RD and RJ files", {
+  source <- data.frame(
+    COD_IDADE = c("2", "3", "4", "5", "0", "9"),
+    IDADE = c("10", "5", "24", "1", "0", "99"),
+    stringsAsFactors = FALSE
+  )
+
+  for (information_system in c("SIH-RD", "SIH-RJ")) {
+    result <- process_sih(
+      source,
+      information_system = information_system,
+      municipality_data = FALSE
+    )
+
+    expect_identical(result$COD_IDADE, source$COD_IDADE)
+    expect_identical(result$IDADE, c(10L, 5L, 24L, 1L, 0L, 99L))
+    expect_identical(
+      result$IDADEdias,
+      c(10L, NA_integer_, NA_integer_, NA_integer_, NA_integer_, NA_integer_)
+    )
+    expect_identical(
+      result$IDADEmeses,
+      c(NA_integer_, 5L, NA_integer_, NA_integer_, NA_integer_, NA_integer_)
+    )
+    expect_identical(
+      result$IDADEanos,
+      c(NA_integer_, NA_integer_, 24L, 101L, NA_integer_, NA_integer_)
+    )
+  }
+})
+
 test_that("process_sih validates its file family and flags", {
   expect_error(process_sih(data.frame(), "SIH-XX"), "must be one of")
   expect_error(

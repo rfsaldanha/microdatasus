@@ -71,16 +71,20 @@
   unit <- substring(age, 1L, 1L)
   value <- suppressWarnings(as.integer(substring(age, 2L, 3L)))
   data$IDADE <- age
-  data$IDADEminutos <- ifelse(unit == "0", value, NA_integer_)
-  data$IDADEhoras <- ifelse(unit == "1", value, NA_integer_)
-  data$IDADEdias <- ifelse(unit == "2", value, NA_integer_)
-  data$IDADEmeses <- ifelse(unit == "3", value, NA_integer_)
-  data$IDADEanos <- ifelse(
-    unit == "4",
+  .process_add_age_fields(
+    data,
+    unit,
     value,
-    ifelse(unit == "5", value + 100L, NA_integer_)
+    units = c(
+      "0" = "IDADEminutos",
+      "1" = "IDADEhoras",
+      "2" = "IDADEdias",
+      "3" = "IDADEmeses",
+      "4" = "IDADEanos",
+      "5" = "IDADEanos"
+    ),
+    century_units = "5"
   )
-  data
 }
 
 .sim_add_municipality_data <- function(data) {

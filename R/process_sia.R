@@ -56,6 +56,9 @@
   fields <- names(data)
   upper <- toupper(fields)
   source_numeric <- fields[vapply(data, is.numeric, logical(1))]
+  # These fields are units for a composite age, not categorical values by
+  # themselves. PA_FLIDADE is intentionally excluded because it is a status.
+  age_unit_fields <- fields[grepl("COIDADE|TPIDADE", upper)]
 
   value_fields <- fields[
     grepl("(^|_)(VL|VAL)", upper) |
@@ -89,6 +92,7 @@
     ),
     protected = unique(c(
       date_fields, integer_fields, value_fields, source_numeric,
+      age_unit_fields,
       # Codes below remain stable identifiers even if the DEF offers
       # analytical groupings for TabWin rows or columns.
       fields[grepl(
@@ -130,6 +134,50 @@
   fields
 }
 
+.sia_add_age_fields <- function(data, information_system) {
+  if (identical(information_system, "SIA-PA")) {
+    value_field <- .process_find_fields(data, "PA_IDADE")
+    if (!length(value_field)) {
+      return(data)
+    }
+    value <- .process_as_integer(data[[value_field[[1L]]]])
+    # PA uses years directly; 998 and 999 are error/not-required sentinels.
+    value[value %in% c(998L, 999L)] <- NA_integer_
+    return(.process_add_age_fields(
+      data,
+      rep("4", length(value)),
+      value,
+      units = c("4" = "IDADEanos")
+    ))
+  }
+
+  fields <- if (information_system %in% c("SIA-PS", "SIA-SAD")) {
+    c("TPIDADEPAC", "IDADEPAC")
+  } else {
+    c("AP_COIDADE", "AP_NUIDADE")
+  }
+  unit_field <- .process_find_fields(data, fields[[1L]])
+  value_field <- .process_find_fields(data, fields[[2L]])
+  if (!length(unit_field) || !length(value_field)) {
+    return(data)
+  }
+
+  # APAC and RAAS use the same composite convention as IDADEDET.CNV:
+  # unit 2 is days, 3 months, 4 years, and 5 is years above 100.
+  .process_add_age_fields(
+    data,
+    data[[unit_field[[1L]]]],
+    data[[value_field[[1L]]]],
+    units = c(
+      "2" = "IDADEdias",
+      "3" = "IDADEmeses",
+      "4" = "IDADEanos",
+      "5" = "IDADEanos"
+    ),
+    century_units = "5"
+  )
+}
+
 #' Prepare SIA outpatient-production microdata
 #'
 #' Uses the official DataSUS TabWin definitions to label all twelve SIA file
@@ -156,9 +204,11 @@
 #' @examplesIf interactive() && curl::has_internet()
 #' process_sia(sia_pa_sample, nome_proced = FALSE)
 #'
-#' @return A tibble. Full dates are returned as `Date`, quantities as integer,
-#'   values as double, labelled categorical fields as factors, and identifiers
-#'   and free text as character.
+#' @return A tibble. Full dates are returned as `Date`; quantities and derived
+#'   `IDADEdias`, `IDADEmeses`, and `IDADEanos` fields as integer; values as
+#'   double; labelled categorical fields as factors; and identifiers and free
+#'   text as character. Derived age fields are added whenever the selected
+#'   layout contains patient-age information.
 #'
 #' @references
 #' Saldanha, R. F. (2026). [SIA -- Sistema de Informações Ambulatoriais do
@@ -235,6 +285,7 @@ process_sia <- function(
   for (field in types$double) {
     result[[field]] <- .process_as_double(result[[field]])
   }
+  result <- .sia_add_age_fields(result, information_system)
 
   for (key in names(dictionaries)) {
     result <- .process_apply_dictionary(

@@ -73,21 +73,19 @@
   code[code %in% c("", "999", "9999")] <- NA_character_
   unit <- substr(code, 1L, 1L)
   value <- suppressWarnings(as.integer(substr(code, 2L, 4L)))
-  names_by_unit <- c(
-    "0" = "IDADEminutos",
-    "1" = "IDADEhoras",
-    "2" = "IDADEdias",
-    "3" = "IDADEmeses",
-    "4" = "IDADEanos"
-  )
-  for (unit_code in names(names_by_unit)) {
-    output <- rep(NA_integer_, length(value))
-    matches <- !is.na(unit) & unit == unit_code
-    output[matches] <- value[matches]
-    data[[names_by_unit[[unit_code]]]] <- output
-  }
   data[[field]] <- code
-  data
+  .process_add_age_fields(
+    data,
+    unit,
+    value,
+    units = c(
+      "0" = "IDADEminutos",
+      "1" = "IDADEhoras",
+      "2" = "IDADEdias",
+      "3" = "IDADEmeses",
+      "4" = "IDADEanos"
+    )
+  )
 }
 
 .sinan_dictionary_fields <- function(data, dictionary, types) {

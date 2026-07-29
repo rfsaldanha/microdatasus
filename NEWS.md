@@ -82,6 +82,10 @@
   the three historical RD/RJ archives by record competence, caches shared
   downloads for the R session, and standardizes dates, quantities, values,
   labels, and identifiers while preserving its existing arguments.
+* Standardizes patient age across processors without changing the source
+  fields. SIH-RD/RJ and every applicable SIA layout now add integer
+  `IDADEdias`, `IDADEmeses`, or `IDADEanos` columns from the official TabWin
+  unit conventions; SIM and SINAN use the same shared internal decoder.
 * Adopts `dplyr::recode_values()` because `dplyr::case_match()` is deprecated.
 * Expands and corrects the documentation for all public functions, including
   network behavior, actual return types, compatibility arguments, and links to

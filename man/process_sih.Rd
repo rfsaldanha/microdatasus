@@ -19,9 +19,11 @@ and available territorial attributes for the residence municipality in
 RD, RJ, and ER files.}
 }
 \value{
-A tibble. Dates are returned as \code{Date}, counts and quantities as
-integer, monetary values as double, labelled categorical fields as
-factors, and identifiers and free text as character.
+A tibble. Dates are returned as \code{Date}, counts, quantities, and
+derived \code{IDADEdias}, \code{IDADEmeses}, and \code{IDADEanos} fields as integer,
+monetary values as double, labelled categorical fields as factors, and
+identifiers and free text as character. Derived age fields are added when
+the source contains both \code{COD_IDADE} and \code{IDADE}.
 }
 \description{
 Uses the official DataSUS TabWin definitions to label all four SIH file
