@@ -236,7 +236,7 @@ página oficial de transferência. Os valores preferenciais são legíveis, como
 `SINAN-TUBERCULOSE`. Consulte nomes, siglas dos arquivos e aliases com:
 
 ```{r}
-sinan_information_systems()
+subset(datasus_information_systems(), system == "SINAN")
 ```
 
 Os antigos identificadores baseados em siglas, como `SINAN-ANIM` e

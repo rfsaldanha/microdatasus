@@ -112,7 +112,8 @@
 #' @param information_system SINAN file family represented by `data`. Preferred
 #'   values use readable names such as `"SINAN-DENGUE"` and
 #'   `"SINAN-TUBERCULOSE"`. All former acronym-based values remain accepted as
-#'   aliases. Use [sinan_information_systems()] to consult both forms.
+#'   aliases. Use [datasus_information_systems()] and filter `system == "SINAN"`
+#'   to consult both forms.
 #' @param municipality_data Logical scalar. If `TRUE`, add municipality names
 #'   and available territorial attributes. The historical `MUNICIPIO` field is
 #'   preferred when present, followed by residence and notification fields.
@@ -129,7 +130,7 @@
 #' Saldanha, R. F. (2026). [SINAN -- Sistema de Informação de Agravos de
 #' Notificação](https://rfsaldanha.github.io/sis/sinan.html).
 #'
-#' @seealso [sinan_information_systems()], [fetch_tabwin_dictionary()],
+#' @seealso [datasus_information_systems()], [fetch_tabwin_dictionary()],
 #'   [fetch_datasus()]
 #'
 #' @export

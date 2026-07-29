@@ -113,8 +113,9 @@ sih <- process_sih(sih_raw)
 | CNES | Mensal | Treze layouts `CNES-*` | `process_cnes()` para os treze layouts | [CNES](https://rfsaldanha.github.io/sis/cnes.html) |
 | SINAN | Anual e nacional | 58 famílias oficiais `SINAN-*` | `process_sinan()` para as 58 famílias | [SINAN](https://rfsaldanha.github.io/sis/sinan.html) |
 
-Use `sinan_information_systems()` para consultar os nomes legíveis aceitos em
-`information_system`, as siglas usadas nos arquivos DBC e os aliases antigos.
+Use `datasus_information_systems()` para consultar todos os 93 valores aceitos
+em `information_system`, seus nomes, periodicidade, abrangência, siglas usadas
+nos arquivos DBC e aliases.
 
 A lista completa dos identificadores está na
 [referência de `fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.html).

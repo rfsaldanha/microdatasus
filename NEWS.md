@@ -58,8 +58,9 @@
 
 * Replaces short SINAN acronym identifiers with readable canonical names,
   while retaining every previous value as a silent backward-compatible alias.
-  The new `sinan_information_systems()` lookup table keeps names, DBC
-  acronyms, and aliases synchronized with download and TabWin registries.
+  The new `datasus_information_systems()` lookup table lists all 93 supported
+  file families and keeps names, DBC acronyms, periodicity, geography, and
+  aliases synchronized with download and TabWin registries.
 * Adds the unified `process_sinan()` based on the official
   `TAB_SINANNET.zip` and `TAB_SINANONLINE.zip` definitions and expands
   `fetch_datasus()` from eight to all 58 SINAN families listed by the transfer

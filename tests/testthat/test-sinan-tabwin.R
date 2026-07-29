@@ -65,11 +65,14 @@ test_that("process_sinan has a stable unified signature", {
 })
 
 test_that("SINAN lookup exposes readable names and every accepted alias", {
-  lookup <- sinan_information_systems()
+  all_systems <- datasus_information_systems()
+  lookup <- all_systems[
+    all_systems$system == "SINAN",
+    c("information_system", "name", "file_acronym", "aliases")
+  ]
   specs <- microdatasus:::.sinan_system_specs()
   aliases <- microdatasus:::.sinan_alias_table()
 
-  expect_identical(formals(sinan_information_systems), pairlist())
   expect_s3_class(lookup, "tbl_df")
   expect_identical(
     names(lookup),

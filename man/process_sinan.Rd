@@ -17,7 +17,8 @@ file family, or another data frame with a compatible layout.}
 \item{information_system}{SINAN file family represented by \code{data}. Preferred
 values use readable names such as \code{"SINAN-DENGUE"} and
 \code{"SINAN-TUBERCULOSE"}. All former acronym-based values remain accepted as
-aliases. Use \code{\link[=sinan_information_systems]{sinan_information_systems()}} to consult both forms.}
+aliases. Use \code{\link[=datasus_information_systems]{datasus_information_systems()}} and filter \code{system == "SINAN"}
+to consult both forms.}
 
 \item{municipality_data}{Logical scalar. If \code{TRUE}, add municipality names
 and available territorial attributes. The historical \code{MUNICIPIO} field is
@@ -46,6 +47,6 @@ process_sinan(sinan_chagas_sample, "SINAN-DOENCA-DE-CHAGAS-AGUDA")
 Saldanha, R. F. (2026). \href{https://rfsaldanha.github.io/sis/sinan.html}{SINAN -- Sistema de Informação de Agravos de Notificação}.
 }
 \seealso{
-\code{\link[=sinan_information_systems]{sinan_information_systems()}}, \code{\link[=fetch_tabwin_dictionary]{fetch_tabwin_dictionary()}},
+\code{\link[=datasus_information_systems]{datasus_information_systems()}}, \code{\link[=fetch_tabwin_dictionary]{fetch_tabwin_dictionary()}},
 \code{\link[=fetch_datasus]{fetch_datasus()}}
 }

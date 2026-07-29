@@ -96,7 +96,7 @@ and \code{"SIA-SAD"}.
 \code{"SINAN-TUBERCULOSE"}, and
 \code{"SINAN-ACIDENTE-POR-ANIMAIS-PECONHENTOS"}. Former acronym-based
 identifiers remain accepted as aliases. The complete lookup table is
-returned by \code{\link[=sinan_information_systems]{sinan_information_systems()}}.
+returned by \code{\link[=datasus_information_systems]{datasus_information_systems()}}.
 }
 }
 
@@ -136,8 +136,8 @@ Saldanha, R. F. (2026). \href{https://rfsaldanha.github.io/sis/}{\emph{Sistemas 
 \href{https://rfsaldanha.github.io/sis/cnes.html}{CNES}.
 }
 \seealso{
-\code{\link[=read_dbc]{read_dbc()}} for local DBC files; \code{\link[=sinan_information_systems]{sinan_information_systems()}} for the
-SINAN identifier lookup; \code{\link[=process_sim]{process_sim()}}, \code{\link[=process_sinasc]{process_sinasc()}},
+\code{\link[=read_dbc]{read_dbc()}} for local DBC files; \code{\link[=datasus_information_systems]{datasus_information_systems()}} for the
+complete identifier lookup; \code{\link[=process_sim]{process_sim()}}, \code{\link[=process_sinasc]{process_sinasc()}},
 \code{\link[=process_sih]{process_sih()}}, \code{\link[=process_sia]{process_sia()}}, \code{\link[=process_cnes]{process_cnes()}}, and \code{\link[=process_sinan]{process_sinan()}}
 for system-specific recoding.
 }

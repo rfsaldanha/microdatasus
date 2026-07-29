@@ -820,8 +820,8 @@
 #'   SIA-PA keys are selected internally by their processing functions. All
 #'   thirteen `"CNES-*"` families are also supported; the historical CNES-SR
 #'   key is selected internally by [process_cnes()]. The 58 readable SINAN
-#'   identifiers and their aliases, listed by [sinan_information_systems()],
-#'   are also accepted here.
+#'   identifiers and their aliases, listed by [datasus_information_systems()]
+#'   under `system == "SINAN"`, are also accepted here.
 #' @param timeout A positive numeric scalar. Download and connection timeout,
 #'   in seconds.
 #' @param refresh Logical scalar. If `TRUE`, discard the session cache and
@@ -847,7 +847,7 @@
 #' cnes_dictionary <- fetch_tabwin_dictionary("CNES-ST")
 #' sinan_dictionary <- fetch_tabwin_dictionary("SINAN-DENGUE")
 #'
-#' @seealso [sinan_information_systems()], [process_sim()],
+#' @seealso [datasus_information_systems()], [process_sim()],
 #'   [process_sinasc()], [process_sih()],
 #'   [process_sia()], [process_cnes()], [process_sinan()], [fetch_datasus()]
 #' @export

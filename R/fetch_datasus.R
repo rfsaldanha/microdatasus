@@ -65,7 +65,7 @@
 #'   `"SINAN-TUBERCULOSE"`, and
 #'   `"SINAN-ACIDENTE-POR-ANIMAIS-PECONHENTOS"`. Former acronym-based
 #'   identifiers remain accepted as aliases. The complete lookup table is
-#'   returned by [sinan_information_systems()].
+#'   returned by [datasus_information_systems()].
 #'
 #' @section Network access:
 #' An Internet connection and FTP access to DataSUS are required. DataSUS may
@@ -82,8 +82,8 @@
 #' [CNES](https://rfsaldanha.github.io/sis/cnes.html).
 #'
 #' @seealso
-#' [read_dbc()] for local DBC files; [sinan_information_systems()] for the
-#' SINAN identifier lookup; [process_sim()], [process_sinasc()],
+#' [read_dbc()] for local DBC files; [datasus_information_systems()] for the
+#' complete identifier lookup; [process_sim()], [process_sinasc()],
 #' [process_sih()], [process_sia()], [process_cnes()], and [process_sinan()]
 #' for system-specific recoding.
 #'

@@ -39,6 +39,67 @@ test_that("registry contains every supported system", {
   )
 })
 
+test_that("information-system lookup covers the complete download registry", {
+  registry <- microdatasus:::.datasus_registry()
+  metadata <- microdatasus:::.datasus_information_system_metadata()
+  lookup <- datasus_information_systems()
+
+  expect_identical(formals(datasus_information_systems), pairlist())
+  expect_s3_class(lookup, "tbl_df")
+  expect_identical(
+    names(lookup),
+    c(
+      "information_system", "system", "name", "file_acronym",
+      "periodicity", "geography", "minimum_date", "aliases"
+    )
+  )
+  expect_equal(nrow(lookup), 93L)
+  expect_identical(lookup$information_system, names(registry))
+  expect_setequal(metadata$information_system, names(registry))
+  expect_identical(anyDuplicated(lookup$information_system), 0L)
+  expect_true(all(nzchar(lookup$name)))
+  expect_true(all(nzchar(lookup$file_acronym)))
+  expect_s3_class(lookup$minimum_date, "Date")
+  expect_identical(
+    unname(lookup$periodicity),
+    unname(vapply(registry, `[[`, character(1), "granularity"))
+  )
+  expect_identical(
+    unname(lookup$geography),
+    unname(vapply(registry, `[[`, character(1), "geography"))
+  )
+  expect_identical(
+    unname(lookup$minimum_date),
+    as.Date(unname(vapply(
+      registry,
+      function(spec) as.character(spec$minimum),
+      character(1)
+    )))
+  )
+  expect_identical(
+    as.integer(table(lookup$system)),
+    c(13L, 12L, 4L, 5L, 58L, 1L)
+  )
+  expect_true(all(lengths(lookup$aliases[lookup$system != "SINAN"]) == 0L))
+
+  expect_identical(
+    lookup$name[lookup$information_system == "SIM-DO"],
+    "Declarações de óbito"
+  )
+  expect_identical(
+    lookup$name[lookup$information_system == "SIH-RD"],
+    "AIH reduzida"
+  )
+  expect_identical(
+    lookup$name[lookup$information_system == "SIA-PA"],
+    "Produção ambulatorial"
+  )
+  expect_identical(
+    lookup$name[lookup$information_system == "CNES-ST"],
+    "Estabelecimentos"
+  )
+})
+
 test_that("every registry entry has a complete and valid specification", {
   registry <- microdatasus:::.datasus_registry()
 
