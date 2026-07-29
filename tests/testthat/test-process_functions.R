@@ -50,56 +50,63 @@ test_that("sinasc works", {
 })
 
 test_that("sinan-chikungunya at 2022", {
-  sinan_chikungunya <- process_sinan_chikungunya(
+  sinan_chikungunya <- process_sinan(
     data = sinan_chikungunya_sample,
+    information_system = "SINAN-CHIKUNGUNYA",
     municipality_data = TRUE
   )
   expect_true("tbl_df" %in% class(sinan_chikungunya))
 })
 
 test_that("sinan-dengue at 2016", {
-  sinan_dengue <- process_sinan_dengue(
+  sinan_dengue <- process_sinan(
     data = sinan_dengue_sample,
+    information_system = "SINAN-DENGUE",
     municipality_data = TRUE
   )
   expect_true("tbl_df" %in% class(sinan_dengue))
 })
 
 test_that("sinan-malaria at 2016", {
-  sinan_malaria <- process_sinan_malaria(
+  sinan_malaria <- process_sinan(
     data = sinan_malaria_sample,
+    information_system = "SINAN-MALARIA",
     municipality_data = TRUE
   )
   expect_true("tbl_df" %in% class(sinan_malaria))
 })
 
 test_that("sinan-zika at 2016", {
-  sinan_zika <- process_sinan_zika(
+  sinan_zika <- process_sinan(
     data = sinan_zika_sample,
+    information_system = "SINAN-ZIKA",
     municipality_data = TRUE
   )
   expect_true("tbl_df" %in% class(sinan_zika))
 })
 
 test_that("sinan-leishmaniose-visceral at 2023", {
-  sinan_leishmaniose_visceral <- process_sinan_leishmaniose_visceral(
+  sinan_leishmaniose_visceral <- process_sinan(
     data = sinan_leishmaniose_visceral_sample,
+    information_system = "SINAN-LEISHMANIOSE-VISCERAL",
     municipality_data = TRUE
   )
   expect_true("tbl_df" %in% class(sinan_leishmaniose_visceral))
 })
 
 test_that("sinan-leishmaniose-tegumentar at 2023", {
-  sinan_leishmaniose_tegumentar <- process_sinan_leishmaniose_tegumentar(
+  sinan_leishmaniose_tegumentar <- process_sinan(
     data = sinan_leishmaniose_tegumentar_sample,
+    information_system = "SINAN-LEISHMANIOSE-TEGUMENTAR",
     municipality_data = TRUE
   )
   expect_true("tbl_df" %in% class(sinan_leishmaniose_tegumentar))
 })
 
 test_that("sinan-chagas at 2023", {
-  sinan_chagas <- process_sinan_chagas(
+  sinan_chagas <- process_sinan(
     data = sinan_chagas_sample,
+    information_system = "SINAN-CHAGAS",
     municipality_data = TRUE
   )
   expect_true("tbl_df" %in% class(sinan_chagas))

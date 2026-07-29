@@ -119,27 +119,32 @@
     )
   }
 
-  sinan_prefixes <- c(
-    "SINAN-DENGUE" = "DENGBR",
-    "SINAN-CHIKUNGUNYA" = "CHIKBR",
-    "SINAN-ZIKA" = "ZIKABR",
-    "SINAN-MALARIA" = "MALABR",
-    "SINAN-CHAGAS" = "CHAGBR",
-    "SINAN-LEISHMANIOSE-VISCERAL" = "LEIVBR",
-    "SINAN-LEISHMANIOSE-TEGUMENTAR" = "LTANBR",
-    "SINAN-LEPTOSPIROSE" = "LEPTBR"
-  )
-  for (system in names(sinan_prefixes)) {
-    prefix <- unname(sinan_prefixes[[system]])
+  # The transfer portal currently exposes 58 SINAN file families. The
+  # centralized table also feeds process_sinan() and the TabWin registry so
+  # download identifiers, DBC prefixes, and definitions cannot drift apart.
+  sinan_specs <- .sinan_system_specs()
+  for (index in seq_len(nrow(sinan_specs))) {
+    system <- sinan_specs$information_system[[index]]
+    prefix <- sinan_specs$prefix[[index]]
+    repositories <- list(
+      .datasus_repository(sinan_final, "final", 1L, prefix),
+      .datasus_repository(sinan_prelim, "preliminary", 2L, prefix)
+    )
+    if (identical(sinan_specs$acronym[[index]], "LERD")) {
+      # Older final files use LERBR; current/future files use LERDBR. Directory
+      # listings are cached by URL, so accepting both does not add a request.
+      repositories <- list(
+        .datasus_repository(sinan_final, "final", 1L, prefix),
+        .datasus_repository(sinan_final, "final", 2L, "LERBR"),
+        .datasus_repository(sinan_prelim, "preliminary", 3L, prefix)
+      )
+    }
     registry[[system]] <- list(
       granularity = "year",
       geography = "national",
       year_digits = 2L,
       minimum = as.Date("1996-01-01"),
-      repositories = list(
-        .datasus_repository(sinan_final, "final", 1L, prefix),
-        .datasus_repository(sinan_prelim, "preliminary", 2L, prefix)
-      )
+      repositories = repositories
     )
   }
 

@@ -111,7 +111,7 @@ sih <- process_sih(sih_raw)
 | SIH | Mensal | `SIH-RD`, `SIH-RJ`, `SIH-SP`, `SIH-ER` | `process_sih()` | [SIH](https://rfsaldanha.github.io/sis/sih.html) |
 | SIA | Mensal | Doze layouts `SIA-*` | `process_sia()` | [SIA](https://rfsaldanha.github.io/sis/sia.html) |
 | CNES | Mensal | Treze layouts `CNES-*` | `process_cnes()` para os treze layouts | [CNES](https://rfsaldanha.github.io/sis/cnes.html) |
-| SINAN | Anual e nacional | Dengue, chikungunya, Zika, malária, Chagas, leishmanioses e leptospirose | Processadores específicos, exceto leptospirose | [SINAN](https://rfsaldanha.github.io/sis/sinan.html) |
+| SINAN | Anual e nacional | 58 famílias oficiais `SINAN-*` | `process_sinan()` para as 58 famílias | [SINAN](https://rfsaldanha.github.io/sis/sinan.html) |
 
 A lista completa dos identificadores está na
 [referência de `fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.html).

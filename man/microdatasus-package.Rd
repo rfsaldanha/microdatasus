@@ -14,8 +14,8 @@ fields into analysis-ready values and labels.
 \details{
 Start with \code{\link[=fetch_datasus]{fetch_datasus()}} and then use the processor corresponding to the
 selected system, such as \code{\link[=process_sim]{process_sim()}}, \code{\link[=process_sinasc]{process_sinasc()}}, \code{\link[=process_sih]{process_sih()}},
-\code{\link[=process_sia]{process_sia()}}, \code{\link[=process_cnes]{process_cnes()}}, or one of the \verb{process_sinan_*()}
-functions. \code{\link[=fetch_cadger]{fetch_cadger()}} and \code{\link[=fetch_sigtab]{fetch_sigtab()}} also retrieve current
+\code{\link[=process_sia]{process_sia()}}, \code{\link[=process_cnes]{process_cnes()}}, or \code{\link[=process_sinan]{process_sinan()}}. \code{\link[=fetch_cadger]{fetch_cadger()}}
+and \code{\link[=fetch_sigtab]{fetch_sigtab()}} also retrieve current
 auxiliary tables for standalone use.
 
 For concepts, coverage, data flows, and caveats of each Brazilian health

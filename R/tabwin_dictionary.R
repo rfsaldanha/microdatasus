@@ -173,6 +173,34 @@
     url = cnes_url,
     definition = "Servico_Especializado_200508_200802.def"
   )
+
+  # SINAN Net contains the dedicated definitions for most file families.
+  # Dengue and chikungunya use the much smaller Online archive published next
+  # to it. Families without a dedicated DEF use the official generic
+  # NotIndiviNet definition for shared notification fields.
+  sinan_specs <- .sinan_system_specs()
+  sinan_net_url <- paste0(
+    "ftp://ftp.datasus.gov.br/dissemin/publicos/SINAN/AUXILIAR/",
+    "TAB_SINANNET.zip"
+  )
+  sinan_online_url <- paste0(
+    "ftp://ftp.datasus.gov.br/dissemin/publicos/SINAN/AUXILIAR/",
+    "TAB_SINANONLINE.zip"
+  )
+  for (index in seq_len(nrow(sinan_specs))) {
+    information_system <- sinan_specs$information_system[[index]]
+    net <- identical(sinan_specs$archive[[index]], "SINAN-NET")
+    specs[[information_system]] <- list(
+      archive_key = sinan_specs$archive[[index]],
+      information_system = information_system,
+      url = if (net) sinan_net_url else sinan_online_url,
+      definition = if (net) {
+        paste0("TAB_SINANNET/", sinan_specs$definition[[index]])
+      } else {
+        sinan_specs$definition[[index]]
+      }
+    )
+  }
   specs
 }
 
@@ -778,7 +806,8 @@
 #' to CID-10 files; SINASC supports both its 1994-1995 and current layouts; and
 #' SIH supports its current and historical RD/RJ definitions; SIA supports all
 #' twelve current layouts plus the three historical PA definitions; and CNES
-#' supports all thirteen layouts plus both service-classification periods.
+#' supports all thirteen layouts plus both service-classification periods; and
+#' SINAN supports all 58 transfer-page file families.
 #'
 #' @param information_system Information system whose dictionary should be
 #'   downloaded. Supported values include the five SIM mortality types,
@@ -787,7 +816,8 @@
 #'   `"SIH-ER"` and the twelve `"SIA-*"` file families. Historical SIH and
 #'   SIA-PA keys are selected internally by their processing functions. All
 #'   thirteen `"CNES-*"` families are also supported; the historical CNES-SR
-#'   key is selected internally by [process_cnes()].
+#'   key is selected internally by [process_cnes()]. The 58 SINAN identifiers
+#'   accepted by [fetch_datasus()] are also accepted here.
 #' @param timeout A positive numeric scalar. Download and connection timeout,
 #'   in seconds.
 #' @param refresh Logical scalar. If `TRUE`, discard the session cache and
@@ -811,9 +841,10 @@
 #' sih_dictionary <- fetch_tabwin_dictionary("SIH-RD")
 #' sia_dictionary <- fetch_tabwin_dictionary("SIA-PA")
 #' cnes_dictionary <- fetch_tabwin_dictionary("CNES-ST")
+#' sinan_dictionary <- fetch_tabwin_dictionary("SINAN-DENGUE")
 #'
 #' @seealso [process_sim()], [process_sinasc()], [process_sih()],
-#'   [process_sia()], [process_cnes()], [fetch_datasus()]
+#'   [process_sia()], [process_cnes()], [process_sinan()], [fetch_datasus()]
 #' @export
 fetch_tabwin_dictionary <- function(
   information_system = "SIM-DO",

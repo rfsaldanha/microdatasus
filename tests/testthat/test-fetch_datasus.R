@@ -20,7 +20,7 @@ test_that("fetch_datasus public signature remains compatible", {
 test_that("registry contains every supported system", {
   registry <- microdatasus:::.datasus_registry()
 
-  expect_length(registry, 43L)
+  expect_length(registry, 93L)
   expect_setequal(
     names(registry),
     c(
@@ -34,11 +34,7 @@ test_that("registry contains every supported system", {
         "AB", "ABO", "ACF", "AD", "AN", "AM",
         "AQ", "AR", "ATD", "PA", "PS", "SAD"
       )),
-      paste0("SINAN-", c(
-        "DENGUE", "CHIKUNGUNYA", "ZIKA", "MALARIA", "CHAGAS",
-        "LEISHMANIOSE-VISCERAL", "LEISHMANIOSE-TEGUMENTAR",
-        "LEPTOSPIROSE"
-      ))
+      microdatasus:::.sinan_information_systems()
     )
   )
 })

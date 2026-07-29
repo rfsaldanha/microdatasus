@@ -7,8 +7,8 @@
 #'
 #' Start with [fetch_datasus()] and then use the processor corresponding to the
 #' selected system, such as [process_sim()], [process_sinasc()], [process_sih()],
-#' [process_sia()], [process_cnes()], or one of the `process_sinan_*()`
-#' functions. [fetch_cadger()] and [fetch_sigtab()] also retrieve current
+#' [process_sia()], [process_cnes()], or [process_sinan()]. [fetch_cadger()]
+#' and [fetch_sigtab()] also retrieve current
 #' auxiliary tables for standalone use.
 #'
 #' For concepts, coverage, data flows, and caveats of each Brazilian health

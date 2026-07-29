@@ -56,6 +56,12 @@
 
 ## Processing, documentation, and testing
 
+* Adds the unified `process_sinan()` based on the official
+  `TAB_SINANNET.zip` and `TAB_SINANONLINE.zip` definitions and expands
+  `fetch_datasus()` from eight to all 58 SINAN families listed by the transfer
+  portal. The seven former processors retain their original signatures as
+  deprecated wrappers. Dates, encoded ages, municipality codes, labels, and
+  identifiers now follow one tested type policy.
 * Rebuilds `process_cnes()` from the official DataSUS TabWin definitions. It
   now covers all thirteen downloadable CNES layouts, selects the historical or
   current service-classification definition row by row, shares the large

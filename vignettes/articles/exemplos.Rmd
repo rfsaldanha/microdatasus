@@ -224,12 +224,17 @@ sinan_raw <- fetch_datasus(
   information_system = "SINAN-DENGUE"
 )
 
-sinan_dengue <- process_sinan_dengue(sinan_raw)
+sinan_dengue <- process_sinan(
+  sinan_raw,
+  information_system = "SINAN-DENGUE"
+)
 ```
 
-Há download e processamento para dengue, chikungunya, Zika, malária, Chagas e
-leishmanioses tegumentar e visceral. Leptospirose pode ser baixada, mas ainda
-não possui uma função de processamento específica.
+`fetch_datasus()` e `process_sinan()` cobrem as 58 famílias apresentadas pela
+página oficial de transferência. Os oito identificadores que já existiam,
+como `SINAN-DENGUE` e `SINAN-LEPTOSPIROSE`, foram preservados; os demais usam a
+sigla oficial, como `SINAN-ANIM`, `SINAN-HANS` e `SINAN-TUBE`. As antigas
+funções `process_sinan_*()` continuam disponíveis com aviso de depreciação.
 
 ## Próximos passos
 

@@ -92,10 +92,23 @@ residence contained in the records.
 \item \strong{SIA:} \code{"SIA-AB"}, \code{"SIA-ABO"}, \code{"SIA-ACF"}, \code{"SIA-AD"}, \code{"SIA-AN"},
 \code{"SIA-AM"}, \code{"SIA-AQ"}, \code{"SIA-AR"}, \code{"SIA-ATD"}, \code{"SIA-PA"}, \code{"SIA-PS"},
 and \code{"SIA-SAD"}.
-\item \strong{SINAN:} \code{"SINAN-DENGUE"}, \code{"SINAN-CHIKUNGUNYA"}, \code{"SINAN-ZIKA"},
-\code{"SINAN-MALARIA"}, \code{"SINAN-CHAGAS"},
-\code{"SINAN-LEISHMANIOSE-VISCERAL"},
-\code{"SINAN-LEISHMANIOSE-TEGUMENTAR"}, and \code{"SINAN-LEPTOSPIROSE"}.
+\item \strong{SINAN:} the existing descriptive identifiers \code{"SINAN-DENGUE"},
+\code{"SINAN-CHIKUNGUNYA"}, \code{"SINAN-ZIKA"}, \code{"SINAN-MALARIA"},
+\code{"SINAN-CHAGAS"}, \code{"SINAN-LEISHMANIOSE-VISCERAL"},
+\code{"SINAN-LEISHMANIOSE-TEGUMENTAR"}, and \code{"SINAN-LEPTOSPIROSE"}; and the
+transfer-page acronym identifiers \code{"SINAN-ANIM"}, \code{"SINAN-ANTR"},
+\code{"SINAN-AIDA"}, \code{"SINAN-AIDC"}, \code{"SINAN-BOTU"}, \code{"SINAN-COLE"},
+\code{"SINAN-COQU"}, \code{"SINAN-DIFT"}, \code{"SINAN-DCRJ"}, \code{"SINAN-EXAN"},
+\code{"SINAN-ESQU"}, \code{"SINAN-ESPO"}, \code{"SINAN-FMAC"}, \code{"SINAN-FTIF"},
+\code{"SINAN-HANS"}, \code{"SINAN-HANT"}, \code{"SINAN-HEPA"}, \code{"SINAN-HIVA"},
+\code{"SINAN-HIVC"}, \code{"SINAN-HIVE"}, \code{"SINAN-HIVG"}, \code{"SINAN-INFL"},
+\code{"SINAN-IEXO"}, \code{"SINAN-MENI"}, \code{"SINAN-PFAN"}, \code{"SINAN-PEST"},
+\code{"SINAN-RAIV"}, \code{"SINAN-ROTA"}, \code{"SINAN-SIFA"}, \code{"SINAN-SIFC"},
+\code{"SINAN-SIFG"}, \code{"SINAN-SRC"}, \code{"SINAN-SDTA"}, \code{"SINAN-TETA"},
+\code{"SINAN-TETN"}, \code{"SINAN-TOXC"}, \code{"SINAN-TOXG"}, \code{"SINAN-NTRA"},
+\code{"SINAN-TRAC"}, \code{"SINAN-TUBE"}, \code{"SINAN-VARC"}, \code{"SINAN-VIOL"},
+\code{"SINAN-ACBI"}, \code{"SINAN-ACGR"}, \code{"SINAN-CANC"}, \code{"SINAN-DERM"},
+\code{"SINAN-LERD"}, \code{"SINAN-PAIR"}, \code{"SINAN-PNEU"}, and \code{"SINAN-MENT"}.
 }
 }
 
@@ -136,6 +149,6 @@ Saldanha, R. F. (2026). \href{https://rfsaldanha.github.io/sis/}{\emph{Sistemas 
 }
 \seealso{
 \code{\link[=read_dbc]{read_dbc()}} for local DBC files; \code{\link[=process_sim]{process_sim()}}, \code{\link[=process_sinasc]{process_sinasc()}},
-\code{\link[=process_sih]{process_sih()}}, \code{\link[=process_sia]{process_sia()}}, \code{\link[=process_cnes]{process_cnes()}}, and the
-\verb{process_sinan_*()} functions for system-specific recoding.
+\code{\link[=process_sih]{process_sih()}}, \code{\link[=process_sia]{process_sia()}}, \code{\link[=process_cnes]{process_cnes()}}, and \code{\link[=process_sinan]{process_sinan()}}
+for system-specific recoding.
 }

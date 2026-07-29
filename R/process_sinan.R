@@ -1,0 +1,210 @@
+.sinan_as_date <- function(x) {
+  if (inherits(x, "Date")) {
+    return(x)
+  }
+  values <- trimws(as.character(x))
+  values[!nzchar(values)] <- NA_character_
+  result <- as.Date(rep(NA_character_, length(values)))
+  iso <- !is.na(values) & grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", values)
+  ymd <- !is.na(values) & grepl("^[0-9]{8}$", values)
+  dmy <- !is.na(values) & grepl("^[0-9]{2}/[0-9]{2}/[0-9]{4}$", values)
+  result[iso] <- as.Date(values[iso])
+  result[ymd] <- as.Date(values[ymd], format = "%Y%m%d")
+  result[dmy] <- as.Date(values[dmy], format = "%d/%m/%Y")
+  result
+}
+
+.sinan_municipality_fields <- function(data) {
+  fields <- names(data)
+  upper <- toupper(fields)
+  fields[
+    upper %in% c("ID_MUNICIP", "ID_MN_RESI", "MUNICIPIO") |
+      grepl("^ID_MN_|^MUN(_|$)|^CO_MUN", upper)
+  ]
+}
+
+.sinan_type_fields <- function(data, dictionary) {
+  fields <- names(data)
+  upper <- toupper(fields)
+  date_fields <- fields[grepl("^DT(_|[A-Z])", upper)]
+  municipality_fields <- .sinan_municipality_fields(data)
+  identifiers <- fields[grepl(
+    paste0(
+      "^ID_(UNIDADE|REGIONA|DISTRIT|BAIRRO|OCUPA)|^ID_AGRAVO$|",
+      "^NU_NOTIFIC$|^NU_IDADE_N$|^NU_(CEP|CNS)|CPF|CNPJ|^SOURCE$"
+    ),
+    upper
+  )]
+  reference_fields <- fields[
+    grepl("^SEM_|^NU_ANO$", upper)
+  ]
+  free_text <- fields[grepl("^(NM|DS|NO)_", upper)]
+
+  list(
+    date = unique(date_fields),
+    integer = .process_find_fields(data, "NU_ANO"),
+    identifier = setdiff(
+      unique(c(
+        identifiers,
+        reference_fields,
+        free_text,
+        municipality_fields
+      )),
+      date_fields
+    ),
+    protected = unique(c(
+      date_fields,
+      identifiers,
+      reference_fields,
+      free_text,
+      municipality_fields,
+      "NU_ANO"
+    ))
+  )
+}
+
+.sinan_add_age_fields <- function(data) {
+  field <- .process_find_fields(data, "NU_IDADE_N")
+  if (!length(field)) {
+    return(data)
+  }
+  field <- field[[1L]]
+  code <- trimws(as.character(data[[field]]))
+  code[code %in% c("", "999", "9999")] <- NA_character_
+  unit <- substr(code, 1L, 1L)
+  value <- suppressWarnings(as.integer(substr(code, 2L, 4L)))
+  names_by_unit <- c(
+    "0" = "IDADEminutos",
+    "1" = "IDADEhoras",
+    "2" = "IDADEdias",
+    "3" = "IDADEmeses",
+    "4" = "IDADEanos"
+  )
+  for (unit_code in names(names_by_unit)) {
+    output <- rep(NA_integer_, length(value))
+    matches <- !is.na(unit) & unit == unit_code
+    output[matches] <- value[matches]
+    data[[names_by_unit[[unit_code]]]] <- output
+  }
+  data[[field]] <- code
+  data
+}
+
+.sinan_dictionary_fields <- function(data, dictionary, types) {
+  declared <- unique(dictionary$definitions$field)
+  .process_find_fields(
+    data,
+    setdiff(declared, toupper(types$protected))
+  )
+}
+
+#' Prepare SINAN notification microdata
+#'
+#' Uses the official DataSUS TabWin definitions to label all SINAN file
+#' families supported by [fetch_datasus()]. The corresponding
+#' `TAB_SINANNET.zip` or `TAB_SINANONLINE.zip` archive is downloaded on first
+#' use and cached for the rest of the R session. When DataSUS publishes no
+#' disease-specific DEF, the official `NotIndiviNet.def` supplies labels for
+#' common notification fields; unmapped disease-specific codes remain visible.
+#'
+#' @param data A data frame returned by [fetch_datasus()] for a supported SINAN
+#'   file family, or another data frame with a compatible layout.
+#' @param information_system SINAN file family represented by `data`. Existing
+#'   descriptive identifiers such as `"SINAN-DENGUE"` remain supported; newly
+#'   added families use the official transfer-page acronym, such as
+#'   `"SINAN-ANIM"` or `"SINAN-TUBE"`.
+#' @param municipality_data Logical scalar. If `TRUE`, add municipality names
+#'   and available territorial attributes. The historical `MUNICIPIO` field is
+#'   preferred when present, followed by residence and notification fields.
+#'
+#' @examplesIf interactive() && curl::has_internet()
+#' process_sinan(sinan_dengue_sample, "SINAN-DENGUE")
+#' process_sinan(sinan_chagas_sample, "SINAN-CHAGAS")
+#'
+#' @return A tibble. Dates are returned as `Date`, the notification year and
+#'   derived age components as integer, labelled categorical fields as factors,
+#'   and identifiers and free text as character.
+#'
+#' @references
+#' Saldanha, R. F. (2026). [SINAN -- Sistema de Informação de Agravos de
+#' Notificação](https://rfsaldanha.github.io/sis/sinan.html).
+#'
+#' @seealso [fetch_tabwin_dictionary()], [fetch_datasus()]
+#'
+#' @export
+process_sinan <- function(
+  data,
+  information_system = "SINAN-DENGUE",
+  municipality_data = TRUE
+) {
+  if (!is.data.frame(data)) {
+    cli::cli_abort("{.arg data} must be a data frame.")
+  }
+  .datasus_assert_flag(municipality_data, "municipality_data")
+  sinan_types <- .sinan_information_systems()
+  if (
+    !is.character(information_system) ||
+      length(information_system) != 1L ||
+      is.na(information_system) ||
+      !information_system %in% sinan_types
+  ) {
+    cli::cli_abort(
+      "{.arg information_system} must be one of: {.val {sinan_types}}."
+    )
+  }
+
+  result <- tibble::as_tibble(data)
+  for (field in names(result)) {
+    if (is.factor(result[[field]])) {
+      result[[field]] <- as.character(result[[field]])
+    }
+  }
+  result <- .process_normalize_text(result)
+
+  # Resolve the DEF before the preprocessing start message so users see the
+  # same cache/start/finish lifecycle as the other system processors.
+  dictionary <- fetch_tabwin_dictionary(information_system)
+  types <- .sinan_type_fields(result, dictionary)
+  categorical_fields <- .sinan_dictionary_fields(
+    result,
+    dictionary,
+    types
+  )
+
+  cli::cli_alert_info(
+    "Starting {.strong {information_system}} data pre-processing..."
+  )
+
+  for (field in types$identifier) {
+    result[[field]] <- as.character(result[[field]])
+  }
+  for (field in types$date) {
+    result[[field]] <- .sinan_as_date(result[[field]])
+  }
+  for (field in types$integer) {
+    result[[field]] <- .process_as_integer(result[[field]])
+  }
+  result <- .sinan_add_age_fields(result)
+  result <- .process_apply_dictionary(
+    result,
+    dictionary,
+    categorical_fields
+  )
+
+  municipality_fields <- .sinan_municipality_fields(result)
+  result <- .process_normalize_code_fields(result, municipality_fields)
+  if (municipality_data && length(municipality_fields)) {
+    priority <- c("MUNICIPIO", "ID_MN_RESI", "ID_MUNICIP")
+    selected <- .process_find_fields(result, priority)
+    if (!length(selected)) {
+      selected <- municipality_fields
+    }
+    result <- .process_add_municipality_data(result, selected[[1L]])
+  }
+
+  result <- .process_normalize_text(result)
+  cli::cli_alert_success(
+    "Finished {.strong {information_system}} data pre-processing."
+  )
+  tibble::as_tibble(result)
+}
