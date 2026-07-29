@@ -231,10 +231,17 @@ sinan_dengue <- process_sinan(
 ```
 
 `fetch_datasus()` e `process_sinan()` cobrem as 58 famílias apresentadas pela
-página oficial de transferência. Os oito identificadores que já existiam,
-como `SINAN-DENGUE` e `SINAN-LEPTOSPIROSE`, foram preservados; os demais usam a
-sigla oficial, como `SINAN-ANIM`, `SINAN-HANS` e `SINAN-TUBE`. As antigas
-funções `process_sinan_*()` continuam disponíveis com aviso de depreciação.
+página oficial de transferência. Os valores preferenciais são legíveis, como
+`SINAN-ACIDENTE-POR-ANIMAIS-PECONHENTOS`, `SINAN-HANSENIASE` e
+`SINAN-TUBERCULOSE`. Consulte nomes, siglas dos arquivos e aliases com:
+
+```{r}
+sinan_information_systems()
+```
+
+Os antigos identificadores baseados em siglas, como `SINAN-ANIM` e
+`SINAN-TUBE`, continuam aceitos para retrocompatibilidade. As antigas funções
+`process_sinan_*()` também continuam disponíveis com aviso de depreciação.
 
 ## Próximos passos
 

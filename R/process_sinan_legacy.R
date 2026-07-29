@@ -11,7 +11,8 @@
 #' Prepare SINAN Chagas disease microdata (deprecated)
 #'
 #' `process_sinan_chagas()` is retained for backward compatibility. New code
-#' should call [process_sinan()] with `information_system = "SINAN-CHAGAS"`.
+#' should call [process_sinan()] with
+#' `information_system = "SINAN-DOENCA-DE-CHAGAS-AGUDA"`.
 #'
 #' @inheritParams process_sinan
 #' @examplesIf interactive() && curl::has_internet()
@@ -20,15 +21,18 @@
 #' @seealso [process_sinan()]
 #' @export
 process_sinan_chagas <- function(data, municipality_data = TRUE) {
-  .sinan_deprecate("process_sinan_chagas", "SINAN-CHAGAS")
-  process_sinan(data, "SINAN-CHAGAS", municipality_data)
+  .sinan_deprecate(
+    "process_sinan_chagas",
+    "SINAN-DOENCA-DE-CHAGAS-AGUDA"
+  )
+  process_sinan(data, "SINAN-DOENCA-DE-CHAGAS-AGUDA", municipality_data)
 }
 
 #' Prepare SINAN chikungunya microdata (deprecated)
 #'
 #' `process_sinan_chikungunya()` is retained for backward compatibility. New
 #' code should call [process_sinan()] with
-#' `information_system = "SINAN-CHIKUNGUNYA"`.
+#' `information_system = "SINAN-FEBRE-DE-CHIKUNGUNYA"`.
 #'
 #' @inheritParams process_sinan
 #' @examplesIf interactive() && curl::has_internet()
@@ -37,8 +41,11 @@ process_sinan_chagas <- function(data, municipality_data = TRUE) {
 #' @seealso [process_sinan()]
 #' @export
 process_sinan_chikungunya <- function(data, municipality_data = TRUE) {
-  .sinan_deprecate("process_sinan_chikungunya", "SINAN-CHIKUNGUNYA")
-  process_sinan(data, "SINAN-CHIKUNGUNYA", municipality_data)
+  .sinan_deprecate(
+    "process_sinan_chikungunya",
+    "SINAN-FEBRE-DE-CHIKUNGUNYA"
+  )
+  process_sinan(data, "SINAN-FEBRE-DE-CHIKUNGUNYA", municipality_data)
 }
 
 #' Prepare SINAN dengue microdata (deprecated)
@@ -128,7 +135,8 @@ process_sinan_malaria <- function(data, municipality_data = TRUE) {
 #' Prepare SINAN Zika virus disease microdata (deprecated)
 #'
 #' `process_sinan_zika()` is retained for backward compatibility. New code
-#' should call [process_sinan()] with `information_system = "SINAN-ZIKA"`.
+#' should call [process_sinan()] with
+#' `information_system = "SINAN-ZIKA-VIRUS"`.
 #'
 #' @inheritParams process_sinan
 #' @examplesIf interactive() && curl::has_internet()
@@ -137,6 +145,6 @@ process_sinan_malaria <- function(data, municipality_data = TRUE) {
 #' @seealso [process_sinan()]
 #' @export
 process_sinan_zika <- function(data, municipality_data = TRUE) {
-  .sinan_deprecate("process_sinan_zika", "SINAN-ZIKA")
-  process_sinan(data, "SINAN-ZIKA", municipality_data)
+  .sinan_deprecate("process_sinan_zika", "SINAN-ZIKA-VIRUS")
+  process_sinan(data, "SINAN-ZIKA-VIRUS", municipality_data)
 }

@@ -717,6 +717,21 @@ test_that("national systems warn when a specific state is ignored", {
   )
 })
 
+test_that("fetch_datasus accepts SINAN acronym aliases silently", {
+  manifest <- mock_manifest("TUBEBR22.dbc")
+  manifest$uf <- NA_character_
+  mock_fetch_dependencies(manifest)
+
+  expect_no_warning(result <- fetch_datasus(
+    2022,
+    year_end = 2022,
+    uf = "all",
+    information_system = "SINAN-TUBE",
+    quiet = TRUE
+  ))
+  expect_s3_class(result, "tbl_df")
+})
+
 test_that("source conflicts and unknown variables always abort", {
   mock_fetch_dependencies(
     mock_manifest("DOAC2022.dbc"),

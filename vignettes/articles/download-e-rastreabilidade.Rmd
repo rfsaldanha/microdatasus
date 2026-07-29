@@ -47,6 +47,10 @@ uma nova chamada consulta novamente o DataSUS.
 | `quiet` | Oculta mensagens de status e progresso quando `TRUE` |
 | `stop_on_error` | Define se uma falha interrompe toda a solicitação |
 
+Para o SINAN, use `sinan_information_systems()` para consultar os 58
+identificadores preferenciais, seus nomes completos, siglas de arquivo e
+aliases retrocompatíveis.
+
 A referência de [`fetch_datasus()`](../reference/fetch_datasus.html) contém a
 lista completa dos identificadores aceitos e seus limites históricos.
 

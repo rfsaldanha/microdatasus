@@ -64,6 +64,61 @@ test_that("process_sinan has a stable unified signature", {
   )
 })
 
+test_that("SINAN lookup exposes readable names and every accepted alias", {
+  lookup <- sinan_information_systems()
+  specs <- microdatasus:::.sinan_system_specs()
+  aliases <- microdatasus:::.sinan_alias_table()
+
+  expect_identical(formals(sinan_information_systems), pairlist())
+  expect_s3_class(lookup, "tbl_df")
+  expect_identical(
+    names(lookup),
+    c("information_system", "name", "file_acronym", "aliases")
+  )
+  expect_equal(nrow(lookup), 58L)
+  expect_identical(anyDuplicated(lookup$information_system), 0L)
+  expect_identical(anyDuplicated(lookup$file_acronym), 0L)
+  expect_true(all(grepl(
+    "^SINAN-[A-Z0-9]+(?:-[A-Z0-9]+)*$",
+    lookup$information_system
+  )))
+  expect_identical(lookup$information_system, specs$information_system)
+  expect_identical(lookup$name, specs$name)
+  expect_identical(lookup$file_acronym, specs$acronym)
+  expect_identical(anyDuplicated(aliases$alias), 0L)
+  expect_identical(
+    unname(vapply(
+      specs$legacy_information_system,
+      microdatasus:::.sinan_resolve_information_system,
+      character(1)
+    )),
+    specs$information_system
+  )
+
+  for (index in seq_len(nrow(lookup))) {
+    expected <- aliases$alias[
+      aliases$information_system == lookup$information_system[[index]]
+    ]
+    expect_identical(lookup$aliases[[index]], expected)
+    expect_true(all(vapply(
+      expected,
+      microdatasus:::.sinan_resolve_information_system,
+      character(1)
+    ) == lookup$information_system[[index]]))
+  }
+
+  expect_identical(
+    lookup$information_system[lookup$file_acronym == "TUBE"],
+    "SINAN-TUBERCULOSE"
+  )
+  expect_identical(
+    lookup$name[lookup$file_acronym == "ANIM"],
+    "Acidente por animais peçonhentos"
+  )
+  expect_true("SINAN-TUBE" %in%
+    lookup$aliases[[match("TUBE", lookup$file_acronym)]])
+})
+
 test_that("SINAN registry covers all transfer-page families and definitions", {
   specs <- microdatasus:::.sinan_system_specs()
   downloads <- microdatasus:::.datasus_registry()
@@ -89,7 +144,7 @@ test_that("SINAN registry covers all transfer-page families and definitions", {
   )
   expect_identical(
     vapply(
-      downloads[["SINAN-LERD"]]$repositories,
+      downloads[["SINAN-LER-DORT"]]$repositories,
       `[[`,
       character(1),
       "prefix"
@@ -118,6 +173,48 @@ test_that("SINAN registry covers all transfer-page families and definitions", {
     expect_identical(parsed$period, "2024")
     expect_true(is.na(parsed$uf))
   }
+})
+
+test_that("old SINAN identifiers resolve silently and reuse canonical cache", {
+  archives <- create_sinan_tabwin_fixtures()
+  on.exit(unlink(unlist(archives)), add = TRUE)
+  downloads <- 0L
+  local_mocked_bindings(
+    .datasus_download_file = function(
+      url,
+      destination,
+      timeout,
+      quiet = FALSE
+    ) {
+      downloads <<- downloads + 1L
+      file.copy(archives$net, destination)
+      invisible(destination)
+    },
+    .package = "microdatasus"
+  )
+  microdatasus:::.tabwin_clear_cache()
+  on.exit(restore_empty_tabwin_cache(), add = TRUE)
+
+  canonical <- fetch_tabwin_dictionary(
+    "SINAN-TUBERCULOSE",
+    quiet = TRUE
+  )
+  expect_no_warning(
+    legacy <- fetch_tabwin_dictionary("SINAN-TUBE", quiet = TRUE)
+  )
+  expect_identical(legacy, canonical)
+  expect_equal(downloads, 1L)
+
+  messages <- capture_messages({
+    expect_no_warning(result <- process_sinan(
+      data.frame(FLAG = "1"),
+      information_system = "SINAN-TUBE",
+      municipality_data = FALSE
+    ))
+  })
+  expect_identical(as.character(result$FLAG), "Rotulo SINAN")
+  expect_true(any(grepl("Starting SINAN-TUBERCULOSE", messages)))
+  expect_true(any(grepl("Finished SINAN-TUBERCULOSE", messages)))
 })
 
 test_that("all SINAN families use one of two shared archives", {
@@ -212,14 +309,14 @@ test_that("process_sinan standardizes common types and message order", {
 
 test_that("legacy SINAN wrappers preserve signatures and emit deprecation", {
   wrappers <- c(
-    process_sinan_chagas = "SINAN-CHAGAS",
-    process_sinan_chikungunya = "SINAN-CHIKUNGUNYA",
+    process_sinan_chagas = "SINAN-DOENCA-DE-CHAGAS-AGUDA",
+    process_sinan_chikungunya = "SINAN-FEBRE-DE-CHIKUNGUNYA",
     process_sinan_dengue = "SINAN-DENGUE",
     process_sinan_leishmaniose_tegumentar =
       "SINAN-LEISHMANIOSE-TEGUMENTAR",
     process_sinan_leishmaniose_visceral = "SINAN-LEISHMANIOSE-VISCERAL",
     process_sinan_malaria = "SINAN-MALARIA",
-    process_sinan_zika = "SINAN-ZIKA"
+    process_sinan_zika = "SINAN-ZIKA-VIRUS"
   )
   expected_formals <- as.pairlist(alist(
     data = ,

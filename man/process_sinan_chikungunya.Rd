@@ -20,7 +20,7 @@ The tibble returned by \code{\link[=process_sinan]{process_sinan()}}.
 \description{
 \code{process_sinan_chikungunya()} is retained for backward compatibility. New
 code should call \code{\link[=process_sinan]{process_sinan()}} with
-\code{information_system = "SINAN-CHIKUNGUNYA"}.
+\code{information_system = "SINAN-FEBRE-DE-CHIKUNGUNYA"}.
 }
 \examples{
 \dontshow{if (interactive() && curl::has_internet()) withAutoprint(\{ # examplesIf}

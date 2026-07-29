@@ -19,7 +19,8 @@ The tibble returned by \code{\link[=process_sinan]{process_sinan()}}.
 }
 \description{
 \code{process_sinan_chagas()} is retained for backward compatibility. New code
-should call \code{\link[=process_sinan]{process_sinan()}} with \code{information_system = "SINAN-CHAGAS"}.
+should call \code{\link[=process_sinan]{process_sinan()}} with
+\code{information_system = "SINAN-DOENCA-DE-CHAGAS-AGUDA"}.
 }
 \examples{
 \dontshow{if (interactive() && curl::has_internet()) withAutoprint(\{ # examplesIf}

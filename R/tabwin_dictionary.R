@@ -758,6 +758,9 @@
     return(invisible(NULL))
   }
 
+  information_system <- .sinan_resolve_information_system(
+    information_system
+  )
   key <- toupper(information_system)
   registry <- .tabwin_registry()
   archive_key <- if (exists(key, envir = .tabwin_cache, inherits = FALSE)) {
@@ -816,8 +819,9 @@
 #'   `"SIH-ER"` and the twelve `"SIA-*"` file families. Historical SIH and
 #'   SIA-PA keys are selected internally by their processing functions. All
 #'   thirteen `"CNES-*"` families are also supported; the historical CNES-SR
-#'   key is selected internally by [process_cnes()]. The 58 SINAN identifiers
-#'   accepted by [fetch_datasus()] are also accepted here.
+#'   key is selected internally by [process_cnes()]. The 58 readable SINAN
+#'   identifiers and their aliases, listed by [sinan_information_systems()],
+#'   are also accepted here.
 #' @param timeout A positive numeric scalar. Download and connection timeout,
 #'   in seconds.
 #' @param refresh Logical scalar. If `TRUE`, discard the session cache and
@@ -843,7 +847,8 @@
 #' cnes_dictionary <- fetch_tabwin_dictionary("CNES-ST")
 #' sinan_dictionary <- fetch_tabwin_dictionary("SINAN-DENGUE")
 #'
-#' @seealso [process_sim()], [process_sinasc()], [process_sih()],
+#' @seealso [sinan_information_systems()], [process_sim()],
+#'   [process_sinasc()], [process_sih()],
 #'   [process_sia()], [process_cnes()], [process_sinan()], [fetch_datasus()]
 #' @export
 fetch_tabwin_dictionary <- function(
@@ -852,6 +857,9 @@ fetch_tabwin_dictionary <- function(
   refresh = FALSE,
   quiet = FALSE
 ) {
+  information_system <- .sinan_resolve_information_system(
+    information_system
+  )
   registry <- .tabwin_registry()
   if (
     !is.character(information_system) ||

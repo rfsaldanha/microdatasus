@@ -61,23 +61,11 @@
 #' - **SIA:** `"SIA-AB"`, `"SIA-ABO"`, `"SIA-ACF"`, `"SIA-AD"`, `"SIA-AN"`,
 #'   `"SIA-AM"`, `"SIA-AQ"`, `"SIA-AR"`, `"SIA-ATD"`, `"SIA-PA"`, `"SIA-PS"`,
 #'   and `"SIA-SAD"`.
-#' - **SINAN:** the existing descriptive identifiers `"SINAN-DENGUE"`,
-#'   `"SINAN-CHIKUNGUNYA"`, `"SINAN-ZIKA"`, `"SINAN-MALARIA"`,
-#'   `"SINAN-CHAGAS"`, `"SINAN-LEISHMANIOSE-VISCERAL"`,
-#'   `"SINAN-LEISHMANIOSE-TEGUMENTAR"`, and `"SINAN-LEPTOSPIROSE"`; and the
-#'   transfer-page acronym identifiers `"SINAN-ANIM"`, `"SINAN-ANTR"`,
-#'   `"SINAN-AIDA"`, `"SINAN-AIDC"`, `"SINAN-BOTU"`, `"SINAN-COLE"`,
-#'   `"SINAN-COQU"`, `"SINAN-DIFT"`, `"SINAN-DCRJ"`, `"SINAN-EXAN"`,
-#'   `"SINAN-ESQU"`, `"SINAN-ESPO"`, `"SINAN-FMAC"`, `"SINAN-FTIF"`,
-#'   `"SINAN-HANS"`, `"SINAN-HANT"`, `"SINAN-HEPA"`, `"SINAN-HIVA"`,
-#'   `"SINAN-HIVC"`, `"SINAN-HIVE"`, `"SINAN-HIVG"`, `"SINAN-INFL"`,
-#'   `"SINAN-IEXO"`, `"SINAN-MENI"`, `"SINAN-PFAN"`, `"SINAN-PEST"`,
-#'   `"SINAN-RAIV"`, `"SINAN-ROTA"`, `"SINAN-SIFA"`, `"SINAN-SIFC"`,
-#'   `"SINAN-SIFG"`, `"SINAN-SRC"`, `"SINAN-SDTA"`, `"SINAN-TETA"`,
-#'   `"SINAN-TETN"`, `"SINAN-TOXC"`, `"SINAN-TOXG"`, `"SINAN-NTRA"`,
-#'   `"SINAN-TRAC"`, `"SINAN-TUBE"`, `"SINAN-VARC"`, `"SINAN-VIOL"`,
-#'   `"SINAN-ACBI"`, `"SINAN-ACGR"`, `"SINAN-CANC"`, `"SINAN-DERM"`,
-#'   `"SINAN-LERD"`, `"SINAN-PAIR"`, `"SINAN-PNEU"`, and `"SINAN-MENT"`.
+#' - **SINAN:** 58 readable identifiers, including `"SINAN-DENGUE"`,
+#'   `"SINAN-TUBERCULOSE"`, and
+#'   `"SINAN-ACIDENTE-POR-ANIMAIS-PECONHENTOS"`. Former acronym-based
+#'   identifiers remain accepted as aliases. The complete lookup table is
+#'   returned by [sinan_information_systems()].
 #'
 #' @section Network access:
 #' An Internet connection and FTP access to DataSUS are required. DataSUS may
@@ -94,7 +82,8 @@
 #' [CNES](https://rfsaldanha.github.io/sis/cnes.html).
 #'
 #' @seealso
-#' [read_dbc()] for local DBC files; [process_sim()], [process_sinasc()],
+#' [read_dbc()] for local DBC files; [sinan_information_systems()] for the
+#' SINAN identifier lookup; [process_sim()], [process_sinasc()],
 #' [process_sih()], [process_sia()], [process_cnes()], and [process_sinan()]
 #' for system-specific recoding.
 #'
@@ -144,6 +133,7 @@ fetch_datasus <- function(
     quiet = quiet
   )
   spec <- request$spec
+  information_system <- request$information_system
 
   if (
     identical(spec$geography, "national") &&

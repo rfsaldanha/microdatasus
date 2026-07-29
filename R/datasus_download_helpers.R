@@ -195,6 +195,11 @@
   track_source,
   quiet
 ) {
+  # SINAN's former acronym-based identifiers are resolved before the shared
+  # validation so old scripts use the same canonical registry entry.
+  information_system <- .sinan_resolve_information_system(
+    information_system
+  )
   registry <- .datasus_registry()
   if (
     !is.character(information_system) ||
@@ -313,7 +318,8 @@
   list(
     spec = spec,
     periods = periods,
-    ufs = if (identical(uf, "all")) .datasus_ufs else uf
+    ufs = if (identical(uf, "all")) .datasus_ufs else uf,
+    information_system = information_system
   )
 }
 

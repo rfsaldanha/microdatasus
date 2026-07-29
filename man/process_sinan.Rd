@@ -14,10 +14,10 @@ process_sinan(
 \item{data}{A data frame returned by \code{\link[=fetch_datasus]{fetch_datasus()}} for a supported SINAN
 file family, or another data frame with a compatible layout.}
 
-\item{information_system}{SINAN file family represented by \code{data}. Existing
-descriptive identifiers such as \code{"SINAN-DENGUE"} remain supported; newly
-added families use the official transfer-page acronym, such as
-\code{"SINAN-ANIM"} or \code{"SINAN-TUBE"}.}
+\item{information_system}{SINAN file family represented by \code{data}. Preferred
+values use readable names such as \code{"SINAN-DENGUE"} and
+\code{"SINAN-TUBERCULOSE"}. All former acronym-based values remain accepted as
+aliases. Use \code{\link[=sinan_information_systems]{sinan_information_systems()}} to consult both forms.}
 
 \item{municipality_data}{Logical scalar. If \code{TRUE}, add municipality names
 and available territorial attributes. The historical \code{MUNICIPIO} field is
@@ -39,12 +39,13 @@ common notification fields; unmapped disease-specific codes remain visible.
 \examples{
 \dontshow{if (interactive() && curl::has_internet()) withAutoprint(\{ # examplesIf}
 process_sinan(sinan_dengue_sample, "SINAN-DENGUE")
-process_sinan(sinan_chagas_sample, "SINAN-CHAGAS")
+process_sinan(sinan_chagas_sample, "SINAN-DOENCA-DE-CHAGAS-AGUDA")
 \dontshow{\}) # examplesIf}
 }
 \references{
 Saldanha, R. F. (2026). \href{https://rfsaldanha.github.io/sis/sinan.html}{SINAN -- Sistema de Informação de Agravos de Notificação}.
 }
 \seealso{
-\code{\link[=fetch_tabwin_dictionary]{fetch_tabwin_dictionary()}}, \code{\link[=fetch_datasus]{fetch_datasus()}}
+\code{\link[=sinan_information_systems]{sinan_information_systems()}}, \code{\link[=fetch_tabwin_dictionary]{fetch_tabwin_dictionary()}},
+\code{\link[=fetch_datasus]{fetch_datasus()}}
 }

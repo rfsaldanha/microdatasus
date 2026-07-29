@@ -109,17 +109,17 @@
 #'
 #' @param data A data frame returned by [fetch_datasus()] for a supported SINAN
 #'   file family, or another data frame with a compatible layout.
-#' @param information_system SINAN file family represented by `data`. Existing
-#'   descriptive identifiers such as `"SINAN-DENGUE"` remain supported; newly
-#'   added families use the official transfer-page acronym, such as
-#'   `"SINAN-ANIM"` or `"SINAN-TUBE"`.
+#' @param information_system SINAN file family represented by `data`. Preferred
+#'   values use readable names such as `"SINAN-DENGUE"` and
+#'   `"SINAN-TUBERCULOSE"`. All former acronym-based values remain accepted as
+#'   aliases. Use [sinan_information_systems()] to consult both forms.
 #' @param municipality_data Logical scalar. If `TRUE`, add municipality names
 #'   and available territorial attributes. The historical `MUNICIPIO` field is
 #'   preferred when present, followed by residence and notification fields.
 #'
 #' @examplesIf interactive() && curl::has_internet()
 #' process_sinan(sinan_dengue_sample, "SINAN-DENGUE")
-#' process_sinan(sinan_chagas_sample, "SINAN-CHAGAS")
+#' process_sinan(sinan_chagas_sample, "SINAN-DOENCA-DE-CHAGAS-AGUDA")
 #'
 #' @return A tibble. Dates are returned as `Date`, the notification year and
 #'   derived age components as integer, labelled categorical fields as factors,
@@ -129,7 +129,8 @@
 #' Saldanha, R. F. (2026). [SINAN -- Sistema de Informação de Agravos de
 #' Notificação](https://rfsaldanha.github.io/sis/sinan.html).
 #'
-#' @seealso [fetch_tabwin_dictionary()], [fetch_datasus()]
+#' @seealso [sinan_information_systems()], [fetch_tabwin_dictionary()],
+#'   [fetch_datasus()]
 #'
 #' @export
 process_sinan <- function(
@@ -141,6 +142,9 @@ process_sinan <- function(
     cli::cli_abort("{.arg data} must be a data frame.")
   }
   .datasus_assert_flag(municipality_data, "municipality_data")
+  information_system <- .sinan_resolve_information_system(
+    information_system
+  )
   sinan_types <- .sinan_information_systems()
   if (
     !is.character(information_system) ||
