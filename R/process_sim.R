@@ -156,7 +156,7 @@ process_sim <- function(
     cli::cli_abort("{.arg data} must be a data frame.")
   }
   .datasus_assert_flag(municipality_data, "municipality_data")
-  sim_types <- names(.tabwin_registry())
+  sim_types <- grep("^SIM-", names(.tabwin_registry()), value = TRUE)
   if (
     !is.character(information_system) ||
       length(information_system) != 1L ||

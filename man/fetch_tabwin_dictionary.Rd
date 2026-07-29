@@ -12,9 +12,10 @@ fetch_tabwin_dictionary(
 )
 }
 \arguments{
-\item{information_system}{SIM information system whose dictionary should be
-downloaded. One of \code{"SIM-DO"}, \code{"SIM-DOFET"}, \code{"SIM-DOEXT"},
-\code{"SIM-DOINF"}, or \code{"SIM-DOMAT"}.}
+\item{information_system}{Information system whose dictionary should be
+downloaded. Supported values include the five SIM mortality types,
+\code{"SINASC"} for files from 1996 onward, and \code{"SINASC-1994-1995"} for the
+original SINASC layout.}
 
 \item{timeout}{A positive numeric scalar. Download and connection timeout,
 in seconds.}
@@ -31,22 +32,23 @@ An object of class \code{microdatasus_tabwin_dictionary}. Its
 file.
 }
 \description{
-Downloads and parses the current TabWin CID-10 definition archive published
-by DataSUS for SIM files from 1996 onward. The archive, DEF metadata, and
-conversion tables used during processing are cached for the rest of the R
-session. CID-9 definitions are outside the scope of this version.
+Downloads and parses official TabWin definition archives published by
+DataSUS. Archive files, DEF metadata, and conversion tables used during
+processing are cached for the rest of the R session. SIM support is limited
+to CID-10 files; SINASC supports both its 1994-1995 and current layouts.
 }
 \section{Network access}{
 
-The first call for any supported SIM type in an R session downloads the
-current TabWin ZIP archive from DataSUS. All SIM types reuse this shared
-session cache unless \code{refresh = TRUE}.
+The first call for a supported archive in an R session downloads its TabWin
+ZIP from DataSUS. Systems that use the same archive reuse the shared session
+cache unless \code{refresh = TRUE}.
 }
 
 \examples{
 \dontshow{if (interactive() && curl::has_internet()) withAutoprint(\{ # examplesIf}
 dictionary <- fetch_tabwin_dictionary("SIM-DO")
 dictionary$definitions
+sinasc_dictionary <- fetch_tabwin_dictionary("SINASC")
 \dontshow{\}) # examplesIf}
 }
 \seealso{

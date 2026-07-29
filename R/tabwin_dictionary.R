@@ -23,6 +23,29 @@
     )
   })
   names(specs) <- sim_types
+
+  # The transfer portal publishes separate SINASC archives for the original
+  # 1994-1995 layout and the layout used from 1996 onward.
+  specs[["SINASC"]] <- list(
+    archive_key = "SINASC-1996",
+    information_system = "SINASC",
+    url = paste0(
+      "ftp://ftp.datasus.gov.br/dissemin/publicos/SINASC/1996_/",
+      "Auxiliar/Arq_Para_Tabulacao_A_Partir_1996.zip"
+    ),
+    definition = "/NASCIDO.def",
+    extract_all = TRUE
+  )
+  specs[["SINASC-1994-1995"]] <- list(
+    archive_key = "SINASC-1994-1995",
+    information_system = "SINASC-1994-1995",
+    url = paste0(
+      "ftp://ftp.datasus.gov.br/dissemin/publicos/SINASC/1994_1995/",
+      "Auxiliar/Arq_Para_Tabulacao_Ate_1995.zip"
+    ),
+    definition = "/NASC.DEF",
+    extract_all = TRUE
+  )
   specs
 }
 
@@ -109,9 +132,35 @@
   entries[[matches]]
 }
 
+.tabwin_filename_key <- function(path) {
+  # Preserve ASCII basenames while replacing undecodable bytes in unrelated
+  # legacy filenames, which prevents locale-dependent matching failures.
+  converted <- iconv(
+    basename(path),
+    from = "",
+    to = "UTF-8",
+    sub = "?"
+  )
+  tolower(converted)
+}
+
 .tabwin_extract_entry <- function(dictionary, file_name) {
-  # Conversion files are extracted only when process_sim() actually needs
-  # them. The extracted copy remains in the session cache directory.
+  # Conversion files are extracted only when a processor actually needs them.
+  # The extracted copy remains in the session cache directory.
+  if (isTRUE(dictionary$extracted_all)) {
+    # Some official archives have legacy-encoded directory names. They are
+    # flattened once at download time, so locate files case-insensitively.
+    candidates <- list.files(dictionary$cache_dir, full.names = TRUE)
+    matches <- which(
+      .tabwin_filename_key(candidates) == .tabwin_filename_key(file_name)
+    )
+    if (length(matches) != 1L || file.size(candidates[[matches]]) == 0) {
+      cli::cli_abort(
+        "The extracted TabWin file {.file {file_name}} is missing or ambiguous."
+      )
+    }
+    return(candidates[[matches]])
+  }
   entry <- .tabwin_find_entry(
     dictionary$entries,
     paste0(dictionary$definition_dir, "/", file_name)
@@ -271,8 +320,9 @@
     map_codes <- c(map_codes, codes)
     map_labels <- c(map_labels, rep(labels[[key]], length(codes)))
   }
-  # TabWin resolves duplicate input codes using their first occurrence.
-  keep <- !duplicated(map_codes)
+  # Later, more specific categories override broad catch-all ranges declared
+  # earlier (for example 1 and 2 override the legacy SEXO range 0-9).
+  keep <- !duplicated(map_codes, fromLast = TRUE)
   map <- map_labels[keep]
   names(map) <- map_codes[keep]
   if (!length(map)) {
@@ -553,14 +603,15 @@
 
 #' Download a TabWin data dictionary
 #'
-#' Downloads and parses the current TabWin CID-10 definition archive published
-#' by DataSUS for SIM files from 1996 onward. The archive, DEF metadata, and
-#' conversion tables used during processing are cached for the rest of the R
-#' session. CID-9 definitions are outside the scope of this version.
+#' Downloads and parses official TabWin definition archives published by
+#' DataSUS. Archive files, DEF metadata, and conversion tables used during
+#' processing are cached for the rest of the R session. SIM support is limited
+#' to CID-10 files; SINASC supports both its 1994-1995 and current layouts.
 #'
-#' @param information_system SIM information system whose dictionary should be
-#'   downloaded. One of `"SIM-DO"`, `"SIM-DOFET"`, `"SIM-DOEXT"`,
-#'   `"SIM-DOINF"`, or `"SIM-DOMAT"`.
+#' @param information_system Information system whose dictionary should be
+#'   downloaded. Supported values include the five SIM mortality types,
+#'   `"SINASC"` for files from 1996 onward, and `"SINASC-1994-1995"` for the
+#'   original SINASC layout.
 #' @param timeout A positive numeric scalar. Download and connection timeout,
 #'   in seconds.
 #' @param refresh Logical scalar. If `TRUE`, discard the session cache and
@@ -573,13 +624,14 @@
 #'   file.
 #'
 #' @section Network access:
-#' The first call for any supported SIM type in an R session downloads the
-#' current TabWin ZIP archive from DataSUS. All SIM types reuse this shared
-#' session cache unless `refresh = TRUE`.
+#' The first call for a supported archive in an R session downloads its TabWin
+#' ZIP from DataSUS. Systems that use the same archive reuse the shared session
+#' cache unless `refresh = TRUE`.
 #'
 #' @examplesIf interactive() && curl::has_internet()
 #' dictionary <- fetch_tabwin_dictionary("SIM-DO")
 #' dictionary$definitions
+#' sinasc_dictionary <- fetch_tabwin_dictionary("SINASC")
 #'
 #' @seealso [process_sim()], [fetch_datasus()]
 #' @export
@@ -671,23 +723,45 @@ fetch_tabwin_dictionary <- function(
     archive_created <- TRUE
     complete <- TRUE
   }
-  # Initially extract only the DEF. Referenced CNV/DBF files are extracted
-  # lazily by .tabwin_read_conversion().
-  definition_entry <- .tabwin_find_entry(
-    archive_cache$entries,
-    spec$definition
-  )
-  extracted <- zip::unzip(
-    zipfile = archive_cache$archive,
-    files = definition_entry,
-    exdir = archive_cache$cache_dir,
-    junkpaths = TRUE,
-    overwrite = TRUE
-  )
-  definition_path <- file.path(
-    archive_cache$cache_dir,
-    basename(definition_entry)
-  )
+  extract_all <- isTRUE(spec$extract_all)
+  if (extract_all) {
+    # Base R's internal unzip handles the legacy directory encodings used by
+    # some DataSUS packages. Flattening is safe for these single-folder ZIPs.
+    extracted <- suppressWarnings(utils::unzip(
+      zipfile = archive_cache$archive,
+      exdir = archive_cache$cache_dir,
+      junkpaths = TRUE,
+      overwrite = TRUE
+    ))
+    definition_entry <- spec$definition
+    candidates <- list.files(archive_cache$cache_dir, full.names = TRUE)
+    definition_matches <- which(
+      .tabwin_filename_key(candidates) ==
+        .tabwin_filename_key(spec$definition)
+    )
+    definition_path <- if (length(definition_matches) == 1L) {
+      candidates[[definition_matches]]
+    } else {
+      file.path(archive_cache$cache_dir, basename(spec$definition))
+    }
+  } else {
+    # Archives with portable paths keep lazy extraction of CNV/DBF files.
+    definition_entry <- .tabwin_find_entry(
+      archive_cache$entries,
+      spec$definition
+    )
+    extracted <- zip::unzip(
+      zipfile = archive_cache$archive,
+      files = definition_entry,
+      exdir = archive_cache$cache_dir,
+      junkpaths = TRUE,
+      overwrite = TRUE
+    )
+    definition_path <- file.path(
+      archive_cache$cache_dir,
+      basename(definition_entry)
+    )
+  }
   if (!length(extracted) || !file.exists(definition_path)) {
     if (archive_created) {
       .tabwin_clear_cache(key)
@@ -706,6 +780,7 @@ fetch_tabwin_dictionary <- function(
       entries = archive_cache$entries,
       definition_dir = dirname(gsub("\\\\", "/", definition_entry)),
       cache_dir = archive_cache$cache_dir,
+      extracted_all = extract_all,
       conversions = new.env(parent = emptyenv())
     ),
     class = "microdatasus_tabwin_dictionary"

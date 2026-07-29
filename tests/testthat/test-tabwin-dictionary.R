@@ -1,23 +1,3 @@
-tabwin_cnv_line <- function(number, label, codes) {
-  paste0(
-    "   ",
-    sprintf("%4d", number),
-    "  ",
-    label,
-    strrep(" ", 50L - nchar(label, type = "chars")),
-    " ",
-    codes
-  )
-}
-
-write_tabwin_text <- function(path, lines) {
-  writeLines(
-    iconv(lines, from = "UTF-8", to = "windows-1252"),
-    path,
-    useBytes = TRUE
-  )
-}
-
 create_tabwin_fixture <- function() {
   root <- tempfile("tabwin-fixture-")
   tabdo <- file.path(root, "OBITOS_CID10_TAB", "tabdo")
@@ -83,19 +63,6 @@ create_tabwin_fixture <- function() {
   archive
 }
 
-restore_empty_tabwin_cache <- function() {
-  microdatasus:::.tabwin_clear_cache()
-  for (information_system in c(
-    "SIM-DO", "SIM-DOFET", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT"
-  )) {
-    assign(
-      information_system,
-      .empty_tabwin_dictionary(information_system),
-      envir = microdatasus:::.tabwin_cache
-    )
-  }
-}
-
 test_that("process_sim appends its data type argument compatibly", {
   expect_identical(
     formals(process_sim),
@@ -109,7 +76,11 @@ test_that("process_sim appends its data type argument compatibly", {
 
 test_that("TabWin registry covers every SIM type supported by fetch_datasus", {
   expect_setequal(
-    names(microdatasus:::.tabwin_registry()),
+    grep(
+      "^SIM-",
+      names(microdatasus:::.tabwin_registry()),
+      value = TRUE
+    ),
     c("SIM-DO", "SIM-DOFET", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT")
   )
 })
@@ -173,6 +144,27 @@ test_that("CNV parser reads labels, aliases, and numeric ranges", {
   )
 })
 
+test_that("specific CNV categories override earlier catch-all ranges", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  write_tabwin_text(
+    path,
+    c(
+      "3 1",
+      tabwin_cnv_line(3, "Ignorado", "0-9"),
+      tabwin_cnv_line(1, "Masculino", "1"),
+      tabwin_cnv_line(2, "Feminino", "2")
+    )
+  )
+
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+
+  expect_identical(
+    unname(conversion$map[c("1", "2", "9")]),
+    c("Masculino", "Feminino", "Ignorado")
+  )
+})
+
 test_that("DBF relationships use the description field declared by DEF", {
   archive <- create_tabwin_fixture()
   on.exit(unlink(archive), add = TRUE)
@@ -225,7 +217,11 @@ test_that("all SIM types share one TabWin archive download", {
   microdatasus:::.tabwin_clear_cache()
   on.exit(restore_empty_tabwin_cache(), add = TRUE)
 
-  sim_types <- names(microdatasus:::.tabwin_registry())
+  sim_types <- grep(
+    "^SIM-",
+    names(microdatasus:::.tabwin_registry()),
+    value = TRUE
+  )
   dictionaries <- lapply(
     sim_types,
     fetch_tabwin_dictionary,
@@ -352,7 +348,12 @@ test_that("process_sim handles every SIM type and legacy numeric names", {
   microdatasus:::.tabwin_clear_cache()
   on.exit(restore_empty_tabwin_cache(), add = TRUE)
 
-  for (information_system in names(microdatasus:::.tabwin_registry())) {
+  sim_types <- grep(
+    "^SIM-",
+    names(microdatasus:::.tabwin_registry()),
+    value = TRUE
+  )
+  for (information_system in sim_types) {
     messages <- capture_messages({
       result <- process_sim(
         data.frame(

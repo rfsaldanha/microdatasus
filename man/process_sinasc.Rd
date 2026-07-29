@@ -11,31 +11,33 @@ process_sinasc(data, municipality_data = TRUE)
 \code{information_system = "SINASC"}, or a compatible layout.}
 
 \item{municipality_data}{Logical scalar. If \code{TRUE}, add municipality names
-and available territorial attributes for supported municipality-code
-columns.}
+and available territorial attributes for the residence municipality.}
 }
 \value{
-A tibble with character columns. Supported codes are replaced with
-descriptions, and municipality fields are added when requested and
-available.
+A tibble. Dates are returned as \code{Date}, counts and measurements as
+integer, labelled categorical fields as factors, and identifiers and free
+text as character.
 }
 \description{
-Recodes supported SINASC live-birth fields into descriptive values and
-normalizes escaped Unicode text. Codes without a documented conversion are
-retained.
+Uses the official DataSUS TabWin definitions to label SINASC live-birth
+fields. The processor supports both the original 1994-1995 layout and the
+layout used from 1996 onward, including data sets that contain columns from
+both periods. Required dictionaries are downloaded on first use and cached
+for the rest of the R session.
 }
 \details{
-Columns not explicitly recoded are retained, but Unicode normalization is
-applied to every column and consequently the returned tibble contains
-character columns.
+Codes absent from the official conversion table remain visible as factor
+levels. Dates, integer quantities, categorical variables, and identifiers
+retain distinct types.
 }
 \examples{
+\dontshow{if (interactive() && curl::has_internet()) withAutoprint(\{ # examplesIf}
 process_sinasc(sinasc_sample)
-
+\dontshow{\}) # examplesIf}
 }
 \references{
 Saldanha, R. F. (2026). \href{https://rfsaldanha.github.io/sis/sinasc.html}{SINASC -- Sistema de Informação sobre Nascidos Vivos}.
 }
 \seealso{
-\code{\link[=fetch_datasus]{fetch_datasus()}}
+\code{\link[=fetch_tabwin_dictionary]{fetch_tabwin_dictionary()}}, \code{\link[=fetch_datasus]{fetch_datasus()}}
 }
