@@ -16,7 +16,8 @@ A data frame with character columns \code{CNES} (establishment code) and
 }
 \description{
 Downloads and reads the current CNES establishment-name table distributed by
-DataSUS. \code{\link[=process_cnes]{process_cnes()}} can use this table to add establishment names.
+DataSUS. This remains available as a standalone helper; \code{\link[=process_cnes]{process_cnes()}}
+reads the same DBF through its session-cached TabWin dictionary.
 }
 \section{Network access}{
 

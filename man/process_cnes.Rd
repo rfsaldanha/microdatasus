@@ -12,43 +12,42 @@ process_cnes(
 )
 }
 \arguments{
-\item{data}{A data frame returned by \code{\link[=fetch_datasus]{fetch_datasus()}} or another data frame
-with a compatible CNES layout.}
+\item{data}{A data frame returned by \code{\link[=fetch_datasus]{fetch_datasus()}} for a supported CNES
+file family, or another data frame with a compatible layout.}
 
-\item{information_system}{A single character string: \code{"CNES-ST"} for
-establishments or \code{"CNES-PF"} for professionals.}
+\item{information_system}{CNES file family represented by \code{data}. If
+omitted, \code{"CNES-ST"} is used, preserving the first value of the historical
+default.}
 
-\item{nomes}{Logical scalar. For \code{"CNES-ST"} data, if \code{TRUE}, download the
-current CADGER table with \code{\link[=fetch_cadger]{fetch_cadger()}} and add establishment trade
-names. This requires network access. It has no effect for \code{"CNES-PF"}.}
+\item{nomes}{Logical scalar. If \code{TRUE}, add \code{FANTASIA} using the
+establishment-name DBF declared by the official definition. The \code{CNES}
+identifier itself is preserved.}
 
 \item{municipality_data}{Logical scalar. If \code{TRUE}, add municipality names
-and available territorial attributes for supported municipality-code
-columns.}
+and available territorial attributes. Professional files prefer
+\code{UFMUNRES}; other layouts use the establishment field \code{CODUFMUN}.}
 }
 \value{
-A tibble with character columns. Supported codes are replaced with
-descriptions, and requested lookup fields are added where applicable.
+A tibble. Full dates are returned as \code{Date}, quantities as integer,
+labelled categorical fields as factors, and identifiers, reference months,
+and free text as character.
 }
 \description{
-Recodes supported CNES fields into descriptive values and normalizes escaped
-Unicode text. Establishment (\code{"CNES-ST"}) and professional (\code{"CNES-PF"})
-records have different layouts and are processed accordingly.
-}
-\details{
-Columns not explicitly recoded are retained, but Unicode normalization is
-applied to every column and consequently the returned tibble contains
-character columns. Lookup joins can add establishment, occupation, and
-municipality information.
+Uses the official DataSUS TabWin definitions to label all thirteen CNES file
+families supported by \code{\link[=fetch_datasus]{fetch_datasus()}}. The shared ZIP is downloaded on
+first use and cached for the rest of the R session. For \code{"CNES-SR"}, the
+service/classification definition is selected by record competence because
+DataSUS changed that table in March 2008.
 }
 \examples{
+\dontshow{if (interactive() && curl::has_internet()) withAutoprint(\{ # examplesIf}
 process_cnes(cnes_st_sample, information_system = "CNES-ST")
 process_cnes(cnes_pf_sample, information_system = "CNES-PF")
-
+\dontshow{\}) # examplesIf}
 }
 \references{
 Saldanha, R. F. (2026). \href{https://rfsaldanha.github.io/sis/cnes.html}{CNES -- Cadastro Nacional de Estabelecimentos de Saúde}.
 }
 \seealso{
-\code{\link[=fetch_datasus]{fetch_datasus()}}, \code{\link[=fetch_cadger]{fetch_cadger()}}
+\code{\link[=fetch_tabwin_dictionary]{fetch_tabwin_dictionary()}}, \code{\link[=fetch_datasus]{fetch_datasus()}}, \code{\link[=fetch_cadger]{fetch_cadger()}}
 }

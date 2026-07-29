@@ -17,7 +17,9 @@ downloaded. Supported values include the five SIM mortality types,
 \code{"SINASC"} for files from 1996 onward, \code{"SINASC-1994-1995"} for the
 original SINASC layout, and \code{"SIH-RD"}, \code{"SIH-RJ"}, \code{"SIH-SP"}, and
 \code{"SIH-ER"} and the twelve \code{"SIA-*"} file families. Historical SIH and
-SIA-PA keys are selected internally by their processing functions.}
+SIA-PA keys are selected internally by their processing functions. All
+thirteen \code{"CNES-*"} families are also supported; the historical CNES-SR
+key is selected internally by \code{\link[=process_cnes]{process_cnes()}}.}
 
 \item{timeout}{A positive numeric scalar. Download and connection timeout,
 in seconds.}
@@ -38,8 +40,9 @@ Downloads and parses official TabWin definition archives published by
 DataSUS. Archive files, DEF metadata, and conversion tables used during
 processing are cached for the rest of the R session. SIM support is limited
 to CID-10 files; SINASC supports both its 1994-1995 and current layouts; and
-SIH supports its current and historical RD/RJ definitions; and SIA supports
-all twelve current layouts plus the three historical PA definitions.
+SIH supports its current and historical RD/RJ definitions; SIA supports all
+twelve current layouts plus the three historical PA definitions; and CNES
+supports all thirteen layouts plus both service-classification periods.
 }
 \section{Network access}{
 
@@ -55,9 +58,10 @@ dictionary$definitions
 sinasc_dictionary <- fetch_tabwin_dictionary("SINASC")
 sih_dictionary <- fetch_tabwin_dictionary("SIH-RD")
 sia_dictionary <- fetch_tabwin_dictionary("SIA-PA")
+cnes_dictionary <- fetch_tabwin_dictionary("CNES-ST")
 \dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=process_sim]{process_sim()}}, \code{\link[=process_sinasc]{process_sinasc()}}, \code{\link[=process_sih]{process_sih()}},
-\code{\link[=process_sia]{process_sia()}}, \code{\link[=fetch_datasus]{fetch_datasus()}}
+\code{\link[=process_sia]{process_sia()}}, \code{\link[=process_cnes]{process_cnes()}}, \code{\link[=fetch_datasus]{fetch_datasus()}}
 }

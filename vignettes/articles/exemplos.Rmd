@@ -155,12 +155,15 @@ padrão. Quando `nome_proced = TRUE`, a função usa a tabela de procedimentos
 declarada no DEF correspondente. Para PA anterior a 2008, a definição correta
 é selecionada automaticamente pela competência de cada registro.
 
-## CNES — estabelecimentos e profissionais
+## CNES — treze layouts cadastrais
 
 O CNES é um cadastro atualizado continuamente. Cada arquivo mensal representa
 uma posição do cadastro, não um conjunto de eventos ocorridos durante o mês. O
 [capítulo sobre o CNES](https://rfsaldanha.github.io/sis/cnes.html) discute
 estabelecimentos, profissionais, leitos, equipamentos e mudanças cadastrais.
+`process_cnes()` aceita os treze tipos disponíveis em `fetch_datasus()`:
+`LT`, `ST`, `DC`, `EQ`, `SR`, `HB`, `PF`, `EP`, `RC`, `IN`, `EE`, `EF` e
+`GM`, todos com o prefixo `CNES-`.
 
 Estabelecimentos:
 
@@ -199,8 +202,10 @@ cnes_pf <- process_cnes(
 )
 ```
 
-Em `CNES-ST`, `nomes = TRUE` baixa a tabela CADGER atual para acrescentar o
-nome fantasia do estabelecimento.
+Com `nomes = TRUE`, a função acrescenta o nome fantasia do estabelecimento
+usando a tabela CADGER declarada no DEF. O ZIP do TabWin e as conversões usadas
+ficam em cache durante a sessão. Para `CNES-SR`, a definição anterior ou
+posterior a março de 2008 é escolhida pela competência de cada registro.
 
 ## SINAN — agravos de notificação
 

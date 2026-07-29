@@ -37,6 +37,7 @@ write_tabwin_text <- function(path, lines) {
       information_system = information_system,
       archive_key = spec$archive_key,
       definitions = .empty_tabwin_definitions,
+      numeric_fields = character(),
       conversions = new.env(parent = emptyenv())
     ),
     class = "microdatasus_tabwin_dictionary"

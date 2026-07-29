@@ -31,7 +31,6 @@ LazyData: true
 LazyDataCompression: xz
 Roxygen: list(markdown = TRUE)
 Imports: 
-    checkmate,
     cli,
     curl,
     data.table,

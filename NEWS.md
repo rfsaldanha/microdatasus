@@ -56,6 +56,11 @@
 
 ## Processing, documentation, and testing
 
+* Rebuilds `process_cnes()` from the official DataSUS TabWin definitions. It
+  now covers all thirteen downloadable CNES layouts, selects the historical or
+  current service-classification definition row by row, shares the large
+  `TAB_CNES.zip` download for the R session, reads numeric increment metadata
+  from DEF, and preserves identifiers and all existing arguments.
 * Rebuilds `process_sia()` from the official DataSUS TabWin definitions. It now
   covers all twelve downloadable SIA layouts, selects three historical PA
   definitions by record competence, shares archives in the session cache, and

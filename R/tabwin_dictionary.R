@@ -135,6 +135,44 @@
       definition = historical_sia[[period]][["definition"]]
     )
   }
+
+  # CNES publishes all thirteen file families in one TabWin archive. Service
+  # classifications changed in March 2008, and both definitions remain in the
+  # current ZIP, which lets process_cnes() handle old and current rows without
+  # a second download.
+  cnes_url <- paste0(
+    "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/",
+    "Auxiliar/TAB_CNES.zip"
+  )
+  cnes_definitions <- c(
+    "CNES-LT" = "Leitos_Especialidade.def",
+    "CNES-ST" = "Estabelecimento.def",
+    "CNES-DC" = "DadosComplementares.def",
+    "CNES-EQ" = "Equipamento.def",
+    "CNES-SR" = "Servico_Especializado_200803_.def",
+    "CNES-HB" = "Habilitacao.def",
+    "CNES-PF" = "Profissional.def",
+    "CNES-EP" = "Equipes.def",
+    "CNES-RC" = "Regras_Contratuais.def",
+    "CNES-IN" = "Incentivos.def",
+    "CNES-EE" = "Estabel_Ensino.def",
+    "CNES-EF" = "Estabel_Filantropico.def",
+    "CNES-GM" = "Gestao_de_Metas.def"
+  )
+  for (information_system in names(cnes_definitions)) {
+    specs[[information_system]] <- list(
+      archive_key = "CNES-200508",
+      information_system = information_system,
+      url = cnes_url,
+      definition = unname(cnes_definitions[[information_system]])
+    )
+  }
+  specs[["CNES-SR-2005-08-2008-02"]] <- list(
+    archive_key = "CNES-200508",
+    information_system = "CNES-SR-2005-08-2008-02",
+    url = cnes_url,
+    definition = "Servico_Especializado_200508_200802.def"
+  )
   specs
 }
 
@@ -206,6 +244,28 @@
     )
   }
   do.call(rbind, records)
+}
+
+.tabwin_parse_increment_fields <- function(path) {
+  lines <- .tabwin_read_text(path)
+  fields <- vapply(lines, function(line) {
+    # TabWin's I command declares a numeric increment/frequency. It is the
+    # closest type metadata available in DEF and avoids hand-maintained CNES
+    # quantity lists. Headings and expressions are discarded below.
+    if (!nzchar(line) || toupper(substr(line, 1L, 1L)) != "I") {
+      return(NA_character_)
+    }
+    pieces <- strsplit(line, ",", fixed = TRUE)[[1L]]
+    if (length(pieces) < 2L) {
+      return(NA_character_)
+    }
+    field <- toupper(trimws(pieces[[2L]]))
+    if (!grepl("^[A-Z][A-Z0-9_]*$", field)) {
+      return(NA_character_)
+    }
+    field
+  }, character(1))
+  unique(fields[!is.na(fields)])
 }
 
 .tabwin_find_entry <- function(entries, suffix) {
@@ -716,15 +776,18 @@
 #' DataSUS. Archive files, DEF metadata, and conversion tables used during
 #' processing are cached for the rest of the R session. SIM support is limited
 #' to CID-10 files; SINASC supports both its 1994-1995 and current layouts; and
-#' SIH supports its current and historical RD/RJ definitions; and SIA supports
-#' all twelve current layouts plus the three historical PA definitions.
+#' SIH supports its current and historical RD/RJ definitions; SIA supports all
+#' twelve current layouts plus the three historical PA definitions; and CNES
+#' supports all thirteen layouts plus both service-classification periods.
 #'
 #' @param information_system Information system whose dictionary should be
 #'   downloaded. Supported values include the five SIM mortality types,
 #'   `"SINASC"` for files from 1996 onward, `"SINASC-1994-1995"` for the
 #'   original SINASC layout, and `"SIH-RD"`, `"SIH-RJ"`, `"SIH-SP"`, and
 #'   `"SIH-ER"` and the twelve `"SIA-*"` file families. Historical SIH and
-#'   SIA-PA keys are selected internally by their processing functions.
+#'   SIA-PA keys are selected internally by their processing functions. All
+#'   thirteen `"CNES-*"` families are also supported; the historical CNES-SR
+#'   key is selected internally by [process_cnes()].
 #' @param timeout A positive numeric scalar. Download and connection timeout,
 #'   in seconds.
 #' @param refresh Logical scalar. If `TRUE`, discard the session cache and
@@ -747,9 +810,10 @@
 #' sinasc_dictionary <- fetch_tabwin_dictionary("SINASC")
 #' sih_dictionary <- fetch_tabwin_dictionary("SIH-RD")
 #' sia_dictionary <- fetch_tabwin_dictionary("SIA-PA")
+#' cnes_dictionary <- fetch_tabwin_dictionary("CNES-ST")
 #'
 #' @seealso [process_sim()], [process_sinasc()], [process_sih()],
-#'   [process_sia()], [fetch_datasus()]
+#'   [process_sia()], [process_cnes()], [fetch_datasus()]
 #' @export
 fetch_tabwin_dictionary <- function(
   information_system = "SIM-DO",
@@ -892,6 +956,7 @@ fetch_tabwin_dictionary <- function(
       source = archive_cache$source,
       downloaded_at = archive_cache$downloaded_at,
       definitions = .tabwin_parse_def(definition_path),
+      numeric_fields = .tabwin_parse_increment_fields(definition_path),
       archive = archive_cache$archive,
       entries = archive_cache$entries,
       definition_dir = dirname(gsub("\\\\", "/", definition_entry)),
