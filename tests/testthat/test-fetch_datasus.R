@@ -97,6 +97,19 @@ test_that("listings are parsed for all filename families", {
   expect_equal(sim$period, c("2022", "2022"))
   expect_equal(sim$uf, c("AC", "SP"))
 
+  # National SIM subsets share one FTP directory but have distinct prefixes.
+  for (prefix in c("DOFET", "DOEXT", "DOINF", "DOMAT")) {
+    information_system <- paste0("SIM-", prefix)
+    national_sim <- microdatasus:::.datasus_parse_listing(
+      paste0(prefix, "24.dbc\n"),
+      registry[[information_system]]$repositories[[1L]],
+      registry[[information_system]]
+    )
+    expect_equal(national_sim$file, paste0(prefix, "24.dbc"))
+    expect_equal(national_sim$period, "2024")
+    expect_true(is.na(national_sim$uf))
+  }
+
   sih <- microdatasus:::.datasus_parse_listing(
     "RDAC2401.dbc\nRDAC2402.dbc\n",
     registry[["SIH-RD"]]$repositories[[1L]],

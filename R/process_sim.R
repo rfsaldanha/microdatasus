@@ -1,714 +1,232 @@
+# Fields whose raw codes are replaced by the most appropriate direct
+# conversion declared in the current SIM CID-10 death-certificate DEF.
+.sim_categorical_fields <- c(
+  "ORIGEM", "CODINST", "TIPOBITO", "NATURAL", "SEXO", "RACACOR", "ESTCIV",
+  "ESC", "ESC2010", "SERIESCFAL", "OCUP", "LOCOCOR", "CODESTAB", "ESCMAE",
+  "ESCFALAGR1", "ESCMAE2010", "SERIESCMAE", "ESCMAEAGR1", "OCUPMAE",
+  "GRAVIDEZ", "GESTACAO",
+  "PARTO", "OBITOPARTO", "OBITOGRAV", "OBITOPUERP", "ASSISTMED",
+  "EXAME", "CIRURGIA", "NECROPSIA", "CIRCOBITO", "ACIDTRAB",
+  "FONTE", "TPPOS", "ATESTANTE", "FONTEINV", "TPMORTEOCO",
+  "CAUSAMAT", "STDONOVA", "STDOEPIDEM", "TPOBITOCOR", "MORTEPARTO",
+  "STCODIFICA", "CODIFICADO", "RETROALIM", "TPRESGINFO",
+  "TPNIVELINV", "ALTCAUSA",
+  # Names used by the oldest national fetal-death files.
+  "OCUPACAO", "OCUPPAI", "INSTRUCAO", "INSTRPAI", "INSTRMAE",
+  "TIPOGRAV", "TIPOPARTO", "TIPOVIOL", "FONTINFO"
+)
+
+# These fields contain counts or measurements rather than identifiers.
+.sim_integer_fields <- c(
+  "CONTADOR", "IDADEMAE", "QTDFILVIVO", "QTDFILMORT", "SEMAGESTAC",
+  "PESO", "DIFDATA", "NUDIASOBCO", "NUDIASOBIN", "NUDIASINF",
+  "FILHVIVOS", "FILHMORT", "SEMANGEST", "PESONASC", "QTDGRAVIDA",
+  "QTDPARTNOR", "QTDPARTCES", "QTDABORTO", "QTDPRENAT", "NUIDADEGES",
+  "IDADEGESPR", "IDADEGESOB"
+)
+
+# Legacy variable names are looked up in the modern DEF under the equivalent
+# current SIM field. Output column names are deliberately left unchanged.
+.sim_dictionary_aliases <- c(
+  "OCUPACAO" = "OCUP",
+  "OCUPPAI" = "OCUP",
+  "INSTRUCAO" = "ESC",
+  "INSTRPAI" = "ESC",
+  "INSTRMAE" = "ESCMAE",
+  "TIPOGRAV" = "GRAVIDEZ",
+  "TIPOPARTO" = "PARTO",
+  "TIPOVIOL" = "CIRCOBITO",
+  "FONTINFO" = "FONTE"
+)
+
+.sim_find_fields <- function(data, fields) {
+  # DBC field names are normally uppercase, but early files contain lowercase
+  # names such as "contador". Match without renaming user-visible columns.
+  indexes <- match(unique(toupper(fields)), toupper(names(data)), nomatch = 0L)
+  names(data)[indexes[indexes > 0L]]
+}
+
+.sim_as_integer <- function(x) {
+  if (is.integer(x)) {
+    return(x)
+  }
+  suppressWarnings(as.integer(as.character(x)))
+}
+
+.sim_as_date <- function(x) {
+  if (inherits(x, "Date")) {
+    return(x)
+  }
+  as.Date(as.character(x), format = "%d%m%Y")
+}
+
+.sim_add_age_fields <- function(data) {
+  if (!"IDADE" %in% names(data)) {
+    return(data)
+  }
+  # SIM stores age as a unit digit followed by a two-digit value:
+  # 0 minutes, 1 hours, 2 days, 3 months, 4 years, and 5 years + 100.
+  age <- as.character(data$IDADE)
+  age[age %in% c("000", "999")] <- NA_character_
+  unit <- substring(age, 1L, 1L)
+  value <- suppressWarnings(as.integer(substring(age, 2L, 3L)))
+  data$IDADE <- age
+  data$IDADEminutos <- ifelse(unit == "0", value, NA_integer_)
+  data$IDADEhoras <- ifelse(unit == "1", value, NA_integer_)
+  data$IDADEdias <- ifelse(unit == "2", value, NA_integer_)
+  data$IDADEmeses <- ifelse(unit == "3", value, NA_integer_)
+  data$IDADEanos <- ifelse(
+    unit == "4",
+    value,
+    ifelse(unit == "5", value + 100L, NA_integer_)
+  )
+  data
+}
+
+.sim_add_municipality_data <- function(data) {
+  if (!"CODMUNRES" %in% names(data)) {
+    return(data)
+  }
+  # Work on a local copy to avoid mutating the package data object.
+  municipality <- get("tabMun", envir = asNamespace("microdatasus"))
+  names(municipality)[[1L]] <- "CODMUNRES"
+  municipality$CODMUNRES <- as.character(municipality$CODMUNRES)
+  dplyr::left_join(data, municipality, by = "CODMUNRES")
+}
+
+.sim_normalize_text <- function(data) {
+  # Normalize only textual data. Dates and numeric columns must keep the types
+  # assigned by the processing steps below.
+  for (name in names(data)) {
+    column <- data[[name]]
+    if (is.character(column)) {
+      data[[name]] <- stringi::stri_unescape_unicode(
+        stringi::stri_enc_toutf8(column)
+      )
+    } else if (is.factor(column)) {
+      levels(column) <- stringi::stri_unescape_unicode(
+        stringi::stri_enc_toutf8(levels(column))
+      )
+      data[[name]] <- droplevels(column)
+    }
+  }
+  data
+}
+
 #' Prepare SIM mortality microdata
 #'
-#' Recodes supported SIM mortality fields into descriptive values and normalizes
-#' escaped Unicode text. Codes without a documented conversion are retained.
+#' Uses the current official DataSUS TabWin CID-10 dictionary to label
+#' supported SIM mortality fields from 1996 onward. The dictionary is
+#' downloaded on first use and cached for the rest of the R session. Dates,
+#' integer quantities, categorical variables, and identifier fields retain
+#' distinct and consistent types.
 #'
-#' Columns not explicitly recoded are retained, but Unicode normalization is
-#' applied to every column and consequently the returned tibble contains
-#' character columns.
+#' Codes not covered by the current TabWin conversion are retained as factor
+#' levels instead of being silently discarded. SIM files and definitions that
+#' use CID-9 are outside the scope of this version.
 #'
-#' @param data A data frame returned by [fetch_datasus()] for a SIM mortality
-#'   system, or another data frame with a compatible layout.
+#' @param data A data frame returned by [fetch_datasus()] for a supported SIM
+#'   mortality type, or another data frame with a compatible layout.
 #' @param municipality_data Logical scalar. If `TRUE`, add municipality names
-#'   and available territorial attributes for supported municipality-code
-#'   columns.
+#'   and available territorial attributes for `CODMUNRES`.
+#' @param information_system SIM data type represented by `data`. One of
+#'   `"SIM-DO"`, `"SIM-DOFET"`, `"SIM-DOEXT"`, `"SIM-DOINF"`, or
+#'   `"SIM-DOMAT"`. The default preserves the previous `process_sim()` call.
 #'
-#' @examples
+#' @examplesIf interactive() && curl::has_internet()
 #' process_sim(sim_do_sample)
 #'
-#' @return A tibble with character columns. Supported codes are replaced with
-#'   descriptions, and municipality fields are added when requested and
-#'   available.
+#' @return A tibble. Dates are returned as `Date`, quantities as integer,
+#'   labelled categorical fields as factors, and identifiers and free text as
+#'   character.
 #'
 #' @references
 #' Saldanha, R. F. (2026). [SIM -- Sistema de Informação sobre
 #' Mortalidade](https://rfsaldanha.github.io/sis/sim.html).
 #'
-#' @seealso [fetch_datasus()]
+#' @seealso [fetch_tabwin_dictionary()], [fetch_datasus()]
 #'
 #' @export
-
-process_sim <- function(data, municipality_data = TRUE) {
-  # Variables names
-  variables_names <- names(data)
-
-  # Use dtplyr
-  # data <- dtplyr::lazy_dt(data)
-
-  # CODINST
-  if ("CODINST" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        CODINST = dplyr::recode_values(
-          .data$CODINST,
-          "E" ~ "Estadual",
-          "R" ~ "Regional",
-          "M" ~ "Municipal",
-          default = .data$CODINST
-        )
-      ) %>%
-      dplyr::mutate(CODINST = as.factor(.data$CODINST))
+process_sim <- function(
+  data,
+  municipality_data = TRUE,
+  information_system = "SIM-DO"
+) {
+  if (!is.data.frame(data)) {
+    cli::cli_abort("{.arg data} must be a data frame.")
+  }
+  .datasus_assert_flag(municipality_data, "municipality_data")
+  sim_types <- names(.tabwin_registry())
+  if (
+    !is.character(information_system) ||
+      length(information_system) != 1L ||
+      is.na(information_system) ||
+      !information_system %in% sim_types
+  ) {
+    cli::cli_abort(
+      "{.arg information_system} must be one of: {.val {sim_types}}."
+    )
   }
 
-  # TIPOBITO
-  if ("TIPOBITO" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        TIPOBITO = dplyr::recode_values(
-          .data$TIPOBITO,
-          "0" ~ NA,
-          "9" ~ NA,
-          "1" ~ "Fetal",
-          "2" ~ "N\\u00e3o Fetal",
-          default = .data$TIPOBITO
-        )
-      ) %>%
-      dplyr::mutate(TIPOBITO = as.factor(.data$TIPOBITO))
+  result <- tibble::as_tibble(data)
+  result <- .sim_normalize_text(result)
+
+  categorical_fields <- .sim_find_fields(result, .sim_categorical_fields)
+  if (length(categorical_fields)) {
+    # The first call downloads the archive; later calls retrieve this object
+    # and all already-parsed maps from the session cache.
+    dictionary <- fetch_tabwin_dictionary(information_system)
   }
 
-  # DTOBITO
-  if ("DTOBITO" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(DTOBITO = as.Date(.data$DTOBITO, format = "%d%m%Y"))
-  }
-
-  # NATURAL
-  if ("NATURAL" %in% variables_names) {
-    colnames(tabNaturalidade)[1] <- "NATURAL"
-    data <- data %>%
-      dplyr::left_join(tabNaturalidade, by = "NATURAL") %>%
-      dplyr::select(-"NATURAL") %>%
-      dplyr::rename("NATURAL" = "nome") %>%
-      dplyr::mutate(NATURAL = as.factor(.data$NATURAL))
-  }
-
-  # DTNASC
-  if ("DTNASC" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(DTNASC = as.Date(.data$DTNASC, format = "%d%m%Y"))
-  }
-
-  # IDADE
-  if ("IDADE" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        IDADE = dplyr::recode_values(
-          .data$IDADE,
-          "000" ~ NA,
-          "999" ~ NA,
-          default = .data$IDADE
-        )
-      ) %>%
-      # Codigo e valor
-      dplyr::mutate(
-        idade_cod = substr(.data$IDADE, 1, 1),
-        idade_value = as.numeric(substr(.data$IDADE, 2, 3)),
-      ) %>%
-      dplyr::mutate(
-        IDADEminutos = dplyr::recode_values(
-          .data$idade_cod,
-          "0" ~ idade_value,
-          default = NA
-        )
-      ) %>%
-      dplyr::mutate(
-        IDADEhoras = dplyr::recode_values(
-          .data$idade_cod,
-          "1" ~ idade_value,
-          default = NA
-        )
-      ) %>%
-      dplyr::mutate(
-        IDADEdias = dplyr::recode_values(
-          .data$idade_cod,
-          "2" ~ idade_value,
-          default = NA
-        )
-      ) %>%
-      dplyr::mutate(
-        IDADEmeses = dplyr::recode_values(
-          .data$idade_cod,
-          "3" ~ idade_value,
-          default = NA
-        )
-      ) %>%
-      dplyr::mutate(
-        IDADEanos = dplyr::recode_values(
-          .data$idade_cod,
-          "4" ~ idade_value,
-          "5" ~ idade_value + 100,
-          default = NA
-        )
-      ) %>%
-      dplyr::select(-"idade_cod", -"idade_value")
-  }
-
-  # SEXO
-  if ("SEXO" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        SEXO = dplyr::recode_values(
-          .data$SEXO,
-          "0" ~ NA,
-          "9" ~ NA,
-          "1" ~ "Masculino",
-          "2" ~ "Feminino",
-          default = .data$SEXO
-        )
-      ) %>%
-      dplyr::mutate(SEXO = as.factor(.data$SEXO))
-  }
-
-  # RACACOR
-  if ("RACACOR" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        RACACOR = dplyr::recode_values(
-          .data$RACACOR,
-          "0" ~ NA,
-          "1" ~ "Branca",
-          "2" ~ "Preta",
-          "3" ~ "Amarela",
-          "4" ~ "Parda",
-          "5" ~ "Ind\\u00edgena",
-          "6" ~ NA,
-          "7" ~ NA,
-          "8" ~ NA,
-          "9" ~ NA,
-          default = .data$RACACOR
-        )
-      ) %>%
-      dplyr::mutate(RACACOR = as.factor(.data$RACACOR))
-  }
-
-  # ESTCIV
-  if ("ESTCIV" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        ESTCIV = dplyr::recode_values(
-          .data$ESTCIV,
-          "0" ~ NA,
-          "1" ~ "Solteiro",
-          "2" ~ "Casado",
-          "3" ~ "Vi\\u00favo",
-          "4" ~ "Separado judicialmente",
-          "5" ~ "Uni\\u00e3o consensual",
-          "6" ~ NA,
-          "7" ~ NA,
-          "8" ~ NA,
-          "9" ~ NA,
-          default = .data$ESTCIV
-        )
-      ) %>%
-      dplyr::mutate(ESTCIV = as.factor(.data$ESTCIV))
-  }
-
-  # ESC
-  if ("ESC" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        ESC = dplyr::recode_values(
-          .data$ESC,
-          "0" ~ NA,
-          "6" ~ NA,
-          "7" ~ NA,
-          "9" ~ NA,
-          "A" ~ NA,
-          "1" ~ "Nenhuma",
-          "2" ~ "1 a 3 anos",
-          "3" ~ "4 a 7 anos",
-          "4" ~ "8 a 11 anos",
-          "5" ~ "12 anos ou mais",
-          "8" ~ "9 a 11 anos",
-          "9" ~ NA,
-          default = .data$ESC
-        )
-      ) %>%
-      dplyr::mutate(ESC = as.factor(.data$ESC))
-  }
-
-  # ESC2010
-  if ("ESC2010" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(ESC2010 = as.character(.data$ESC2010))
-  }
-
-  # SERIESCFAL
-  if ("SERIESCFAL" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(SERIESCFAL = as.character(.data$SERIESCFAL))
-  }
-
-  # OCUP
-  if ("OCUP" %in% variables_names) {
-    if (!("DTOBITO" %in% variables_names)) {
-      cli::cli_abort(
-        "The variable DTOBITO is needed to preprocess the variable OCUP."
-      )
-    }
-
-    colnames(tabCBO)[1] <- "OCUP"
-    tabCBO$OCUP = as.character(tabCBO$OCUP)
-
-    data <- data %>%
-      dplyr::left_join(tabCBO, by = "OCUP") %>%
-      dplyr::select(-"OCUP") %>%
-      dplyr::rename("OCUP" = "nome")
-  }
-
-  # CODMUNRES
-  if ("CODMUNRES" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(CODMUNRES = substr(.data$CODMUNRES, 0, 6))
-
-    if (municipality_data == TRUE) {
-      colnames(tabMun)[1] <- "CODMUNRES"
-      tabMun$CODMUNRES <- as.character(tabMun$CODMUNRES)
-
-      data <- data %>%
-        dplyr::left_join(tabMun, by = "CODMUNRES")
-    }
-  }
-
-  # CODMUNOCOR
-  if ("CODMUNOCOR" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(CODMUNOCOR = substr(.data$CODMUNOCOR, 0, 6))
-  }
-
-  # LOCOCOR
-  if ("LOCOCOR" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        LOCOCOR = dplyr::recode_values(
-          .data$LOCOCOR,
-          "1" ~ "Hospital",
-          "2" ~ "Outro estabelecimento de sa\\u00fade",
-          "3" ~ "Domic\\u00edlio",
-          "4" ~ "Via p\\u00fablica",
-          "5" ~ "Outros",
-          "9" ~ NA,
-          default = .data$LOCOCOR
-        )
-      ) %>%
-      dplyr::mutate(LOCOCOR = as.factor(.data$LOCOCOR))
-  }
-
-  # IDADEMAE
-  if ("IDADEMAE" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        IDADEMAE = dplyr::recode_values(
-          .data$IDADEMAE,
-          "0" ~ NA,
-          default = .data$IDADEMAE
-        )
-      ) %>%
-      dplyr::mutate(IDADEMAE = as.numeric(.data$IDADEMAE))
-  }
-
-  # ESCMAE
-  if ("ESCMAE" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        ESCMAE = dplyr::recode_values(
-          .data$ESCMAE,
-          "0" ~ NA,
-          "6" ~ NA,
-          "7" ~ NA,
-          "9" ~ NA,
-          "A" ~ NA,
-          "1" ~ "Nenhuma",
-          "2" ~ "1 a 3 anos",
-          "3" ~ "4 a 7 anos",
-          "4" ~ "8 a 11 anos",
-          "5" ~ "12 anos ou mais",
-          "8" ~ "9 a 11 anos",
-          "9" ~ NA,
-          default = .data$ESCMAE
-        )
-      ) %>%
-      dplyr::mutate(ESCMAE = as.factor(.data$ESCMAE))
-  }
-
-  # OCUPMAE
-  if ("OCUPMAE" %in% variables_names) {
-    if (!("DTOBITO" %in% variables_names)) {
-      cli::cli_abort(
-        "The variable DTOBITO is needed to preprocess the variable OCUPMAE."
-      )
-    }
-
-    colnames(tabOcupacao)[1] <- "OCUPMAE"
-    colnames(tabCBO)[1] <- "OCUPMAE"
-
-    data <- data %>%
-      dplyr::left_join(tabCBO, by = "OCUPMAE") %>%
-      dplyr::select(-"OCUPMAE") %>%
-      dplyr::rename("OCUPMAE" = "nome")
-  }
-
-  # QTDFILVIVO
-  if ("QTDFILVIVO" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(QTDFILVIVO = as.numeric(.data$QTDFILVIVO))
-  }
-
-  # QTDFILMORT
-  if ("QTDFILMORT" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(QTDFILMORT = as.numeric(.data$QTDFILMORT))
-  }
-
-  # GRAVIDEZ
-  if ("GRAVIDEZ" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        GRAVIDEZ = dplyr::recode_values(
-          .data$GRAVIDEZ,
-          "1" ~ "\\u00fanica",
-          "2" ~ "Dupla",
-          "3" ~ "Tr\\u00edplice e mais",
-          "9" ~ NA,
-          default = .data$GRAVIDEZ
-        )
-      ) %>%
-      dplyr::mutate(GRAVIDEZ = as.factor(.data$GRAVIDEZ))
-  }
-
-  # GESTACAO
-  if ("GESTACAO" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        GESTACAO = dplyr::recode_values(
-          .data$GESTACAO,
-          "0" ~ NA,
-          "A" ~ "21 a 27 semanas",
-          "1" ~ "Menos de 22 semanas",
-          "2" ~ "22 a 27 semanas",
-          "3" ~ "28 a 31 semanas",
-          "4" ~ "32 a 36 semanas",
-          "5" ~ "37 a 41 semanas",
-          "6" ~ "42 semanas e mais",
-          "7" ~ "28 semanas e mais",
-          "8" ~ "28 a 36 semanas",
-          "9" ~ NA,
-          default = .data$GESTACAO
-        )
-      ) %>%
-      dplyr::mutate(GESTACAO = as.factor(.data$GESTACAO))
-  }
-
-  # PARTO
-  if ("PARTO" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        PARTO = dplyr::recode_values(
-          .data$PARTO,
-          "0" ~ NA,
-          "1" ~ "Vaginal",
-          "2" ~ "Ces\\u00e1reo",
-          "3" ~ NA,
-          "4" ~ NA,
-          "5" ~ NA,
-          "6" ~ NA,
-          "7" ~ NA,
-          "8" ~ NA,
-          "9" ~ NA,
-          default = .data$PARTO
-        )
-      ) %>%
-      dplyr::mutate(PARTO = as.factor(.data$PARTO))
-  }
-
-  # OBITOPARTO
-  if ("OBITOPARTO" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        OBITOPARTO = dplyr::recode_values(
-          .data$OBITOPARTO,
-          "0" ~ NA,
-          "1" ~ "Antes",
-          "2" ~ "Durante",
-          "3" ~ "Depois",
-          "4" ~ NA,
-          "5" ~ NA,
-          "6" ~ NA,
-          "7" ~ NA,
-          "8" ~ NA,
-          "9" ~ NA,
-          default = .data$OBITOPARTO
-        )
-      ) %>%
-      dplyr::mutate(OBITOPARTO = as.factor(.data$OBITOPARTO))
-  }
-
-  # PESO
-  if ("PESO" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        PESO = dplyr::recode_values(.data$PESO, "0" ~ NA, default = .data$PESO)
-      ) %>%
-      dplyr::mutate(PESO = as.numeric(.data$PESO))
-  }
-
-  # OBITOGRAV
-  if ("OBITOGRAV" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        OBITOGRAV = dplyr::recode_values(
-          .data$OBITOGRAV,
-          "1" ~ "Sim",
-          "2" ~ "N\\u00e3o",
-          "3" ~ NA,
-          "4" ~ NA,
-          "5" ~ NA,
-          "6" ~ NA,
-          "7" ~ NA,
-          "8" ~ NA,
-          "9" ~ NA,
-          default = .data$OBITOGRAV
-        )
-      ) %>%
-      dplyr::mutate(OBITOGRAV = as.factor(.data$OBITOGRAV))
-  }
-
-  # OBITOPUERP
-  if ("OBITOPUERP" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        OBITOPUERP = dplyr::recode_values(
-          .data$OBITOPUERP,
-          "1" ~ "De 0 a 42 dias",
-          "2" ~ "De 43 dias a 1 ano",
-          "3" ~ "N\\u00e3o",
-          "4" ~ NA,
-          "5" ~ NA,
-          "6" ~ NA,
-          "7" ~ NA,
-          "8" ~ NA,
-          "9" ~ NA,
-          default = .data$OBITOPUERP
-        )
-      ) %>%
-      dplyr::mutate(OBITOPUERP = as.factor(.data$OBITOPUERP))
-  }
-
-  # ASSISTMED
-  if ("ASSISTMED" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        ASSISTMED = dplyr::recode_values(
-          .data$ASSISTMED,
-          "1" ~ "Sim",
-          "2" ~ "N\\u00e3o",
-          "9" ~ NA,
-          default = .data$ASSISTMED
-        )
-      ) %>%
-      dplyr::mutate(ASSISTMED = as.factor(.data$ASSISTMED))
-  }
-
-  # EXAME
-  if ("EXAME" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        EXAME = dplyr::recode_values(
-          .data$EXAME,
-          "1" ~ "Sim",
-          "2" ~ "N\\u00e3o",
-          "9" ~ NA,
-          default = .data$EXAME
-        )
-      ) %>%
-      dplyr::mutate(EXAME = as.factor(.data$EXAME))
-  }
-
-  # CIRURGIA
-  if ("CIRURGIA" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        CIRURGIA = dplyr::recode_values(
-          .data$CIRURGIA,
-          "1" ~ "Sim",
-          "2" ~ "N\\u00e3o",
-          "9" ~ NA,
-          default = .data$CIRURGIA
-        )
-      ) %>%
-      dplyr::mutate(CIRURGIA = as.factor(.data$CIRURGIA))
-  }
-
-  # NECROPSIA
-  if ("NECROPSIA" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        NECROPSIA = dplyr::recode_values(
-          .data$NECROPSIA,
-          "1" ~ "Sim",
-          "2" ~ "N\\u00e3o",
-          "9" ~ NA,
-          default = .data$NECROPSIA
-        )
-      ) %>%
-      dplyr::mutate(NECROPSIA = as.factor(.data$NECROPSIA))
-  }
-
-  # DTATESTADO
-  if ("DTATESTADO" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(DTATESTADO = as.Date(.data$DTATESTADO, format = "%d%m%Y"))
-  }
-
-  # CIRCOBITO
-  if ("CIRCOBITO" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        CIRCOBITO = dplyr::recode_values(
-          .data$CIRCOBITO,
-          "0" ~ NA,
-          "1" ~ "Acidente",
-          "2" ~ "Suic\\u00eddio",
-          "3" ~ "Homic\\u00eddio",
-          "4" ~ "Outro",
-          "5" ~ NA,
-          "6" ~ NA,
-          "7" ~ NA,
-          "8" ~ NA,
-          "9" ~ NA,
-          default = .data$CIRCOBITO
-        )
-      ) %>%
-      dplyr::mutate(CIRCOBITO = as.factor(.data$CIRCOBITO))
-  }
-
-  # ACIDTRAB
-  if ("ACIDTRAB" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        ACIDTRAB = dplyr::recode_values(
-          .data$ACIDTRAB,
-          "1" ~ "Sim",
-          "2" ~ "N\\u00e3o",
-          "9" ~ NA,
-          default = .data$ACIDTRAB
-        )
-      ) %>%
-      dplyr::mutate(ACIDTRAB = as.factor(.data$ACIDTRAB))
-  }
-
-  # FONTE
-  if ("FONTE" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        FONTE = dplyr::recode_values(
-          .data$FONTE,
-          "1" ~ "Boletim de Ocorr\\u00eancia",
-          "2" ~ "Hospital",
-          "3" ~ "Fam\\u00edlia",
-          "4" ~ "Outro",
-          "9" ~ NA,
-          default = .data$FONTE
-        )
-      ) %>%
-      dplyr::mutate(FONTE = as.factor(.data$FONTE))
-  }
-
-  # TPPOS
-  if ("TPPOS" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        TPPOS = dplyr::recode_values(
-          .data$TPPOS,
-          "N" ~ "N\\u00e3o investigado",
-          "S" ~ "Investigado",
-          default = .data$TPPOS
-        )
-      ) %>%
-      dplyr::mutate(TPPOS = as.factor(.data$TPPOS))
-  }
-
-  # DTINVESTIG
-  if ("DTINVESTIG" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(DTINVESTIG = as.Date(.data$DTINVESTIG, format = "%d%m%Y"))
-  }
-
-  # DTCADASTRO
-  if ("DTCADASTRO" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(DTCADASTRO = as.Date(.data$DTCADASTRO, format = "%d%m%Y"))
-  }
-
-  # ATESTANTE
-  if ("ATESTANTE" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        ATESTANTE = dplyr::recode_values(
-          .data$ATESTANTE,
-          "0" ~ NA,
-          "1" ~ "Sim",
-          "2" ~ "Substituto",
-          "3" ~ "IML",
-          "4" ~ "SVO",
-          "5" ~ "Outro",
-          "6" ~ NA,
-          "7" ~ NA,
-          "8" ~ NA,
-          "9" ~ NA,
-          default = .data$ATESTANTE
-        )
-      ) %>%
-      dplyr::mutate(ATESTANTE = as.factor(.data$ATESTANTE))
-  }
-
-  # FONTEINV
-  if ("FONTEINV" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(
-        FONTEINV = dplyr::recode_values(
-          .data$FONTEINV,
-          "1" ~ "Comit\\u00ea de Mortalidade Materna e/ou Infantil",
-          "2" ~ "Visita familiar / Entrevista fam\\u00edlia",
-          "3" ~ "Estabelecimento de sa\\u00fade / Prontu\\u00e1rio",
-          "4" ~ "Relacionamento com outros bancos de dados",
-          "5" ~ "SVO",
-          "6" ~ "IML",
-          "7" ~ "Outra fonte",
-          "8" ~ "M\\u00faltiplas fontes",
-          "9" ~ NA,
-          default = .data$FONTEINV
-        )
-      ) %>%
-      dplyr::mutate(FONTEINV = as.factor(.data$FONTEINV))
-  }
-
-  # DTRECEBIM
-  if ("DTRECEBIM" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(DTRECEBIM = as.Date(.data$DTRECEBIM, format = "%d%m%Y"))
-  }
-
-  # DTRECORIGA
-  if ("DTRECORIGA" %in% variables_names) {
-    data <- data %>%
-      dplyr::mutate(DTRECORIGA = as.Date(.data$DTRECORIGA, format = "%d%m%Y"))
-  }
-
-  # From data.table to tibble
-  data <- tibble::as_tibble(data)
-
-  # Purge levels
-  data <- droplevels(data)
-
-  # Unescape unicode characters
-  suppressWarnings(
-    data <- tibble::as_tibble(lapply(
-      X = data,
-      FUN = stringi::stri_unescape_unicode
-    ))
+  cli::cli_alert_info(
+    "Starting {.strong {information_system}} data pre-processing..."
   )
 
-  # Return
-  return(data)
+  # Type conversion precedes labelling so measurements never become factors.
+  date_fields <- names(result)[startsWith(toupper(names(result)), "DT")]
+  for (field in date_fields) {
+    result[[field]] <- .sim_as_date(result[[field]])
+  }
+  integer_fields <- .sim_find_fields(result, .sim_integer_fields)
+  for (field in integer_fields) {
+    result[[field]] <- .sim_as_integer(result[[field]])
+  }
+  result <- .sim_add_age_fields(result)
+
+  if (length(categorical_fields)) {
+    for (field in categorical_fields) {
+      dictionary_field <- toupper(field)
+      if (dictionary_field %in% names(.sim_dictionary_aliases)) {
+        dictionary_field <- unname(
+          .sim_dictionary_aliases[[dictionary_field]]
+        )
+      }
+      selected <- .tabwin_select_conversion(
+        dictionary,
+        dictionary_field,
+        result[[field]]
+      )
+      if (!is.null(selected)) {
+        result[[field]] <- .tabwin_apply_conversion(
+          result[[field]],
+          selected
+        )
+      }
+    }
+  }
+
+  # Municipality codes remain identifiers. Optional territorial attributes
+  # are joined only after their width has been normalized.
+  for (field in intersect(c("CODMUNRES", "CODMUNOCOR"), names(result))) {
+    result[[field]] <- substring(as.character(result[[field]]), 1L, 6L)
+  }
+  if (municipality_data) {
+    result <- .sim_add_municipality_data(result)
+  }
+
+  result <- .sim_normalize_text(result)
+  cli::cli_alert_success(
+    "Finished {.strong {information_system}} data pre-processing."
+  )
+  tibble::as_tibble(result)
 }

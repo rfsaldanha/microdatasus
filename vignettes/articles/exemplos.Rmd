@@ -73,8 +73,9 @@ sim <- process_sim(sim_raw)
 ```
 
 Também podem ser baixados os subconjuntos nacionais `SIM-DOFET`, `SIM-DOEXT`,
-`SIM-DOINF` e `SIM-DOMAT`. A função `process_sim()` deve ser usada apenas
-quando o layout for compatível com as variáveis que ela conhece.
+`SIM-DOINF` e `SIM-DOMAT`. Passe o mesmo tipo a `process_sim()`; por exemplo,
+`process_sim(sim_fetal_raw, information_system = "SIM-DOFET")`. O padrão
+continua sendo `SIM-DO`.
 
 ## SINASC — nascidos vivos
 

@@ -4,37 +4,44 @@
 \alias{process_sim}
 \title{Prepare SIM mortality microdata}
 \usage{
-process_sim(data, municipality_data = TRUE)
+process_sim(data, municipality_data = TRUE, information_system = "SIM-DO")
 }
 \arguments{
-\item{data}{A data frame returned by \code{\link[=fetch_datasus]{fetch_datasus()}} for a SIM mortality
-system, or another data frame with a compatible layout.}
+\item{data}{A data frame returned by \code{\link[=fetch_datasus]{fetch_datasus()}} for a supported SIM
+mortality type, or another data frame with a compatible layout.}
 
 \item{municipality_data}{Logical scalar. If \code{TRUE}, add municipality names
-and available territorial attributes for supported municipality-code
-columns.}
+and available territorial attributes for \code{CODMUNRES}.}
+
+\item{information_system}{SIM data type represented by \code{data}. One of
+\code{"SIM-DO"}, \code{"SIM-DOFET"}, \code{"SIM-DOEXT"}, \code{"SIM-DOINF"}, or
+\code{"SIM-DOMAT"}. The default preserves the previous \code{process_sim()} call.}
 }
 \value{
-A tibble with character columns. Supported codes are replaced with
-descriptions, and municipality fields are added when requested and
-available.
+A tibble. Dates are returned as \code{Date}, quantities as integer,
+labelled categorical fields as factors, and identifiers and free text as
+character.
 }
 \description{
-Recodes supported SIM mortality fields into descriptive values and normalizes
-escaped Unicode text. Codes without a documented conversion are retained.
+Uses the current official DataSUS TabWin CID-10 dictionary to label
+supported SIM mortality fields from 1996 onward. The dictionary is
+downloaded on first use and cached for the rest of the R session. Dates,
+integer quantities, categorical variables, and identifier fields retain
+distinct and consistent types.
 }
 \details{
-Columns not explicitly recoded are retained, but Unicode normalization is
-applied to every column and consequently the returned tibble contains
-character columns.
+Codes not covered by the current TabWin conversion are retained as factor
+levels instead of being silently discarded. SIM files and definitions that
+use CID-9 are outside the scope of this version.
 }
 \examples{
+\dontshow{if (interactive() && curl::has_internet()) withAutoprint(\{ # examplesIf}
 process_sim(sim_do_sample)
-
+\dontshow{\}) # examplesIf}
 }
 \references{
 Saldanha, R. F. (2026). \href{https://rfsaldanha.github.io/sis/sim.html}{SIM -- Sistema de Informação sobre Mortalidade}.
 }
 \seealso{
-\code{\link[=fetch_datasus]{fetch_datasus()}}
+\code{\link[=fetch_tabwin_dictionary]{fetch_tabwin_dictionary()}}, \code{\link[=fetch_datasus]{fetch_datasus()}}
 }

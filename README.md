@@ -74,12 +74,11 @@ sim_raw <- fetch_datasus(
 sim <- process_sim(sim_raw)
 ```
 
-Os processadores retornam um tibble com colunas de texto após a normalização
-Unicode. Converta explicitamente os campos necessários à análise:
-
-```r
-sim$DTOBITO <- as.Date(sim$DTOBITO)
-```
+`process_sim()` usa `SIM-DO` por padrão. Para os subconjuntos nacionais,
+informe o mesmo tipo usado no download, por exemplo
+`process_sim(sim_fetal_raw, information_system = "SIM-DOFET")`. O resultado
+padroniza datas como `Date`, quantidades como inteiros e variáveis rotuladas
+como fatores.
 
 Os anos, meses e UFs solicitados identificam as partições publicadas pelo
 DataSUS. A data e o local analíticos devem ser escolhidos nas variáveis do
