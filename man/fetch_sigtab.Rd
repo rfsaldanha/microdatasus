@@ -16,7 +16,8 @@ A data frame with character columns \code{COD} (procedure code) and
 }
 \description{
 Downloads and reads the current SIA procedure table distributed by DataSUS.
-\code{\link[=process_sia]{process_sia()}} can use this table to add procedure descriptions.
+This standalone table is useful when procedure metadata is needed outside
+\code{\link[=process_sia]{process_sia()}}, which now reads the tables declared by each TabWin DEF.
 }
 \section{Network access}{
 

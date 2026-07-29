@@ -14,50 +14,46 @@ process_sia(
 )
 }
 \arguments{
-\item{data}{A data frame returned by \code{\link[=fetch_datasus]{fetch_datasus()}} with
-\code{information_system = "SIA-PA"}, or a compatible layout.}
+\item{data}{A data frame returned by \code{\link[=fetch_datasus]{fetch_datasus()}} for a supported SIA
+file family, or another data frame with a compatible layout.}
 
-\item{information_system}{A single character string. Currently only
-\code{"SIA-PA"} is supported.}
+\item{information_system}{SIA file family represented by \code{data}. The
+default \code{"SIA-PA"} preserves previous calls.}
 
-\item{nome_proced}{Logical scalar. If \code{TRUE}, download the current SIGTAB
-table with \code{\link[=fetch_sigtab]{fetch_sigtab()}} and join procedure names. This requires network
-access.}
+\item{nome_proced}{Logical scalar. If \code{TRUE}, use procedure-description
+tables declared by the official DEF. Kept in its original position for
+compatibility.}
 
-\item{nome_ocupacao}{Logical scalar. If \code{TRUE}, join occupation descriptions
-for supported occupation-code columns.}
+\item{nome_ocupacao}{Logical scalar. If \code{TRUE}, use occupation-description
+tables declared by the official DEF.}
 
-\item{nome_equipe}{Logical scalar retained for API compatibility. Team
-descriptions are currently joined whenever \code{PA_INE} is present, regardless
-of this value.}
+\item{nome_equipe}{Logical scalar. If \code{TRUE}, use team-description tables
+declared by the official DEF.}
 
 \item{municipality_data}{Logical scalar. If \code{TRUE}, add municipality names
-and available territorial attributes for supported municipality-code
-columns.}
+and available territorial attributes for the patient/residence field
+supported by the selected layout.}
 }
 \value{
-A tibble with character columns. Supported codes are replaced with
-descriptions, and requested lookup fields are added where applicable.
+A tibble. Full dates are returned as \code{Date}, quantities as integer,
+values as double, labelled categorical fields as factors, and identifiers
+and free text as character.
 }
 \description{
-Recodes supported fields from SIA individual outpatient-production records
-(\code{"SIA-PA"}) into descriptive values and normalizes escaped Unicode text.
-Lookup joins can add procedure, occupation, team, and municipality
-descriptions.
-}
-\details{
-Columns not explicitly recoded are retained, but Unicode normalization is
-applied to every column and consequently the returned tibble contains
-character columns. Other SIA layouts downloadable with \code{\link[=fetch_datasus]{fetch_datasus()}} are
-not currently supported by this processing function.
+Uses the official DataSUS TabWin definitions to label all twelve SIA file
+families supported by \code{\link[=fetch_datasus]{fetch_datasus()}}. The required ZIP is downloaded on
+first use and cached for the rest of the R session. For \code{"SIA-PA"}, the
+function selects one of three historical definitions by record competence
+when processing files from before 2008.
 }
 \examples{
+\dontshow{if (interactive() && curl::has_internet()) withAutoprint(\{ # examplesIf}
 process_sia(sia_pa_sample, nome_proced = FALSE)
-
+\dontshow{\}) # examplesIf}
 }
 \references{
 Saldanha, R. F. (2026). \href{https://rfsaldanha.github.io/sis/sia.html}{SIA -- Sistema de Informações Ambulatoriais do SUS}.
 }
 \seealso{
-\code{\link[=fetch_datasus]{fetch_datasus()}}, \code{\link[=fetch_sigtab]{fetch_sigtab()}}
+\code{\link[=fetch_tabwin_dictionary]{fetch_tabwin_dictionary()}}, \code{\link[=fetch_datasus]{fetch_datasus()}}
 }

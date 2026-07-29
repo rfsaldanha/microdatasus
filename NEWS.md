@@ -56,6 +56,11 @@
 
 ## Processing, documentation, and testing
 
+* Rebuilds `process_sia()` from the official DataSUS TabWin definitions. It now
+  covers all twelve downloadable SIA layouts, selects three historical PA
+  definitions by record competence, shares archives in the session cache, and
+  preserves all existing arguments while making their procedure, occupation,
+  and team switches effective.
 * Rebuilds `process_sih()` from the official DataSUS TabWin definitions. The
   function now processes `SIH-RD`, `SIH-RJ`, `SIH-SP`, and `SIH-ER`, selects
   the three historical RD/RJ archives by record competence, caches shared

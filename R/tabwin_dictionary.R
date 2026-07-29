@@ -83,6 +83,58 @@
       )
     }
   }
+
+  # SIA publishes one current archive for its twelve downloadable file
+  # families. The older archives contain the PA production layouts that
+  # preceded the 2008 table redesign.
+  sia_base <- paste0(
+    "ftp://ftp.datasus.gov.br/dissemin/publicos/SIASUS/200801_/",
+    "Auxiliar/"
+  )
+  current_sia_definitions <- c(
+    "SIA-AB" = "APAC_Cirurgia_Bariatica.DEF",
+    "SIA-ABO" = "APAC_Pos_Cirurgia_Bariatica.def",
+    "SIA-ACF" = "APAC_Confeccao_de_Fistula.DEF",
+    "SIA-AD" = "APAC_Laudos_Diversos.DEF",
+    "SIA-AN" = "APAC_Nefrologia.DEF",
+    "SIA-AM" = "APAC_Medicamentos.DEF",
+    "SIA-AQ" = "APAC_Quimioterapia.DEF",
+    "SIA-AR" = "APAC_Radioterapia.DEF",
+    "SIA-ATD" = "APAC_Tratamento_Dialitico.DEF",
+    "SIA-PA" = "Producao_Ambulatorial.DEF",
+    "SIA-PS" = "RAAS_Psicossocial.def",
+    "SIA-SAD" = "Atencao_Domiciliar.def"
+  )
+  for (information_system in names(current_sia_definitions)) {
+    specs[[information_system]] <- list(
+      archive_key = "SIA-2008",
+      information_system = information_system,
+      url = paste0(sia_base, "TAB_SIA.zip"),
+      definition = unname(current_sia_definitions[[information_system]])
+    )
+  }
+  historical_sia <- list(
+    "1994-07-1999-10" = c(
+      archive = "TAB_SIA_199407-199910.zip",
+      definition = "PRODUCAO.DEF"
+    ),
+    "1999-11-2003-07" = c(
+      archive = "TAB_SIA_199911-200307.zip",
+      definition = "PROD_SIA.DEF"
+    ),
+    "2003-08-2007" = c(
+      archive = "TAB_SIA_200308-200712.zip",
+      definition = "PRODCNES.DEF"
+    )
+  )
+  for (period in names(historical_sia)) {
+    specs[[paste0("SIA-PA-", period)]] <- list(
+      archive_key = paste0("SIA-", period),
+      information_system = paste0("SIA-PA-", period),
+      url = paste0(sia_base, historical_sia[[period]][["archive"]]),
+      definition = historical_sia[[period]][["definition"]]
+    )
+  }
   specs
 }
 
@@ -475,7 +527,7 @@
     definition = definition,
     conversion = conversion,
     exact_name = exact_name,
-    direct_command = identical(definition$command, "X"),
+    direct_command = definition$command %in% c("X", "D"),
     coverage = coverage,
     codes = length(conversion$map),
     categories = conversion$category_count
@@ -502,6 +554,18 @@
       ,
       drop = FALSE
     ]
+    # National entity tables (for example TCNESBR and TCHBR) contain every
+    # state and avoid opening one DBF per UF merely to compare coverage.
+    stems <- toupper(tools::file_path_sans_ext(basename(candidates$file)))
+    national <- grepl("BR$", stems)
+    if (any(national)) {
+      candidates <- candidates[national, , drop = FALSE]
+    }
+    # TabWin's D command denotes the detailed relation. Prefer it to the
+    # alternative line/column groupings of the same procedure or entity.
+    if (any(candidates$command == "D")) {
+      candidates <- candidates[candidates$command == "D", , drop = FALSE]
+    }
     # Annual related tables are named with a numeric suffix (for example,
     # CNES24 and CNES26). Use the newest version declared by the current DEF.
     versions <- regmatches(
@@ -652,14 +716,15 @@
 #' DataSUS. Archive files, DEF metadata, and conversion tables used during
 #' processing are cached for the rest of the R session. SIM support is limited
 #' to CID-10 files; SINASC supports both its 1994-1995 and current layouts; and
-#' SIH supports its current and historical RD/RJ definitions.
+#' SIH supports its current and historical RD/RJ definitions; and SIA supports
+#' all twelve current layouts plus the three historical PA definitions.
 #'
 #' @param information_system Information system whose dictionary should be
 #'   downloaded. Supported values include the five SIM mortality types,
 #'   `"SINASC"` for files from 1996 onward, `"SINASC-1994-1995"` for the
 #'   original SINASC layout, and `"SIH-RD"`, `"SIH-RJ"`, `"SIH-SP"`, and
-#'   `"SIH-ER"`. Historical SIH keys are selected internally by
-#'   [process_sih()].
+#'   `"SIH-ER"` and the twelve `"SIA-*"` file families. Historical SIH and
+#'   SIA-PA keys are selected internally by their processing functions.
 #' @param timeout A positive numeric scalar. Download and connection timeout,
 #'   in seconds.
 #' @param refresh Logical scalar. If `TRUE`, discard the session cache and
@@ -681,9 +746,10 @@
 #' dictionary$definitions
 #' sinasc_dictionary <- fetch_tabwin_dictionary("SINASC")
 #' sih_dictionary <- fetch_tabwin_dictionary("SIH-RD")
+#' sia_dictionary <- fetch_tabwin_dictionary("SIA-PA")
 #'
 #' @seealso [process_sim()], [process_sinasc()], [process_sih()],
-#'   [fetch_datasus()]
+#'   [process_sia()], [fetch_datasus()]
 #' @export
 fetch_tabwin_dictionary <- function(
   information_system = "SIM-DO",

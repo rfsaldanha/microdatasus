@@ -197,6 +197,55 @@ test_that("DBF relationships use the description field declared by DEF", {
   )
 })
 
+test_that("DBF selection prefers national and detailed official relations", {
+  definitions <- data.frame(
+    order = 1:4,
+    command = c("L", "L", "D", "L"),
+    description = c("CNES BR", "CNES AC", "Detalhado", "Grupo"),
+    field = c("CNES", "CNES", "PROCED", "PROCED"),
+    argument = "LABEL",
+    position = NA_integer_,
+    file = c(
+      "DBF/TCNESBR.DBF", "DBF/TCNESAC.DBF",
+      "DBF/TB_SIGTAW.DBF", "DBF/TB_GRUPO.DBF"
+    ),
+    extension = "DBF",
+    stringsAsFactors = FALSE
+  )
+  dictionary <- list(
+    definitions = definitions,
+    conversions = new.env(parent = emptyenv())
+  )
+  for (i in seq_len(nrow(definitions))) {
+    conversion <- structure(
+      list(
+        type = "dbf",
+        code_width = 1L,
+        category_count = 1L,
+        map = stats::setNames(definitions$description[[i]], "1")
+      ),
+      class = "microdatasus_tabwin_conversion"
+    )
+    assign(
+      microdatasus:::.tabwin_conversion_key(
+        definitions[i, , drop = FALSE]
+      ),
+      conversion,
+      envir = dictionary$conversions
+    )
+  }
+
+  cnes <- microdatasus:::.tabwin_select_conversion(dictionary, "CNES", "1")
+  procedure <- microdatasus:::.tabwin_select_conversion(
+    dictionary,
+    "PROCED",
+    "1"
+  )
+
+  expect_identical(cnes$definition$file, "DBF/TCNESBR.DBF")
+  expect_identical(procedure$definition$file, "DBF/TB_SIGTAW.DBF")
+})
+
 test_that("all SIM types share one TabWin archive download", {
   archive <- create_tabwin_fixture()
   on.exit(unlink(archive), add = TRUE)

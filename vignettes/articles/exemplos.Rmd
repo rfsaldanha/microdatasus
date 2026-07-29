@@ -145,13 +145,15 @@ sia_raw <- fetch_datasus(
   information_system = "SIA-PA"
 )
 
-# FALSE evita um segundo download da tabela SIGTAB neste exemplo
+# FALSE mantém o código do procedimento sem acrescentar seu rótulo
 sia <- process_sia(sia_raw, nome_proced = FALSE)
 ```
 
-`process_sia()` processa atualmente apenas `SIA-PA`. Quando
-`nome_proced = TRUE`, seu valor padrão, a função baixa a SIGTAB atual e
-acrescenta os nomes dos procedimentos.
+`process_sia()` processa os doze layouts disponíveis. Informe em
+`information_system` o mesmo tipo usado no download; `SIA-PA` permanece como
+padrão. Quando `nome_proced = TRUE`, a função usa a tabela de procedimentos
+declarada no DEF correspondente. Para PA anterior a 2008, a definição correta
+é selecionada automaticamente pela competência de cada registro.
 
 ## CNES — estabelecimentos e profissionais
 

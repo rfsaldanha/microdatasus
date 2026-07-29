@@ -1,7 +1,8 @@
 #' Download the current SIGTAB table
 #'
 #' Downloads and reads the current SIA procedure table distributed by DataSUS.
-#' [process_sia()] can use this table to add procedure descriptions.
+#' This standalone table is useful when procedure metadata is needed outside
+#' [process_sia()], which now reads the tables declared by each TabWin DEF.
 #'
 #' @param timeout A positive numeric scalar. Download and connection timeout,
 #'   in seconds.
