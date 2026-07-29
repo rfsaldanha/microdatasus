@@ -46,6 +46,43 @@
     definition = "/NASC.DEF",
     extract_all = TRUE
   )
+
+  # SIH publishes one current archive with separate definitions for each file
+  # family and three historical archives for RD/RJ layout periods.
+  sih_base <- paste0(
+    "ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/",
+    "Auxiliar/"
+  )
+  current_sih_definitions <- c(
+    "SIH-RD" = "RD2008.DEF",
+    "SIH-RJ" = "RJ2008.DEF",
+    "SIH-SP" = "SP2008.DEF",
+    "SIH-ER" = "Motivo_de_Erro.DEF"
+  )
+  for (information_system in names(current_sih_definitions)) {
+    specs[[information_system]] <- list(
+      archive_key = "SIH-2008",
+      information_system = information_system,
+      url = paste0(sih_base, "TAB_SIH.zip"),
+      definition = unname(current_sih_definitions[[information_system]])
+    )
+  }
+  historical_sih <- list(
+    "1992-1997" = "TAB_SIH_199201-199712.zip",
+    "1998-2003-07" = "TAB_SIH_199801-200307.zip",
+    "2003-08-2007" = "TAB_SIH_200308-200712.zip"
+  )
+  for (period in names(historical_sih)) {
+    for (file_type in c("RD", "RJ")) {
+      information_system <- paste("SIH", file_type, period, sep = "-")
+      specs[[information_system]] <- list(
+        archive_key = paste0("SIH-", period),
+        information_system = information_system,
+        url = paste0(sih_base, historical_sih[[period]]),
+        definition = paste0(file_type, ".DEF")
+      )
+    }
+  }
   specs
 }
 
@@ -161,9 +198,15 @@
     }
     return(candidates[[matches]])
   }
+  definition_dir <- dictionary$definition_dir
+  relative_file <- if (definition_dir %in% c("", ".", "/")) {
+    file_name
+  } else {
+    paste0(definition_dir, "/", file_name)
+  }
   entry <- .tabwin_find_entry(
     dictionary$entries,
-    paste0(dictionary$definition_dir, "/", file_name)
+    relative_file
   )
   destination <- file.path(dictionary$cache_dir, basename(entry))
   if (file.exists(destination) && file.size(destination) > 0) {
@@ -362,7 +405,9 @@
     conversion <- .tabwin_parse_cnv(path)
   } else {
     table <- tryCatch(
-      foreign::read.dbf(path, as.is = TRUE),
+      # Some official DBFs contain blank legacy fields. Their name-repair
+      # messages are not relevant to the code and label columns selected here.
+      suppressMessages(foreign::read.dbf(path, as.is = TRUE)),
       error = function(error) {
         cli::cli_abort(c(
           "Failed to read TabWin table {.file {definition$file}}.",
@@ -606,12 +651,15 @@
 #' Downloads and parses official TabWin definition archives published by
 #' DataSUS. Archive files, DEF metadata, and conversion tables used during
 #' processing are cached for the rest of the R session. SIM support is limited
-#' to CID-10 files; SINASC supports both its 1994-1995 and current layouts.
+#' to CID-10 files; SINASC supports both its 1994-1995 and current layouts; and
+#' SIH supports its current and historical RD/RJ definitions.
 #'
 #' @param information_system Information system whose dictionary should be
 #'   downloaded. Supported values include the five SIM mortality types,
-#'   `"SINASC"` for files from 1996 onward, and `"SINASC-1994-1995"` for the
-#'   original SINASC layout.
+#'   `"SINASC"` for files from 1996 onward, `"SINASC-1994-1995"` for the
+#'   original SINASC layout, and `"SIH-RD"`, `"SIH-RJ"`, `"SIH-SP"`, and
+#'   `"SIH-ER"`. Historical SIH keys are selected internally by
+#'   [process_sih()].
 #' @param timeout A positive numeric scalar. Download and connection timeout,
 #'   in seconds.
 #' @param refresh Logical scalar. If `TRUE`, discard the session cache and
@@ -632,8 +680,10 @@
 #' dictionary <- fetch_tabwin_dictionary("SIM-DO")
 #' dictionary$definitions
 #' sinasc_dictionary <- fetch_tabwin_dictionary("SINASC")
+#' sih_dictionary <- fetch_tabwin_dictionary("SIH-RD")
 #'
-#' @seealso [process_sim()], [fetch_datasus()]
+#' @seealso [process_sim()], [process_sinasc()], [process_sih()],
+#'   [fetch_datasus()]
 #' @export
 fetch_tabwin_dictionary <- function(
   information_system = "SIM-DO",
@@ -675,7 +725,7 @@ fetch_tabwin_dictionary <- function(
       inherits = FALSE
     )
   } else {
-    cache_dir <- tempfile("microdatasus-tabwin-sim-")
+    cache_dir <- tempfile("microdatasus-tabwin-")
     if (!dir.create(cache_dir, recursive = TRUE)) {
       cli::cli_abort("Failed to create the TabWin session cache directory.")
     }
@@ -689,7 +739,7 @@ fetch_tabwin_dictionary <- function(
     archive <- file.path(cache_dir, "dictionary.zip")
     if (!quiet) {
       cli::cli_alert_info(
-        "Downloading the current DataSUS TabWin dictionary for {.val {information_system}}..."
+        "Downloading the DataSUS TabWin dictionary for {.val {information_system}}..."
       )
     }
     .datasus_download_file(

@@ -120,9 +120,11 @@ sih_raw <- fetch_datasus(
 sih <- process_sih(sih_raw)
 ```
 
-`process_sih()` processa atualmente o layout reduzido `SIH-RD`. Os layouts
-`SIH-RJ`, `SIH-SP` e `SIH-ER` podem ser baixados, mas não têm processadores
-específicos.
+`process_sih()` processa os quatro layouts disponíveis. `SIH-RD` é o padrão;
+para os demais, informe o mesmo tipo usado no download, por exemplo
+`process_sih(sih_rj_raw, information_system = "SIH-RJ")`. Nos layouts RD e RJ,
+a função seleciona automaticamente a definição histórica correspondente à
+competência de cada registro.
 
 ## SIA — produção ambulatorial
 

@@ -108,7 +108,7 @@ sih <- process_sih(sih_raw)
 |---|---|---|---|---|
 | SIM | Anual | `SIM-DO`, `SIM-DOFET`, `SIM-DOEXT`, `SIM-DOINF`, `SIM-DOMAT` | `process_sim()` | [SIM](https://rfsaldanha.github.io/sis/sim.html) |
 | SINASC | Anual | `SINASC` | `process_sinasc()` | [SINASC](https://rfsaldanha.github.io/sis/sinasc.html) |
-| SIH | Mensal | `SIH-RD`, `SIH-RJ`, `SIH-SP`, `SIH-ER` | `process_sih()` para `SIH-RD` | [SIH](https://rfsaldanha.github.io/sis/sih.html) |
+| SIH | Mensal | `SIH-RD`, `SIH-RJ`, `SIH-SP`, `SIH-ER` | `process_sih()` | [SIH](https://rfsaldanha.github.io/sis/sih.html) |
 | SIA | Mensal | Doze layouts `SIA-*` | `process_sia()` para `SIA-PA` | [SIA](https://rfsaldanha.github.io/sis/sia.html) |
 | CNES | Mensal | Treze layouts `CNES-*` | `process_cnes()` para `CNES-ST` e `CNES-PF` | [CNES](https://rfsaldanha.github.io/sis/cnes.html) |
 | SINAN | Anual e nacional | Dengue, chikungunya, Zika, malária, Chagas, leishmanioses e leptospirose | Processadores específicos, exceto leptospirose | [SINAN](https://rfsaldanha.github.io/sis/sinan.html) |

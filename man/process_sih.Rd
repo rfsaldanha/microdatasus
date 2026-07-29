@@ -7,38 +7,43 @@
 process_sih(data, information_system = "SIH-RD", municipality_data = TRUE)
 }
 \arguments{
-\item{data}{A data frame returned by \code{\link[=fetch_datasus]{fetch_datasus()}} with
-\code{information_system = "SIH-RD"}, or a compatible layout.}
+\item{data}{A data frame returned by \code{\link[=fetch_datasus]{fetch_datasus()}} for a supported SIH
+file family, or another data frame with a compatible layout.}
 
-\item{information_system}{A single character string. Currently only
-\code{"SIH-RD"} is supported.}
+\item{information_system}{SIH file family represented by \code{data}. One of
+\code{"SIH-RD"}, \code{"SIH-RJ"}, \code{"SIH-SP"}, or \code{"SIH-ER"}. The default preserves
+previous calls to \code{process_sih()}.}
 
 \item{municipality_data}{Logical scalar. If \code{TRUE}, add municipality names
-and available territorial attributes for supported municipality-code
-columns.}
+and available territorial attributes for the residence municipality in
+RD, RJ, and ER files.}
 }
 \value{
-A tibble with character columns. Supported codes are replaced with
-descriptions, and municipality fields are added when requested and
-available.
+A tibble. Dates are returned as \code{Date}, counts and quantities as
+integer, monetary values as double, labelled categorical fields as
+factors, and identifiers and free text as character.
 }
 \description{
-Recodes supported fields from reduced hospital-admission records
-(\code{"SIH-RD"}) into descriptive values and normalizes escaped Unicode text.
+Uses the official DataSUS TabWin definitions to label all four SIH file
+families available from \code{\link[=fetch_datasus]{fetch_datasus()}}: reduced admissions (\code{"SIH-RD"}),
+rejected admissions (\code{"SIH-RJ"}), professional services (\code{"SIH-SP"}), and
+rejected/error records (\code{"SIH-ER"}). Dictionaries are downloaded on first
+use and cached for the rest of the R session.
 }
 \details{
-Columns not explicitly recoded are retained, but Unicode normalization is
-applied to every column and consequently the returned tibble contains
-character columns. Other SIH layouts downloadable with \code{\link[=fetch_datasus]{fetch_datasus()}} are
-not currently supported by this processing function.
+For RD and RJ, the definition is selected from the official historical
+archives according to each row's competence. This supports data sets
+concatenated across the 1997, July 2003, and 2007 layout boundaries. Codes
+absent from a conversion table remain visible as factor levels.
 }
 \examples{
+\dontshow{if (interactive() && curl::has_internet()) withAutoprint(\{ # examplesIf}
 process_sih(sih_rd_sample)
-
+\dontshow{\}) # examplesIf}
 }
 \references{
 Saldanha, R. F. (2026). \href{https://rfsaldanha.github.io/sis/sih.html}{SIH -- Sistema de Informações Hospitalares do SUS}.
 }
 \seealso{
-\code{\link[=fetch_datasus]{fetch_datasus()}}
+\code{\link[=fetch_tabwin_dictionary]{fetch_tabwin_dictionary()}}, \code{\link[=fetch_datasus]{fetch_datasus()}}
 }

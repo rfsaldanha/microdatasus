@@ -14,11 +14,20 @@
   suppressWarnings(as.integer(values))
 }
 
-.process_as_date <- function(x) {
+.process_as_double <- function(x, missing = character()) {
+  if (is.double(x) && !length(missing)) {
+    return(x)
+  }
+  values <- trimws(as.character(x))
+  values[values %in% missing] <- NA_character_
+  suppressWarnings(as.numeric(values))
+}
+
+.process_as_date <- function(x, format = "%d%m%Y") {
   if (inherits(x, "Date")) {
     return(x)
   }
-  as.Date(as.character(x), format = "%d%m%Y")
+  as.Date(as.character(x), format = format)
 }
 
 .process_normalize_text <- function(data) {
@@ -44,8 +53,15 @@
   data,
   dictionary,
   fields,
-  aliases = character()
+  aliases = character(),
+  rows = NULL
 ) {
+  if (is.null(rows)) {
+    rows <- seq_len(nrow(data))
+  }
+  if (!length(rows)) {
+    return(data)
+  }
   for (field in .process_find_fields(data, fields)) {
     dictionary_field <- toupper(field)
     if (dictionary_field %in% names(aliases)) {
@@ -54,10 +70,15 @@
     selected <- .tabwin_select_conversion(
       dictionary,
       dictionary_field,
-      data[[field]]
+      data[[field]][rows]
     )
     if (!is.null(selected)) {
-      data[[field]] <- .tabwin_apply_conversion(data[[field]], selected)
+      values <- as.character(data[[field]])
+      values[rows] <- as.character(.tabwin_apply_conversion(
+        data[[field]][rows],
+        selected
+      ))
+      data[[field]] <- factor(values)
     }
   }
   data

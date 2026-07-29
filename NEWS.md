@@ -56,6 +56,11 @@
 
 ## Processing, documentation, and testing
 
+* Rebuilds `process_sih()` from the official DataSUS TabWin definitions. The
+  function now processes `SIH-RD`, `SIH-RJ`, `SIH-SP`, and `SIH-ER`, selects
+  the three historical RD/RJ archives by record competence, caches shared
+  downloads for the R session, and standardizes dates, quantities, values,
+  labels, and identifiers while preserving its existing arguments.
 * Adopts `dplyr::recode_values()` because `dplyr::case_match()` is deprecated.
 * Expands and corrects the documentation for all public functions, including
   network behavior, actual return types, compatibility arguments, and links to
