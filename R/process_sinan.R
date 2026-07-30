@@ -116,6 +116,11 @@
 #'   and available territorial attributes. The historical `MUNICIPIO` field is
 #'   preferred when present, followed by residence and notification fields.
 #'
+#' @param labels Output type for categorical labels: `"factor"` (the default),
+#'   `"character"`, or `"none"` to retain the original codes.
+#' @param diagnostics Logical scalar. If `TRUE`, attach a processing report,
+#'   including codes absent from official conversion tables. Retrieve it with
+#'   [processing_diagnostics()].
 #' @examplesIf interactive() && curl::has_internet()
 #' process_sinan(sinan_dengue_sample, "SINAN-DENGUE")
 #' process_sinan(sinan_chagas_sample, "SINAN-DOENCA-DE-CHAGAS-AGUDA")
@@ -135,12 +140,16 @@
 process_sinan <- function(
   data,
   information_system = "SINAN-DENGUE",
-  municipality_data = TRUE
+  municipality_data = TRUE,
+  labels = c("factor", "character", "none"),
+  diagnostics = FALSE
 ) {
   if (!is.data.frame(data)) {
     cli::cli_abort("{.arg data} must be a data frame.")
   }
   .datasus_assert_flag(municipality_data, "municipality_data")
+  options <- .process_validate_options(labels, diagnostics)
+  labels <- options$labels
   information_system <- .sinan_resolve_information_system(
     information_system
   )
@@ -157,6 +166,9 @@ process_sinan <- function(
   }
 
   result <- tibble::as_tibble(data)
+  collector <- .process_diagnostic_collector(
+    diagnostics, information_system, result
+  )
   for (field in names(result)) {
     if (is.factor(result[[field]])) {
       result[[field]] <- as.character(result[[field]])
@@ -191,7 +203,9 @@ process_sinan <- function(
   result <- .process_apply_dictionary(
     result,
     dictionary,
-    categorical_fields
+    categorical_fields,
+    labels = labels,
+    collector = collector
   )
 
   municipality_fields <- .sinan_municipality_fields(result)
@@ -205,9 +219,8 @@ process_sinan <- function(
     result <- .process_add_municipality_data(result, selected[[1L]])
   }
 
-  result <- .process_normalize_text(result)
   cli::cli_alert_success(
     "Finished {.strong {information_system}} data pre-processing."
   )
-  tibble::as_tibble(result)
+  .process_finalize(result, collector)
 }

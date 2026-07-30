@@ -18,17 +18,19 @@ interpretação de cada sistema, consulte o livro
 ## O que o pacote oferece
 
 - `fetch_datasus()` localiza, baixa e combina microdados publicados pelo
-  DataSUS.
+  DataSUS; também pode processar e salvar cada arquivo separadamente.
 - `read_dbc()` lê um arquivo DBC já disponível no computador.
-- As funções `process_*()` recodificam campos conhecidos, normalizam textos e,
-  quando implementado, acrescentam informações municipais ou tabelas
-  auxiliares.
+- As funções `process_*()` usam os dicionários oficiais do TabWin, padronizam
+  tipos e podem relatar códigos ainda não mapeados.
+- `datasus_variables()` consulta os dicionários e
+  `compare_datasus_dictionary()` identifica mudanças entre versões.
 - `fetch_cadger()` e `fetch_sigtab()` obtêm tabelas auxiliares atuais de CNES e
   SIA.
 
-Os downloads são sequenciais, usam arquivos temporários e fazem novas tentativas
-em falhas transitórias. Quando `stop_on_error = FALSE`, os arquivos válidos
-podem ser retornados mesmo que parte da solicitação falhe.
+Os downloads fazem novas tentativas em falhas transitórias e podem usar um
+cache persistente, com checksum e proveniência. Quando
+`stop_on_error = FALSE`, os arquivos válidos podem ser retornados mesmo que
+parte da solicitação falhe.
 
 ## Instalação
 
@@ -140,6 +142,28 @@ Consulte o artigo [Download e
 rastreabilidade](https://rfsaldanha.github.io/microdatasus/articles/download-e-rastreabilidade.html)
 para exemplos de todas essas opções.
 
+## Dicionários, cache e tabelas grandes
+
+Um diretório explícito reutiliza DBC e ZIP do TabWin entre sessões:
+
+```r
+cache <- datasus_cache_dir(create = TRUE)
+variables <- datasus_variables("SIM-DO", cache_dir = cache)
+datasus_cache_info(cache)
+```
+
+Os processadores aceitam `labels = "factor"`, `"character"` ou `"none"`.
+Com `diagnostics = TRUE`, `processing_diagnostics()` informa, entre outros
+itens, códigos ausentes das conversões oficiais.
+
+Para solicitações grandes, combine `destination`, `collect = FALSE` e
+`process = TRUE`: cada DBC é processado e gravado antes da leitura do próximo.
+O retorno é um manifesto com caminhos, número de linhas, origem e checksum.
+
+O guia [Dicionários, cache e processamento em
+escala](https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.html)
+apresenta o fluxo completo. O suporte do SIM nesta versão é restrito a CID-10.
+
 ## Arquivos DBC locais
 
 Use `read_dbc()` quando o arquivo já estiver no computador:
@@ -157,6 +181,8 @@ dados_tipados <- read_dbc("arquivo.dbc", as_character = FALSE)
   sistema](https://rfsaldanha.github.io/microdatasus/articles/exemplos.html)
 - [Download e
   rastreabilidade](https://rfsaldanha.github.io/microdatasus/articles/download-e-rastreabilidade.html)
+- [Dicionários, cache e processamento em
+  escala](https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.html)
 - [Perguntas
   frequentes](https://rfsaldanha.github.io/microdatasus/articles/FAQ.html)
 - [Livro *Sistemas de Informação em Saúde no

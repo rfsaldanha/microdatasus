@@ -7,7 +7,9 @@
 process_sinan(
   data,
   information_system = "SINAN-DENGUE",
-  municipality_data = TRUE
+  municipality_data = TRUE,
+  labels = c("factor", "character", "none"),
+  diagnostics = FALSE
 )
 }
 \arguments{
@@ -23,6 +25,13 @@ to consult both forms.}
 \item{municipality_data}{Logical scalar. If \code{TRUE}, add municipality names
 and available territorial attributes. The historical \code{MUNICIPIO} field is
 preferred when present, followed by residence and notification fields.}
+
+\item{labels}{Output type for categorical labels: \code{"factor"} (the default),
+\code{"character"}, or \code{"none"} to retain the original codes.}
+
+\item{diagnostics}{Logical scalar. If \code{TRUE}, attach a processing report,
+including codes absent from official conversion tables. Retrieve it with
+\code{\link[=processing_diagnostics]{processing_diagnostics()}}.}
 }
 \value{
 A tibble. Dates are returned as \code{Date}, the notification year and

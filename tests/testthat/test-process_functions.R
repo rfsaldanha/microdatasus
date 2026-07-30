@@ -1,3 +1,6 @@
+# Rebuild local empty dictionaries after preceding cache-isolation tests.
+restore_empty_tabwin_cache()
+
 test_that("cnes-st works at 2016, 6-7", {
   cnes_st <- process_cnes(
     data = cnes_st_sample,

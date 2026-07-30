@@ -83,7 +83,7 @@ create_sia_tabwin_fixture <- function(period = "current") {
 
 test_that("process_sia preserves all established arguments", {
   expect_identical(
-    formals(process_sia),
+    as.pairlist(formals(process_sia)[c("data", "information_system", "nome_proced", "nome_ocupacao", "nome_equipe", "municipality_data")]),
     as.pairlist(alist(
       data = ,
       information_system = "SIA-PA",

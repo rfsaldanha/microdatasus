@@ -97,7 +97,7 @@ create_sih_tabwin_fixture <- function(period = "current") {
 
 test_that("process_sih keeps its established argument order", {
   expect_identical(
-    formals(process_sih),
+    as.pairlist(formals(process_sih)[c("data", "information_system", "municipality_data")]),
     as.pairlist(alist(
       data = ,
       information_system = "SIH-RD",
@@ -167,6 +167,7 @@ test_that("process_sih labels and types every current SIH file family", {
         COD_IDADE = "4",
         VAL_TOT = "10.25",
         MUNIC_RES = "1200209",
+        AUD_JUST = "S\\u00e3o",
         stringsAsFactors = FALSE
       ),
       municipality_data = FALSE
@@ -220,6 +221,7 @@ test_that("process_sih labels and types every current SIH file family", {
   expect_identical(as.character(rd$SEXO), "Masculino")
   expect_identical(as.character(rd$VINCPREV), "Empregado")
   expect_identical(rd$MUNIC_RES, "120020")
+  expect_identical(rd$AUD_JUST, "São")
   expect_identical(as.character(rj$SEXO), "Feminino")
   expect_identical(as.character(rj$ST_SITUAC), "Rejeitada")
   expect_type(sp$SP_QTD_ATO, "integer")

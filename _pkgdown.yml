@@ -30,6 +30,7 @@ articles:
   contents:
   - articles/exemplos
   - articles/download-e-rastreabilidade
+  - articles/dicionarios-cache-e-escala
 - title: "Ajuda"
   contents:
   - articles/FAQ
@@ -41,6 +42,14 @@ reference:
 - title: "Download e leitura"
   contents:
   - fetch_datasus
+  - datasus_information_systems
+  - fetch_tabwin_dictionary
+  - datasus_variables
+  - compare_datasus_dictionary
+  - datasus_cache_dir
+  - datasus_cache_info
+  - clear_datasus_cache
+  - datasus_provenance
   - fetch_sigtab
   - fetch_cadger
   - read_dbc
@@ -51,6 +60,10 @@ reference:
   - process_sih
   - process_sia
   - process_cnes
+  - process_sinan
+  - processing_diagnostics
+- title: "Compatibilidade SINAN"
+  contents:
   - process_sinan_dengue
   - process_sinan_zika
   - process_sinan_chikungunya

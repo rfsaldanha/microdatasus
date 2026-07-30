@@ -1,0 +1,106 @@
+---
+title: "Dicionários, cache e processamento em escala"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Dicionários, cache e processamento em escala}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+O `microdatasus` pode usar diretamente os arquivos DEF, CNV e DBF publicados
+para o TabWin. O suporte atual do SIM considera apenas os arquivos em CID-10.
+
+## Consultar e comparar dicionários
+
+`datasus_variables()` apresenta campos, tipos, arquivos de relação e,
+opcionalmente, os pares código-rótulo. Um diretório explícito mantém o ZIP e
+seu manifesto entre sessões.
+
+```{r, eval = FALSE}
+cache <- datasus_cache_dir(create = TRUE)
+
+sim_variables <- datasus_variables(
+  "SIM-DO",
+  cache_dir = cache
+)
+
+sim_variables[, c("field", "type", "description", "categories")]
+datasus_cache_info(cache)
+```
+
+É possível guardar essa tabela como referência e compará-la com uma publicação
+posterior do DataSUS:
+
+```{r, eval = FALSE}
+reference <- sim_variables
+changes <- compare_datasus_dictionary(
+  "SIM-DO",
+  previous = reference,
+  cache_dir = cache,
+  refresh = TRUE
+)
+```
+
+`changes` informa inclusões, remoções e mudanças em campos ou rótulos. Nenhuma
+diferença é inventada: uma tabela vazia significa que os dois conteúdos
+comparados são equivalentes.
+
+## Rótulos e diagnóstico
+
+Todas as funções `process_*()` aceitam a mesma política de rótulos:
+`"factor"` (padrão), `"character"` ou `"none"`. O diagnóstico opcional registra
+campos tratados e códigos que não constam nas tabelas oficiais.
+
+```{r}
+library(microdatasus)
+
+sim <- process_sim(
+  sim_do_sample,
+  municipality_data = FALSE,
+  labels = "character",
+  diagnostics = TRUE
+)
+
+processing_diagnostics(sim)$unknown_codes
+```
+
+Os argumentos antigos e seus padrões foram mantidos; os novos argumentos foram
+acrescentados ao fim das assinaturas.
+
+## Downloads grandes
+
+Para limitar o uso de memória, `fetch_datasus()` pode processar e salvar cada
+DBC separadamente. Com `collect = FALSE`, apenas um arquivo precisa permanecer
+em memória por vez.
+
+```{r, eval = FALSE}
+manifest <- fetch_datasus(
+  year_start = 2022,
+  year_end = 2023,
+  uf = c("AC", "AM"),
+  information_system = "SIM-DO",
+  cache_dir = cache,
+  destination = "dados/sim",
+  collect = FALSE,
+  process = TRUE,
+  process_args = list(
+    municipality_data = FALSE,
+    labels = "character",
+    diagnostics = TRUE
+  )
+)
+
+manifest[, c("file", "rows", "checksum", "data_path")]
+```
+
+Com `collect = TRUE`, o comportamento histórico é preservado. Use
+`provenance = TRUE` para anexar o manifesto à tabela combinada e
+`datasus_provenance()` para recuperá-lo.
+
+Para remover o conteúdo persistente gerenciado pelo pacote, use
+`clear_datasus_cache(cache)`. A função preserva o diretório raiz e arquivos que
+não pertençam ao `microdatasus`.

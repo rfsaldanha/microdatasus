@@ -56,6 +56,11 @@
 #' @param municipality_data Logical scalar. If `TRUE`, add municipality names
 #'   and available territorial attributes for the residence municipality.
 #'
+#' @param labels Output type for categorical labels: `"factor"` (the default),
+#'   `"character"`, or `"none"` to retain the original codes.
+#' @param diagnostics Logical scalar. If `TRUE`, attach a processing report,
+#'   including codes absent from official conversion tables. Retrieve it with
+#'   [processing_diagnostics()].
 #' @examplesIf interactive() && curl::has_internet()
 #' process_sinasc(sinasc_sample)
 #'
@@ -70,13 +75,21 @@
 #' @seealso [fetch_tabwin_dictionary()], [fetch_datasus()]
 #'
 #' @export
-process_sinasc <- function(data, municipality_data = TRUE) {
+process_sinasc <- function(
+  data,
+  municipality_data = TRUE,
+  labels = c("factor", "character", "none"),
+  diagnostics = FALSE
+) {
   if (!is.data.frame(data)) {
     cli::cli_abort("{.arg data} must be a data frame.")
   }
   .datasus_assert_flag(municipality_data, "municipality_data")
+  options <- .process_validate_options(labels, diagnostics)
+  labels <- options$labels
 
   result <- tibble::as_tibble(data)
+  collector <- .process_diagnostic_collector(diagnostics, "SINASC", result)
   result <- .process_normalize_text(result)
 
   # Shared names such as SEXO exist in both layouts, so use layout-exclusive
@@ -109,10 +122,12 @@ process_sinasc <- function(data, municipality_data = TRUE) {
 
   # Download dictionaries before announcing preprocessing so the lifecycle
   # messages follow any "Cached..." messages shown to the user.
-  if (length(modern_fields)) {
+  if (length(modern_fields) &&
+      (!identical(labels, "none") || diagnostics)) {
     modern_dictionary <- fetch_tabwin_dictionary("SINASC")
   }
-  if (length(legacy_fields)) {
+  if (length(legacy_fields) &&
+      (!identical(labels, "none") || diagnostics)) {
     legacy_dictionary <- fetch_tabwin_dictionary("SINASC-1994-1995")
   }
 
@@ -138,18 +153,24 @@ process_sinasc <- function(data, municipality_data = TRUE) {
     result[[field]] <- .process_as_integer(result[[field]], missing)
   }
 
-  if (length(modern_fields)) {
+  if (length(modern_fields) &&
+      (!identical(labels, "none") || diagnostics)) {
     result <- .process_apply_dictionary(
       result,
       modern_dictionary,
-      modern_fields
+      modern_fields,
+      labels = labels,
+      collector = collector
     )
   }
-  if (length(legacy_fields)) {
+  if (length(legacy_fields) &&
+      (!identical(labels, "none") || diagnostics)) {
     result <- .process_apply_dictionary(
       result,
       legacy_dictionary,
-      legacy_fields
+      legacy_fields,
+      labels = labels,
+      collector = collector
     )
   }
 
@@ -173,9 +194,8 @@ process_sinasc <- function(data, municipality_data = TRUE) {
     result <- .process_add_municipality_data(result, residence_field)
   }
 
-  result <- .process_normalize_text(result)
   cli::cli_alert_success(
     "Finished {.strong SINASC} data pre-processing."
   )
-  tibble::as_tibble(result)
+  .process_finalize(result, collector)
 }

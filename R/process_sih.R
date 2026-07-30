@@ -139,6 +139,11 @@
 #'   and available territorial attributes for the residence municipality in
 #'   RD, RJ, and ER files.
 #'
+#' @param labels Output type for categorical labels: `"factor"` (the default),
+#'   `"character"`, or `"none"` to retain the original codes.
+#' @param diagnostics Logical scalar. If `TRUE`, attach a processing report,
+#'   including codes absent from official conversion tables. Retrieve it with
+#'   [processing_diagnostics()].
 #' @examplesIf interactive() && curl::has_internet()
 #' process_sih(sih_rd_sample)
 #'
@@ -158,12 +163,16 @@
 process_sih <- function(
   data,
   information_system = "SIH-RD",
-  municipality_data = TRUE
+  municipality_data = TRUE,
+  labels = c("factor", "character", "none"),
+  diagnostics = FALSE
 ) {
   if (!is.data.frame(data)) {
     cli::cli_abort("{.arg data} must be a data frame.")
   }
   .datasus_assert_flag(municipality_data, "municipality_data")
+  options <- .process_validate_options(labels, diagnostics)
+  labels <- options$labels
   sih_types <- c("SIH-RD", "SIH-RJ", "SIH-SP", "SIH-ER")
   if (
     !is.character(information_system) ||
@@ -177,6 +186,9 @@ process_sih <- function(
   }
 
   result <- tibble::as_tibble(data)
+  collector <- .process_diagnostic_collector(
+    diagnostics, information_system, result
+  )
   # DBF readers can expose text columns as factors depending on their options
   # and R version. Reset source factors to character; only fields successfully
   # labelled by an official TabWin table become factors below.
@@ -195,7 +207,8 @@ process_sih <- function(
   # Fetch all required dictionaries before the start message, preserving the
   # message order requested for the preprocessing lifecycle.
   dictionaries <- list()
-  if (length(categorical_fields)) {
+  if (length(categorical_fields) &&
+      (!identical(labels, "none") || diagnostics)) {
     for (key in names(dictionary_rows)) {
       if (length(dictionary_rows[[key]])) {
         dictionaries[[key]] <- fetch_tabwin_dictionary(key)
@@ -230,14 +243,14 @@ process_sih <- function(
   # A concatenated RD/RJ data set can require more than one official DEF.
   # Applying a map to its row subset prevents historical labels from leaking
   # into records governed by a later layout.
-  for (key in names(dictionaries)) {
-    result <- .process_apply_dictionary(
-      result,
-      dictionaries[[key]],
-      categorical_fields,
-      rows = dictionary_rows[[key]]
-    )
-  }
+  result <- .process_apply_dictionaries(
+    result,
+    dictionaries,
+    categorical_fields,
+    dictionary_rows,
+    labels = labels,
+    collector = collector
+  )
 
   # Municipality codes are identifiers, not measurements or categories.
   result <- .process_normalize_code_fields(
@@ -257,9 +270,8 @@ process_sih <- function(
     }
   }
 
-  result <- .process_normalize_text(result)
   cli::cli_alert_success(
     "Finished {.strong {information_system}} data pre-processing."
   )
-  tibble::as_tibble(result)
+  .process_finalize(result, collector)
 }

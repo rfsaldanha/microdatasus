@@ -65,7 +65,7 @@ create_tabwin_fixture <- function() {
 
 test_that("process_sim appends its data type argument compatibly", {
   expect_identical(
-    formals(process_sim),
+    as.pairlist(formals(process_sim)[c("data", "municipality_data", "information_system")]),
     as.pairlist(alist(
       data = ,
       municipality_data = TRUE,

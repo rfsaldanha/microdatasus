@@ -46,7 +46,7 @@ write_tabwin_text <- function(path, lines) {
 
 for (information_system in names(microdatasus:::.tabwin_registry())) {
   assign(
-    information_system,
+    paste(information_system, "session", sep = "::"),
     .empty_tabwin_dictionary(information_system),
     envir = microdatasus:::.tabwin_cache
   )
@@ -56,7 +56,7 @@ restore_empty_tabwin_cache <- function() {
   microdatasus:::.tabwin_clear_cache()
   for (information_system in names(microdatasus:::.tabwin_registry())) {
     assign(
-      information_system,
+      paste(information_system, "session", sep = "::"),
       .empty_tabwin_dictionary(information_system),
       envir = microdatasus:::.tabwin_cache
     )

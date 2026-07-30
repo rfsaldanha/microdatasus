@@ -4,7 +4,13 @@
 \alias{process_sih}
 \title{Prepare SIH hospital-admission microdata}
 \usage{
-process_sih(data, information_system = "SIH-RD", municipality_data = TRUE)
+process_sih(
+  data,
+  information_system = "SIH-RD",
+  municipality_data = TRUE,
+  labels = c("factor", "character", "none"),
+  diagnostics = FALSE
+)
 }
 \arguments{
 \item{data}{A data frame returned by \code{\link[=fetch_datasus]{fetch_datasus()}} for a supported SIH
@@ -17,6 +23,13 @@ previous calls to \code{process_sih()}.}
 \item{municipality_data}{Logical scalar. If \code{TRUE}, add municipality names
 and available territorial attributes for the residence municipality in
 RD, RJ, and ER files.}
+
+\item{labels}{Output type for categorical labels: \code{"factor"} (the default),
+\code{"character"}, or \code{"none"} to retain the original codes.}
+
+\item{diagnostics}{Logical scalar. If \code{TRUE}, attach a processing report,
+including codes absent from official conversion tables. Retrieve it with
+\code{\link[=processing_diagnostics]{processing_diagnostics()}}.}
 }
 \value{
 A tibble. Dates are returned as \code{Date}, counts, quantities, and

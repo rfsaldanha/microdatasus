@@ -13,3 +13,5 @@ README.md
 ^pkgdown$
 ^vignettes/articles$
 ^CRAN-SUBMISSION$
+^benchmarks$
+^tests/smoke$

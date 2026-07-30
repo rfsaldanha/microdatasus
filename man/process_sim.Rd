@@ -4,7 +4,13 @@
 \alias{process_sim}
 \title{Prepare SIM mortality microdata}
 \usage{
-process_sim(data, municipality_data = TRUE, information_system = "SIM-DO")
+process_sim(
+  data,
+  municipality_data = TRUE,
+  information_system = "SIM-DO",
+  labels = c("factor", "character", "none"),
+  diagnostics = FALSE
+)
 }
 \arguments{
 \item{data}{A data frame returned by \code{\link[=fetch_datasus]{fetch_datasus()}} for a supported SIM
@@ -16,6 +22,13 @@ and available territorial attributes for \code{CODMUNRES}.}
 \item{information_system}{SIM data type represented by \code{data}. One of
 \code{"SIM-DO"}, \code{"SIM-DOFET"}, \code{"SIM-DOEXT"}, \code{"SIM-DOINF"}, or
 \code{"SIM-DOMAT"}. The default preserves the previous \code{process_sim()} call.}
+
+\item{labels}{Output type for categorical labels: \code{"factor"} (the default),
+\code{"character"}, or \code{"none"} to retain the original codes.}
+
+\item{diagnostics}{Logical scalar. If \code{TRUE}, attach a processing report,
+including codes absent from official conversion tables. Retrieve it with
+\code{\link[=processing_diagnostics]{processing_diagnostics()}}.}
 }
 \value{
 A tibble. Dates are returned as \code{Date}, quantities as integer,

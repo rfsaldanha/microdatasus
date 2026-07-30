@@ -201,6 +201,11 @@
 #'   and available territorial attributes for the patient/residence field
 #'   supported by the selected layout.
 #'
+#' @param labels Output type for categorical labels: `"factor"` (the default),
+#'   `"character"`, or `"none"` to retain the original codes.
+#' @param diagnostics Logical scalar. If `TRUE`, attach a processing report,
+#'   including codes absent from official conversion tables. Retrieve it with
+#'   [processing_diagnostics()].
 #' @examplesIf interactive() && curl::has_internet()
 #' process_sia(sia_pa_sample, nome_proced = FALSE)
 #'
@@ -216,7 +221,6 @@
 #'
 #' @seealso [fetch_tabwin_dictionary()], [fetch_datasus()]
 #'
-#' @importFrom rlang .data
 #' @export
 process_sia <- function(
   data,
@@ -224,7 +228,9 @@ process_sia <- function(
   nome_proced = TRUE,
   nome_ocupacao = TRUE,
   nome_equipe = TRUE,
-  municipality_data = TRUE
+  municipality_data = TRUE,
+  labels = c("factor", "character", "none"),
+  diagnostics = FALSE
 ) {
   if (!is.data.frame(data)) {
     cli::cli_abort("{.arg data} must be a data frame.")
@@ -234,6 +240,8 @@ process_sia <- function(
   )) {
     .datasus_assert_flag(get(argument), argument)
   }
+  options <- .process_validate_options(labels, diagnostics)
+  labels <- options$labels
   sia_types <- .sia_information_systems
   if (
     !is.character(information_system) ||
@@ -247,6 +255,9 @@ process_sia <- function(
   }
 
   result <- tibble::as_tibble(data)
+  collector <- .process_diagnostic_collector(
+    diagnostics, information_system, result
+  )
   for (field in names(result)) {
     if (is.factor(result[[field]])) {
       result[[field]] <- as.character(result[[field]])
@@ -258,9 +269,11 @@ process_sia <- function(
 
   # Resolve every required dictionary before the preprocessing start message.
   dictionaries <- list()
-  for (key in names(dictionary_rows)) {
-    if (length(dictionary_rows[[key]])) {
-      dictionaries[[key]] <- fetch_tabwin_dictionary(key)
+  if (!identical(labels, "none") || diagnostics) {
+    for (key in names(dictionary_rows)) {
+      if (length(dictionary_rows[[key]])) {
+        dictionaries[[key]] <- fetch_tabwin_dictionary(key)
+      }
     }
   }
   categorical_fields <- .sia_dictionary_fields(
@@ -287,14 +300,14 @@ process_sia <- function(
   }
   result <- .sia_add_age_fields(result, information_system)
 
-  for (key in names(dictionaries)) {
-    result <- .process_apply_dictionary(
-      result,
-      dictionaries[[key]],
-      categorical_fields,
-      rows = dictionary_rows[[key]]
-    )
-  }
+  result <- .process_apply_dictionaries(
+    result,
+    dictionaries,
+    categorical_fields,
+    dictionary_rows,
+    labels = labels,
+    collector = collector
+  )
 
   municipality_fields <- c(
     "PA_MUNPCN", "AP_MUNPCN", "MUNPAC", "PA_MUNAT"
@@ -307,9 +320,8 @@ process_sia <- function(
     }
   }
 
-  result <- .process_normalize_text(result)
   cli::cli_alert_success(
     "Finished {.strong {information_system}} data pre-processing."
   )
-  tibble::as_tibble(result)
+  .process_finalize(result, collector)
 }

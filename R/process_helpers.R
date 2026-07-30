@@ -9,6 +9,16 @@
   if (is.integer(x) && !length(missing)) {
     return(x)
   }
+  # Raw DBF columns are character, factor, or plain numeric vectors. Coerce
+  # those directly, but retain the legacy character path for other classes.
+  direct <- is.character(x) || is.factor(x) ||
+    ((is.integer(x) || is.double(x)) && !is.object(x))
+  if (!length(missing) && direct) {
+    if (is.factor(x)) {
+      x <- as.character(x)
+    }
+    return(suppressWarnings(as.integer(x)))
+  }
   values <- trimws(as.character(x))
   values[values %in% missing] <- NA_character_
   suppressWarnings(as.integer(values))
@@ -17,6 +27,16 @@
 .process_as_double <- function(x, missing = character()) {
   if (is.double(x) && !length(missing)) {
     return(x)
+  }
+  # Raw DBF columns are character, factor, or plain numeric vectors. Coerce
+  # those directly, but retain the legacy character path for other classes.
+  direct <- is.character(x) || is.factor(x) ||
+    ((is.integer(x) || is.double(x)) && !is.object(x))
+  if (!length(missing) && direct) {
+    if (is.factor(x)) {
+      x <- as.character(x)
+    }
+    return(suppressWarnings(as.numeric(x)))
   }
   values <- trimws(as.character(x))
   values[values %in% missing] <- NA_character_
@@ -53,11 +73,11 @@
   for (unit_code in names(units)) {
     output <- unname(units[[unit_code]])
     matches <- !is.na(unit) & unit == unit_code & !is.na(value)
-    adjusted <- value
+    adjusted <- value[matches]
     if (unit_code %in% century_units) {
       adjusted <- adjusted + 100L
     }
-    data[[output]][matches] <- adjusted[matches]
+    data[[output]][matches] <- adjusted
   }
   data
 }
@@ -81,39 +101,108 @@
   data
 }
 
-.process_apply_dictionary <- function(
+# Apply all row-specific dictionaries while materializing and factorizing each
+# source field only once. This avoids one full-column copy per historical
+# period in concatenated SIH, SIA, and CNES data sets.
+.process_apply_dictionaries <- function(
   data,
-  dictionary,
+  dictionaries,
   fields,
+  dictionary_rows = NULL,
   aliases = character(),
-  rows = NULL
+  labels = "factor",
+  collector = NULL
 ) {
-  if (is.null(rows)) {
-    rows <- seq_len(nrow(data))
-  }
-  if (!length(rows)) {
+  if (!length(dictionaries)) {
     return(data)
   }
+  keys <- names(dictionaries)
+  if (is.null(keys) || any(!nzchar(keys))) {
+    keys <- as.character(seq_along(dictionaries))
+    names(dictionaries) <- keys
+  }
+  if (is.null(dictionary_rows)) {
+    dictionary_rows <- stats::setNames(
+      rep(list(seq_len(nrow(data))), length(dictionaries)),
+      keys
+    )
+  } else if (is.null(names(dictionary_rows))) {
+    names(dictionary_rows) <- keys
+  }
+
   for (field in .process_find_fields(data, fields)) {
     dictionary_field <- toupper(field)
     if (dictionary_field %in% names(aliases)) {
       dictionary_field <- unname(aliases[[dictionary_field]])
     }
-    selected <- .tabwin_select_conversion(
-      dictionary,
-      dictionary_field,
-      data[[field]][rows]
-    )
-    if (!is.null(selected)) {
-      values <- as.character(data[[field]])
-      values[rows] <- as.character(.tabwin_apply_conversion(
-        data[[field]][rows],
-        selected
-      ))
-      data[[field]] <- factor(values)
+    values <- as.character(data[[field]])
+    converted <- FALSE
+
+    for (key in keys) {
+      rows <- dictionary_rows[[key]]
+      if (is.null(rows) || !length(rows)) {
+        next
+      }
+      selected <- .tabwin_select_conversion(
+        dictionaries[[key]],
+        dictionary_field,
+        values[rows]
+      )
+      if (!is.null(selected)) {
+        converted_values <- .tabwin_apply_conversion_values(
+          values[rows],
+          selected
+        )
+        .process_record_dictionary_diagnostics(
+          collector,
+          field,
+          key,
+          values[rows],
+          selected
+        )
+        if (!identical(labels, "none")) {
+          values[rows] <- converted_values
+        }
+        converted <- TRUE
+      }
+    }
+    if (converted && !identical(labels, "none")) {
+      data[[field]] <- if (identical(labels, "factor")) {
+        factor(values)
+      } else {
+        values
+      }
     }
   }
   data
+}
+
+# Retain the single-dictionary helper for processors whose fields use only one
+# layout and for internal callers outside the historical batching path.
+.process_apply_dictionary <- function(
+  data,
+  dictionary,
+  fields,
+  aliases = character(),
+  rows = NULL,
+  labels = "factor",
+  collector = NULL
+) {
+  dictionaries <- list(single = dictionary)
+  dictionary_rows <- if (is.null(rows)) {
+    NULL
+  } else {
+    list(single = rows)
+  }
+  .process_apply_dictionaries(
+    data,
+    dictionaries,
+    fields,
+    dictionary_rows,
+    aliases,
+    labels,
+    collector
+  )
 }
 
 .process_normalize_code_fields <- function(data, fields, width = 6L) {

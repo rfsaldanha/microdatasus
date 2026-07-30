@@ -37,13 +37,11 @@ Imports:
     dplyr (>= 1.2.0),
     foreign,
     magrittr,
-    rlang,
     stringi,
     tibble,
     utils,
     zip
 Suggests: 
-    lubridate,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Depends: 

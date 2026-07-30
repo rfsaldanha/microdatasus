@@ -64,7 +64,7 @@ create_sinasc_tabwin_fixture <- function(legacy = FALSE) {
 
 test_that("process_sinasc keeps its established arguments", {
   expect_identical(
-    formals(process_sinasc),
+    as.pairlist(formals(process_sinasc)[c("data", "municipality_data")]),
     as.pairlist(alist(data = , municipality_data = TRUE))
   )
 })

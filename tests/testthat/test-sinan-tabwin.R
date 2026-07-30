@@ -55,7 +55,7 @@ create_sinan_tabwin_fixtures <- function() {
 
 test_that("process_sinan has a stable unified signature", {
   expect_identical(
-    formals(process_sinan),
+    as.pairlist(formals(process_sinan)[c("data", "information_system", "municipality_data")]),
     as.pairlist(alist(
       data = ,
       information_system = "SINAN-DENGUE",

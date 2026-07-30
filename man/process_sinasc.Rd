@@ -4,7 +4,12 @@
 \alias{process_sinasc}
 \title{Prepare SINASC live-birth microdata}
 \usage{
-process_sinasc(data, municipality_data = TRUE)
+process_sinasc(
+  data,
+  municipality_data = TRUE,
+  labels = c("factor", "character", "none"),
+  diagnostics = FALSE
+)
 }
 \arguments{
 \item{data}{A data frame returned by \code{\link[=fetch_datasus]{fetch_datasus()}} with
@@ -12,6 +17,13 @@ process_sinasc(data, municipality_data = TRUE)
 
 \item{municipality_data}{Logical scalar. If \code{TRUE}, add municipality names
 and available territorial attributes for the residence municipality.}
+
+\item{labels}{Output type for categorical labels: \code{"factor"} (the default),
+\code{"character"}, or \code{"none"} to retain the original codes.}
+
+\item{diagnostics}{Logical scalar. If \code{TRUE}, attach a processing report,
+including codes absent from official conversion tables. Retrieve it with
+\code{\link[=processing_diagnostics]{processing_diagnostics()}}.}
 }
 \value{
 A tibble. Dates are returned as \code{Date}, counts and measurements as

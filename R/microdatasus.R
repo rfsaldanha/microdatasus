@@ -16,7 +16,6 @@
 #' no Brasil*](https://rfsaldanha.github.io/sis/).
 #'
 #' @importFrom utils globalVariables
-#' @importFrom data.table := setDT fcase
 "_PACKAGE"
 
 

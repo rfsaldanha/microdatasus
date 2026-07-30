@@ -1,6 +1,6 @@
 test_that("fetch_datasus public signature remains compatible", {
   expect_identical(
-    formals(fetch_datasus),
+    as.pairlist(formals(fetch_datasus)[c("year_start", "month_start", "year_end", "month_end", "uf", "information_system", "vars", "stop_on_error", "timeout", "track_source", "quiet")]),
     as.pairlist(alist(
       year_start = ,
       month_start = NULL,
@@ -1361,4 +1361,124 @@ test_that("live smoke tests are opt-in", {
     vars = "DTOBITO"
   )
   expect_s3_class(result, "data.frame")
+})
+
+
+test_that("persistent DBC cache reuses files and records provenance", {
+  downloads <- 0L
+  mock_fetch_dependencies(
+    mock_manifest("DOAC2022.dbc"),
+    downloader = function(url, destination, timeout, quiet) {
+      downloads <<- downloads + 1L
+      writeBin(charToRaw(url), destination)
+      invisible(destination)
+    }
+  )
+  cache <- tempfile("microdatasus-cache-")
+  on.exit(unlink(cache, recursive = TRUE), add = TRUE)
+
+  first <- fetch_datasus(
+    2022,
+    year_end = 2022,
+    uf = "AC",
+    information_system = "SIM-DO",
+    cache_dir = cache,
+    provenance = TRUE,
+    quiet = TRUE
+  )
+  second <- fetch_datasus(
+    2022,
+    year_end = 2022,
+    uf = "AC",
+    information_system = "SIM-DO",
+    cache_dir = cache,
+    provenance = TRUE,
+    quiet = TRUE
+  )
+
+  expect_equal(downloads, 1L)
+  expect_identical(first, second, ignore_attr = TRUE)
+  expect_false(datasus_provenance(first)$cached)
+  expect_true(datasus_provenance(second)$cached)
+  expect_equal(nrow(datasus_cache_info(cache)), 1L)
+})
+
+test_that("non-collecting fetch writes one RDS file per DBC", {
+  mock_fetch_dependencies(mock_manifest(c("one.dbc", "two.dbc")))
+  destination <- tempfile("microdatasus-output-")
+  on.exit(unlink(destination, recursive = TRUE), add = TRUE)
+
+  manifest <- fetch_datasus(
+    2022,
+    year_end = 2022,
+    uf = "AC",
+    information_system = "SIM-DO",
+    destination = destination,
+    collect = FALSE,
+    quiet = TRUE
+  )
+
+  expect_s3_class(manifest, "tbl_df")
+  expect_equal(nrow(manifest), 2L)
+  expect_true(all(file.exists(manifest$data_path)))
+  expect_identical(readRDS(manifest$data_path[[1L]])$value, "x")
+})
+
+test_that("fetch can process each file before selecting variables", {
+  mock_fetch_dependencies(
+    mock_manifest("DOAC2022.dbc"),
+    reader = function(file, as_character = TRUE) {
+      tibble::tibble(IDADE = "402")
+    }
+  )
+
+  result <- fetch_datasus(
+    2022,
+    year_end = 2022,
+    uf = "AC",
+    information_system = "SIM-DO",
+    vars = "IDADEanos",
+    process = TRUE,
+    process_args = list(municipality_data = FALSE, diagnostics = TRUE),
+    quiet = TRUE
+  )
+
+  expect_named(result, "IDADEanos")
+  expect_identical(result$IDADEanos, 2L)
+  expect_length(processing_diagnostics(result)$files, 1L)
+})
+
+test_that("scalable fetch arguments are validated", {
+  mock_fetch_dependencies(mock_manifest("DOAC2022.dbc"))
+
+  expect_error(
+    fetch_datasus(
+      2022,
+      year_end = 2022,
+      uf = "AC",
+      information_system = "SIM-DO",
+      collect = FALSE
+    ),
+    "destination"
+  )
+  expect_error(
+    fetch_datasus(
+      2022,
+      year_end = 2022,
+      uf = "AC",
+      information_system = "SIM-DO",
+      process_args = list(data = "replacement")
+    ),
+    "cannot replace"
+  )
+  expect_error(
+    fetch_datasus(
+      2022,
+      year_end = 2022,
+      uf = "AC",
+      information_system = "SIM-DO",
+      process_args = structure(list(FALSE), names = "")
+    ),
+    "unique, non-empty names"
+  )
 })

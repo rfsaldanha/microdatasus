@@ -8,7 +8,9 @@ process_cnes(
   data,
   information_system = c("CNES-ST", "CNES-PF"),
   nomes = FALSE,
-  municipality_data = TRUE
+  municipality_data = TRUE,
+  labels = c("factor", "character", "none"),
+  diagnostics = FALSE
 )
 }
 \arguments{
@@ -26,6 +28,13 @@ identifier itself is preserved.}
 \item{municipality_data}{Logical scalar. If \code{TRUE}, add municipality names
 and available territorial attributes. Professional files prefer
 \code{UFMUNRES}; other layouts use the establishment field \code{CODUFMUN}.}
+
+\item{labels}{Output type for categorical labels: \code{"factor"} (the default),
+\code{"character"}, or \code{"none"} to retain the original codes.}
+
+\item{diagnostics}{Logical scalar. If \code{TRUE}, attach a processing report,
+including codes absent from official conversion tables. Retrieve it with
+\code{\link[=processing_diagnostics]{processing_diagnostics()}}.}
 }
 \value{
 A tibble. Full dates are returned as \code{Date}, quantities as integer,

@@ -10,7 +10,9 @@ process_sia(
   nome_proced = TRUE,
   nome_ocupacao = TRUE,
   nome_equipe = TRUE,
-  municipality_data = TRUE
+  municipality_data = TRUE,
+  labels = c("factor", "character", "none"),
+  diagnostics = FALSE
 )
 }
 \arguments{
@@ -33,6 +35,13 @@ declared by the official DEF.}
 \item{municipality_data}{Logical scalar. If \code{TRUE}, add municipality names
 and available territorial attributes for the patient/residence field
 supported by the selected layout.}
+
+\item{labels}{Output type for categorical labels: \code{"factor"} (the default),
+\code{"character"}, or \code{"none"} to retain the original codes.}
+
+\item{diagnostics}{Logical scalar. If \code{TRUE}, attach a processing report,
+including codes absent from official conversion tables. Retrieve it with
+\code{\link[=processing_diagnostics]{processing_diagnostics()}}.}
 }
 \value{
 A tibble. Full dates are returned as \code{Date}; quantities and derived

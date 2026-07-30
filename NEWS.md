@@ -2,6 +2,15 @@
 
 ## Downloads
 
+* Adds an optional persistent cache for DBC and TabWin ZIP files, with
+  manifests, MD5 integrity checks, inspection through `datasus_cache_info()`,
+  and targeted cleanup through `clear_datasus_cache()`.
+* Extends `fetch_datasus()` with per-file processing and RDS output. Setting
+  `collect = FALSE` bounds memory use to roughly one source file and returns a
+  provenance manifest; existing calls retain their combined-tibble behavior.
+* Adds opt-in download provenance with source URL, size, checksum, timestamp,
+  cache status, and local/output paths.
+
 * Reworks `fetch_datasus()` around an internal registry of supported systems and
   manifests built from the files actually published by DataSUS. Each relevant
   FTP directory is listed only once per call, avoiding redundant connections
@@ -56,6 +65,16 @@
 
 ## Processing, documentation, and testing
 
+* Adds `datasus_variables()` to inspect official DEF/CNV/DBF metadata and
+  `compare_datasus_dictionary()` to report added, removed, or changed fields
+  and labels between dictionary versions.
+* Gives every unified `process_*()` function the same `labels` policy
+  (`"factor"`, `"character"`, or `"none"`) and optional diagnostics for
+  unmapped codes, while appending all new arguments to preserve established
+  calls.
+* Adds coverage, reproducible processing-benchmark, and scheduled live DataSUS
+  smoke-test workflows, and removes the obsolete duplicate check workflow.
+
 * Replaces short SINAN acronym identifiers with readable canonical names,
   while retaining every previous value as a silent backward-compatible alias.
   The new `datasus_information_systems()` lookup table lists all 93 supported
@@ -86,6 +105,10 @@
   fields. SIH-RD/RJ and every applicable SIA layout now add integer
   `IDADEdias`, `IDADEmeses`, or `IDADEanos` columns from the official TabWin
   unit conventions; SIM and SINAN use the same shared internal decoder.
+* Speeds processing of large tables by applying row-specific historical
+  dictionaries in one pass per field, factorizing only once, avoiding a second
+  full-table UTF-8 normalization, and using direct numeric coercion when no
+  special missing-value codes need preprocessing.
 * Adopts `dplyr::recode_values()` because `dplyr::case_match()` is deprecated.
 * Expands and corrects the documentation for all public functions, including
   network behavior, actual return types, compatibility arguments, and links to

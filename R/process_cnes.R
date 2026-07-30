@@ -131,7 +131,9 @@
 .cnes_apply_service_classification <- function(
   data,
   dictionaries,
-  dictionary_rows
+  dictionary_rows,
+  labels = "factor",
+  collector = NULL
 ) {
   service <- .process_find_fields(data, "SERV_ESP")
   classification <- .process_find_fields(data, "CLASS_SR")
@@ -154,10 +156,24 @@
       combined
     )
     if (!is.null(selected)) {
-      result[rows] <- as.character(.tabwin_apply_conversion(combined, selected))
+      converted <- .tabwin_apply_conversion_values(combined, selected)
+      .process_record_dictionary_diagnostics(
+        collector,
+        service,
+        key,
+        combined,
+        converted
+      )
+      if (!identical(labels, "none")) {
+        result[rows] <- converted
+      }
     }
   }
-  data[[service]] <- factor(result)
+  if (identical(labels, "factor")) {
+    data[[service]] <- factor(result)
+  } else if (identical(labels, "character")) {
+    data[[service]] <- result
+  }
   data
 }
 
@@ -203,6 +219,11 @@
 #'   and available territorial attributes. Professional files prefer
 #'   `UFMUNRES`; other layouts use the establishment field `CODUFMUN`.
 #'
+#' @param labels Output type for categorical labels: `"factor"` (the default),
+#'   `"character"`, or `"none"` to retain the original codes.
+#' @param diagnostics Logical scalar. If `TRUE`, attach a processing report,
+#'   including codes absent from official conversion tables. Retrieve it with
+#'   [processing_diagnostics()].
 #' @examplesIf interactive() && curl::has_internet()
 #' process_cnes(cnes_st_sample, information_system = "CNES-ST")
 #' process_cnes(cnes_pf_sample, information_system = "CNES-PF")
@@ -217,19 +238,22 @@
 #'
 #' @seealso [fetch_tabwin_dictionary()], [fetch_datasus()], [fetch_cadger()]
 #'
-#' @importFrom rlang .data
 #' @export
 process_cnes <- function(
   data,
   information_system = c("CNES-ST", "CNES-PF"),
   nomes = FALSE,
-  municipality_data = TRUE
+  municipality_data = TRUE,
+  labels = c("factor", "character", "none"),
+  diagnostics = FALSE
 ) {
   if (!is.data.frame(data)) {
     cli::cli_abort("{.arg data} must be a data frame.")
   }
   .datasus_assert_flag(nomes, "nomes")
   .datasus_assert_flag(municipality_data, "municipality_data")
+  options <- .process_validate_options(labels, diagnostics)
+  labels <- options$labels
 
   # The original default was a two-value vector even though the implementation
   # required one value. Missing calls historically meant the first, CNES-ST.
@@ -249,6 +273,9 @@ process_cnes <- function(
   }
 
   result <- tibble::as_tibble(data)
+  collector <- .process_diagnostic_collector(
+    diagnostics, information_system, result
+  )
   for (field in names(result)) {
     if (is.factor(result[[field]])) {
       result[[field]] <- as.character(result[[field]])
@@ -289,19 +316,21 @@ process_cnes <- function(
     result[[field]] <- .process_as_double(result[[field]])
   }
 
-  for (key in names(dictionaries)) {
-    result <- .process_apply_dictionary(
-      result,
-      dictionaries[[key]],
-      categorical_fields,
-      rows = dictionary_rows[[key]]
-    )
-  }
+  result <- .process_apply_dictionaries(
+    result,
+    dictionaries,
+    categorical_fields,
+    dictionary_rows,
+    labels = labels,
+    collector = collector
+  )
   if (identical(information_system, "CNES-SR")) {
     result <- .cnes_apply_service_classification(
       result,
       dictionaries,
-      dictionary_rows
+      dictionary_rows,
+      labels = labels,
+      collector = collector
     )
   }
   if (nomes && length(dictionaries)) {
@@ -327,9 +356,8 @@ process_cnes <- function(
     }
   }
 
-  result <- .process_normalize_text(result)
   cli::cli_alert_success(
     "Finished {.strong {information_system}} data pre-processing."
   )
-  tibble::as_tibble(result)
+  .process_finalize(result, collector)
 }

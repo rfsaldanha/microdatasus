@@ -15,7 +15,15 @@ fetch_datasus(
   stop_on_error = FALSE,
   timeout = 240,
   track_source = FALSE,
-  quiet = FALSE
+  quiet = FALSE,
+  cache_dir = getOption("microdatasus.cache_dir", NULL),
+  refresh = FALSE,
+  destination = NULL,
+  collect = TRUE,
+  process = FALSE,
+  process_args = list(),
+  provenance = FALSE,
+  keep_files = FALSE
 )
 }
 \arguments{
@@ -53,10 +61,39 @@ column named \code{source}.}
 progress reported by \code{\link[curl:curl_download]{curl::curl_download()}} and announce each file before
 downloading it. If \code{TRUE}, suppress status messages, per-file
 announcements, and progress meters. Warnings and errors are not suppressed.}
+
+\item{cache_dir}{Optional directory used as a persistent cache for downloaded
+DBC files and TabWin dictionaries. The \code{microdatasus.cache_dir} option
+supplies the default; \code{NULL} preserves the historical session-temporary
+behavior.}
+
+\item{refresh}{Logical scalar. If \code{TRUE}, download files again even when a
+valid cached copy is available.}
+
+\item{destination}{Optional directory in which each prepared file is saved
+separately as RDS. This supports requests too large to combine in memory.}
+
+\item{collect}{Logical scalar. If \code{TRUE} (the default), combine and return
+records as before. If \code{FALSE}, write per-file RDS outputs and return their
+provenance table; in that case \code{destination} is required.}
+
+\item{process}{Logical scalar. If \code{TRUE}, run the processor matching
+\code{information_system} independently on each downloaded file.}
+
+\item{process_args}{Named list of additional arguments passed to the matching
+\verb{process_*()} function. It cannot replace \code{data} or \code{information_system}.}
+
+\item{provenance}{Logical scalar. If \code{TRUE}, attach download URLs, checksums,
+sizes, timestamps, cache status, and paths. Retrieve the table with
+\code{\link[=datasus_provenance]{datasus_provenance()}}.}
+
+\item{keep_files}{Logical scalar. If \code{TRUE} and \code{destination} is supplied,
+retain a copy of each raw DBC file under \code{destination/dbc}.}
 }
 \value{
-A tibble containing all successfully read records, or \code{NULL} if no
-requested file could be read. No diagnostic attributes are added.
+With \code{collect = TRUE}, a tibble containing all successfully read
+records, or \code{NULL} if no requested file could be read. With
+\code{collect = FALSE}, a provenance tibble with one row per output file.
 }
 \description{
 Downloads published DBC files from DataSUS, reads them with \code{\link[=read_dbc]{read_dbc()}},
@@ -69,11 +106,18 @@ the same system, period, state, and file part, definitive/current data take
 precedence over preliminary data, and current data take precedence over
 historical copies.
 
-Downloads are sequential. Unless \code{quiet = TRUE}, transfer progress is
+Files are handled sequentially and, when requested, processed and written
+before the next file is read. Thus \code{collect = FALSE} bounds working memory
+to approximately one source file. Unless \code{quiet = TRUE}, transfer progress is
 displayed by \code{\link[curl:curl_download]{curl::curl_download()}}. Transient network failures are retried
 up to two times; missing, empty, invalid DBC, and incompatible-schema files
 are not retried. Partial files and other temporary files are removed before
 the function returns or aborts.
+
+When \code{cache_dir} is supplied, complete DBC files and dictionaries persist
+across R sessions. Cache entries include a manifest and MD5 checksum.
+\code{\link[=datasus_cache_info]{datasus_cache_info()}} inspects them and \code{\link[=clear_datasus_cache]{clear_datasus_cache()}} removes only
+files managed by microdatasus.
 
 Years and state abbreviations refer to DataSUS processing periods and places
 of processing, which may differ from dates or places of occurrence and

@@ -75,7 +75,7 @@ create_cnes_tabwin_fixture <- function() {
 
 test_that("process_cnes preserves all established arguments", {
   expect_identical(
-    formals(process_cnes),
+    as.pairlist(formals(process_cnes)[c("data", "information_system", "nomes", "municipality_data")]),
     as.pairlist(alist(
       data = ,
       information_system = c("CNES-ST", "CNES-PF"),

@@ -543,28 +543,44 @@
   invisible(destination)
 }
 
+.datasus_commit_file <- function(temporary, destination) {
+  # rename is atomic on platforms that permit replacing the destination;
+  # file.copy is the portable fallback used by Windows for existing files.
+  committed <- file.rename(temporary, destination)
+  if (!committed) {
+    committed <- file.copy(temporary, destination, overwrite = TRUE)
+    if (committed) unlink(temporary)
+  }
+  if (!committed) {
+    cli::cli_abort("Could not finalize downloaded file {.file {basename(destination)}}.")
+  }
+  invisible(destination)
+}
+
 .datasus_download_file <- function(
   url,
   destination,
   timeout,
   quiet = FALSE
 ) {
+  temporary <- paste0(destination, ".part")
+  on.exit(unlink(temporary), add = TRUE)
   .datasus_retry(
     function() {
       .datasus_transfer_file(
         url,
-        destination,
+        temporary,
         timeout,
         quiet = quiet
       )
     },
     retry_if = .datasus_is_transient_curl_error
   )
-  if (!file.exists(destination) || is.na(file.size(destination)) ||
-      file.size(destination) == 0) {
+  if (!file.exists(temporary) || is.na(file.size(temporary)) ||
+      file.size(temporary) == 0) {
     cli::cli_abort("The file downloaded from {.url {url}} is empty.")
   }
-  invisible(destination)
+  .datasus_commit_file(temporary, destination)
 }
 
 .datasus_summarize_failures <- function(failures) {
