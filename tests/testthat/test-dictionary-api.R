@@ -1,4 +1,4 @@
-create_dictionary_api_fixture <- function() {
+create_dictionary_api_fixture <- function(large_range = FALSE) {
   root <- tempfile("dictionary-api-")
   tabdo <- file.path(root, "OBITOS_CID10_TAB", "tabdo")
   dir.create(tabdo, recursive = TRUE)
@@ -7,6 +7,7 @@ create_dictionary_api_fixture <- function() {
     c(
       "Ado*.db?",
       "XTipo obito, TIPOBITO, 1, TIPOBITO.CNV",
+      if (large_range) "XNumero DO, NUMERODO, 1, LARGE.CNV",
       "IContador, CONTADOR"
     )
   )
@@ -18,6 +19,15 @@ create_dictionary_api_fixture <- function() {
       tabwin_cnv_line(2, "Nao fetal", "2")
     )
   )
+  if (large_range) {
+    write_tabwin_text(
+      file.path(tabdo, "LARGE.CNV"),
+      c(
+        "1 8",
+        tabwin_cnv_line(1, "Faixa analitica", "00000000-89999999")
+      )
+    )
+  }
   archive <- tempfile(fileext = ".zip")
   zip::zipr(archive, files = "OBITOS_CID10_TAB", root = root)
   unlink(root, recursive = TRUE)
@@ -95,6 +105,29 @@ test_that("datasus_variables exposes types and code-label tables", {
     )
   )
   expect_identical(variables$type[variables$field == "CONTADOR"], "numeric")
+})
+
+test_that("datasus_variables skips non-enumerable analytical ranges", {
+  archive <- create_dictionary_api_fixture(large_range = TRUE)
+  on.exit(unlink(archive), add = TRUE)
+  local_mocked_bindings(
+    .datasus_download_file = function(
+      url, destination, timeout, quiet = FALSE
+    ) {
+      file.copy(archive, destination)
+      invisible(destination)
+    },
+    .package = "microdatasus"
+  )
+  microdatasus:::.tabwin_clear_cache()
+  on.exit(microdatasus:::.tabwin_clear_cache(), add = TRUE)
+
+  variables <- datasus_variables("SIM-DO", quiet = TRUE)
+  analytical <- variables[variables$field == "NUMERODO", ]
+
+  expect_equal(nrow(analytical), 1L)
+  expect_equal(nrow(analytical$labels[[1L]]), 0L)
+  expect_true(is.na(analytical$categories[[1L]]))
 })
 
 test_that("dictionary comparison reports changed labels", {

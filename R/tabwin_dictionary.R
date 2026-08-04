@@ -376,16 +376,24 @@
   destination
 }
 
-.tabwin_expand_range <- function(token, width) {
+.tabwin_expand_range <- function(token, width, max_codes = 100000L) {
   # Short CNV codes may use compact intervals such as 01-09 or A01-A05.
   bounds <- strsplit(token, "-", fixed = TRUE)[[1L]]
   if (length(bounds) != 2L || any(!nzchar(bounds))) {
     return(token)
   }
   if (all(grepl("^[0-9]+$", bounds))) {
-    limits <- suppressWarnings(as.integer(bounds))
+    limits <- suppressWarnings(as.numeric(bounds))
     if (anyNA(limits) || limits[[1L]] > limits[[2L]]) {
       return(token)
+    }
+    # Some official CNVs describe analytical bands covering tens of millions
+    # of identifiers. They are not finite code-label dictionaries and must not
+    # be expanded into an object large enough to exhaust the R session.
+    if (limits[[2L]] - limits[[1L]] + 1 > max_codes) {
+      cli::cli_abort(
+        "TabWin numeric range {.val {token}} is too large to expand as labels."
+      )
     }
     return(sprintf(
       paste0("%0", width, "d"),
@@ -399,8 +407,13 @@
       length(pieces[[2L]]) == 3L &&
       identical(toupper(pieces[[1L]][[2L]]), toupper(pieces[[2L]][[2L]]))
   ) {
-    limits <- as.integer(c(pieces[[1L]][[3L]], pieces[[2L]][[3L]]))
+    limits <- as.numeric(c(pieces[[1L]][[3L]], pieces[[2L]][[3L]]))
     if (!anyNA(limits) && limits[[1L]] <= limits[[2L]]) {
+      if (limits[[2L]] - limits[[1L]] + 1 > max_codes) {
+        cli::cli_abort(
+          "TabWin alphanumeric range {.val {token}} is too large to expand as labels."
+        )
+      }
       prefix <- toupper(pieces[[1L]][[2L]])
       digits <- width - nchar(prefix)
       return(paste0(
@@ -461,48 +474,53 @@
   }
 
   rows <- lines[seq.int(header_index + 1L, length(lines))]
-  categories <- list()
-  labels <- character()
-  for (line in rows) {
-    if (!nzchar(trimws(line)) || startsWith(trimws(line), ";")) {
-      next
-    }
-    # CNV is a fixed-width format: sequence in columns 4-7, description in
-    # 10-59, and comma-separated source codes from column 61 onward.
-    number <- suppressWarnings(as.integer(trimws(substr(line, 4L, 7L))))
-    if (is.na(number)) {
-      next
-    }
-    label <- trimws(substr(line, 10L, 59L))
-    codes <- sub(";.*$", "", substring(line, 61L))
-    codes <- trimws(strsplit(codes, ",", fixed = TRUE)[[1L]])
-    codes <- codes[nzchar(codes)]
-    if (!length(codes)) {
-      next
-    }
-    # A category may continue on later lines when its code list exceeds the
-    # TabWin line limit, hence codes are accumulated by sequence number.
-    key <- as.character(number)
-    categories[[key]] <- c(categories[[key]], codes)
-    if (nzchar(label) && !key %in% names(labels)) {
-      labels[[key]] <- label
-    }
-  }
+  active <- nzchar(trimws(rows)) & !startsWith(trimws(rows), ";")
+  rows <- rows[active]
+  # CNV is a fixed-width format: sequence in columns 4-7, description in
+  # 10-59, and comma-separated source codes from column 61 onward. Parsing
+  # whole columns avoids quadratic list growth in large official relations.
+  numbers <- suppressWarnings(as.integer(trimws(substr(rows, 4L, 7L))))
+  row_labels <- trimws(substr(rows, 10L, 59L))
+  code_text <- sub(";.*$", "", substring(rows, 61L))
+  tokens <- strsplit(code_text, ",", fixed = TRUE)
+  tokens <- lapply(tokens, function(values) {
+    values <- trimws(values)
+    values[nzchar(values)]
+  })
+  usable <- !is.na(numbers) & lengths(tokens) > 0L
+  keys <- as.character(numbers[usable])
+  row_labels <- row_labels[usable]
+  tokens <- tokens[usable]
+  # A category may continue on later lines when its code list exceeds the
+  # TabWin line limit, so group tokens by sequence number in source order.
+  category_keys <- unique(keys)
+  groups <- split(tokens, match(keys, category_keys))
+  categories <- lapply(groups, unlist, use.names = FALSE)
+  names(categories) <- category_keys[as.integer(names(groups))]
+  has_label <- nzchar(row_labels)
+  label_keys <- keys[has_label]
+  first_label <- !duplicated(label_keys)
+  labels <- row_labels[has_label][first_label]
+  names(labels) <- label_keys[first_label]
 
-  map_codes <- character()
-  map_labels <- character()
-  for (key in names(categories)) {
-    if (!key %in% names(labels)) {
-      next
-    }
-    codes <- unlist(
-      lapply(categories[[key]], .tabwin_expand_range, width = code_width),
-      use.names = FALSE
-    )
-    codes <- .tabwin_normalize_code(codes, code_width)
-    map_codes <- c(map_codes, codes)
-    map_labels <- c(map_labels, rep(labels[[key]], length(codes)))
-  }
+  labelled_keys <- names(categories)[names(categories) %in% names(labels)]
+  raw_code_parts <- categories[labelled_keys]
+  raw_codes <- unlist(raw_code_parts, use.names = FALSE)
+  raw_labels <- rep(unname(labels[labelled_keys]), lengths(raw_code_parts))
+  # Literal codes dominate large CNVs. Only range tokens need the relatively
+  # expensive interval parser and its materialisation safety check.
+  expanded <- as.list(raw_codes)
+  ranges <- grepl("-", raw_codes, fixed = TRUE)
+  expanded[ranges] <- lapply(
+    raw_codes[ranges],
+    .tabwin_expand_range,
+    width = code_width
+  )
+  map_codes <- .tabwin_normalize_code(
+    unlist(expanded, use.names = FALSE),
+    code_width
+  )
+  map_labels <- rep(raw_labels, lengths(expanded))
   # Later, more specific categories override broad catch-all ranges declared
   # earlier (for example 1 and 2 override the legacy SEXO range 0-9).
   keep <- !duplicated(map_codes, fromLast = TRUE)
@@ -525,8 +543,14 @@
 }
 
 .tabwin_conversion_key <- function(definition) {
+  file <- tolower(definition$file)
+  if (identical(definition$extension, "CNV")) {
+    # A CNV map depends only on the relation file; source field and substring
+    # position affect application, not parsing, so all definitions can share it.
+    return(paste(file, "CNV", sep = "::"))
+  }
   paste(
-    tolower(definition$file),
+    file,
     toupper(definition$field),
     toupper(definition$argument),
     sep = "::"

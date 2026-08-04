@@ -6,6 +6,46 @@
   )
 }
 
+# Extract all usable relations with one pass over the ZIP. Individual parsing
+# remains fault tolerant because official DEF files can reference retired CNVs.
+.datasus_prefetch_dictionary_relations <- function(dictionary, definitions) {
+  if (isTRUE(dictionary$extracted_all) || !nrow(definitions)) {
+    return(invisible(NULL))
+  }
+  files <- unique(definitions$file)
+  entries <- vapply(files, function(file) {
+    definition_dir <- dictionary$definition_dir
+    relative_file <- if (definition_dir %in% c("", ".", "/")) {
+      file
+    } else {
+      paste0(definition_dir, "/", file)
+    }
+    tryCatch(
+      .tabwin_find_entry(dictionary$entries, relative_file),
+      error = function(error) NA_character_
+    )
+  }, character(1))
+  entries <- unique(entries[!is.na(entries)])
+  destinations <- file.path(dictionary$cache_dir, basename(entries))
+  pending <- !file.exists(destinations) | file.size(destinations) == 0
+  if (!any(pending)) {
+    return(invisible(NULL))
+  }
+  # If batch extraction fails, the existing lazy extractor gets another chance
+  # for each relation and preserves its more specific diagnostic messages.
+  tryCatch(
+    zip::unzip(
+      zipfile = dictionary$archive,
+      files = entries[pending],
+      exdir = dictionary$cache_dir,
+      junkpaths = TRUE,
+      overwrite = TRUE
+    ),
+    error = function(error) NULL
+  )
+  invisible(NULL)
+}
+
 #' Consult variables in an official DataSUS dictionary
 #'
 #' Downloads or reuses a TabWin dictionary and presents its variable metadata
@@ -15,6 +55,9 @@
 #' @param include_labels Logical scalar. If TRUE, parse CNV and DBF relations
 #'   and include their code-label tables in the labels list-column.
 #' @inheritParams fetch_tabwin_dictionary
+#'
+#' @details Analytical CNV ranges that are too large to enumerate are kept as
+#'   variable metadata, with `NA` in `categories` and an empty `labels` table.
 #'
 #' @return A tibble with one row per categorical definition or numeric field.
 #'
@@ -40,6 +83,14 @@ datasus_variables <- function(
     cache_dir = cache_dir
   )
   definitions <- dictionary$definitions
+  if (include_labels) {
+    if (!quiet) {
+      cli::cli_alert_info(
+        "Preparing the DataSUS variable labels for {.val {information_system}}..."
+      )
+    }
+    .datasus_prefetch_dictionary_relations(dictionary, definitions)
+  }
   conversions <- lapply(seq_len(nrow(definitions)), function(index) {
     if (!include_labels) {
       return(NULL)
@@ -111,6 +162,11 @@ datasus_variables <- function(
       labels = empty_labels
     )
     result <- rbind(result, numeric_rows)
+  }
+  if (include_labels && !quiet) {
+    cli::cli_alert_success(
+      "Prepared the DataSUS variable labels for {.val {information_system}}."
+    )
   }
   result
 }

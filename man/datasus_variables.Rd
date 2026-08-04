@@ -39,6 +39,10 @@ A tibble with one row per categorical definition or numeric field.
 Downloads or reuses a TabWin dictionary and presents its variable metadata
 and code-label maps as a rectangular lookup table.
 }
+\details{
+Analytical CNV ranges that are too large to enumerate are kept as
+variable metadata, with \code{NA} in \code{categories} and an empty \code{labels} table.
+}
 \examples{
 \dontshow{if (interactive() && curl::has_internet()) withAutoprint(\{ # examplesIf}
 variables <- datasus_variables("SIM-DO", include_labels = FALSE)

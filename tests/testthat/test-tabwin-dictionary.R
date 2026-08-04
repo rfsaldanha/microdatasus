@@ -165,6 +165,23 @@ test_that("specific CNV categories override earlier catch-all ranges", {
   )
 })
 
+test_that("CNV parser refuses analytical ranges that cannot be materialised", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  write_tabwin_text(
+    path,
+    c(
+      "1 8",
+      tabwin_cnv_line(1, "Faixa analitica", "00000000-89999999")
+    )
+  )
+
+  expect_error(
+    microdatasus:::.tabwin_parse_cnv(path),
+    "too large to expand as labels"
+  )
+})
+
 test_that("DBF relationships use the description field declared by DEF", {
   archive <- create_tabwin_fixture()
   on.exit(unlink(archive), add = TRUE)
