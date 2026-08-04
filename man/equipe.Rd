@@ -5,7 +5,7 @@
 \alias{equipe}
 \title{Equipe table}
 \format{
-A data frame with 2428 rows and 2 variables:
+A data frame with 107438 rows and 2 variables:
 \describe{
 \item{COD}{Code}
 \item{equipe_ref}{Label}
@@ -15,6 +15,6 @@ A data frame with 2428 rows and 2 variables:
 equipe
 }
 \description{
-Equipe table, based on INE_EQUIPE_BR.dbf file from SIM TabWIN definitions file.
+Legacy packaged snapshot retained for compatibility; its exact source archive and date are unavailable.
 }
 \keyword{datasets}

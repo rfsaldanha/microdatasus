@@ -28,6 +28,9 @@ interpretação de cada sistema, consulte o livro
   definições e `compare_datasus_dictionary()` identifica mudanças entre versões.
 - `fetch_cadger()` e `fetch_sigtab()` obtêm tabelas auxiliares atuais de CNES e
   SIA.
+- `datasus_reference_tables()` torna explícita a origem das tabelas legadas;
+  `datasus_lockfile()` registra e `verify_datasus_lockfile()` confere os
+  arquivos usados em uma análise.
 
 Os downloads fazem novas tentativas em falhas transitórias e podem usar um
 cache persistente, com checksum e proveniência. Quando
@@ -165,6 +168,12 @@ proveniência — fonte, definição e checksum — de cada dicionário usado.
 Para solicitações grandes, combine `destination`, `collect = FALSE` e
 `process = TRUE`: cada DBC é processado e gravado antes da leitura do próximo.
 O retorno é um manifesto com caminhos, número de linhas, origem e checksum.
+
+Use `row_filter` para descartar linhas de cada DBC antes do processamento e
+reduzir memória e tempo. Novos manifests usam SHA-256; espelhos HTTP/FTP podem
+ser informados por `options(microdatasus.mirrors = c("https://..."))`.
+Com `provenance = TRUE`, `datasus_lockfile(dados, "datasus.lock.rds")`
+registra a consulta, os DBC e os dicionários usados.
 
 O guia [Dicionários, cache e processamento em
 escala](https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.html)

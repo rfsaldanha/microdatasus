@@ -5,7 +5,7 @@
 \alias{tabMun}
 \title{Municipalities table}
 \format{
-A data frame with 5659 rows and 2 variables:
+A data frame with 5659 rows and 9 variables:
 \describe{
 \item{munResCod}{Municipality IBGE code with 6 numbers}
 \item{munResStatus}{Status}

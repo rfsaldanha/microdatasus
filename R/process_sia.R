@@ -316,7 +316,7 @@ process_sia <- function(
   if (municipality_data) {
     available <- .process_find_fields(result, municipality_fields)
     if (length(available)) {
-      result <- .process_add_municipality_data(result, available[[1L]])
+      result <- .process_add_municipality_data(result, available[[1L]], collector)
     }
   }
 

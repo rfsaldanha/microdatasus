@@ -49,6 +49,10 @@
 #'   [datasus_provenance()].
 #' @param keep_files Logical scalar. If `TRUE` and `destination` is supplied,
 #'   retain a copy of each raw DBC file under `destination/dbc`.
+#' @param row_filter Optional function called on each raw DBC table immediately
+#'   after reading and before processing or column selection. It must return one
+#'   non-missing logical value per row. This bounds downstream processing and
+#'   output without changing which source files are downloaded.
 #'
 #' @return With `collect = TRUE`, a tibble containing all successfully read
 #'   records, or `NULL` if no requested file could be read. With
@@ -70,7 +74,7 @@
 #' the function returns or aborts.
 #'
 #' When `cache_dir` is supplied, complete DBC files and dictionaries persist
-#' across R sessions. Cache entries include a manifest and MD5 checksum.
+#' across R sessions. Cache entries include a manifest and SHA-256 checksum (while still accepting legacy MD5 manifests).
 #' [datasus_cache_info()] inspects them and [clear_datasus_cache()] removes only
 #' files managed by microdatasus.
 #'
@@ -153,7 +157,8 @@ fetch_datasus <- function(
   process = FALSE,
   process_args = list(),
   provenance = FALSE,
-  keep_files = FALSE
+  keep_files = FALSE,
+  row_filter = NULL
 ) {
   request <- .datasus_validate_arguments(
     year_start = year_start,
@@ -172,12 +177,21 @@ fetch_datasus <- function(
   .datasus_assert_flag(collect, "collect")
   .datasus_assert_flag(provenance, "provenance")
   .datasus_assert_flag(keep_files, "keep_files")
+  .datasus_validate_row_filter(row_filter)
   .datasus_validate_process_args(process, process_args)
   if (any(names(process_args) %in% c("data", "information_system"))) {
     cli::cli_abort(
       "{.arg process_args} cannot replace {.arg data} or {.arg information_system}."
     )
   }
+  request_record <- list(
+    year_start = year_start, month_start = month_start, year_end = year_end,
+    month_end = month_end, uf = uf, information_system = information_system,
+    vars = vars, process = process, process_args = process_args,
+    row_filter = if (is.null(row_filter)) NULL else paste(
+      deparse(body(row_filter)), collapse = " "
+    )
+  )
   cache_root <- .datasus_cache_path(
     cache_dir,
     create = !is.null(cache_dir)
@@ -330,6 +344,10 @@ fetch_datasus <- function(
           )
         }
         partial <- read_dbc(file = temporary, as_character = TRUE)
+        source_rows <- nrow(partial)
+        if (!is.null(row_filter)) {
+          partial <- .datasus_apply_row_filter(partial, row_filter)
+        }
         # Publish a persistent manifest only after the DBC was read
         # successfully, so interrupted or invalid downloads are never trusted.
         if (!is.null(manifest_path) &&
@@ -402,9 +420,11 @@ fetch_datasus <- function(
           period = remote$period,
           uf = remote$uf,
           release = remote$release,
+          source_rows = source_rows,
           rows = nrow(partial),
           size = file_metadata$size,
           checksum = file_metadata$checksum,
+          checksum_algorithm = if (is.null(file_metadata$checksum_algorithm)) "md5" else file_metadata$checksum_algorithm,
           downloaded_at = as.POSIXct(file_metadata$downloaded_at),
           cached = isTRUE(file_metadata$cached),
           dbc_path = dbc_path,
@@ -427,7 +447,8 @@ fetch_datasus <- function(
       }
       if (inherits(
         result,
-        c("microdatasus_source_conflict", "microdatasus_unknown_vars")
+        c("microdatasus_source_conflict", "microdatasus_unknown_vars",
+          "microdatasus_row_filter_error")
       )) stop(result)
       detail <- paste0(remote$file, ": ", conditionMessage(result))
       if (stop_on_error) {
@@ -464,6 +485,7 @@ fetch_datasus <- function(
   provenance_table <- .datasus_provenance_table(provenance_records)
   if (!collect) {
     attr(provenance_table, "microdatasus_provenance") <- provenance_table
+    attr(provenance_table, "microdatasus_request") <- request_record
     return(provenance_table)
   }
   if (!length(parts)) return(NULL)
@@ -473,6 +495,7 @@ fetch_datasus <- function(
     use.names = TRUE,
     fill = TRUE
   ))
+  attr(combined, "microdatasus_request") <- request_record
   if (provenance) {
     attr(combined, "microdatasus_provenance") <- provenance_table
   }

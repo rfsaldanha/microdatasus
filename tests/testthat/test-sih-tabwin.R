@@ -163,6 +163,7 @@ test_that("process_sih labels and types every current SIH file family", {
         DT_INTER = "20240101",
         SEXO = "1",
         VINCPREV = "5",
+        DIAG_PRINC = "001",
         IDADE = "24",
         COD_IDADE = "4",
         VAL_TOT = "10.25",
@@ -215,6 +216,7 @@ test_that("process_sih labels and types every current SIH file family", {
   expect_type(rd$ANO_CMPT, "integer")
   expect_type(rd$IDADE, "integer")
   expect_type(rd$COD_IDADE, "character")
+  expect_identical(rd$DIAG_PRINC, "001")
   expect_type(rd$VAL_TOT, "double")
   expect_s3_class(rd$NASC, "Date")
   expect_s3_class(rd$DT_INTER, "Date")

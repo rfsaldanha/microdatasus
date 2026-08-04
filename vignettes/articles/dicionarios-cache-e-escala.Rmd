@@ -143,6 +143,25 @@ Com `collect = TRUE`, o comportamento histórico é preservado. Use
 `provenance = TRUE` para anexar o manifesto à tabela combinada e
 `datasus_provenance()` para recuperá-lo.
 
+O argumento `row_filter` recebe uma função lógica executada em cada DBC bruto,
+antes de rótulos e conversões. Isso limita o custo do processamento sem alterar
+quais arquivos são baixados. Para registrar uma execução reprodutível:
+
+```{r, eval = FALSE}
+dados <- fetch_datasus(
+  2022, year_end = 2022, uf = "AC", information_system = "SIM-DO",
+  row_filter = function(x) x$SEXO == "1",
+  process = TRUE, provenance = TRUE, cache_dir = cache
+)
+datasus_lockfile(dados, "datasus.lock.rds")
+verify_datasus_lockfile("datasus.lock.rds")
+```
+
+Novos manifests usam SHA-256 e os manifests MD5 de versões anteriores continuam
+legíveis. `options(microdatasus.mirrors = c("https://espelho.example"))`
+define transportes alternativos. `datasus_reference_tables()` lista checksum,
+dimensões, papel e disponibilidade da data de origem das tabelas empacotadas.
+
 Para remover o conteúdo persistente gerenciado pelo pacote, use
 `clear_datasus_cache(cache)`. A função preserva o diretório raiz e arquivos que
 não pertençam ao `microdatasus`.

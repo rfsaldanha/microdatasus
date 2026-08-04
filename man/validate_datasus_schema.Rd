@@ -12,7 +12,9 @@ validate_datasus_schema(
   timeout = 240,
   refresh = FALSE,
   quiet = FALSE,
-  cache_dir = getOption("microdatasus.cache_dir", NULL)
+  cache_dir = getOption("microdatasus.cache_dir", NULL),
+  sample_n = 100L,
+  sample_by_dictionary = TRUE
 )
 }
 \arguments{
@@ -40,6 +42,13 @@ status messages.}
 \item{cache_dir}{Optional persistent cache root. The package option
 \code{microdatasus.cache_dir} is used by default; \code{NULL} uses only the current
 session cache.}
+
+\item{sample_n}{Positive integer giving the maximum deterministic sample
+size processed for each represented historical dictionary.}
+
+\item{sample_by_dictionary}{Logical scalar. If \code{TRUE}, sample every
+represented current or historical definition instead of only the table
+as a whole.}
 }
 \value{
 A tibble with one row per field observed, declared by a selected

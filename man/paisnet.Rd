@@ -16,6 +16,6 @@ A data frame with 266 rows and 3 variables:
 paisnet
 }
 \description{
-paisnet table, based on PAISNET.DBF file from CNES TabWIN definitions file.
+Legacy packaged snapshot retained for compatibility; its exact source archive and date are unavailable.
 }
 \keyword{datasets}

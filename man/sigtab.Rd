@@ -5,7 +5,7 @@
 \alias{sigtab}
 \title{Procediments table}
 \format{
-A data frame with 5325 rows and 2 variables:
+A data frame with 5472 rows and 2 variables:
 \describe{
 \item{COD}{Code}
 \item{nome_proced}{Procediment name}
@@ -15,6 +15,6 @@ A data frame with 5325 rows and 2 variables:
 sigtab
 }
 \description{
-Procediments table, based on TB_SIGTAP.dbf file from SIA TabWIN definitions file.
+Legacy packaged snapshot retained for compatibility; its exact source archive and date are unavailable.
 }
 \keyword{datasets}

@@ -4,11 +4,23 @@
 \alias{fetch_cadger}
 \title{Download the current CADGER table}
 \usage{
-fetch_cadger(timeout = 240)
+fetch_cadger(
+  timeout = 240,
+  cache_dir = getOption("microdatasus.cache_dir", NULL),
+  refresh = FALSE,
+  quiet = FALSE
+)
 }
 \arguments{
 \item{timeout}{A positive numeric scalar. Download and connection timeout,
 in seconds.}
+
+\item{cache_dir}{Optional persistent cache root. The default uses the
+\code{microdatasus.cache_dir} option when set.}
+
+\item{refresh}{Logical scalar. If \code{TRUE}, redownload the ZIP archive.}
+
+\item{quiet}{Logical scalar. If \code{TRUE}, suppress progress messages.}
 }
 \value{
 A data frame with character columns \code{CNES} (establishment code) and
@@ -22,8 +34,8 @@ reads the same DBF through its session-cached TabWin dictionary.
 \section{Network access}{
 
 This function downloads the current \code{TAB_CNES.zip} archive from DataSUS.
-Transfer progress is displayed by default. The temporary archive and
-extracted files are removed before the function returns or aborts.
+Transfer progress is displayed by default. Without \code{cache_dir}, the archive and
+extracted files are removed before return; persistent cache entries are validated.
 }
 
 \references{

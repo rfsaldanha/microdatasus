@@ -369,7 +369,7 @@
   !inherits(error, permanent)
 }
 
-.datasus_list_directory <- function(url, timeout) {
+.datasus_list_directory_once <- function(url, timeout) {
   .datasus_retry(function() {
     handle <- curl::new_handle()
     curl::handle_setopt(
@@ -382,6 +382,42 @@
     response <- curl::curl_fetch_memory(url, handle = handle)
     rawToChar(response$content)
   }, retry_if = .datasus_is_transient_curl_error)
+}
+
+.datasus_url_candidates <- function(url) {
+  mirrors <- getOption("microdatasus.mirrors", character())
+  if (is.null(mirrors)) mirrors <- character()
+  if (!is.character(mirrors) || anyNA(mirrors) || any(!nzchar(mirrors))) {
+    cli::cli_abort(
+      "{.option microdatasus.mirrors} must be a character vector of base URLs."
+    )
+  }
+  origin <- "ftp://ftp.datasus.gov.br"
+  if (!startsWith(url, origin) || !length(mirrors)) return(url)
+  suffix <- substring(url, nchar(origin) + 1L)
+  unique(c(url, paste0(sub("/+$", "", mirrors), suffix)))
+}
+
+.datasus_transport_abort <- function(url, errors) {
+  details <- paste(names(errors), vapply(errors, conditionMessage, character(1)),
+                   sep = ": ")
+  cli::cli_abort(
+    c("All configured DataSUS transports failed for {.url {url}}.",
+      .datasus_cli_bullets(details)),
+    class = "microdatasus_transport_error"
+  )
+}
+
+.datasus_list_directory <- function(url, timeout) {
+  errors <- list()
+  for (candidate in .datasus_url_candidates(url)) {
+    value <- tryCatch(
+      .datasus_list_directory_once(candidate, timeout), error = identity
+    )
+    if (!inherits(value, "error")) return(value)
+    errors[[candidate]] <- value
+  }
+  .datasus_transport_abort(url, errors)
 }
 
 .datasus_parse_listing <- function(text, repository, spec) {
@@ -525,20 +561,19 @@
   timeout,
   quiet = FALSE
 ) {
-  unlink(destination)
   handle <- curl::new_handle()
-  curl::handle_setopt(
-    handle,
+  resume <- file.exists(destination) && !is.na(file.size(destination)) &&
+    file.size(destination) > 0
+  options <- list(
     timeout_ms = .datasus_timeout_ms(timeout),
     connecttimeout_ms = .datasus_timeout_ms(min(timeout, 30)),
     ftp_use_epsv = TRUE
   )
+  if (resume) options$resume_from <- as.numeric(file.size(destination))
+  do.call(curl::handle_setopt, c(list(handle = handle), options))
   curl::curl_download(
-    url,
-    destfile = destination,
-    quiet = quiet,
-    mode = "wb",
-    handle = handle
+    url, destfile = destination, quiet = quiet,
+    mode = if (resume) "ab" else "wb", handle = handle
   )
   invisible(destination)
 }
@@ -569,22 +604,33 @@
 ) {
   temporary <- .datasus_temporary_path(destination)
   on.exit(unlink(temporary), add = TRUE)
-  .datasus_retry(
-    function() {
-      .datasus_transfer_file(
-        url,
-        temporary,
-        timeout,
-        quiet = quiet
-      )
-    },
-    retry_if = .datasus_is_transient_curl_error
-  )
-  if (!file.exists(temporary) || is.na(file.size(temporary)) ||
-      file.size(temporary) == 0) {
-    cli::cli_abort("The file downloaded from {.url {url}} is empty.")
+  errors <- list()
+  for (candidate in .datasus_url_candidates(url)) {
+    unlink(temporary)
+    value <- tryCatch(
+      .datasus_retry(
+        function() .datasus_transfer_file(
+          candidate, temporary, timeout, quiet = quiet
+        ),
+        retry_if = .datasus_is_transient_curl_error
+      ),
+      error = identity
+    )
+    if (inherits(value, "error")) {
+      errors[[candidate]] <- value
+      next
+    }
+    if (!file.exists(temporary) || is.na(file.size(temporary)) ||
+        file.size(temporary) == 0) {
+      errors[[candidate]] <- simpleError(paste(
+        "The file downloaded from", candidate, "is empty."
+      ))
+      next
+    }
+    .datasus_commit_file(temporary, destination)
+    return(invisible(destination))
   }
-  .datasus_commit_file(temporary, destination)
+  .datasus_transport_abort(url, errors)
 }
 
 .datasus_summarize_failures <- function(failures) {
@@ -597,17 +643,63 @@
   ))
 }
 
-.datasus_fetch_zip_dbf <- function(url, internal_file, timeout) {
+.datasus_fetch_zip_dbf <- function(
+  url,
+  internal_file,
+  timeout,
+  cache_dir = NULL,
+  refresh = FALSE,
+  quiet = FALSE,
+  information_system = "auxiliary"
+) {
   .datasus_assert_number(timeout, "timeout", lower = .Machine$double.eps)
-
-  work_dir <- tempfile("microdatasus-auxiliary-")
-  if (!dir.create(work_dir, recursive = TRUE)) {
-    cli::cli_abort("Failed to create a temporary download directory.")
+  .datasus_assert_flag(refresh, "refresh")
+  .datasus_assert_flag(quiet, "quiet")
+  cache_root <- .datasus_cache_path(
+    cache_dir,
+    create = !is.null(cache_dir)
+  )
+  persistent <- !is.null(cache_root)
+  work_dir <- if (persistent) {
+    file.path(
+      cache_root, "auxiliary",
+      .datasus_cache_component(information_system)
+    )
+  } else {
+    tempfile("microdatasus-auxiliary-")
   }
-  on.exit(unlink(work_dir, recursive = TRUE, force = TRUE), add = TRUE)
+  if (!dir.exists(work_dir) &&
+      !dir.create(work_dir, recursive = TRUE)) {
+    cli::cli_abort("Failed to create an auxiliary-table directory.")
+  }
+  if (!persistent) {
+    on.exit(unlink(work_dir, recursive = TRUE, force = TRUE), add = TRUE)
+  }
 
   archive <- file.path(work_dir, "download.zip")
-  .datasus_download_file(url, archive, timeout)
+  manifest_path <- if (persistent) {
+    file.path(work_dir, "manifest.rds")
+  } else {
+    NULL
+  }
+  cache_hit <- !refresh && .datasus_cache_valid(archive, manifest_path)
+  if (!cache_hit) {
+    .datasus_download_file(url, archive, timeout, quiet = quiet)
+  }
+  metadata <- if (cache_hit && file.exists(manifest_path)) {
+    tryCatch(readRDS(manifest_path), error = function(error) NULL)
+  } else {
+    NULL
+  }
+  if (is.null(metadata)) {
+    metadata <- .datasus_file_provenance(
+      archive, url, cached = cache_hit
+    )
+  } else {
+    metadata$cached <- TRUE
+  }
+  metadata$type <- "auxiliary"
+  metadata$information_system <- information_system
 
   extracted <- tryCatch(
     zip::unzip(
@@ -628,11 +720,14 @@
   dbf <- file.path(work_dir, internal_file)
   if (!file.exists(dbf) || is.na(file.size(dbf)) || file.size(dbf) == 0) {
     cli::cli_abort(
-      "The downloaded archive does not contain a valid {.file {internal_file}} file."
+      paste0(
+        "The downloaded archive does not contain a valid ",
+        basename(internal_file), " file."
+      )
     )
   }
 
-  tryCatch(
+  result <- tryCatch(
     foreign::read.dbf(dbf, as.is = TRUE),
     error = function(error) {
       cli::cli_abort(c(
@@ -641,4 +736,30 @@
       ))
     }
   )
+  # A cache entry becomes trusted only after both extraction and DBF parsing.
+  if (persistent && (!cache_hit || !file.exists(manifest_path))) {
+    .datasus_write_manifest(metadata, manifest_path)
+  }
+  provenance <- tibble::tibble(
+    file = basename(url), url = url, period = NA_character_,
+    uf = NA_character_, release = "current",
+    source_rows = nrow(result), rows = nrow(result),
+    size = metadata$size, checksum = metadata$checksum,
+    checksum_algorithm = if (is.null(metadata$checksum_algorithm)) {
+      "md5"
+    } else {
+      metadata$checksum_algorithm
+    },
+    downloaded_at = as.POSIXct(metadata$downloaded_at),
+    cached = isTRUE(metadata$cached),
+    dbc_path = if (persistent) archive else NA_character_,
+    data_path = NA_character_
+  )
+  attr(result, "microdatasus_provenance") <- provenance
+  attr(result, "microdatasus_request") <- list(
+    information_system = information_system,
+    url = url,
+    internal_file = internal_file
+  )
+  result
 }

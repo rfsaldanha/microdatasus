@@ -1,6 +1,6 @@
 #' Naturalidade table
 #'
-#' Naturalidade table, based on NATUR.CNV file from SIM TabWIN definitions file.
+#' Legacy packaged snapshot retained for compatibility; its exact source archive and date are unavailable.
 #'
 #' @format A data frame with 292 rows and 2 variables:
 #' \describe{

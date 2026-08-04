@@ -23,7 +23,8 @@ fetch_datasus(
   process = FALSE,
   process_args = list(),
   provenance = FALSE,
-  keep_files = FALSE
+  keep_files = FALSE,
+  row_filter = NULL
 )
 }
 \arguments{
@@ -89,6 +90,11 @@ sizes, timestamps, cache status, and paths. Retrieve the table with
 
 \item{keep_files}{Logical scalar. If \code{TRUE} and \code{destination} is supplied,
 retain a copy of each raw DBC file under \code{destination/dbc}.}
+
+\item{row_filter}{Optional function called on each raw DBC table immediately
+after reading and before processing or column selection. It must return one
+non-missing logical value per row. This bounds downstream processing and
+output without changing which source files are downloaded.}
 }
 \value{
 With \code{collect = TRUE}, a tibble containing all successfully read
@@ -115,7 +121,7 @@ are not retried. Partial files and other temporary files are removed before
 the function returns or aborts.
 
 When \code{cache_dir} is supplied, complete DBC files and dictionaries persist
-across R sessions. Cache entries include a manifest and MD5 checksum.
+across R sessions. Cache entries include a manifest and SHA-256 checksum (while still accepting legacy MD5 manifests).
 \code{\link[=datasus_cache_info]{datasus_cache_info()}} inspects them and \code{\link[=clear_datasus_cache]{clear_datasus_cache()}} removes only
 files managed by microdatasus.
 

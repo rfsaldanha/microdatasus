@@ -79,7 +79,11 @@ datasus_schema <- function(
 #'
 #' @param information_system NULL for every dictionary, or selected keys.
 #' @param fail_on_error Logical scalar. If `TRUE`, abort after the audit when a
-#'   dictionary or one of its relations could not be downloaded or parsed.
+#'   dictionary download or unexpected parser/I/O error occurs. Known missing
+#'   or invalid upstream relations remain represented in the result.
+#' @param fail_on_issues Logical scalar. If `TRUE`, also abort when official
+#'   relations are missing or invalid. Fallbacks and symbolic analytical ranges
+#'   remain non-fatal.
 #' @inheritParams fetch_tabwin_dictionary
 #' @return A tibble with one row per dictionary and an `issues` list-column.
 #' @export
@@ -89,11 +93,13 @@ audit_datasus_dictionaries <- function(
   refresh = FALSE,
   quiet = FALSE,
   cache_dir = getOption("microdatasus.cache_dir", NULL),
-  fail_on_error = FALSE
+  fail_on_error = FALSE,
+  fail_on_issues = FALSE
 ) {
   .datasus_assert_flag(refresh, "refresh")
   .datasus_assert_flag(quiet, "quiet")
   .datasus_assert_flag(fail_on_error, "fail_on_error")
+  .datasus_assert_flag(fail_on_issues, "fail_on_issues")
   keys <- .datasus_validate_system_selection(information_system)
   registry <- .tabwin_registry()
   refreshed_archives <- character()
@@ -117,6 +123,7 @@ audit_datasus_dictionaries <- function(
     if (inherits(value, "error")) {
       issues <- tibble::tibble(
         field = NA_character_, file = NA_character_, status = "dictionary_error",
+        issue_class = "dictionary_access_or_parser",
         message = conditionMessage(value)
       )
       return(tibble::tibble(
@@ -128,7 +135,7 @@ audit_datasus_dictionaries <- function(
     }
     issues <- value[value$status %in% c(
       "fallback", "non_enumerable", "missing", "invalid", "error"
-    ), c("field", "file", "status", "message")]
+    ), c("field", "file", "status", "issue_class", "message")]
     tibble::tibble(
       information_system = key, archive_key = registry[[key]]$archive_key,
       definition = value$definition[[1L]],
@@ -141,8 +148,16 @@ audit_datasus_dictionaries <- function(
   })
   result <- do.call(rbind, rows)
   failed <- result$status %in% c("dictionary_error", "error")
+  issue_failed <- result$status %in% c(
+    "dictionary_error", "error", "missing", "invalid"
+  )
   if (fail_on_error && any(failed)) {
     cli::cli_abort("One or more DataSUS dictionaries could not be audited.")
+  }
+  if (fail_on_issues && any(issue_failed)) {
+    cli::cli_abort(
+      "One or more DataSUS dictionaries contain missing or invalid relations."
+    )
   }
   result
 }

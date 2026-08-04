@@ -40,7 +40,7 @@
 .datasus_contract_process_args <- function(information_system) {
   family <- sub("-.*$", "", information_system)
   args <- list(
-    municipality_data = FALSE, labels = "none", diagnostics = FALSE
+    municipality_data = FALSE, labels = "none", diagnostics = TRUE
   )
   if (identical(family, "SIA")) {
     args <- c(args, list(
@@ -49,6 +49,43 @@
   }
   if (identical(family, "CNES")) args$nomes <- FALSE
   args
+}
+
+# Select rows across every historical dictionary represented in one table.
+.datasus_contract_sample_rows <- function(
+  data, information_system, sample_n, by_dictionary = TRUE
+) {
+  rows <- seq_len(nrow(data))
+  if (!length(rows)) return(rows)
+  groups <- if (by_dictionary) {
+    family <- sub("-.*$", "", information_system)
+    switch(
+      family,
+      SIA = .sia_dictionary_rows(data, information_system),
+      SIH = .sih_dictionary_rows(data, information_system),
+      CNES = .cnes_dictionary_rows(data, information_system),
+      stats::setNames(list(rows), information_system)
+    )
+  } else {
+    list(all = rows)
+  }
+  sampled <- unlist(lapply(groups, function(group) {
+    group <- group[!is.na(group)]
+    if (length(group) <= sample_n) return(group)
+    group[unique(round(seq(1, length(group), length.out = sample_n)))]
+  }), use.names = FALSE)
+  sort(unique(sampled))
+}
+
+.datasus_contract_diagnostic_counts <- function(report, component, fields) {
+  counts <- stats::setNames(rep(0L, length(fields)), fields)
+  if (is.null(report) || is.null(report[[component]]) ||
+      !nrow(report[[component]])) return(counts)
+  table <- report[[component]]
+  totals <- tapply(table$n, table$field, sum)
+  matched <- intersect(names(totals), fields)
+  counts[matched] <- as.integer(totals[matched])
+  counts
 }
 
 #' Validate a DBC table against its dictionary and processor
@@ -65,6 +102,11 @@
 #'   to report the resulting column types without processing the full table.
 #' @param period Optional scalar label stored in the returned contract, such
 #'   as a year or competence. Historical DEF selection uses fields in `data`.
+#' @param sample_n Positive integer giving the maximum deterministic sample
+#'   size processed for each represented historical dictionary.
+#' @param sample_by_dictionary Logical scalar. If `TRUE`, sample every
+#'   represented current or historical definition instead of only the table
+#'   as a whole.
 #' @inheritParams fetch_tabwin_dictionary
 #' @return A tibble with one row per field observed, declared by a selected
 #'   DEF, or added by the processor. `status` distinguishes matched,
@@ -78,10 +120,14 @@ validate_datasus_schema <- function(
   timeout = 240,
   refresh = FALSE,
   quiet = FALSE,
-  cache_dir = getOption("microdatasus.cache_dir", NULL)
+  cache_dir = getOption("microdatasus.cache_dir", NULL),
+  sample_n = 100L,
+  sample_by_dictionary = TRUE
 ) {
   .datasus_assert_flag(process, "process")
   .datasus_assert_flag(refresh, "refresh")
+  .datasus_assert_flag(sample_by_dictionary, "sample_by_dictionary")
+  .datasus_assert_number(sample_n, "sample_n", integer = TRUE, lower = 1)
   if (is.character(data) && length(data) == 1L && !is.na(data)) {
     data <- read_dbc(data, as_character = FALSE)
   }
@@ -116,13 +162,18 @@ validate_datasus_schema <- function(
   observed <- names(data)
 
   processed <- NULL
+  report <- NULL
+  sampled_rows <- integer()
   if (process) {
-    rows <- if (nrow(data)) 1L else integer()
-    sample <- data[rows, , drop = FALSE]
+    sampled_rows <- .datasus_contract_sample_rows(
+      data, information_system, sample_n, sample_by_dictionary
+    )
+    sample <- data[sampled_rows, , drop = FALSE]
     processed <- .datasus_process_file(
       sample, information_system,
       .datasus_contract_process_args(information_system), cache_dir
     )
+    report <- processing_diagnostics(processed)
   }
   processed_fields <- if (is.null(processed)) character() else names(processed)
   fields <- unique(c(observed, declared, processed_fields))
@@ -156,6 +207,12 @@ validate_datasus_schema <- function(
       ifelse(is_declared, "dictionary_only", "processor_added")
     )
   )
+  coercion_counts <- .datasus_contract_diagnostic_counts(
+    report, "coercion_failures", fields
+  )
+  unknown_counts <- .datasus_contract_diagnostic_counts(
+    report, "unknown_codes", fields
+  )
   tibble::tibble(
     information_system = information_system, period = period, field = fields,
     observed = is_observed, dictionary_declared = is_declared,
@@ -165,6 +222,9 @@ validate_datasus_schema <- function(
     type_changed = is_observed & is_processed &
       !is.na(raw_types[fields]) & !is.na(processed_types[fields]) &
       unname(raw_types[fields]) != unname(processed_types[fields]),
+    sample_rows = length(sampled_rows),
+    coercion_failures = unname(coercion_counts[fields]),
+    unknown_codes = unname(unknown_counts[fields]),
     status = status, dictionary_keys = field_keys,
     archive_checksums = field_checksums
   )

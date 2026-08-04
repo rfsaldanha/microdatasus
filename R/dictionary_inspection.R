@@ -1,3 +1,21 @@
+# Classify the origin independently from severity. This keeps established
+# status values backward compatible while making upstream drift auditable.
+.datasus_dictionary_issue_class <- function(error) {
+  if (inherits(error, "microdatasus_dictionary_missing_error")) {
+    return("upstream_archive_missing")
+  }
+  if (inherits(error, "microdatasus_dictionary_ambiguous_error")) {
+    return("archive_ambiguity")
+  }
+  if (inherits(error, "microdatasus_dictionary_invalid_error")) {
+    return("upstream_content_invalid")
+  }
+  if (inherits(error, "microdatasus_dictionary_relation_error")) {
+    return("relation_io_or_parser")
+  }
+  "internal_or_unknown"
+}
+
 # Preserve relation failures as data so one malformed optional file does not
 # hide either the remaining metadata or the reason that labels are absent.
 .datasus_dictionary_conversion <- function(dictionary, definition) {
@@ -13,6 +31,13 @@
         "non_enumerable"
       } else {
         "ok"
+      },
+      issue_class = if (fallback) {
+        "definition_drift"
+      } else if (symbolic) {
+        "analytical_range"
+      } else {
+        NA_character_
       },
       message = if (fallback) {
         paste0(
@@ -40,7 +65,10 @@
     } else {
       "error"
     }
-    list(conversion = NULL, status = status, message = message)
+    list(
+      conversion = NULL, status = status, message = message,
+      issue_class = .datasus_dictionary_issue_class(error)
+    )
   })
 }
 
@@ -196,8 +224,10 @@ datasus_variables <- function(
   }
   conversions <- lapply(seq_len(nrow(definitions)), function(index) {
     if (!include_labels) {
-      return(list(conversion = NULL, status = "not_requested",
-                  message = NA_character_))
+      return(list(
+        conversion = NULL, status = "not_requested",
+        message = NA_character_, issue_class = NA_character_
+      ))
     }
     .datasus_dictionary_conversion(
       dictionary, definitions[index, , drop = FALSE]
@@ -228,6 +258,7 @@ datasus_variables <- function(
     source = dictionary$source,
     downloaded_at = dictionary$downloaded_at,
     archive_checksum = dictionary$archive_checksum,
+    archive_checksum_algorithm = if (is.null(dictionary$archive_checksum_algorithm)) "md5" else dictionary$archive_checksum_algorithm,
     field = definitions$field,
     description = definitions$description,
     type = "categorical",
@@ -260,6 +291,9 @@ datasus_variables <- function(
     message = vapply(conversions, function(value) {
       if (is.null(value$message)) NA_character_ else value$message
     }, character(1)),
+    issue_class = vapply(conversions, function(value) {
+      if (is.null(value$issue_class)) NA_character_ else value$issue_class
+    }, character(1)),
     labels_complete = vapply(
       conversions, function(value) value$status %in% c("ok", "fallback"),
       logical(1)
@@ -280,6 +314,7 @@ datasus_variables <- function(
       source = dictionary$source,
       downloaded_at = dictionary$downloaded_at,
       archive_checksum = dictionary$archive_checksum,
+      archive_checksum_algorithm = if (is.null(dictionary$archive_checksum_algorithm)) "md5" else dictionary$archive_checksum_algorithm,
       field = numeric,
       description = NA_character_,
       type = "numeric",
@@ -292,6 +327,7 @@ datasus_variables <- function(
       range_rules = 0L,
       status = "ok",
       message = NA_character_,
+      issue_class = NA_character_,
       labels_complete = TRUE,
       labels = empty_labels,
       ranges = rep(list(tibble::tibble(

@@ -20,13 +20,22 @@
   gsub("[^A-Za-z0-9._-]", "_", value)
 }
 
+.datasus_checksum <- function(path, algorithm = c("sha256", "md5")) {
+  algorithm <- match.arg(algorithm)
+  if (identical(algorithm, "md5")) {
+    return(unname(tools::md5sum(path)))
+  }
+  digest::digest(path, algo = "sha256", file = TRUE, serialize = FALSE)
+}
+
 .datasus_file_provenance <- function(path, source, cached = FALSE) {
   info <- file.info(path)
   list(
     source = source,
     local_path = normalizePath(path, mustWork = FALSE),
     size = unname(info$size),
-    checksum = unname(tools::md5sum(path)),
+    checksum = .datasus_checksum(path, "sha256"),
+    checksum_algorithm = "sha256",
     downloaded_at = Sys.time(),
     cached = isTRUE(cached)
   )
@@ -93,10 +102,13 @@
   size_ok <- is.null(manifest$size) ||
     is.na(manifest$size) ||
     identical(as.numeric(file.size(path)), as.numeric(manifest$size))
+  algorithm <- if (is.null(manifest$checksum_algorithm)) "md5" else {
+    manifest$checksum_algorithm
+  }
   checksum_ok <- is.null(manifest$checksum) ||
     is.na(manifest$checksum) ||
     identical(
-      unname(tools::md5sum(path)),
+      .datasus_checksum(path, algorithm),
       unname(as.character(manifest$checksum))
     )
   isTRUE(size_ok && checksum_ok)
@@ -139,6 +151,7 @@ datasus_cache_info <- function(cache_dir = datasus_cache_dir()) {
     local_path = character(),
     size = numeric(),
     checksum = character(),
+    checksum_algorithm = character(),
     downloaded_at = as.POSIXct(character()),
     cached = logical()
   )
@@ -166,6 +179,7 @@ datasus_cache_info <- function(cache_dir = datasus_cache_dir()) {
       local_path = fallback(value$local_path, NA_character_),
       size = fallback(value$size, NA_real_),
       checksum = fallback(value$checksum, NA_character_),
+      checksum_algorithm = fallback(value$checksum_algorithm, "md5"),
       downloaded_at = as.POSIXct(value$downloaded_at, origin = "1970-01-01"),
       cached = TRUE,
       stringsAsFactors = FALSE
@@ -180,7 +194,7 @@ datasus_cache_info <- function(cache_dir = datasus_cache_dir()) {
 
 #' Clear persistent DataSUS cache contents
 #'
-#' Only the dbc and tabwin subdirectories managed by microdatasus are removed;
+#' Only the dbc, tabwin, and auxiliary subdirectories managed by microdatasus are removed;
 #' the supplied cache root and unrelated files are preserved.
 #'
 #' @inheritParams datasus_cache_info
@@ -193,7 +207,7 @@ clear_datasus_cache <- function(cache_dir = datasus_cache_dir()) {
   if (is.null(root) || !dir.exists(root)) {
     return(invisible(root))
   }
-  targets <- file.path(root, c("dbc", "tabwin"))
+  targets <- file.path(root, c("dbc", "tabwin", "auxiliary"))
   for (target in targets[dir.exists(targets)]) {
     unlink(target, recursive = TRUE, force = TRUE)
   }

@@ -266,7 +266,7 @@ process_sih <- function(
       NULL
     )
     if (!is.null(residence_field)) {
-      result <- .process_add_municipality_data(result, residence_field)
+      result <- .process_add_municipality_data(result, residence_field, collector)
     }
   }
 

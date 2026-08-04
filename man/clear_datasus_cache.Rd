@@ -13,6 +13,6 @@ clear_datasus_cache(cache_dir = datasus_cache_dir())
 The cache root, invisibly.
 }
 \description{
-Only the dbc and tabwin subdirectories managed by microdatasus are removed;
+Only the dbc, tabwin, and auxiliary subdirectories managed by microdatasus are removed;
 the supplied cache root and unrelated files are preserved.
 }

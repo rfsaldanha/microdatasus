@@ -10,7 +10,8 @@ audit_datasus_dictionaries(
   refresh = FALSE,
   quiet = FALSE,
   cache_dir = getOption("microdatasus.cache_dir", NULL),
-  fail_on_error = FALSE
+  fail_on_error = FALSE,
+  fail_on_issues = FALSE
 )
 }
 \arguments{
@@ -30,7 +31,12 @@ status messages.}
 session cache.}
 
 \item{fail_on_error}{Logical scalar. If \code{TRUE}, abort after the audit when a
-dictionary or one of its relations could not be downloaded or parsed.}
+dictionary download or unexpected parser/I/O error occurs. Known missing
+or invalid upstream relations remain represented in the result.}
+
+\item{fail_on_issues}{Logical scalar. If \code{TRUE}, also abort when official
+relations are missing or invalid. Fallbacks and symbolic analytical ranges
+remain non-fatal.}
 }
 \value{
 A tibble with one row per dictionary and an \code{issues} list-column.

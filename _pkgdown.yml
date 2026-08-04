@@ -53,6 +53,10 @@ reference:
   - datasus_cache_info
   - clear_datasus_cache
   - datasus_provenance
+  - datasus_lockfile
+  - read_datasus_lockfile
+  - verify_datasus_lockfile
+  - datasus_reference_tables
   - fetch_sigtab
   - fetch_cadger
   - read_dbc

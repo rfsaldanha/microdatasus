@@ -1,12 +1,17 @@
 test_that("auxiliary fetchers keep their public signatures", {
-  expected <- as.pairlist(alist(timeout = 240))
+  expected <- as.pairlist(alist(
+    timeout = 240,
+    cache_dir = getOption("microdatasus.cache_dir", NULL),
+    refresh = FALSE,
+    quiet = FALSE
+  ))
   expect_identical(formals(fetch_cadger), expected)
   expect_identical(formals(fetch_sigtab), expected)
 })
 
 test_that("CADGER keeps only its public columns as character", {
   local_mocked_bindings(
-    .datasus_fetch_zip_dbf = function(url, internal_file, timeout) {
+    .datasus_fetch_zip_dbf = function(url, internal_file, timeout, ...) {
       data.frame(
         CNES = 1234567,
         FANTASIA = "Unidade de Saude",
@@ -28,7 +33,7 @@ test_that("CADGER keeps only its public columns as character", {
 
 test_that("CADGER validates its schema", {
   local_mocked_bindings(
-    .datasus_fetch_zip_dbf = function(url, internal_file, timeout) {
+    .datasus_fetch_zip_dbf = function(url, internal_file, timeout, ...) {
       data.frame(CNES = "123")
     },
     .package = "microdatasus"
@@ -39,7 +44,7 @@ test_that("CADGER validates its schema", {
 
 test_that("SIGTAB returns stable names and character columns", {
   local_mocked_bindings(
-    .datasus_fetch_zip_dbf = function(url, internal_file, timeout) {
+    .datasus_fetch_zip_dbf = function(url, internal_file, timeout, ...) {
       data.frame(code = 101, label = "Procedimento")
     },
     .package = "microdatasus"
@@ -57,7 +62,7 @@ test_that("SIGTAB returns stable names and character columns", {
 
 test_that("SIGTAB validates its schema", {
   local_mocked_bindings(
-    .datasus_fetch_zip_dbf = function(url, internal_file, timeout) {
+    .datasus_fetch_zip_dbf = function(url, internal_file, timeout, ...) {
       data.frame(one = 1, two = 2, three = 3)
     },
     .package = "microdatasus"
@@ -86,7 +91,7 @@ test_that("ZIP helper extracts DBF data and cleans its private directory", {
   work_dir <- NULL
   seen_timeout <- NULL
   local_mocked_bindings(
-    .datasus_download_file = function(url, destination, timeout) {
+    .datasus_download_file = function(url, destination, timeout, ...) {
       work_dir <<- dirname(destination)
       seen_timeout <<- timeout
       file.copy(archive, destination)
@@ -110,7 +115,7 @@ test_that("ZIP helper extracts DBF data and cleans its private directory", {
 test_that("ZIP helper cleans temporary files after download failure", {
   work_dir <- NULL
   local_mocked_bindings(
-    .datasus_download_file = function(url, destination, timeout) {
+    .datasus_download_file = function(url, destination, timeout, ...) {
       work_dir <<- dirname(destination)
       stop("download failed")
     },
@@ -139,7 +144,7 @@ test_that("ZIP helper rejects invalid timeout and archives", {
   )
 
   local_mocked_bindings(
-    .datasus_download_file = function(url, destination, timeout) {
+    .datasus_download_file = function(url, destination, timeout, ...) {
       writeBin(charToRaw("not a zip archive"), destination)
       invisible(destination)
     },

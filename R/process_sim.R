@@ -177,7 +177,7 @@ process_sim <- function(
     result[[field]] <- substring(as.character(result[[field]]), 1L, 6L)
   }
   if (municipality_data) {
-    result <- .process_add_municipality_data(result, "CODMUNRES")
+    result <- .process_add_municipality_data(result, "CODMUNRES", collector)
   }
 
   cli::cli_alert_success(

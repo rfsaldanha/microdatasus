@@ -1,6 +1,6 @@
 Package: microdatasus
 Title: Download and Process 'DataSUS' Files
-Version: 3.0.0
+Version: 3.0.0.9000
 Authors@R: 
     c(person(given = "Raphael",
              family = "Saldanha",
@@ -34,6 +34,7 @@ Imports:
     cli,
     curl,
     data.table,
+    digest,
     dplyr (>= 1.2.0),
     foreign,
     magrittr,

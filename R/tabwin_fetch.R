@@ -253,6 +253,9 @@ fetch_tabwin_dictionary <- function(
     } else {
       provenance$cached <- TRUE
     }
+    if (is.null(provenance$checksum_algorithm)) {
+      provenance$checksum_algorithm <- "md5"
+    }
     provenance$type <- "tabwin"
     provenance$information_system <- information_system
     if (!is.null(cache_root) && (!disk_hit || !file.exists(manifest_path))) {
@@ -267,7 +270,7 @@ fetch_tabwin_dictionary <- function(
         cache_dir = work_dir,
         persistent = !is.null(cache_root)
       ),
-      provenance[c("downloaded_at", "size", "checksum", "cached")]
+      provenance[c("downloaded_at", "size", "checksum", "checksum_algorithm", "cached")]
     )
     assign(
       archive_session_key,
@@ -332,6 +335,7 @@ fetch_tabwin_dictionary <- function(
       downloaded_at = archive_cache$downloaded_at,
       archive_size = archive_cache$size,
       archive_checksum = archive_cache$checksum,
+      archive_checksum_algorithm = archive_cache$checksum_algorithm,
       cache_hit = archive_cache$cached,
       definition = definition_entry,
       definitions = .tabwin_parse_def(definition_path),

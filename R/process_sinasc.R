@@ -191,7 +191,7 @@ process_sinasc <- function(
     } else {
       "MUNI_MAE"
     }
-    result <- .process_add_municipality_data(result, residence_field)
+    result <- .process_add_municipality_data(result, residence_field, collector)
   }
 
   cli::cli_alert_success(

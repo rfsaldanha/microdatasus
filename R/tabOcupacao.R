@@ -1,6 +1,6 @@
 #' Ocupations table
 #'
-#' Ocupations table, based on OCUPACAO.CNV file from SIM TabWIN definitions file.
+#' Legacy packaged snapshot retained for compatibility; its exact source archive and date are unavailable.
 #'
 #' @format A data frame with 350 rows and 2 variables:
 #' \describe{

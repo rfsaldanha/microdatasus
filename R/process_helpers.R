@@ -219,13 +219,18 @@
   data
 }
 
-.process_add_municipality_data <- function(data, field) {
+.process_add_municipality_data <- function(data, field, collector = NULL) {
   actual <- .process_find_fields(data, field)
   if (!length(actual)) {
     return(data)
   }
   actual <- actual[[1L]]
   municipality <- get("tabMun", envir = asNamespace("microdatasus"))
+  # The packaged spatial snapshot is retained for backward compatibility.
+  # Normalize it at use time and record it in diagnostics so it is never a
+  # silent substitute for a current official dictionary.
+  municipality <- .process_normalize_text(municipality)
+  .process_record_reference(collector, "tabMun")
   names(municipality)[[1L]] <- actual
   municipality[[actual]] <- as.character(municipality[[actual]])
   dplyr::left_join(data, municipality, by = actual)

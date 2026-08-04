@@ -1,8 +1,8 @@
 #' Procediments table
 #'
-#' Procediments table, based on TB_SIGTAP.dbf file from SIA TabWIN definitions file.
+#' Legacy packaged snapshot retained for compatibility; its exact source archive and date are unavailable.
 #'
-#' @format A data frame with 5325 rows and 2 variables:
+#' @format A data frame with 5472 rows and 2 variables:
 #' \describe{
 #'   \item{COD}{Code}
 #'   \item{nome_proced}{Procediment name}

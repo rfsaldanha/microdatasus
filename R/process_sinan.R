@@ -217,7 +217,7 @@ process_sinan <- function(
     if (!length(selected)) {
       selected <- municipality_fields
     }
-    result <- .process_add_municipality_data(result, selected[[1L]])
+    result <- .process_add_municipality_data(result, selected[[1L]], collector)
   }
 
   cli::cli_alert_success(

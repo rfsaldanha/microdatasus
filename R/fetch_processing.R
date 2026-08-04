@@ -1,3 +1,29 @@
+.datasus_validate_row_filter <- function(row_filter) {
+  if (!is.null(row_filter) && !is.function(row_filter)) {
+    cli::cli_abort("{.arg row_filter} must be NULL or a function.")
+  }
+  invisible(row_filter)
+}
+
+.datasus_apply_row_filter <- function(data, row_filter) {
+  keep <- tryCatch(
+    row_filter(data),
+    error = function(error) {
+      cli::cli_abort(
+        c("{.arg row_filter} failed.", "i" = conditionMessage(error)),
+        class = "microdatasus_row_filter_error"
+      )
+    }
+  )
+  if (!is.logical(keep) || length(keep) != nrow(data) || anyNA(keep)) {
+    cli::cli_abort(
+      "{.arg row_filter} must return one non-missing logical value per row.",
+      class = "microdatasus_row_filter_error"
+    )
+  }
+  data[keep, , drop = FALSE]
+}
+
 .datasus_validate_process_args <- function(process, process_args) {
   .datasus_assert_flag(process, "process")
   if (!is.list(process_args)) {
@@ -93,9 +119,11 @@
       period = character(),
       uf = character(),
       release = character(),
+      source_rows = integer(),
       rows = integer(),
       size = numeric(),
       checksum = character(),
+      checksum_algorithm = character(),
       downloaded_at = as.POSIXct(character()),
       cached = logical(),
       dbc_path = character(),

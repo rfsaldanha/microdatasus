@@ -1,3 +1,22 @@
+# microdatasus 3.0.0.9000
+
+## Development
+
+* Adds per-file `row_filter` execution before processing, deterministic schema
+  sampling across historical layouts, and richer coercion/unknown-code counts.
+* Uses SHA-256 for new cache manifests while reading legacy MD5 manifests,
+  supports resumable transfers and optional `microdatasus.mirrors`, and brings
+  CADGER/SIGTAB downloads into the persistent cache and provenance model.
+* Adds reproducibility lockfiles with request, source, dictionary, parser, and
+  packaged-reference checksums through `datasus_lockfile()` and verification
+  helpers.
+* Makes packaged lookup-table provenance explicit with
+  `datasus_reference_tables()`, normalizes escaped UTF-8 values, and reports
+  legacy reference use in processing diagnostics.
+* Classifies dictionary issues by origin, adds strict `fail_on_issues` audits,
+  rotating coverage of every registered subsystem, and live historical-layout
+  transition checks.
+
 # microdatasus 3.0.0
 
 ## Downloads

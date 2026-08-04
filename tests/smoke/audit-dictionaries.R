@@ -21,6 +21,31 @@ issue_rows <- lapply(seq_len(nrow(audit)), function(index) {
 issue_rows <- Filter(Negate(is.null), issue_rows)
 issues <- if (length(issue_rows)) do.call(rbind, issue_rows) else data.frame()
 utils::write.csv(issues, "audit-results/dictionary-issues.csv", row.names = FALSE)
+baseline_dir <- Sys.getenv("MICRODATASUS_AUDIT_BASELINE", unset = "")
+current <- summary[, c("information_system", "archive_checksum", "status")]
+if (nzchar(baseline_dir)) {
+  dir.create(baseline_dir, recursive = TRUE, showWarnings = FALSE)
+  baseline_file <- file.path(baseline_dir, "dictionary-audit.csv")
+  changes <- data.frame()
+  if (file.exists(baseline_file)) {
+    previous <- utils::read.csv(baseline_file, stringsAsFactors = FALSE)
+    comparison <- merge(
+      previous, current, by = "information_system", all = TRUE,
+      suffixes = c("_previous", "_current")
+    )
+    changed <- with(comparison,
+      is.na(status_previous) | is.na(status_current) |
+      status_previous != status_current |
+      archive_checksum_previous != archive_checksum_current
+    )
+    changed[is.na(changed)] <- TRUE
+    changes <- comparison[changed, , drop = FALSE]
+  }
+  utils::write.csv(
+    changes, "audit-results/dictionary-changes.csv", row.names = FALSE
+  )
+  utils::write.csv(current, baseline_file, row.names = FALSE)
+}
 print(summary)
 failed <- audit$status %in% c("dictionary_error", "error")
 if (any(failed)) {

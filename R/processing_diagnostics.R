@@ -23,6 +23,7 @@
   collector$unknown <- list()
   collector$coercion_failures <- list()
   collector$dictionaries <- list()
+  collector$reference_tables <- list()
   collector$expected_fields <- character()
   collector
 }
@@ -37,6 +38,7 @@
     information_system = key,
     definition = fallback(dictionary$definition, NA_character_),
     archive_checksum = fallback(dictionary$archive_checksum, NA_character_),
+    archive_checksum_algorithm = fallback(dictionary$archive_checksum_algorithm, "md5"),
     source = fallback(dictionary$source, NA_character_),
     stringsAsFactors = FALSE
   )
@@ -143,7 +145,8 @@
   } else {
     tibble::tibble(
       information_system = character(), definition = character(),
-      archive_checksum = character(), source = character()
+      archive_checksum = character(), archive_checksum_algorithm = character(),
+      source = character()
     )
   }
   report <- structure(
@@ -162,6 +165,11 @@
         collector$expected_fields, toupper(collector$input_fields)
       ),
       dictionaries = dictionaries,
+      reference_tables = if (length(collector$reference_tables)) {
+        tibble::as_tibble(do.call(rbind, collector$reference_tables))
+      } else {
+        .datasus_reference_table_metadata()
+      },
       coercion_failures = coercion_failures,
       unknown_codes = tibble::as_tibble(unknown)
     ),

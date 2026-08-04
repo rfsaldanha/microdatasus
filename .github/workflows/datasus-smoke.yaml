@@ -6,8 +6,9 @@ on:
 name: live-datasus-smoke-test
 
 jobs:
-  live-smoke-test:
+  representative-live-smoke:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       max-parallel: 2
@@ -24,15 +25,41 @@ jobs:
       MICRODATASUS_SMOKE_SYSTEM: ${{ matrix.information-system }}
     steps:
       - uses: actions/checkout@v4
-
       - uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
-
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: local::.
           needs: check
-
       - name: Check DataSUS discovery, DBC reading, and TabWin processing
         run: Rscript tests/smoke/live-datasus.R
+
+  rotating-subsystem-coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      MICRODATASUS_SMOKE_CACHE: ${{ github.workspace }}/.cache/rotating-smoke
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: local::.
+          needs: check
+      - uses: actions/cache@v4
+        with:
+          path: .cache/rotating-smoke
+          key: rotating-smoke-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            rotating-smoke-${{ runner.os }}-
+      - name: Exercise one rotating subsystem from every family
+        run: Rscript tests/smoke/rotating-live.R
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rotating-subsystem-coverage
+          path: smoke-results/
