@@ -8,8 +8,20 @@ name: live-datasus-smoke-test
 jobs:
   live-smoke-test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        information-system:
+          - SIM-DO
+          - SINASC
+          - SIH-RD
+          - SIA-PA
+          - CNES-ST
+          - SINAN-DENGUE
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      MICRODATASUS_SMOKE_SYSTEM: ${{ matrix.information-system }}
     steps:
       - uses: actions/checkout@v4
 

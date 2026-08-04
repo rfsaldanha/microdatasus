@@ -5,55 +5,56 @@
   names(data)[indexes[indexes > 0L]]
 }
 
-.process_as_integer <- function(x, missing = character()) {
-  if (is.integer(x) && !length(missing)) {
-    return(x)
-  }
-  # Raw DBF columns are character, factor, or plain numeric vectors. Coerce
-  # those directly, but retain the legacy character path for other classes.
-  direct <- is.character(x) || is.factor(x) ||
-    ((is.integer(x) || is.double(x)) && !is.object(x))
-  if (!length(missing) && direct) {
-    if (is.factor(x)) {
-      x <- as.character(x)
+.process_as_integer <- function(x, missing = character(), collector = NULL,
+                                field = NA_character_) {
+  # Keep the allocation-free path for ordinary processing; diagnostics pay
+  # the extra character conversion only when the user explicitly requests it.
+  if (is.null(collector)) {
+    if (is.integer(x) && !length(missing)) return(x)
+    direct <- is.character(x) || is.factor(x) ||
+      ((is.integer(x) || is.double(x)) && !is.object(x))
+    if (!length(missing) && direct) {
+      if (is.factor(x)) x <- as.character(x)
+      return(suppressWarnings(as.integer(x)))
     }
-    return(suppressWarnings(as.integer(x)))
   }
+  source <- x
+  if (is.factor(x)) x <- as.character(x)
   values <- trimws(as.character(x))
   values[values %in% missing] <- NA_character_
-  suppressWarnings(as.integer(values))
+  result <- suppressWarnings(as.integer(values))
+  .process_record_coercion(collector, field, "integer", source, result, missing)
+  result
 }
 
-.process_as_double <- function(x, missing = character()) {
-  if (is.double(x) && !length(missing)) {
-    return(x)
-  }
-  # Raw DBF columns are character, factor, or plain numeric vectors. Coerce
-  # those directly, but retain the legacy character path for other classes.
-  direct <- is.character(x) || is.factor(x) ||
-    ((is.integer(x) || is.double(x)) && !is.object(x))
-  if (!length(missing) && direct) {
-    if (is.factor(x)) {
-      x <- as.character(x)
+.process_as_double <- function(x, missing = character(), collector = NULL,
+                               field = NA_character_) {
+  if (is.null(collector)) {
+    if (is.double(x) && !length(missing)) return(x)
+    direct <- is.character(x) || is.factor(x) ||
+      ((is.integer(x) || is.double(x)) && !is.object(x))
+    if (!length(missing) && direct) {
+      if (is.factor(x)) x <- as.character(x)
+      return(suppressWarnings(as.numeric(x)))
     }
-    return(suppressWarnings(as.numeric(x)))
   }
+  source <- x
+  if (is.factor(x)) x <- as.character(x)
   values <- trimws(as.character(x))
   values[values %in% missing] <- NA_character_
-  suppressWarnings(as.numeric(values))
+  result <- suppressWarnings(as.numeric(values))
+  .process_record_coercion(collector, field, "double", source, result, missing)
+  result
 }
 
-.process_as_date <- function(x, format = "%d%m%Y") {
-  if (inherits(x, "Date")) {
-    return(x)
-  }
-  as.Date(as.character(x), format = format)
+.process_as_date <- function(x, format = "%d%m%Y", collector = NULL,
+                             field = NA_character_) {
+  if (inherits(x, "Date")) return(x)
+  result <- as.Date(as.character(x), format = format)
+  .process_record_coercion(collector, field, "Date", x, result)
+  result
 }
 
-# Add one integer column for every supported unit without discarding the
-# original unit and value fields. More than one source code can target the same
-# output; this is how code 5 stores ages of 100 years or more in SIM, SIH, and
-# SIA while code 4 stores the ordinary year value.
 .process_add_age_fields <- function(
   data,
   unit,
@@ -121,6 +122,9 @@
     keys <- as.character(seq_along(dictionaries))
     names(dictionaries) <- keys
   }
+  for (dictionary in dictionaries) {
+    .process_record_dictionary(collector, dictionary)
+  }
   if (is.null(dictionary_rows)) {
     dictionary_rows <- stats::setNames(
       rep(list(seq_len(nrow(data))), length(dictionaries)),
@@ -165,6 +169,9 @@
         }
         converted <- TRUE
       }
+    }
+    if (!converted) {
+      .process_record_unmapped_field(collector, field)
     }
     if (converted && !identical(labels, "none")) {
       data[[field]] <- if (identical(labels, "factor")) {

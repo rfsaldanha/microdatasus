@@ -1,9 +1,31 @@
-# A malformed optional relation should not hide the remaining dictionary metadata.
+# Preserve relation failures as data so one malformed optional file does not
+# hide either the remaining metadata or the reason that labels are absent.
 .datasus_dictionary_conversion <- function(dictionary, definition) {
-  tryCatch(
-    .tabwin_read_conversion(dictionary, definition),
-    error = function(error) NULL
-  )
+  tryCatch({
+    conversion <- .tabwin_read_conversion(dictionary, definition)
+    symbolic <- !is.null(conversion$ranges) && nrow(conversion$ranges) > 0L
+    list(
+      conversion = conversion,
+      status = if (symbolic) "non_enumerable" else "ok",
+      message = if (symbolic) {
+        "One or more analytical ranges are represented symbolically."
+      } else {
+        NA_character_
+      }
+    )
+  }, error = function(error) {
+    message <- conditionMessage(error)
+    status <- if (grepl("missing|exactly one file matching|empty", message,
+                         ignore.case = TRUE)) {
+      "missing"
+    } else if (grepl("invalid|no usable|no field|cannot be used", message,
+                      ignore.case = TRUE)) {
+      "invalid"
+    } else {
+      "error"
+    }
+    list(conversion = NULL, status = status, message = message)
+  })
 }
 
 # Extract all usable relations with one pass over the ZIP. Individual parsing
@@ -46,6 +68,32 @@
   invisible(NULL)
 }
 
+.datasus_validate_fields <- function(fields) {
+  if (is.null(fields)) return(NULL)
+  if (!is.character(fields) || anyNA(fields) || any(!nzchar(fields))) {
+    cli::cli_abort("{.arg fields} must be NULL or a character vector of field names.")
+  }
+  unique(toupper(fields))
+}
+
+.datasus_dictionary_field_view <- function(result) {
+  groups <- split(result, result$field)
+  status_rank <- c(ok = 1L, not_requested = 2L, non_enumerable = 3L,
+                   missing = 4L, invalid = 5L, error = 6L)
+  tibble::tibble(
+    information_system = vapply(groups, function(x) x$information_system[[1L]],
+                                character(1)),
+    field = names(groups),
+    type = vapply(groups, function(x) x$type[[1L]], character(1)),
+    definitions_count = vapply(groups, nrow, integer(1)),
+    status = vapply(groups, function(x) {
+      ranks <- unname(status_rank[x$status])
+      x$status[[which.max(replace(ranks, is.na(ranks), 0L))]]
+    }, character(1)),
+    definitions = unname(groups)
+  )
+}
+
 #' Consult variables in an official DataSUS dictionary
 #'
 #' Downloads or reuses a TabWin dictionary and presents its variable metadata
@@ -54,10 +102,18 @@
 #' @param information_system A value accepted by fetch_tabwin_dictionary().
 #' @param include_labels Logical scalar. If TRUE, parse CNV and DBF relations
 #'   and include their code-label tables in the labels list-column.
+#' @param fields Optional character vector restricting the returned fields.
+#' @param view Either `"definitions"`, with one row per DEF declaration, or
+#'   `"fields"`, with repeated declarations grouped in a list-column.
+#' @param include_ranges Logical scalar. If TRUE, include symbolic CNV interval
+#'   rules in the `ranges` list-column.
 #' @inheritParams fetch_tabwin_dictionary
 #'
-#' @details Analytical CNV ranges that are too large to enumerate are kept as
-#'   variable metadata, with `NA` in `categories` and an empty `labels` table.
+#' @details Large analytical CNV ranges are retained as symbolic rules instead
+#'   of being expanded into millions of rows. `status` distinguishes complete,
+#'   non-enumerable, missing, invalid, and failed relations. Parsed relations
+#'   persist on disk when `cache_dir` is set, and completed result tables are
+#'   reused during the R session.
 #'
 #' @return A tibble with one row per categorical definition or numeric field.
 #'
@@ -72,9 +128,15 @@ datasus_variables <- function(
   timeout = 240,
   refresh = FALSE,
   quiet = FALSE,
-  cache_dir = getOption("microdatasus.cache_dir", NULL)
+  cache_dir = getOption("microdatasus.cache_dir", NULL),
+  fields = NULL,
+  view = c("definitions", "fields"),
+  include_ranges = TRUE
 ) {
   .datasus_assert_flag(include_labels, "include_labels")
+  .datasus_assert_flag(include_ranges, "include_ranges")
+  fields <- .datasus_validate_fields(fields)
+  view <- match.arg(view)
   dictionary <- fetch_tabwin_dictionary(
     information_system = information_system,
     timeout = timeout,
@@ -83,6 +145,29 @@ datasus_variables <- function(
     cache_dir = cache_dir
   )
   definitions <- dictionary$definitions
+  if (!is.null(fields)) {
+    available <- unique(c(definitions$field, dictionary$numeric_fields))
+    unknown <- setdiff(fields, available)
+    if (length(unknown)) {
+      cli::cli_abort("Fields not declared by this dictionary: {.field {unknown}}.")
+    }
+    definitions <- definitions[definitions$field %in% fields, , drop = FALSE]
+  }
+  # Cache the fully assembled lookup table separately from parsed relations.
+  table_cache_key <- paste(
+    "..datasus_variables", include_labels, include_ranges,
+    paste(sort(unique(fields)), collapse = ","), sep = "::"
+  )
+  if (!refresh && exists(
+    table_cache_key, envir = dictionary$conversions, inherits = FALSE
+  )) {
+    result <- get(table_cache_key, envir = dictionary$conversions,
+                  inherits = FALSE)
+    if (identical(view, "fields")) {
+      return(.datasus_dictionary_field_view(result))
+    }
+    return(result)
+  }
   if (include_labels) {
     if (!quiet) {
       cli::cli_alert_info(
@@ -93,21 +178,31 @@ datasus_variables <- function(
   }
   conversions <- lapply(seq_len(nrow(definitions)), function(index) {
     if (!include_labels) {
-      return(NULL)
+      return(list(conversion = NULL, status = "not_requested",
+                  message = NA_character_))
     }
     .datasus_dictionary_conversion(
-      dictionary,
-      definitions[index, , drop = FALSE]
+      dictionary, definitions[index, , drop = FALSE]
     )
   })
-  label_tables <- lapply(conversions, function(conversion) {
+  parsed <- lapply(conversions, `[[`, "conversion")
+  label_tables <- lapply(parsed, function(conversion) {
     if (is.null(conversion)) {
       return(tibble::tibble(code = character(), label = character()))
     }
-    tibble::tibble(
-      code = names(conversion$map),
-      label = unname(conversion$map)
-    )
+    tibble::tibble(code = names(conversion$map),
+                   label = unname(conversion$map))
+  })
+  range_tables <- lapply(parsed, function(conversion) {
+    if (!include_ranges || is.null(conversion) || is.null(conversion$ranges)) {
+      return(tibble::tibble(
+        token = character(), lower = numeric(), upper = numeric(),
+        label = character(), priority = integer()
+      ))
+    }
+    tibble::as_tibble(conversion$ranges[c(
+      "token", "lower", "upper", "label", "priority"
+    )])
   })
   result <- tibble::tibble(
     information_system = dictionary$information_system,
@@ -123,22 +218,38 @@ datasus_variables <- function(
     file = definitions$file,
     position = definitions$position,
     code_width = vapply(
-      conversions,
+      parsed,
       function(conversion) {
         if (is.null(conversion)) NA_integer_ else conversion$code_width
       },
       integer(1)
     ),
     categories = vapply(
-      conversions,
+      parsed,
       function(conversion) {
         if (is.null(conversion)) NA_integer_ else length(conversion$map)
       },
       integer(1)
     ),
-    labels = label_tables
+    range_rules = vapply(
+      parsed,
+      function(conversion) {
+        if (is.null(conversion) || is.null(conversion$ranges)) 0L else nrow(conversion$ranges)
+      },
+      integer(1)
+    ),
+    status = vapply(conversions, `[[`, character(1), "status"),
+    message = vapply(conversions, function(value) {
+      if (is.null(value$message)) NA_character_ else value$message
+    }, character(1)),
+    labels_complete = vapply(
+      conversions, function(value) identical(value$status, "ok"), logical(1)
+    ),
+    labels = label_tables,
+    ranges = range_tables
   )
   numeric <- setdiff(dictionary$numeric_fields, definitions$field)
+  if (!is.null(fields)) numeric <- intersect(numeric, fields)
   if (length(numeric)) {
     empty_labels <- rep(
       list(tibble::tibble(code = character(), label = character())),
@@ -159,7 +270,15 @@ datasus_variables <- function(
       position = NA_integer_,
       code_width = NA_integer_,
       categories = NA_integer_,
-      labels = empty_labels
+      range_rules = 0L,
+      status = "ok",
+      message = NA_character_,
+      labels_complete = TRUE,
+      labels = empty_labels,
+      ranges = rep(list(tibble::tibble(
+        token = character(), lower = numeric(), upper = numeric(),
+        label = character(), priority = integer()
+      )), length(numeric))
     )
     result <- rbind(result, numeric_rows)
   }
@@ -167,6 +286,11 @@ datasus_variables <- function(
     cli::cli_alert_success(
       "Prepared the DataSUS variable labels for {.val {information_system}}."
     )
+  }
+  # The environment is shared by copies of the cached dictionary object.
+  assign(table_cache_key, result, envir = dictionary$conversions)
+  if (identical(view, "fields")) {
+    return(.datasus_dictionary_field_view(result))
   }
   result
 }

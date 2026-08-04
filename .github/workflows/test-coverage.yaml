@@ -28,6 +28,14 @@ jobs:
         run: |
           coverage <- covr::package_coverage(quiet = FALSE)
           print(coverage)
+          total <- covr::percent_coverage(coverage)
+          by_file <- covr::coverage_to_list(coverage)$filecoverage
+          critical <- c("R/cache.R", "R/datasus_download_helpers.R",
+                        "R/tabwin_dictionary.R", "R/tabwin_fetch.R")
+          if (total < 92) stop("Total test coverage fell below 92%.")
+          if (any(by_file[critical] < 80, na.rm = TRUE)) {
+            stop("Coverage of a critical cache/download/parser file fell below 80%.")
+          }
           covr::to_cobertura(coverage, filename = "coverage.xml")
         shell: Rscript {0}
 

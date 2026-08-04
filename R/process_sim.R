@@ -151,11 +151,11 @@ process_sim <- function(
   # Type conversion precedes labelling so measurements never become factors.
   date_fields <- names(result)[startsWith(toupper(names(result)), "DT")]
   for (field in date_fields) {
-    result[[field]] <- .process_as_date(result[[field]])
+    result[[field]] <- .process_as_date(result[[field]], collector = collector, field = field)
   }
   integer_fields <- .process_find_fields(result, .sim_integer_fields)
   for (field in integer_fields) {
-    result[[field]] <- .process_as_integer(result[[field]])
+    result[[field]] <- .process_as_integer(result[[field]], collector = collector, field = field)
   }
   result <- .sim_add_age_fields(result)
 

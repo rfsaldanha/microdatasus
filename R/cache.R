@@ -32,8 +32,35 @@
   )
 }
 
+.datasus_temporary_path <- function(destination) {
+  # Unique sibling files prevent concurrent R processes from sharing .part.
+  tempfile(paste0(basename(destination), "-"),
+           tmpdir = dirname(destination))
+}
+
+.datasus_with_cache_lock <- function(path, code, timeout = 60) {
+  lock <- paste0(path, ".lock")
+  started <- Sys.time()
+  repeat {
+    if (dir.create(lock, showWarnings = FALSE)) break
+    info <- file.info(lock)
+    stale <- !is.na(info$mtime) &&
+      as.numeric(difftime(Sys.time(), info$mtime, units = "secs")) > 600
+    if (stale) {
+      unlink(lock, recursive = TRUE, force = TRUE)
+      next
+    }
+    if (as.numeric(difftime(Sys.time(), started, units = "secs")) >= timeout) {
+      cli::cli_abort("Timed out waiting for cache lock {.file {basename(lock)}}.")
+    }
+    Sys.sleep(0.05)
+  }
+  on.exit(unlink(lock, recursive = TRUE, force = TRUE), add = TRUE)
+  force(code)
+}
+
 .datasus_write_manifest <- function(manifest, path) {
-  temporary <- paste0(path, ".part")
+  temporary <- .datasus_temporary_path(path)
   on.exit(unlink(temporary), add = TRUE)
   saveRDS(manifest, temporary, version = 2)
   tryCatch(

@@ -222,10 +222,10 @@ process_sih <- function(
 
   # SIH dates are stored as YYYYMMDD in every supported layout.
   for (field in .process_find_fields(result, .sih_date_fields)) {
-    result[[field]] <- .process_as_date(result[[field]], format = "%Y%m%d")
+    result[[field]] <- .process_as_date(result[[field]], format = "%Y%m%d", collector = collector, field = field)
   }
   for (field in .process_find_fields(result, .sih_integer_fields)) {
-    result[[field]] <- .process_as_integer(result[[field]])
+    result[[field]] <- .process_as_integer(result[[field]], collector = collector, field = field)
   }
 
   result <- .sih_add_age_fields(result)
@@ -237,7 +237,7 @@ process_sih <- function(
     .process_find_fields(result, .sih_double_fields)
   )
   for (field in unique(value_fields)) {
-    result[[field]] <- .process_as_double(result[[field]])
+    result[[field]] <- .process_as_double(result[[field]], collector = collector, field = field)
   }
 
   # A concatenated RD/RJ data set can require more than one official DEF.

@@ -544,17 +544,21 @@
 }
 
 .datasus_commit_file <- function(temporary, destination) {
-  # rename is atomic on platforms that permit replacing the destination;
-  # file.copy is the portable fallback used by Windows for existing files.
-  committed <- file.rename(temporary, destination)
-  if (!committed) {
-    committed <- file.copy(temporary, destination, overwrite = TRUE)
-    if (committed) unlink(temporary)
-  }
-  if (!committed) {
-    cli::cli_abort("Could not finalize downloaded file {.file {basename(destination)}}.")
-  }
-  invisible(destination)
+  .datasus_with_cache_lock(destination, {
+    # rename is atomic on platforms that permit replacing the destination;
+    # file.copy is the portable fallback used by Windows for existing files.
+    committed <- file.rename(temporary, destination)
+    if (!committed) {
+      committed <- file.copy(temporary, destination, overwrite = TRUE)
+      if (committed) unlink(temporary)
+    }
+    if (!committed) {
+      cli::cli_abort(
+        "Could not finalize downloaded file {.file {basename(destination)}}."
+      )
+    }
+    invisible(destination)
+  })
 }
 
 .datasus_download_file <- function(
@@ -563,7 +567,7 @@
   timeout,
   quiet = FALSE
 ) {
-  temporary <- paste0(destination, ".part")
+  temporary <- .datasus_temporary_path(destination)
   on.exit(unlink(temporary), add = TRUE)
   .datasus_retry(
     function() {

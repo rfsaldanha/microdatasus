@@ -73,7 +73,7 @@
 }
 
 .datasus_save_rds <- function(data, path) {
-  temporary <- paste0(path, ".part")
+  temporary <- .datasus_temporary_path(path)
   on.exit(unlink(temporary), add = TRUE)
   saveRDS(data, temporary, version = 2, compress = "xz")
   tryCatch(

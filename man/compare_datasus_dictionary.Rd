@@ -33,7 +33,8 @@ status messages.}
 session cache.}
 }
 \value{
-A tibble describing added, removed, and changed fields or labels.
+A tibble describing added, removed, and changed fields, labels,
+symbolic ranges, or relation states. Column \code{kind} identifies the item.
 }
 \description{
 Compare cached and current DataSUS dictionaries

@@ -26,7 +26,7 @@
   stats::setNames(lapply(keys, function(key) which(dictionary == key)), keys)
 }
 
-.cnes_as_date <- function(x) {
+.cnes_as_date <- function(x, collector = NULL, field = NA_character_) {
   values <- trimws(as.character(x))
   values[!nzchar(values)] <- NA_character_
   result <- as.Date(rep(NA_character_, length(values)))
@@ -34,6 +34,7 @@
   dmy <- !is.na(values) & grepl("^[0-9]{2}/[0-9]{2}/[0-9]{4}$", values)
   result[ymd] <- as.Date(values[ymd], format = "%Y%m%d")
   result[dmy] <- as.Date(values[dmy], format = "%d/%m/%Y")
+  .process_record_coercion(collector, field, "Date", x, result)
   result
 }
 
@@ -162,7 +163,7 @@
         service,
         key,
         combined,
-        converted
+        selected
       )
       if (!identical(labels, "none")) {
         result[rows] <- converted
@@ -307,13 +308,13 @@ process_cnes <- function(
     result[[field]] <- as.character(result[[field]])
   }
   for (field in types$date) {
-    result[[field]] <- .cnes_as_date(result[[field]])
+    result[[field]] <- .cnes_as_date(result[[field]], collector, field)
   }
   for (field in setdiff(types$integer, types$double)) {
-    result[[field]] <- .process_as_integer(result[[field]])
+    result[[field]] <- .process_as_integer(result[[field]], collector = collector, field = field)
   }
   for (field in types$double) {
-    result[[field]] <- .process_as_double(result[[field]])
+    result[[field]] <- .process_as_double(result[[field]], collector = collector, field = field)
   }
 
   result <- .process_apply_dictionaries(

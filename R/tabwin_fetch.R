@@ -341,6 +341,7 @@ fetch_tabwin_dictionary <- function(
       definition_dir = dirname(gsub("\\\\", "/", definition_entry)),
       cache_dir = archive_cache$cache_dir,
       extracted_all = extract_all,
+      persistent = isTRUE(archive_cache$persistent),
       conversions = new.env(parent = emptyenv())
     ),
     class = "microdatasus_tabwin_dictionary"

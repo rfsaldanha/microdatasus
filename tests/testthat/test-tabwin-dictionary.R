@@ -165,7 +165,7 @@ test_that("specific CNV categories override earlier catch-all ranges", {
   )
 })
 
-test_that("CNV parser refuses analytical ranges that cannot be materialised", {
+test_that("CNV parser preserves analytical ranges symbolically", {
   path <- tempfile(fileext = ".CNV")
   on.exit(unlink(path), add = TRUE)
   write_tabwin_text(
@@ -176,10 +176,55 @@ test_that("CNV parser refuses analytical ranges that cannot be materialised", {
     )
   )
 
-  expect_error(
-    microdatasus:::.tabwin_parse_cnv(path),
-    "too large to expand as labels"
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+  selected <- list(
+    definition = data.frame(position = 1L), conversion = conversion
   )
+
+  expect_length(conversion$map, 0L)
+  expect_identical(conversion$ranges$token, "00000000-89999999")
+  expect_identical(
+    as.character(microdatasus:::.tabwin_apply_conversion(
+      c("00000001", "90000000"), selected
+    )),
+    c("Faixa analitica", "90000000")
+  )
+})
+
+test_that("symbolic ranges preserve later-category priority", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  write_tabwin_text(path, c(
+    "2 8",
+    tabwin_cnv_line(1, "Faixa ampla", "00000000-89999999"),
+    tabwin_cnv_line(2, "Codigo especifico", "00000001")
+  ))
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+  selected <- list(definition = data.frame(position = 1L), conversion = conversion)
+
+  result <- microdatasus:::.tabwin_apply_conversion_values(
+    c("00000001", "00000002", "90000000"), selected
+  )
+
+  expect_identical(result, c("Codigo especifico", "Faixa ampla", "90000000"))
+})
+
+test_that("symbolic alphanumeric CNV ranges retain their prefix", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  write_tabwin_text(path, c(
+    "1 7",
+    tabwin_cnv_line(1, "Faixa alfa", "A000000-A999999")
+  ))
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+  selected <- list(definition = data.frame(position = 1L), conversion = conversion)
+
+  result <- microdatasus:::.tabwin_apply_conversion_values(
+    c("A123456", "B123456"), selected
+  )
+
+  expect_identical(conversion$ranges$kind, "alphanumeric")
+  expect_identical(result, c("Faixa alfa", "B123456"))
 })
 
 test_that("DBF relationships use the description field declared by DEF", {

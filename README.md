@@ -22,8 +22,9 @@ interpretação de cada sistema, consulte o livro
 - `read_dbc()` lê um arquivo DBC já disponível no computador.
 - As funções `process_*()` usam os dicionários oficiais do TabWin, padronizam
   tipos e podem relatar códigos ainda não mapeados.
-- `datasus_variables()` consulta os dicionários e
-  `compare_datasus_dictionary()` identifica mudanças entre versões.
+- `datasus_variables()` consulta relações oficiais, `datasus_schema()` cria
+  contratos por campo, `audit_datasus_dictionaries()` verifica todas as
+  definições e `compare_datasus_dictionary()` identifica mudanças entre versões.
 - `fetch_cadger()` e `fetch_sigtab()` obtêm tabelas auxiliares atuais de CNES e
   SIA.
 
@@ -149,12 +150,15 @@ Um diretório explícito reutiliza DBC e ZIP do TabWin entre sessões:
 ```r
 cache <- datasus_cache_dir(create = TRUE)
 variables <- datasus_variables("SIM-DO", cache_dir = cache)
+schema <- datasus_schema("SIM-DO", cache_dir = cache)
+audit <- audit_datasus_dictionaries(c("SIM-DO", "SINASC"), cache_dir = cache)
 datasus_cache_info(cache)
 ```
 
 Os processadores aceitam `labels = "factor"`, `"character"` ou `"none"`.
-Com `diagnostics = TRUE`, `processing_diagnostics()` informa, entre outros
-itens, códigos ausentes das conversões oficiais.
+Com `diagnostics = TRUE`, `processing_diagnostics()` informa códigos ausentes
+das conversões, campos esperados ou não mapeados, falhas de coerção e a
+proveniência — fonte, definição e checksum — de cada dicionário usado.
 
 Para solicitações grandes, combine `destination`, `collect = FALSE` e
 `process = TRUE`: cada DBC é processado e gravado antes da leitura do próximo.

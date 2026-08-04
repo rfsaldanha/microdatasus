@@ -142,7 +142,7 @@ process_sinasc <- function(
     .process_find_fields(result, c("DATA_NASC", "DATA_CART"))
   )
   for (field in unique(date_fields)) {
-    result[[field]] <- .process_as_date(result[[field]])
+    result[[field]] <- .process_as_date(result[[field]], collector = collector, field = field)
   }
 
   for (field in .process_find_fields(result, .sinasc_integer_fields)) {
@@ -150,7 +150,7 @@ process_sinasc <- function(
     if (is.null(missing)) {
       missing <- character()
     }
-    result[[field]] <- .process_as_integer(result[[field]], missing)
+    result[[field]] <- .process_as_integer(result[[field]], missing, collector, field)
   }
 
   if (length(modern_fields) &&

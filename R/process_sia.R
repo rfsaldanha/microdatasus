@@ -290,13 +290,13 @@ process_sia <- function(
   )
 
   for (field in types$date) {
-    result[[field]] <- .process_as_date(result[[field]], "%Y%m%d")
+    result[[field]] <- .process_as_date(result[[field]], "%Y%m%d", collector, field)
   }
   for (field in setdiff(types$integer, types$double)) {
-    result[[field]] <- .process_as_integer(result[[field]])
+    result[[field]] <- .process_as_integer(result[[field]], collector = collector, field = field)
   }
   for (field in types$double) {
-    result[[field]] <- .process_as_double(result[[field]])
+    result[[field]] <- .process_as_double(result[[field]], collector = collector, field = field)
   }
   result <- .sia_add_age_fields(result, information_system)
 

@@ -17,8 +17,11 @@ para o TabWin. O suporte atual do SIM considera apenas os arquivos em CID-10.
 ## Consultar e comparar dicionários
 
 `datasus_variables()` apresenta campos, tipos, arquivos de relação e,
-opcionalmente, os pares código-rótulo. Um diretório explícito mantém o ZIP e
-seu manifesto entre sessões.
+opcionalmente, pares código-rótulo e intervalos simbólicos. Relações muito
+grandes não são descartadas nem expandidas em memória: `status`,
+`labels_complete` e `range_rules` tornam explícito o que foi interpretado.
+Um diretório explícito mantém o ZIP, seu manifesto e as relações já analisadas
+entre sessões; a tabela montada também é reutilizada durante a sessão.
 
 ```{r, eval = FALSE}
 cache <- datasus_cache_dir(create = TRUE)
@@ -28,7 +31,16 @@ sim_variables <- datasus_variables(
   cache_dir = cache
 )
 
-sim_variables[, c("field", "type", "description", "categories")]
+sim_variables[, c(
+  "field", "type", "description", "categories",
+  "range_rules", "status"
+)]
+
+# Restringe o trabalho e agrupa declarações repetidas por campo
+datasus_variables(
+  "SIM-DO", fields = c("SEXO", "CAUSABAS"),
+  view = "fields", cache_dir = cache
+)
 datasus_cache_info(cache)
 ```
 
@@ -49,11 +61,33 @@ changes <- compare_datasus_dictionary(
 diferença é inventada: uma tabela vazia significa que os dois conteúdos
 comparados são equivalentes.
 
+Contratos derivados do DEF e auditorias permitem verificar um sistema, um
+grupo ou todas as 104 definições atuais e históricas. Na auditoria completa,
+os 14 ZIP físicos compartilhados são baixados apenas uma vez por cache.
+
+```{r, eval = FALSE}
+schema <- datasus_schema("SINAN-DENGUE", inspect = TRUE, cache_dir = cache)
+
+audit <- audit_datasus_dictionaries(
+  c("SIM-DO", "SINASC", "SIH-RD", "SIA-PA", "CNES-ST",
+    "SINAN-DENGUE"),
+  cache_dir = cache
+)
+
+# Auditoria completa, indicada para CI ou manutenção periódica
+all_dictionaries <- audit_datasus_dictionaries(cache_dir = cache)
+```
+
+As colunas `status` e `issues` distinguem ausência de arquivo, conteúdo
+inválido, relação não enumerável e falha de leitura; essas situações não são
+convertidas silenciosamente em tabelas vazias.
+
 ## Rótulos e diagnóstico
 
 Todas as funções `process_*()` aceitam a mesma política de rótulos:
 `"factor"` (padrão), `"character"` ou `"none"`. O diagnóstico opcional registra
-campos tratados e códigos que não constam nas tabelas oficiais.
+campos tratados, códigos ausentes, campos esperados ou não mapeados, falhas de
+coerção e a fonte, definição e checksum dos dicionários efetivamente usados.
 
 ```{r}
 library(microdatasus)
@@ -65,7 +99,11 @@ sim <- process_sim(
   diagnostics = TRUE
 )
 
-processing_diagnostics(sim)$unknown_codes
+diagnostic <- processing_diagnostics(sim)
+diagnostic$unknown_codes
+diagnostic$missing_expected_fields
+diagnostic$dictionaries
+diagnostic$coercion_failures
 ```
 
 Os argumentos antigos e seus padrões foram mantidos; os novos argumentos foram

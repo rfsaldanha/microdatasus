@@ -10,7 +10,10 @@ datasus_variables(
   timeout = 240,
   refresh = FALSE,
   quiet = FALSE,
-  cache_dir = getOption("microdatasus.cache_dir", NULL)
+  cache_dir = getOption("microdatasus.cache_dir", NULL),
+  fields = NULL,
+  view = c("definitions", "fields"),
+  include_ranges = TRUE
 )
 }
 \arguments{
@@ -31,6 +34,14 @@ status messages.}
 \item{cache_dir}{Optional persistent cache root. The package option
 \code{microdatasus.cache_dir} is used by default; \code{NULL} uses only the current
 session cache.}
+
+\item{fields}{Optional character vector restricting the returned fields.}
+
+\item{view}{Either \code{"definitions"}, with one row per DEF declaration, or
+\code{"fields"}, with repeated declarations grouped in a list-column.}
+
+\item{include_ranges}{Logical scalar. If TRUE, include symbolic CNV interval
+rules in the \code{ranges} list-column.}
 }
 \value{
 A tibble with one row per categorical definition or numeric field.
@@ -40,8 +51,11 @@ Downloads or reuses a TabWin dictionary and presents its variable metadata
 and code-label maps as a rectangular lookup table.
 }
 \details{
-Analytical CNV ranges that are too large to enumerate are kept as
-variable metadata, with \code{NA} in \code{categories} and an empty \code{labels} table.
+Large analytical CNV ranges are retained as symbolic rules instead
+of being expanded into millions of rows. \code{status} distinguishes complete,
+non-enumerable, missing, invalid, and failed relations. Parsed relations
+persist on disk when \code{cache_dir} is set, and completed result tables are
+reused during the R session.
 }
 \examples{
 \dontshow{if (interactive() && curl::has_internet()) withAutoprint(\{ # examplesIf}

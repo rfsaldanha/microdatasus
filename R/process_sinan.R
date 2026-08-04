@@ -1,4 +1,4 @@
-.sinan_as_date <- function(x) {
+.sinan_as_date <- function(x, collector = NULL, field = NA_character_) {
   if (inherits(x, "Date")) {
     return(x)
   }
@@ -11,6 +11,7 @@
   result[iso] <- as.Date(values[iso])
   result[ymd] <- as.Date(values[ymd], format = "%Y%m%d")
   result[dmy] <- as.Date(values[dmy], format = "%d/%m/%Y")
+  .process_record_coercion(collector, field, "Date", x, result)
   result
 }
 
@@ -194,10 +195,10 @@ process_sinan <- function(
     result[[field]] <- as.character(result[[field]])
   }
   for (field in types$date) {
-    result[[field]] <- .sinan_as_date(result[[field]])
+    result[[field]] <- .sinan_as_date(result[[field]], collector, field)
   }
   for (field in types$integer) {
-    result[[field]] <- .process_as_integer(result[[field]])
+    result[[field]] <- .process_as_integer(result[[field]], collector = collector, field = field)
   }
   result <- .sinan_add_age_fields(result)
   result <- .process_apply_dictionary(

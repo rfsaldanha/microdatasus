@@ -63,6 +63,20 @@ test_that("processing diagnostics report unknown dictionary codes", {
   expect_identical(report$unknown_codes$n, 2L)
 })
 
+test_that("processing diagnostics record coercion failures and provenance", {
+  result <- process_sim(
+    data.frame(DTOBITO = c("01012024", "not-a-date"),
+               CONTADOR = c("1", "not-a-number")),
+    municipality_data = FALSE, labels = "none", diagnostics = TRUE
+  )
+  report <- processing_diagnostics(result)
+
+  expect_setequal(report$coercion_failures$field, c("DTOBITO", "CONTADOR"))
+  expect_setequal(report$coercion_failures$target, c("Date", "integer"))
+  expect_true(all(c("dictionaries", "missing_expected_fields",
+                    "package_version") %in% names(report)))
+})
+
 test_that("all processors append the common options compatibly", {
   processors <- list(
     process_sim,

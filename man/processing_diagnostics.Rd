@@ -10,12 +10,14 @@ processing_diagnostics(x)
 \item{x}{An object returned by a microdatasus processing function.}
 }
 \value{
-A microdatasus_processing_diagnostics list, or NULL when diagnostics
-were not requested.
+A \code{microdatasus_processing_diagnostics} list, or \code{NULL} when
+diagnostics were not requested.
 }
 \description{
 Returns the optional report attached by a processing function called with
-diagnostics = TRUE.
+\code{diagnostics = TRUE}. The report includes input/output fields, dictionary
+provenance and checksum, expected and unmapped fields, unknown codes, and
+failed numeric or date coercions.
 }
 \examples{
 \dontshow{if (interactive() && curl::has_internet()) withAutoprint(\{ # examplesIf}

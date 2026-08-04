@@ -1,46 +1,49 @@
-# Flatten fields and nested label tables to stable composite keys for comparison.
+# Flatten fields, labels, symbolic ranges, and relation states to stable keys.
 .datasus_dictionary_long <- function(variables) {
   variable_rows <- data.frame(
-    key = paste(
-      "field",
-      variables$field,
-      variables$file,
-      variables$command,
-      variables$position,
-      sep = "::"
-    ),
-    field = variables$field,
-    code = NA_character_,
-    description = variables$description,
-    label = NA_character_,
+    key = paste("field", variables$field, variables$file, variables$command,
+                variables$position, sep = "::"),
+    kind = "field", field = variables$field, code = NA_character_,
+    description = variables$description, label = NA_character_,
     stringsAsFactors = FALSE
   )
-  label_rows <- lapply(seq_len(nrow(variables)), function(index) {
+  status <- if ("status" %in% names(variables)) variables$status else rep("ok", nrow(variables))
+  message <- if ("message" %in% names(variables)) variables$message else rep(NA_character_, nrow(variables))
+  status_rows <- data.frame(
+    key = paste("status", variables$field, variables$file, variables$command,
+                variables$position, sep = "::"),
+    kind = "status", field = variables$field, code = NA_character_,
+    description = paste(status, replace(message, is.na(message), ""), sep = "::"),
+    label = NA_character_, stringsAsFactors = FALSE
+  )
+  nested <- lapply(seq_len(nrow(variables)), function(index) {
+    result <- list()
     labels <- variables$labels[[index]]
-    if (!nrow(labels)) {
-      return(NULL)
+    if (nrow(labels)) {
+      result[["labels"]] <- data.frame(
+        key = paste("label", variables$field[[index]], variables$file[[index]],
+                    labels$code, sep = "::"),
+        kind = "label", field = variables$field[[index]], code = labels$code,
+        description = NA_character_, label = labels$label, stringsAsFactors = FALSE
+      )
     }
-    data.frame(
-      key = paste(
-        "label",
-        variables$field[[index]],
-        variables$file[[index]],
-        labels$code,
-        sep = "::"
-      ),
-      field = variables$field[[index]],
-      code = labels$code,
-      description = NA_character_,
-      label = labels$label,
-      stringsAsFactors = FALSE
-    )
+    if ("ranges" %in% names(variables)) {
+      ranges <- variables$ranges[[index]]
+      if (nrow(ranges)) {
+        result[["ranges"]] <- data.frame(
+          key = paste("range", variables$field[[index]], variables$file[[index]],
+                      ranges$token, sep = "::"),
+          kind = "range", field = variables$field[[index]], code = ranges$token,
+          description = NA_character_, label = ranges$label, stringsAsFactors = FALSE
+        )
+      }
+    }
+    if (length(result)) do.call(rbind, result) else NULL
   })
-  label_rows <- Filter(Negate(is.null), label_rows)
-  if (length(label_rows)) {
-    rbind(variable_rows, do.call(rbind, label_rows))
-  } else {
-    variable_rows
-  }
+  nested <- Filter(Negate(is.null), nested)
+  rows <- list(variable_rows, status_rows)
+  if (length(nested)) rows[[3L]] <- do.call(rbind, nested)
+  do.call(rbind, rows)
 }
 
 #' Compare cached and current DataSUS dictionaries
@@ -52,7 +55,8 @@
 #'   capturing the baseline.
 #' @inheritParams datasus_variables
 #'
-#' @return A tibble describing added, removed, and changed fields or labels.
+#' @return A tibble describing added, removed, and changed fields, labels,
+#'   symbolic ranges, or relation states. Column `kind` identifies the item.
 #'
 #' @examplesIf interactive() && curl::has_internet()
 #' changes <- compare_datasus_dictionary("SIM-DO")
@@ -125,6 +129,10 @@ compare_datasus_dictionary <- function(
   changed <- change != "unchanged"
   tibble::tibble(
     information_system = information_system,
+    kind = ifelse(
+      is.na(new_index[changed]), old$kind[old_index[changed]],
+      current$kind[new_index[changed]]
+    ),
     change = change[changed],
     field = ifelse(
       is.na(new_index[changed]),

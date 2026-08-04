@@ -428,6 +428,45 @@
   token
 }
 
+.tabwin_range_rule <- function(token, width) {
+  # Parse a compact interval without materialising its members. Keeping the
+  # bounds lets every processor handle large analytical TabWin bands safely.
+  bounds <- strsplit(token, "-", fixed = TRUE)[[1L]]
+  if (length(bounds) != 2L || any(!nzchar(bounds))) return(NULL)
+  if (all(grepl("^[0-9]+$", bounds))) {
+    limits <- suppressWarnings(as.numeric(bounds))
+    if (anyNA(limits) || limits[[1L]] > limits[[2L]]) return(NULL)
+    return(data.frame(
+      token = token, kind = "numeric", prefix = "",
+      lower = limits[[1L]], upper = limits[[2L]],
+      size = limits[[2L]] - limits[[1L]] + 1, width = width,
+      stringsAsFactors = FALSE
+    ))
+  }
+  parsed <- regexec("^([[:alpha:]]*)([0-9]+)$", bounds)
+  pieces <- regmatches(bounds, parsed)
+  if (length(pieces[[1L]]) != 3L || length(pieces[[2L]]) != 3L ||
+      !identical(toupper(pieces[[1L]][[2L]]),
+                 toupper(pieces[[2L]][[2L]]))) return(NULL)
+  limits <- as.numeric(c(pieces[[1L]][[3L]], pieces[[2L]][[3L]]))
+  if (anyNA(limits) || limits[[1L]] > limits[[2L]]) return(NULL)
+  data.frame(
+    token = token, kind = "alphanumeric",
+    prefix = toupper(pieces[[1L]][[2L]]),
+    lower = limits[[1L]], upper = limits[[2L]],
+    size = limits[[2L]] - limits[[1L]] + 1, width = width,
+    stringsAsFactors = FALSE
+  )
+}
+
+.tabwin_empty_ranges <- function() {
+  data.frame(
+    token = character(), kind = character(), prefix = character(),
+    lower = numeric(), upper = numeric(), size = numeric(), width = integer(),
+    label = character(), priority = integer(), stringsAsFactors = FALSE
+  )
+}
+
 .tabwin_normalize_code <- function(code, width) {
   # DBF readers can drop leading zeroes from numeric-looking codes.
   code <- trimws(as.character(code))
@@ -510,23 +549,45 @@
   # Literal codes dominate large CNVs. Only range tokens need the relatively
   # expensive interval parser and its materialisation safety check.
   expanded <- as.list(raw_codes)
-  ranges <- grepl("-", raw_codes, fixed = TRUE)
-  expanded[ranges] <- lapply(
-    raw_codes[ranges],
+  range_indexes <- which(grepl("-", raw_codes, fixed = TRUE))
+  parsed_ranges <- lapply(
+    raw_codes[range_indexes], .tabwin_range_rule, width = code_width
+  )
+  symbolic <- vapply(
+    parsed_ranges,
+    function(rule) !is.null(rule) && rule$size[[1L]] > 100000,
+    logical(1)
+  )
+  symbolic_indexes <- range_indexes[symbolic]
+  rules <- .tabwin_empty_ranges()
+  if (length(symbolic_indexes)) {
+    rules <- do.call(rbind, parsed_ranges[symbolic])
+    rules$label <- raw_labels[symbolic_indexes]
+    rules$priority <- symbolic_indexes
+    # Symbolic rules are applied by bounds and add no enumerated map member.
+    expanded[symbolic_indexes] <- rep(
+      list(character()), length(symbolic_indexes)
+    )
+  }
+  materialized_indexes <- setdiff(range_indexes, symbolic_indexes)
+  expanded[materialized_indexes] <- lapply(
+    raw_codes[materialized_indexes],
     .tabwin_expand_range,
     width = code_width
   )
   map_codes <- .tabwin_normalize_code(
-    unlist(expanded, use.names = FALSE),
-    code_width
+    unlist(expanded, use.names = FALSE), code_width
   )
   map_labels <- rep(raw_labels, lengths(expanded))
+  map_priorities <- rep(seq_along(raw_codes), lengths(expanded))
   # Later, more specific categories override broad catch-all ranges declared
   # earlier (for example 1 and 2 override the legacy SEXO range 0-9).
   keep <- !duplicated(map_codes, fromLast = TRUE)
   map <- map_labels[keep]
   names(map) <- map_codes[keep]
-  if (!length(map)) {
+  map_priority <- map_priorities[keep]
+  names(map_priority) <- map_codes[keep]
+  if (!length(map) && !nrow(rules)) {
     cli::cli_abort(
       "TabWin conversion {.file {basename(path)}} contains no code labels."
     )
@@ -536,7 +597,9 @@
       type = "cnv",
       code_width = code_width,
       category_count = category_count,
-      map = map
+      map = map,
+      map_priority = map_priority,
+      ranges = rules
     ),
     class = "microdatasus_tabwin_conversion"
   )
@@ -557,12 +620,68 @@
   )
 }
 
+.tabwin_parser_version <- 2L
+
+.tabwin_conversion_cache_path <- function(dictionary, key) {
+  if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {
+    return(NULL)
+  }
+  component <- .datasus_cache_component(key)
+  # Retain a deterministic suffix when long official names need truncation.
+  hash <- 0
+  for (byte in as.integer(charToRaw(enc2utf8(key)))) {
+    hash <- (hash * 131 + byte) %% 2147483629
+  }
+  suffix <- sprintf("-%08x", as.integer(hash))
+  if (nchar(component) > 170L) component <- substr(component, 1L, 170L)
+  component <- paste0(component, suffix)
+  file.path(
+    dictionary$cache_dir, "parsed", dictionary$archive_checksum,
+    paste0(component, ".rds")
+  )
+}
+
+.tabwin_read_cached_conversion <- function(dictionary, key) {
+  path <- .tabwin_conversion_cache_path(dictionary, key)
+  if (is.null(path) || !file.exists(path)) return(NULL)
+  payload <- tryCatch(readRDS(path), error = function(error) NULL)
+  if (is.null(payload) ||
+      !identical(payload$parser_version, .tabwin_parser_version) ||
+      !identical(payload$archive_checksum, dictionary$archive_checksum) ||
+      !inherits(payload$conversion, "microdatasus_tabwin_conversion")) {
+    return(NULL)
+  }
+  payload$conversion
+}
+
+.tabwin_write_cached_conversion <- function(dictionary, key, conversion) {
+  path <- .tabwin_conversion_cache_path(dictionary, key)
+  if (is.null(path)) return(invisible(NULL))
+  if (!dir.exists(dirname(path)) && !dir.create(dirname(path), recursive = TRUE)) {
+    return(invisible(NULL))
+  }
+  temporary <- .datasus_temporary_path(path)
+  on.exit(unlink(temporary), add = TRUE)
+  saveRDS(list(
+    parser_version = .tabwin_parser_version,
+    archive_checksum = dictionary$archive_checksum,
+    conversion = conversion
+  ), temporary, version = 2, compress = FALSE)
+  tryCatch(.datasus_commit_file(temporary, path), error = function(error) NULL)
+  invisible(path)
+}
+
 .tabwin_read_conversion <- function(dictionary, definition) {
   key <- .tabwin_conversion_key(definition)
   # Parsed maps are memoised separately from extracted files. The nested
   # environment is shared even when the dictionary list is copied by R.
   if (exists(key, envir = dictionary$conversions, inherits = FALSE)) {
     return(get(key, envir = dictionary$conversions, inherits = FALSE))
+  }
+  cached <- .tabwin_read_cached_conversion(dictionary, key)
+  if (!is.null(cached)) {
+    assign(key, cached, envir = dictionary$conversions)
+    return(cached)
   }
   path <- .tabwin_extract_entry(dictionary, definition$file)
   if (identical(definition$extension, "CNV")) {
@@ -602,13 +721,54 @@
         type = "dbf",
         code_width = max(nchar(codes[keep]), 0L),
         category_count = sum(keep),
-        map = map
+        map = map,
+        map_priority = stats::setNames(rep(0L, length(map)), names(map)),
+        ranges = .tabwin_empty_ranges()
       ),
       class = "microdatasus_tabwin_conversion"
     )
   }
   assign(key, conversion, envir = dictionary$conversions)
+  .tabwin_write_cached_conversion(dictionary, key, conversion)
   conversion
+}
+
+.tabwin_range_matches <- function(values, rule) {
+  values <- .tabwin_normalize_code(values, rule$width[[1L]])
+  prefix <- rule$prefix[[1L]]
+  if (identical(rule$kind[[1L]], "numeric")) {
+    comparable <- grepl("^[0-9]+$", values)
+    number <- suppressWarnings(as.numeric(values))
+  } else {
+    comparable <- startsWith(toupper(values), prefix)
+    suffix <- substring(values, nchar(prefix) + 1L)
+    comparable <- comparable & grepl("^[0-9]+$", suffix)
+    number <- suppressWarnings(as.numeric(suffix))
+  }
+  !is.na(values) & comparable & !is.na(number) &
+    number >= rule$lower[[1L]] & number <= rule$upper[[1L]]
+}
+
+.tabwin_conversion_labels <- function(lookup, conversion) {
+  labels <- unname(conversion$map[lookup])
+  map_priority <- conversion$map_priority
+  if (is.null(map_priority)) {
+    map_priority <- stats::setNames(rep(0L, length(conversion$map)),
+                                    names(conversion$map))
+  }
+  priorities <- unname(map_priority[lookup])
+  priorities[is.na(priorities)] <- -Inf
+  ranges <- conversion$ranges
+  if (is.null(ranges) || !nrow(ranges)) return(labels)
+  # Later source rules override earlier broad intervals, matching TabWin.
+  for (index in seq_len(nrow(ranges))) {
+    rule <- ranges[index, , drop = FALSE]
+    matched <- .tabwin_range_matches(lookup, rule) &
+      rule$priority[[1L]] >= priorities
+    labels[matched] <- rule$label[[1L]]
+    priorities[matched] <- rule$priority[[1L]]
+  }
+  labels
 }
 
 .tabwin_score_definition <- function(dictionary, definition, values) {
@@ -629,7 +789,7 @@
     observed <- .tabwin_normalize_code(observed, conversion$code_width)
   }
   coverage <- if (length(observed)) {
-    mean(observed %in% names(conversion$map))
+    mean(!is.na(.tabwin_conversion_labels(observed, conversion)))
   } else {
     0
   }
@@ -740,7 +900,7 @@
   }
   # Replace known codes only. Unknown codes remain visible so a DataSUS
   # revision cannot silently turn valid information into missing data.
-  labels <- unname(conversion$map[lookup])
+  labels <- .tabwin_conversion_labels(lookup, conversion)
   result <- source
   matched <- !is.na(labels)
   result[matched] <- labels[matched]

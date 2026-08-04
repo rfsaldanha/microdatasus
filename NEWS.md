@@ -68,12 +68,25 @@
 * Adds `datasus_variables()` to inspect official DEF/CNV/DBF metadata and
   `compare_datasus_dictionary()` to report added, removed, or changed fields
   and labels between dictionary versions.
+* Preserves very large CNV intervals as symbolic rules instead of expanding
+  them in memory, reports missing, invalid, non-enumerable, and failed
+  relations explicitly, and compares relation states and interval changes.
+* Adds `datasus_schema()` for dictionary-derived field contracts and
+  `audit_datasus_dictionaries()` for all 104 current and historical TabWin
+  definitions, while downloading each of the 14 physical archives only once.
+* Persists parsed CNV/DBF relations by archive checksum and parser version,
+  caches assembled variable tables in the R session, and serializes competing
+  cache writes with atomic locks and uniquely named partial files.
+* Expands processing diagnostics with dictionary provenance, missing expected
+  fields, unmapped input fields, and numeric/date coercion failures.
 * Gives every unified `process_*()` function the same `labels` policy
   (`"factor"`, `"character"`, or `"none"`) and optional diagnostics for
   unmapped codes, while appending all new arguments to preserve established
   calls.
-* Adds coverage, reproducible processing-benchmark, and scheduled live DataSUS
-  smoke-test workflows, and removes the obsolete duplicate check workflow.
+* Expands coverage gates, processing benchmarks and scheduled live DataSUS
+  smoke tests across SIM, SINASC, SIH, SIA, CNES, and SINAN; adds a monthly
+  all-dictionary audit plus deterministic malformed-DBC, Valgrind, and UBSan
+  safety workflows.
 
 * Replaces short SINAN acronym identifiers with readable canonical names,
   while retaining every previous value as a silent backward-compatible alias.
