@@ -87,7 +87,9 @@ test_that("row filters validate results and have stable failures", {
 
 test_that("lockfiles pin requests, dictionaries and retained source files", {
   payload <- tempfile(fileext = ".dbc")
+  dictionary_payload <- tempfile(fileext = ".zip")
   writeBin(charToRaw("source dbc"), payload)
+  writeBin(charToRaw("dictionary zip"), dictionary_payload)
   provenance <- tibble::tibble(
     file = "fixture.dbc", url = "fixture://fixture.dbc",
     period = "2022", uf = "AC", release = "final",
@@ -100,18 +102,19 @@ test_that("lockfiles pin requests, dictionaries and retained source files", {
   attr(result, "microdatasus_provenance") <- provenance
   attr(result, "microdatasus_request") <- list(
     information_system = "SIM-DO", year_start = 2022L,
-    year_end = 2022L, row_filter = "{ x$id <= 2 }"
+    year_end = 2022L, row_filter = "function(x) x$id <= 2"
   )
   attr(result, "microdatasus_diagnostics") <- structure(
     list(
       dictionaries = tibble::tibble(
         information_system = "SIM-DO", definition = "OBITO.DEF",
-        archive_checksum = "dictionary-sha", source = "fixture"
+        archive_checksum = microdatasus:::.datasus_checksum(
+          dictionary_payload
+        ),
+        archive_checksum_algorithm = "sha256",
+        archive_path = dictionary_payload, source = "fixture"
       ),
-      reference_tables = tibble::tibble(
-        table = "tabMun", checksum = "reference-sha",
-        checksum_algorithm = "sha256"
-      )
+      reference_tables = datasus_reference_tables()[1L, , drop = FALSE]
     ),
     class = "microdatasus_processing_diagnostics"
   )
@@ -119,14 +122,18 @@ test_that("lockfiles pin requests, dictionaries and retained source files", {
   path <- tempfile(fileext = ".lock.rds")
   lock <- datasus_lockfile(result, path)
   restored <- read_datasus_lockfile(path)
+  verified <- verify_datasus_lockfile(restored)
   expect_s3_class(lock, "microdatasus_lockfile")
   expect_identical(restored$request$information_system, "SIM-DO")
   expect_identical(restored$files$checksum_algorithm, "sha256")
   expect_identical(restored$dictionaries$information_system, "SIM-DO")
-  expect_identical(verify_datasus_lockfile(restored)$status, "ok")
+  expect_setequal(verified$component, c("dbc", "dictionary", "reference"))
+  expect_true(all(verified$status == "ok"))
 
   writeBin(charToRaw("changed"), payload)
-  expect_identical(verify_datasus_lockfile(path)$status, "mismatch")
+  changed <- verify_datasus_lockfile(path)
+  expect_identical(changed$status[changed$component == "dbc"], "mismatch")
+  expect_true(all(changed$status[changed$component != "dbc"] == "ok"))
 })
 
 test_that("packaged reference metadata is explicit and normalized", {

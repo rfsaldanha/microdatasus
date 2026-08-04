@@ -7,7 +7,8 @@
 datasus_provenance(x)
 }
 \arguments{
-\item{x}{An object returned by fetch_datasus().}
+\item{x}{An object returned by \code{\link[=fetch_datasus]{fetch_datasus()}}, \code{\link[=fetch_cadger]{fetch_cadger()}}, or
+\code{\link[=fetch_sigtab]{fetch_sigtab()}}.}
 }
 \value{
 A tibble with one row per successfully read file, or NULL when

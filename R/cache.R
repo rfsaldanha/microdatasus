@@ -217,7 +217,8 @@ clear_datasus_cache <- function(cache_dir = datasus_cache_dir()) {
 
 #' Extract download provenance
 #'
-#' @param x An object returned by fetch_datasus().
+#' @param x An object returned by [fetch_datasus()], [fetch_cadger()], or
+#'   [fetch_sigtab()].
 #'
 #' @return A tibble with one row per successfully read file, or NULL when
 #' provenance was not requested.

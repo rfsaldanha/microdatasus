@@ -10,10 +10,11 @@ verify_datasus_lockfile(lockfile)
 \item{lockfile}{A lockfile object or path returned by \code{\link[=datasus_lockfile]{datasus_lockfile()}}.}
 }
 \value{
-A tibble with one row per pinned source file and verification status.
+A tibble with one row per pinned component and verification status.
 }
 \description{
-Recomputes source DBC checksums when retained files are available. A status
-of \code{unavailable} means the checksum remains pinned but the raw DBC was not
-retained locally; it does not imply a mismatch.
+Recomputes retained DBC and TabWin archive checksums and the checksums of
+packaged reference tables. A status of \code{unavailable} means the checksum
+remains pinned but the corresponding downloaded file is no longer local; it
+does not imply a mismatch.
 }

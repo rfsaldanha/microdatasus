@@ -42,7 +42,7 @@ datasus_reference_tables <- function() {
     rows = vapply(objects, nrow, integer(1)),
     columns = vapply(objects, ncol, integer(1)),
     checksum = vapply(objects, digest::digest, character(1),
-                      algo = "sha256"),
+                      algo = "sha256", serializeVersion = 2),
     checksum_algorithm = "sha256"
   )
 }

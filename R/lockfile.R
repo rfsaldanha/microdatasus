@@ -119,48 +119,105 @@ read_datasus_lockfile <- function(file) {
 
 #' Verify files pinned by a DataSUS reproducibility lockfile
 #'
-#' Recomputes source DBC checksums when retained files are available. A status
-#' of `unavailable` means the checksum remains pinned but the raw DBC was not
-#' retained locally; it does not imply a mismatch.
+#' Recomputes retained DBC and TabWin archive checksums and the checksums of
+#' packaged reference tables. A status of `unavailable` means the checksum
+#' remains pinned but the corresponding downloaded file is no longer local; it
+#' does not imply a mismatch.
 #'
 #' @param lockfile A lockfile object or path returned by [datasus_lockfile()].
-#' @return A tibble with one row per pinned source file and verification status.
+#' @return A tibble with one row per pinned component and verification status.
 #' @export
 verify_datasus_lockfile <- function(lockfile) {
   lockfile <- .datasus_lockfile_value(lockfile)
+  records <- list()
   files <- lockfile$files
-  if (!is.data.frame(files) || !nrow(files)) {
+  if (is.data.frame(files) && nrow(files)) {
+    records[[length(records) + 1L]] <- tibble::tibble(
+      component = "dbc",
+      name = as.character(files$file),
+      path = if ("dbc_path" %in% names(files)) {
+        as.character(files$dbc_path)
+      } else {
+        NA_character_
+      },
+      expected = as.character(files$checksum),
+      checksum_algorithm = if ("checksum_algorithm" %in% names(files)) {
+        as.character(files$checksum_algorithm)
+      } else {
+        "md5"
+      }
+    )
+  }
+  dictionaries <- lockfile$dictionaries
+  if (is.data.frame(dictionaries) && nrow(dictionaries)) {
+    records[[length(records) + 1L]] <- tibble::tibble(
+      component = "dictionary",
+      name = as.character(dictionaries$information_system),
+      path = if ("archive_path" %in% names(dictionaries)) {
+        as.character(dictionaries$archive_path)
+      } else {
+        NA_character_
+      },
+      expected = as.character(dictionaries$archive_checksum),
+      checksum_algorithm =
+        if ("archive_checksum_algorithm" %in% names(dictionaries)) {
+          as.character(dictionaries$archive_checksum_algorithm)
+        } else {
+          "md5"
+        }
+    )
+  }
+  references <- lockfile$reference_tables
+  if (is.data.frame(references) && nrow(references)) {
+    current <- .datasus_reference_table_metadata(
+      intersect(references$table, .datasus_reference_specs()$table)
+    )
+    actual <- current$checksum[match(references$table, current$table)]
+    records[[length(records) + 1L]] <- tibble::tibble(
+      component = "reference",
+      name = as.character(references$table),
+      path = NA_character_,
+      expected = as.character(references$checksum),
+      checksum_algorithm =
+        if ("checksum_algorithm" %in% names(references)) {
+          as.character(references$checksum_algorithm)
+        } else {
+          "sha256"
+        },
+      actual = actual
+    )
+  }
+  if (!length(records)) {
     return(tibble::tibble(
-      file = character(), path = character(), expected = character(),
-      actual = character(), checksum_algorithm = character(),
-      status = character()
+      component = character(), name = character(), path = character(),
+      expected = character(), actual = character(),
+      checksum_algorithm = character(), status = character()
     ))
   }
-  path <- if ("dbc_path" %in% names(files)) {
-    as.character(files$dbc_path)
-  } else {
-    rep(NA_character_, nrow(files))
+  result <- tibble::as_tibble(data.table::rbindlist(
+    records, use.names = TRUE, fill = TRUE
+  ))
+  if (!"actual" %in% names(result)) {
+    result$actual <- NA_character_
   }
-  algorithm <- if ("checksum_algorithm" %in% names(files)) {
-    as.character(files$checksum_algorithm)
-  } else {
-    rep("md5", nrow(files))
-  }
-  expected <- as.character(files$checksum)
-  actual <- vapply(seq_len(nrow(files)), function(index) {
-    if (is.na(path[[index]]) || !nzchar(path[[index]]) ||
-        !file.exists(path[[index]])) {
-      return(NA_character_)
-    }
-    .datasus_checksum(path[[index]], algorithm[[index]])
-  }, character(1))
-  status <- ifelse(
-    is.na(actual), "unavailable",
-    ifelse(actual == expected, "ok", "mismatch")
+  downloaded <- result$component != "reference"
+  result$actual[downloaded] <- vapply(
+    which(downloaded),
+    function(index) {
+      path <- result$path[[index]]
+      if (is.na(path) || !nzchar(path) || !file.exists(path)) {
+        return(NA_character_)
+      }
+      .datasus_checksum(path, result$checksum_algorithm[[index]])
+    },
+    character(1)
   )
-  tibble::tibble(
-    file = as.character(files$file), path = path,
-    expected = expected, actual = actual,
-    checksum_algorithm = algorithm, status = status
+  result$status <- ifelse(
+    is.na(result$actual), "unavailable",
+    ifelse(result$actual == result$expected, "ok", "mismatch")
   )
+  result[, c(
+    "component", "name", "path", "expected", "actual",
+    "checksum_algorithm", "status"
+  )]
 }

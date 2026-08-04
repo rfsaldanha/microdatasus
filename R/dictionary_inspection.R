@@ -156,6 +156,9 @@
 #' @details Large analytical CNV ranges are retained as symbolic rules instead
 #'   of being expanded into millions of rows. `status` distinguishes complete,
 #'   fallback, non-enumerable, missing, invalid, and failed relations. A
+#'   `issue_class` independently identifies upstream absence/content drift,
+#'   archive ambiguity, parser/I/O errors, analytical ranges, or definition
+#'   fallback, so severity is not confused with origin.
 #'   fallback is reported when an official two-column DBF renamed its sole
 #'   description field while the DEF retained the previous name. Parsed relations
 #'   persist on disk when `cache_dir` is set, and completed result tables are

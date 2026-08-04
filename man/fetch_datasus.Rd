@@ -153,7 +153,10 @@ returned by \code{\link[=datasus_information_systems]{datasus_information_system
 \section{Network access}{
 
 An Internet connection and FTP access to DataSUS are required. DataSUS may
-restrict FTP access from some countries.
+restrict FTP access from some countries. Interrupted transfers are resumed
+when supported. Alternative base URLs can be configured with the
+\code{microdatasus.mirrors} option; the official DataSUS URL is always tried
+first.
 }
 
 \examples{

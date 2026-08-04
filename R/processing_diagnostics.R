@@ -39,6 +39,7 @@
     definition = fallback(dictionary$definition, NA_character_),
     archive_checksum = fallback(dictionary$archive_checksum, NA_character_),
     archive_checksum_algorithm = fallback(dictionary$archive_checksum_algorithm, "md5"),
+    archive_path = fallback(dictionary$archive, NA_character_),
     source = fallback(dictionary$source, NA_character_),
     stringsAsFactors = FALSE
   )
@@ -146,6 +147,7 @@
     tibble::tibble(
       information_system = character(), definition = character(),
       archive_checksum = character(), archive_checksum_algorithm = character(),
+      archive_path = character(),
       source = character()
     )
   }

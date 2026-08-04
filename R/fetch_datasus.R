@@ -101,7 +101,10 @@
 #'
 #' @section Network access:
 #' An Internet connection and FTP access to DataSUS are required. DataSUS may
-#' restrict FTP access from some countries.
+#' restrict FTP access from some countries. Interrupted transfers are resumed
+#' when supported. Alternative base URLs can be configured with the
+#' `microdatasus.mirrors` option; the official DataSUS URL is always tried
+#' first.
 #'
 #' @references
 #' Saldanha, R. F. (2026). [*Sistemas de Informação em Saúde no
@@ -186,10 +189,16 @@ fetch_datasus <- function(
   }
   request_record <- list(
     year_start = year_start, month_start = month_start, year_end = year_end,
-    month_end = month_end, uf = uf, information_system = information_system,
-    vars = vars, process = process, process_args = process_args,
+    month_end = month_end, uf = uf,
+    information_system = information_system,
+    information_system_resolved = request$information_system, vars = vars,
+    stop_on_error = stop_on_error, timeout = timeout,
+    track_source = track_source, quiet = quiet, cache_dir = cache_dir,
+    refresh = refresh, destination = destination, collect = collect,
+    process = process, process_args = process_args, provenance = provenance,
+    keep_files = keep_files,
     row_filter = if (is.null(row_filter)) NULL else paste(
-      deparse(body(row_filter)), collapse = " "
+      deparse(row_filter), collapse = " "
     )
   )
   cache_root <- .datasus_cache_path(
@@ -486,6 +495,17 @@ fetch_datasus <- function(
   if (!collect) {
     attr(provenance_table, "microdatasus_provenance") <- provenance_table
     attr(provenance_table, "microdatasus_request") <- request_record
+    if (length(diagnostic_records)) {
+      attr(provenance_table, "microdatasus_diagnostics") <- structure(
+        list(
+          information_system = information_system,
+          input_rows = sum(provenance_table$rows),
+          output_rows = sum(provenance_table$rows),
+          files = diagnostic_records
+        ),
+        class = "microdatasus_processing_diagnostics"
+      )
+    }
     return(provenance_table)
   }
   if (!length(parts)) return(NULL)

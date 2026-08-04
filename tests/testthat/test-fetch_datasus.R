@@ -1448,6 +1448,68 @@ test_that("fetch can process each file before selecting variables", {
   expect_length(processing_diagnostics(result)$files, 1L)
 })
 
+test_that("non-collecting processed fetch retains lockfile diagnostics", {
+  mock_fetch_dependencies(
+    mock_manifest("DOAC2022.dbc"),
+    reader = function(file, as_character = TRUE) {
+      tibble::tibble(SEXO = "1")
+    }
+  )
+  dictionary <- list(
+    information_system = "SIM-DO", definition = "OBITO.DEF",
+    archive_checksum = "fixture-sha",
+    archive_checksum_algorithm = "sha256", source = "fixture",
+    definitions = data.frame(field = "SEXO"), numeric_fields = character()
+  )
+  selected <- list(
+    definition = data.frame(position = 1L),
+    conversion = list(type = "cnv", code_width = 1L, map = c("1" = "M"))
+  )
+  local_mocked_bindings(
+    fetch_tabwin_dictionary = function(...) dictionary,
+    .tabwin_select_conversion = function(...) selected,
+    .package = "microdatasus"
+  )
+  destination <- tempfile("microdatasus-lock-output-")
+  on.exit(unlink(destination, recursive = TRUE), add = TRUE)
+
+  manifest <- fetch_datasus(
+    2022, year_end = 2022, uf = "AC", information_system = "SIM-DO",
+    destination = destination, collect = FALSE, process = TRUE,
+    process_args = list(municipality_data = FALSE, diagnostics = TRUE),
+    quiet = TRUE
+  )
+  lock <- datasus_lockfile(manifest)
+
+  expect_length(processing_diagnostics(manifest)$files, 1L)
+  expect_identical(lock$request$collect, FALSE)
+  expect_true(nrow(lock$dictionaries) > 0L)
+})
+
+test_that("row_filter runs before processing and records row counts", {
+  mock_fetch_dependencies(
+    mock_manifest("DOAC2022.dbc"),
+    reader = function(file, as_character = TRUE) tibble::tibble(id = 1:4)
+  )
+  result <- fetch_datasus(
+    2022, year_end = 2022, uf = "AC", information_system = "SIM-DO",
+    row_filter = function(data) data$id > 2L,
+    provenance = TRUE, quiet = TRUE
+  )
+  provenance <- datasus_provenance(result)
+
+  expect_identical(result$id, 3:4)
+  expect_identical(provenance$source_rows, 4L)
+  expect_identical(provenance$rows, 2L)
+  expect_error(
+    fetch_datasus(
+      2022, year_end = 2022, uf = "AC", information_system = "SIM-DO",
+      row_filter = function(data) TRUE, quiet = TRUE
+    ),
+    class = "microdatasus_row_filter_error"
+  )
+})
+
 test_that("scalable fetch arguments are validated", {
   mock_fetch_dependencies(mock_manifest("DOAC2022.dbc"))
 
