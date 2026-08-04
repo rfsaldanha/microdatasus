@@ -53,7 +53,9 @@ and code-label maps as a rectangular lookup table.
 \details{
 Large analytical CNV ranges are retained as symbolic rules instead
 of being expanded into millions of rows. \code{status} distinguishes complete,
-non-enumerable, missing, invalid, and failed relations. Parsed relations
+fallback, non-enumerable, missing, invalid, and failed relations. A
+fallback is reported when an official two-column DBF renamed its sole
+description field while the DEF retained the previous name. Parsed relations
 persist on disk when \code{cache_dir} is set, and completed result tables are
 reused during the R session.
 }

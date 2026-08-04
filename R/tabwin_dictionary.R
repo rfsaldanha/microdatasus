@@ -204,20 +204,32 @@
   specs
 }
 
+.tabwin_abort <- function(message, class, .envir = parent.frame()) {
+  # Stable condition classes let audits classify failures without parsing text.
+  cli::cli_abort(
+    message, class = c(class, "microdatasus_dictionary_error"),
+    .envir = .envir
+  )
+}
+
 .tabwin_read_text <- function(path) {
   # TabWin text files are published with a legacy Windows encoding. Read the
   # bytes explicitly so the result does not depend on the user's locale.
   size <- file.info(path)$size
   if (is.na(size) || size == 0) {
-    cli::cli_abort("TabWin file {.file {basename(path)}} is empty.")
+    .tabwin_abort(
+      "TabWin file {.file {basename(path)}} is empty.",
+      "microdatasus_dictionary_invalid_error"
+    )
   }
   con <- file(path, open = "rb")
   on.exit(close(con), add = TRUE)
   text <- rawToChar(readBin(con, what = "raw", n = size))
   text <- iconv(text, from = "windows-1252", to = "UTF-8", sub = "byte")
   if (is.na(text)) {
-    cli::cli_abort(
-      "Could not convert TabWin file {.file {basename(path)}} to UTF-8."
+    .tabwin_abort(
+      "Could not convert TabWin file {.file {basename(path)}} to UTF-8.",
+      "microdatasus_dictionary_invalid_error"
     )
   }
   strsplit(text, "\r\n|\n|\r", perl = TRUE)[[1L]]
@@ -267,8 +279,9 @@
   })
   records <- Filter(Negate(is.null), records)
   if (!length(records)) {
-    cli::cli_abort(
-      "TabWin definition {.file {basename(path)}} contains no usable conversions."
+    .tabwin_abort(
+      "TabWin definition {.file {basename(path)}} contains no usable conversions.",
+      "microdatasus_dictionary_invalid_error"
     )
   }
   do.call(rbind, records)
@@ -301,9 +314,16 @@
   entries_normalized <- gsub("\\\\", "/", entries)
   suffix <- gsub("\\\\", "/", suffix)
   matches <- which(endsWith(tolower(entries_normalized), tolower(suffix)))
-  if (length(matches) != 1L) {
-    cli::cli_abort(
-      "The TabWin archive must contain exactly one file matching {.file {suffix}}."
+  if (!length(matches)) {
+    .tabwin_abort(
+      "The TabWin archive contains no file matching {.file {suffix}}.",
+      "microdatasus_dictionary_missing_error"
+    )
+  }
+  if (length(matches) > 1L) {
+    .tabwin_abort(
+      "The TabWin archive contains multiple files matching {.file {suffix}}.",
+      "microdatasus_dictionary_ambiguous_error"
     )
   }
   entries[[matches]]
@@ -321,6 +341,28 @@
   tolower(converted)
 }
 
+.tabwin_extract_legacy_entry <- function(dictionary, file_name, destination) {
+  # libzip can list a legacy-encoded member but fail to select it by its
+  # converted UTF-8 name. Extracting to an isolated directory preserves the
+  # original member bytes and lets us identify the basename afterwards.
+  directory <- tempfile("tabwin-legacy-", tmpdir = dictionary$cache_dir)
+  if (!dir.create(directory)) return(FALSE)
+  on.exit(unlink(directory, recursive = TRUE, force = TRUE), add = TRUE)
+  extracted <- tryCatch(
+    zip::unzip(dictionary$archive, exdir = directory),
+    error = function(error) NULL
+  )
+  if (is.null(extracted)) return(FALSE)
+  candidates <- list.files(directory, recursive = TRUE, full.names = TRUE)
+  matches <- which(
+    .tabwin_filename_key(candidates) == .tabwin_filename_key(file_name)
+  )
+  if (length(matches) != 1L || file.size(candidates[[matches]]) == 0) {
+    return(FALSE)
+  }
+  isTRUE(file.copy(candidates[[matches]], destination, overwrite = TRUE))
+}
+
 .tabwin_extract_entry <- function(dictionary, file_name) {
   # Conversion files are extracted only when a processor actually needs them.
   # The extracted copy remains in the session cache directory.
@@ -331,9 +373,22 @@
     matches <- which(
       .tabwin_filename_key(candidates) == .tabwin_filename_key(file_name)
     )
-    if (length(matches) != 1L || file.size(candidates[[matches]]) == 0) {
-      cli::cli_abort(
-        "The extracted TabWin file {.file {file_name}} is missing or ambiguous."
+    if (!length(matches)) {
+      .tabwin_abort(
+        "The extracted TabWin file {.file {file_name}} is missing.",
+        "microdatasus_dictionary_missing_error"
+      )
+    }
+    if (length(matches) > 1L) {
+      .tabwin_abort(
+        "The extracted TabWin file {.file {file_name}} is ambiguous.",
+        "microdatasus_dictionary_ambiguous_error"
+      )
+    }
+    if (file.size(candidates[[matches]]) == 0) {
+      .tabwin_abort(
+        "The extracted TabWin file {.file {file_name}} is empty.",
+        "microdatasus_dictionary_invalid_error"
       )
     }
     return(candidates[[matches]])
@@ -363,14 +418,26 @@
     error = identity
   )
   if (inherits(extracted, "error")) {
-    cli::cli_abort(c(
-      "Failed to extract TabWin file {.file {file_name}}.",
-      "i" = conditionMessage(extracted)
-    ))
+    recovered <- .tabwin_extract_legacy_entry(
+      dictionary, file_name, destination
+    )
+    if (!recovered) {
+      .tabwin_abort(c(
+        "Failed to extract TabWin file {.file {file_name}}.",
+        "i" = conditionMessage(extracted)
+      ), "microdatasus_dictionary_relation_error")
+    }
   }
-  if (!file.exists(destination) || file.size(destination) == 0) {
-    cli::cli_abort(
-      "The extracted TabWin file {.file {file_name}} is missing or empty."
+  if (!file.exists(destination)) {
+    .tabwin_abort(
+      "The extracted TabWin file {.file {file_name}} is missing.",
+      "microdatasus_dictionary_missing_error"
+    )
+  }
+  if (file.size(destination) == 0) {
+    .tabwin_abort(
+      "The extracted TabWin file {.file {file_name}} is empty.",
+      "microdatasus_dictionary_invalid_error"
     )
   }
   destination
@@ -396,7 +463,7 @@
       )
     }
     return(sprintf(
-      paste0("%0", width, "d"),
+      paste0("%0", width, ".0f"),
       seq.int(limits[[1L]], limits[[2L]])
     ))
   }
@@ -419,7 +486,7 @@
       return(paste0(
         prefix,
         sprintf(
-          paste0("%0", digits, "d"),
+          paste0("%0", digits, ".0f"),
           seq.int(limits[[1L]], limits[[2L]])
         )
       ))
@@ -487,65 +554,69 @@
   # width, and (optionally) the literal/range mode.
   useful <- which(nzchar(trimws(lines)) & !startsWith(trimws(lines), ";"))
   if (!length(useful)) {
-    cli::cli_abort(
-      "TabWin conversion {.file {basename(path)}} is empty."
+    .tabwin_abort(
+      "TabWin conversion {.file {basename(path)}} is empty.",
+      "microdatasus_dictionary_invalid_error"
     )
   }
   header_index <- useful[[1L]]
   header <- trimws(lines[[header_index]])
+  # Official CNVs use both the compact header (`2 1`) and a long-description
+  # dialect (`N 924 4 L`). A lower-case `s` also precedes some compact files.
   match <- regexec(
-    "^([0-9]+)\\s+([0-9]+)\\s*([[:alpha:]]*)",
+    "^([[:alpha:]])?\\s*([0-9]+)\\s+([0-9]+)\\s*([[:alpha:]]*)",
     header
   )
   parts <- regmatches(header, match)[[1L]]
-  if (length(parts) != 4L) {
-    cli::cli_abort(
-      "TabWin conversion {.file {basename(path)}} has an invalid header."
+  if (length(parts) != 5L) {
+    .tabwin_abort(
+      "TabWin conversion {.file {basename(path)}} has an invalid header.",
+      "microdatasus_dictionary_invalid_error"
     )
   }
-  category_count <- as.integer(parts[[2L]])
-  code_width <- as.integer(parts[[3L]])
-  mode <- toupper(parts[[4L]])
+  dialect <- toupper(parts[[2L]])
+  category_count <- as.integer(parts[[3L]])
+  code_width <- as.integer(parts[[4L]])
+  mode <- toupper(parts[[5L]])
   if (mode %in% c("F", "FAIXAS")) {
-    cli::cli_abort(
-      "Numeric-range TabWin conversion {.file {basename(path)}} cannot be used as labels."
+    .tabwin_abort(
+      "Numeric-range TabWin conversion {.file {basename(path)}} cannot be used as labels.",
+      "microdatasus_dictionary_invalid_error"
     )
   }
 
   rows <- lines[seq.int(header_index + 1L, length(lines))]
   active <- nzchar(trimws(rows)) & !startsWith(trimws(rows), ";")
   rows <- rows[active]
-  # CNV is a fixed-width format: sequence in columns 4-7, description in
-  # 10-59, and comma-separated source codes from column 61 onward. Parsing
-  # whole columns avoids quadratic list growth in large official relations.
-  numbers <- suppressWarnings(as.integer(trimws(substr(rows, 4L, 7L))))
-  row_labels <- trimws(substr(rows, 10L, 59L))
-  code_text <- sub(";.*$", "", substring(rows, 61L))
+  # `N` reserves 100 columns for descriptions; compact/S files reserve 50.
+  # Both dialects place descriptions at column 10 and codes two columns after
+  # the description. Parsing by the header is more reliable than line length.
+  label_end <- if (identical(dialect, "N")) 109L else 59L
+  code_start <- label_end + 2L
+  row_labels <- trimws(substr(rows, 10L, label_end))
+  code_text <- sub(";.*$", "", substring(rows, code_start))
   tokens <- strsplit(code_text, ",", fixed = TRUE)
   tokens <- lapply(tokens, function(values) {
     values <- trimws(values)
     values[nzchar(values)]
   })
-  usable <- !is.na(numbers) & lengths(tokens) > 0L
-  keys <- as.character(numbers[usable])
-  row_labels <- row_labels[usable]
-  tokens <- tokens[usable]
-  # A category may continue on later lines when its code list exceeds the
-  # TabWin line limit, so group tokens by sequence number in source order.
-  category_keys <- unique(keys)
-  groups <- split(tokens, match(keys, category_keys))
-  categories <- lapply(groups, unlist, use.names = FALSE)
-  names(categories) <- category_keys[as.integer(names(groups))]
-  has_label <- nzchar(row_labels)
-  label_keys <- keys[has_label]
-  first_label <- !duplicated(label_keys)
-  labels <- row_labels[has_label][first_label]
-  names(labels) <- label_keys[first_label]
-
-  labelled_keys <- names(categories)[names(categories) %in% names(labels)]
-  raw_code_parts <- categories[labelled_keys]
-  raw_codes <- unlist(raw_code_parts, use.names = FALSE)
-  raw_labels <- rep(unname(labels[labelled_keys]), lengths(raw_code_parts))
+  # A blank description continues the previous category. Hierarchical `N`
+  # files use more than one sequence column, so source order is the only key
+  # that is stable across both official dialects.
+  code_parts <- vector("list", length(tokens))
+  label_parts <- vector("list", length(tokens))
+  current_label <- NA_character_
+  for (index in seq_along(tokens)) {
+    if (nzchar(row_labels[[index]])) current_label <- row_labels[[index]]
+    if (!is.na(current_label) && length(tokens[[index]])) {
+      code_parts[[index]] <- tokens[[index]]
+      label_parts[[index]] <- rep(current_label, length(tokens[[index]]))
+    }
+  }
+  raw_codes <- unlist(code_parts, use.names = FALSE)
+  raw_labels <- unlist(label_parts, use.names = FALSE)
+  if (is.null(raw_codes)) raw_codes <- character()
+  if (is.null(raw_labels)) raw_labels <- character()
   # Literal codes dominate large CNVs. Only range tokens need the relatively
   # expensive interval parser and its materialisation safety check.
   expanded <- as.list(raw_codes)
@@ -588,8 +659,9 @@
   map_priority <- map_priorities[keep]
   names(map_priority) <- map_codes[keep]
   if (!length(map) && !nrow(rules)) {
-    cli::cli_abort(
-      "TabWin conversion {.file {basename(path)}} contains no code labels."
+    .tabwin_abort(
+      "TabWin conversion {.file {basename(path)}} contains no code labels.",
+      "microdatasus_dictionary_invalid_error"
     )
   }
   structure(
@@ -620,7 +692,7 @@
   )
 }
 
-.tabwin_parser_version <- 2L
+.tabwin_parser_version <- 3L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {
@@ -692,10 +764,10 @@
       # messages are not relevant to the code and label columns selected here.
       suppressMessages(foreign::read.dbf(path, as.is = TRUE)),
       error = function(error) {
-        cli::cli_abort(c(
+        .tabwin_abort(c(
           "Failed to read TabWin table {.file {definition$file}}.",
           "i" = conditionMessage(error)
-        ))
+        ), "microdatasus_dictionary_relation_error")
       }
     )
     names_upper <- toupper(names(table))
@@ -706,10 +778,20 @@
       code_index <- 1L
     }
     label_index <- match(toupper(definition$argument), names_upper)
+    fallback_label <- FALSE
     if (is.na(label_index)) {
-      cli::cli_abort(
-        "TabWin table {.file {definition$file}} has no field {.field {definition$argument}}."
-      )
+      # Some official DEF rows retain an old description-column name after a
+      # two-column DBF was revised. The sole non-key column is unambiguous.
+      candidates <- setdiff(seq_along(table), code_index)
+      if (length(candidates) == 1L) {
+        label_index <- candidates[[1L]]
+        fallback_label <- TRUE
+      } else {
+        .tabwin_abort(
+          "TabWin table {.file {definition$file}} has no field {.field {definition$argument}}.",
+          "microdatasus_dictionary_invalid_error"
+        )
+      }
     }
     codes <- trimws(as.character(table[[code_index]]))
     labels <- stringi::stri_enc_toutf8(as.character(table[[label_index]]))
@@ -723,7 +805,10 @@
         category_count = sum(keep),
         map = map,
         map_priority = stats::setNames(rep(0L, length(map)), names(map)),
-        ranges = .tabwin_empty_ranges()
+        ranges = .tabwin_empty_ranges(),
+        fallback_label = fallback_label,
+        requested_label_field = definition$argument,
+        label_field = names(table)[[label_index]]
       ),
       class = "microdatasus_tabwin_conversion"
     )

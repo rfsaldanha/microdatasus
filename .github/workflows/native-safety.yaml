@@ -1,4 +1,12 @@
 on:
+  push:
+    branches: [dev]
+    paths:
+      - "src/**"
+      - "R/read_dbc.R"
+      - "tests/native/**"
+      - "tests/testthat/test-read_dbc.R"
+      - ".github/workflows/native-safety.yaml"
   schedule:
     - cron: "23 7 15 * *"
   workflow_dispatch:
@@ -32,6 +40,12 @@ jobs:
       - uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
+      - name: Configure UBSan compiler flags
+        run: |
+          mkdir -p ~/.R
+          echo "CFLAGS=-O1 -g -fsanitize=undefined -fno-sanitize-recover=all" > ~/.R/Makevars
+          echo "LDFLAGS=-fsanitize=undefined" >> ~/.R/Makevars
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: local::.

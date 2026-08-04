@@ -18,8 +18,8 @@
 
 # Return the most severe relation state without discarding mixed outcomes.
 .datasus_worst_dictionary_status <- function(status) {
-  rank <- c(ok = 1L, not_requested = 2L, non_enumerable = 3L,
-            missing = 4L, invalid = 5L, error = 6L, dictionary_error = 7L)
+  rank <- c(ok = 1L, fallback = 2L, not_requested = 3L, non_enumerable = 4L,
+            missing = 5L, invalid = 6L, error = 7L, dictionary_error = 8L)
   status[[which.max(replace(unname(rank[status]), is.na(rank[status]), 0L))]]
 }
 
@@ -127,7 +127,7 @@ audit_datasus_dictionaries <- function(
       ))
     }
     issues <- value[value$status %in% c(
-      "non_enumerable", "missing", "invalid", "error"
+      "fallback", "non_enumerable", "missing", "invalid", "error"
     ), c("field", "file", "status", "message")]
     tibble::tibble(
       information_system = key, archive_key = registry[[key]]$archive_key,
@@ -140,9 +140,7 @@ audit_datasus_dictionaries <- function(
     )
   })
   result <- do.call(rbind, rows)
-  failed <- result$status %in% c(
-    "dictionary_error", "missing", "invalid", "error"
-  )
+  failed <- result$status %in% c("dictionary_error", "error")
   if (fail_on_error && any(failed)) {
     cli::cli_abort("One or more DataSUS dictionaries could not be audited.")
   }

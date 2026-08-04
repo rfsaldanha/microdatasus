@@ -23,7 +23,8 @@ interpretação de cada sistema, consulte o livro
 - As funções `process_*()` usam os dicionários oficiais do TabWin, padronizam
   tipos e podem relatar códigos ainda não mapeados.
 - `datasus_variables()` consulta relações oficiais, `datasus_schema()` cria
-  contratos por campo, `audit_datasus_dictionaries()` verifica todas as
+  contratos por campo, `validate_datasus_schema()` confronta DBC, DEF e tipos
+  produzidos, e `audit_datasus_dictionaries()` verifica todas as
   definições e `compare_datasus_dictionary()` identifica mudanças entre versões.
 - `fetch_cadger()` e `fetch_sigtab()` obtêm tabelas auxiliares atuais de CNES e
   SIA.
@@ -151,6 +152,7 @@ Um diretório explícito reutiliza DBC e ZIP do TabWin entre sessões:
 cache <- datasus_cache_dir(create = TRUE)
 variables <- datasus_variables("SIM-DO", cache_dir = cache)
 schema <- datasus_schema("SIM-DO", cache_dir = cache)
+contract <- validate_datasus_schema(sim_do_sample, "SIM-DO", period = 2020, cache_dir = cache)
 audit <- audit_datasus_dictionaries(c("SIM-DO", "SINASC"), cache_dir = cache)
 datasus_cache_info(cache)
 ```

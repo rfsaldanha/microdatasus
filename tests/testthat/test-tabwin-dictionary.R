@@ -506,3 +506,113 @@ test_that("process_sim rejects unsupported SIM data types", {
     "information_system"
   )
 })
+
+test_that("CNV parser supports official long and compact dialect prefixes", {
+  long <- tempfile(fileext = ".CNV")
+  compact <- tempfile(fileext = ".CNV")
+  on.exit(unlink(c(long, compact)), add = TRUE)
+  long_row <- paste0(
+    sprintf("%9d", 1L), sprintf("%-100s", "Long description"),
+    " ", "A001"
+  )
+  compact_row <- paste0(
+    sprintf("%9d", 1L), sprintf("%-50s", "Compact description"),
+    " ", "01"
+  )
+  write_tabwin_text(long, c("N 1 4 L", long_row))
+  write_tabwin_text(compact, c("s 1 2", compact_row))
+
+  long_conversion <- microdatasus:::.tabwin_parse_cnv(long)
+  compact_conversion <- microdatasus:::.tabwin_parse_cnv(compact)
+
+  expect_identical(unname(long_conversion$map[["A001"]]), "Long description")
+  expect_identical(unname(compact_conversion$map[["01"]]), "Compact description")
+})
+
+test_that("dictionary failures expose stable condition classes", {
+  expect_error(
+    microdatasus:::.tabwin_find_entry("path/one.cnv", "missing.cnv"),
+    class = "microdatasus_dictionary_missing_error"
+  )
+  expect_error(
+    microdatasus:::.tabwin_find_entry(
+      c("a/same.cnv", "b/same.cnv"), "same.cnv"
+    ),
+    class = "microdatasus_dictionary_ambiguous_error"
+  )
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  write_tabwin_text(path, "not a header")
+  expect_error(
+    microdatasus:::.tabwin_parse_cnv(path),
+    class = "microdatasus_dictionary_invalid_error"
+  )
+})
+
+test_that("two-column DBFs use an explicit audited label fallback", {
+  directory <- tempfile("dbf-fallback-")
+  dir.create(directory)
+  on.exit(unlink(directory, recursive = TRUE), add = TRUE)
+  path <- file.path(directory, "labels.dbf")
+  foreign::write.dbf(
+    data.frame(CODE = c("1", "2"), CURRENT_LABEL = c("One", "Two")),
+    path
+  )
+  dictionary <- list(
+    extracted_all = TRUE, cache_dir = directory, persistent = FALSE,
+    conversions = new.env(parent = emptyenv())
+  )
+  definition <- data.frame(
+    file = "labels.dbf", extension = "DBF", field = "CODE",
+    argument = "OLD_LABEL", stringsAsFactors = FALSE
+  )
+
+  result <- microdatasus:::.datasus_dictionary_conversion(
+    dictionary, definition
+  )
+
+  expect_identical(result$status, "fallback")
+  expect_true(result$conversion$fallback_label)
+  expect_identical(unname(result$conversion$map), c("One", "Two"))
+  expect_match(result$message, "CURRENT_LA")
+})
+
+test_that("dictionary inspection classifies structured relation failures", {
+  dictionary <- list()
+  definition <- data.frame(field = "X")
+  cases <- list(
+    missing = "microdatasus_dictionary_missing_error",
+    invalid = "microdatasus_dictionary_invalid_error",
+    ambiguous = "microdatasus_dictionary_ambiguous_error",
+    error = "simpleError"
+  )
+  for (status in names(cases)) {
+    class <- cases[[status]]
+    local_mocked_bindings(
+      .tabwin_read_conversion = function(...) {
+        condition <- structure(
+          list(message = paste(status, "relation"), call = NULL),
+          class = c(class, "error", "condition")
+        )
+        stop(condition)
+      },
+      .package = "microdatasus"
+    )
+    result <- microdatasus:::.datasus_dictionary_conversion(
+      dictionary, definition
+    )
+    expected <- if (status == "ambiguous") "invalid" else status
+    expect_identical(result$status, expected)
+    expect_match(result$message, status)
+    expect_null(result$conversion)
+  }
+})
+
+test_that("dictionary prefetch returns early when there is no work", {
+  expect_null(microdatasus:::.datasus_prefetch_dictionary_relations(
+    list(extracted_all = TRUE), data.frame()
+  ))
+  expect_null(microdatasus:::.datasus_prefetch_dictionary_relations(
+    list(extracted_all = FALSE), data.frame()
+  ))
+})

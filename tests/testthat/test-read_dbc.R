@@ -206,6 +206,19 @@ test_that("read_dbc rejects invalid DBC files", {
   expect_false(file.exists(output))
 })
 
+test_that("DBC decompressor survives a deterministic malformed corpus", {
+  set.seed(20260804)
+  for (index in seq_len(25L)) {
+    size <- sample(c(1:64, 128, 256), 1L)
+    body <- as.raw(sample.int(256L, size, replace = TRUE) - 1L)
+    input <- write_dbc_bytes(dbc_bytes_with_compressed_body(body))
+    output <- tempfile(fileext = ".dbf")
+    result <- try(microdatasus:::.dbc2dbf(input, output), silent = TRUE)
+    expect_true(inherits(result, "try-error") || isTRUE(result))
+    unlink(c(input, output))
+  }
+})
+
 test_that("DBC decompressor reports specific malformed-file errors", {
   invalid_header <- raw(10L)
   invalid_header[9L] <- as.raw(32L)

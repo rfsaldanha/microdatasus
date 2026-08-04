@@ -4,10 +4,23 @@
   tryCatch({
     conversion <- .tabwin_read_conversion(dictionary, definition)
     symbolic <- !is.null(conversion$ranges) && nrow(conversion$ranges) > 0L
+    fallback <- isTRUE(conversion$fallback_label)
     list(
       conversion = conversion,
-      status = if (symbolic) "non_enumerable" else "ok",
-      message = if (symbolic) {
+      status = if (fallback) {
+        "fallback"
+      } else if (symbolic) {
+        "non_enumerable"
+      } else {
+        "ok"
+      },
+      message = if (fallback) {
+        paste0(
+          "The DEF requests label field ", conversion$requested_label_field,
+          "; the only non-key DBF field ", conversion$label_field,
+          " was used."
+        )
+      } else if (symbolic) {
         "One or more analytical ranges are represented symbolically."
       } else {
         NA_character_
@@ -15,11 +28,14 @@
     )
   }, error = function(error) {
     message <- conditionMessage(error)
-    status <- if (grepl("missing|exactly one file matching|empty", message,
-                         ignore.case = TRUE)) {
+    status <- if (inherits(
+      error, "microdatasus_dictionary_missing_error"
+    )) {
       "missing"
-    } else if (grepl("invalid|no usable|no field|cannot be used", message,
-                      ignore.case = TRUE)) {
+    } else if (inherits(error, c(
+      "microdatasus_dictionary_invalid_error",
+      "microdatasus_dictionary_ambiguous_error"
+    ))) {
       "invalid"
     } else {
       "error"
@@ -78,8 +94,8 @@
 
 .datasus_dictionary_field_view <- function(result) {
   groups <- split(result, result$field)
-  status_rank <- c(ok = 1L, not_requested = 2L, non_enumerable = 3L,
-                   missing = 4L, invalid = 5L, error = 6L)
+  status_rank <- c(ok = 1L, fallback = 2L, not_requested = 3L, non_enumerable = 4L,
+                   missing = 5L, invalid = 6L, error = 7L)
   tibble::tibble(
     information_system = vapply(groups, function(x) x$information_system[[1L]],
                                 character(1)),
@@ -111,7 +127,9 @@
 #'
 #' @details Large analytical CNV ranges are retained as symbolic rules instead
 #'   of being expanded into millions of rows. `status` distinguishes complete,
-#'   non-enumerable, missing, invalid, and failed relations. Parsed relations
+#'   fallback, non-enumerable, missing, invalid, and failed relations. A
+#'   fallback is reported when an official two-column DBF renamed its sole
+#'   description field while the DEF retained the previous name. Parsed relations
 #'   persist on disk when `cache_dir` is set, and completed result tables are
 #'   reused during the R session.
 #'
@@ -243,7 +261,8 @@ datasus_variables <- function(
       if (is.null(value$message)) NA_character_ else value$message
     }, character(1)),
     labels_complete = vapply(
-      conversions, function(value) identical(value$status, "ok"), logical(1)
+      conversions, function(value) value$status %in% c("ok", "fallback"),
+      logical(1)
     ),
     labels = label_tables,
     ranges = range_tables

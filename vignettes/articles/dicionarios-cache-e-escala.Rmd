@@ -68,6 +68,10 @@ os 14 ZIP físicos compartilhados são baixados apenas uma vez por cache.
 ```{r, eval = FALSE}
 schema <- datasus_schema("SINAN-DENGUE", inspect = TRUE, cache_dir = cache)
 
+contract <- validate_datasus_schema(
+  sim_do_sample, "SIM-DO", period = 2020, cache_dir = cache
+)
+
 audit <- audit_datasus_dictionaries(
   c("SIM-DO", "SINASC", "SIH-RD", "SIA-PA", "CNES-ST",
     "SINAN-DENGUE"),

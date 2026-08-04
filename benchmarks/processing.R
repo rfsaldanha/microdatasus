@@ -55,6 +55,18 @@ results <- do.call(rbind, lapply(names(cases), function(name) {
 dir.create("benchmarks", showWarnings = FALSE)
 utils::write.csv(results, "benchmarks/results.csv", row.names = FALSE)
 print(results)
+# Per-case budgets are intentionally several times slower than the recorded
+# local baseline, catching large regressions without comparing different CPUs.
+budgets <- utils::read.csv("benchmarks/budgets.csv", stringsAsFactors = FALSE)
+budget_index <- match(results$case, budgets$case)
+if (anyNA(budget_index)) stop("A benchmark case has no performance budget.")
+exceeded <- results$elapsed_seconds > budgets$max_seconds[budget_index]
+if (any(exceeded)) {
+  stop(paste(
+    "Performance budget exceeded:", paste(results$case[exceeded], collapse = ", ")
+  ))
+}
+
 limit <- suppressWarnings(as.numeric(Sys.getenv("MICRODATASUS_BENCHMARK_MAX_SECONDS", "Inf")))
 if (!is.na(limit) && any(results$elapsed_seconds > limit)) {
   stop("At least one benchmark exceeded the configured performance budget.")

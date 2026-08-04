@@ -46,6 +46,7 @@ reference:
   - fetch_tabwin_dictionary
   - datasus_variables
   - datasus_schema
+  - validate_datasus_schema
   - audit_datasus_dictionaries
   - compare_datasus_dictionary
   - datasus_cache_dir

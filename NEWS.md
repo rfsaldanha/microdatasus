@@ -68,6 +68,12 @@
 * Adds `datasus_variables()` to inspect official DEF/CNV/DBF metadata and
   `compare_datasus_dictionary()` to report added, removed, or changed fields
   and labels between dictionary versions.
+* Supports the compact, `s`, and long-description `N` CNV dialects found
+  in current official archives, legacy-encoded ZIP member names, codes wider
+  than 32-bit integers, and audited two-column DBF description fallbacks.
+* Adds `validate_datasus_schema()` to join observed DBC fields, selected
+  current/historical DEF declarations, and the types produced by the matching
+  processor for all 93 downloadable families.
 * Preserves very large CNV intervals as symbolic rules instead of expanding
   them in memory, reports missing, invalid, non-enumerable, and failed
   relations explicitly, and compares relation states and interval changes.
