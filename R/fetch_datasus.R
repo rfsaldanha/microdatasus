@@ -14,8 +14,10 @@
 #'   systems published only as national files.
 #' @param information_system A single system identifier listed in
 #'   **Supported systems**.
-#' @param vars `NULL`, or a character vector of column names to retain. Selection
-#'   is applied to each file before the files are combined.
+#' @param vars `NULL`, or a character vector of column names to retain. When
+#'   neither `process` nor `row_filter` needs a complete row, selection is
+#'   pushed into the DBC reader so unselected fields are not allocated or
+#'   parsed. Selection is always applied before files are combined.
 #' @param stop_on_error Logical scalar. If `TRUE`, abort after any listing,
 #'   download, or read failure. If `FALSE`, warn and return the files that could
 #'   be read successfully.
@@ -352,7 +354,16 @@ fetch_datasus <- function(
             "Reading [{index}/{nrow(manifest)}] {.file {remote$file}}..."
           )
         }
-        partial <- read_dbc(file = temporary, as_character = TRUE)
+        read_vars <- if (!process && is.null(row_filter) && !is.null(vars)) {
+          setdiff(vars, "source")
+        } else {
+          NULL
+        }
+        read_arguments <- list(file = temporary, as_character = TRUE)
+        if (length(read_vars) > 0L) {
+          read_arguments$vars <- read_vars
+        }
+        partial <- do.call(read_dbc, read_arguments)
         source_rows <- nrow(partial)
         if (!is.null(row_filter)) {
           partial <- .datasus_apply_row_filter(partial, row_filter)

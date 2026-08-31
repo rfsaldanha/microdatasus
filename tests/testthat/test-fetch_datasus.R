@@ -624,9 +624,20 @@ mock_fetch_dependencies <- function(manifest, reader = NULL, downloader = NULL) 
     }
   }
   if (is.null(reader)) {
-    reader <- function(file, as_character = TRUE) {
+    reader <- function(file, as_character = TRUE, vars = NULL) {
       marker <- rawToChar(readBin(file, "raw", n = file.info(file)$size))
-      tibble::tibble(id = sub("mock://", "", marker), value = "x")
+      result <- tibble::tibble(
+        id = sub("mock://", "", marker),
+        value = "x"
+      )
+      if (!is.null(vars) && !all(vars %in% names(result))) {
+        cli::cli_abort(
+          "Unknown variable name.",
+          class = "microdatasus_unknown_vars"
+        )
+      }
+      if (!is.null(vars)) result <- result[, vars, drop = FALSE]
+      result
     }
   }
   local_mocked_bindings(
@@ -658,6 +669,31 @@ test_that("fetch selects variables once and always preserves source tracking", {
   expect_s3_class(result, "tbl_df")
   expect_named(result, c("value", "source"))
   expect_equal(result$source, c("DOAC2022.dbc", "DOAC2023.dbc"))
+})
+
+test_that("fetch projects raw columns before reading when it is safe", {
+  seen_vars <- list()
+  mock_fetch_dependencies(
+    mock_manifest("DOAC2022.dbc"),
+    reader = function(file, as_character = TRUE, vars = NULL) {
+      seen_vars[[length(seen_vars) + 1L]] <<- vars
+      result <- tibble::tibble(id = "1", value = "x")
+      if (!is.null(vars)) result <- result[, vars, drop = FALSE]
+      result
+    }
+  )
+
+  result <- fetch_datasus(
+    2022,
+    year_end = 2022,
+    uf = "AC",
+    information_system = "SIM-DO",
+    vars = "value",
+    quiet = TRUE
+  )
+
+  expect_identical(seen_vars, list("value"))
+  expect_named(result, "value")
 })
 
 test_that("fetch passes quiet to every download", {

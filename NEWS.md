@@ -2,6 +2,12 @@
 
 ## Development
 
+* Replaces the DBC-to-temporary-DBF path in `read_dbc()` with a streaming
+  native reader that parses decompressed records directly into R columns.
+  Character data are converted explicitly to UTF-8 from DBF language-driver
+  metadata (with an `encoding` override), and `vars` avoids allocating or
+  parsing unselected fields. `fetch_datasus()` uses this projection before
+  reading whenever processing and row filtering do not require the full row.
 * Adds per-file `row_filter` execution before processing, deterministic schema
   sampling across historical layouts, and richer coercion/unknown-code counts.
 * Uses SHA-256 for new cache manifests while reading legacy MD5 manifests,

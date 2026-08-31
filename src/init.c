@@ -7,7 +7,8 @@
 /* declaration from dbc2dbf.c */
 extern void dbc2dbf(char **input_file, char **output_file,
                     int *ret_code, char **error_str);
-extern SEXP microdatasus_read_dbc(SEXP file);
+extern SEXP microdatasus_dbc_info(SEXP file);
+extern SEXP microdatasus_read_dbc(SEXP file, SEXP selection);
 
 static const R_CMethodDef CEntries[] = {
     {"microdatasus_dbc2dbf", (DL_FUNC) &dbc2dbf, 4},
@@ -15,7 +16,8 @@ static const R_CMethodDef CEntries[] = {
 };
 
 static const R_CallMethodDef CallEntries[] = {
-    {"microdatasus_read_dbc", (DL_FUNC) &microdatasus_read_dbc, 1},
+    {"microdatasus_dbc_info", (DL_FUNC) &microdatasus_dbc_info, 1},
+    {"microdatasus_read_dbc", (DL_FUNC) &microdatasus_read_dbc, 2},
     {NULL, NULL, 0}
 };
 

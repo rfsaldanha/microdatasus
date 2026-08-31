@@ -4,7 +4,7 @@
 \alias{read_dbc}
 \title{Read a DBC file}
 \usage{
-read_dbc(file, as_character = TRUE)
+read_dbc(file, as_character = TRUE, vars = NULL, encoding = "auto")
 }
 \arguments{
 \item{file}{A single character string with the path to a readable, non-empty
@@ -12,6 +12,13 @@ DBC file.}
 
 \item{as_character}{If \code{TRUE} (the default), converts every column to
 character. If \code{FALSE}, preserves the types inferred from the DBF metadata.}
+
+\item{vars}{\code{NULL} (the default), or a character vector containing the
+columns to read. Unselected columns are neither allocated nor parsed.}
+
+\item{encoding}{Character scalar naming the source encoding, or \code{"auto"}
+(the default) to use the DBF language-driver byte. Unmarked DataSUS files
+default to Windows-1252.}
 }
 \value{
 A tibble with one column per DBF field. By default, all columns are
@@ -19,15 +26,20 @@ character vectors; with \code{as_character = FALSE}, DBF-inferred types are
 retained.
 }
 \description{
-Decompresses a DataSUS DBC file to a temporary DBF file and reads it into
-a tibble. Use this function for a DBC file already available locally; use
-\code{\link[=fetch_datasus]{fetch_datasus()}} to discover and download files from DataSUS.
+Reads a DataSUS DBC file directly into a tibble, without creating an
+intermediate DBF file. Use this function for a DBC file already available
+locally; use \code{\link[=fetch_datasus]{fetch_datasus()}} to discover and download files from DataSUS.
 }
 \details{
 Decompression is performed through the package's bundled DBC implementation.
 The DBF header and decompressed fixed-width records are parsed directly into
 R columns without creating an intermediate DBF file. The decompressor was
 adapted from the \code{healthbR} package.
+
+Character fields are converted explicitly to UTF-8. Invalid byte sequences
+abort with a \code{microdatasus_dbc_encoding_error} instead of being silently
+replaced. Supply \code{encoding} when a file has a missing or incorrect code-page
+marker.
 
 Invalid input files, decompression failures, and DBF reading failures abort
 with errors in the \code{microdatasus_dbc_error} family.

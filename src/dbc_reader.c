@@ -40,6 +40,8 @@ typedef struct {
     unsigned int offset;
     dbf_column_kind kind;
     int integer_candidate;
+    int selected;
+    int output_index;
     SEXP column;
 } dbf_field;
 
@@ -58,6 +60,7 @@ typedef struct {
     unsigned int record_size;
     unsigned int record_used;
     unsigned int field_count;
+    unsigned int selected_count;
     uint32_t record_count;
     uint32_t row;
     unsigned int invalid_logicals;
@@ -65,6 +68,7 @@ typedef struct {
     char error[DBC_ERROR_SIZE];
     SEXP data_frame;
     SEXP data_types;
+    SEXP selection;
 } dbc_reader;
 
 static uint16_t read_le16(const unsigned char *value)
@@ -161,6 +165,11 @@ static int parse_dbf_record(dbc_reader *reader)
 
     for (index = 0; index < reader->field_count; index++) {
         dbf_field *field = reader->fields + index;
+
+        if (!field->selected) {
+            continue;
+        }
+
         const unsigned char *raw = reader->record + field->offset;
         unsigned int start = 0;
         unsigned int length = trimmed_span(raw, field->width, &start);
@@ -174,7 +183,7 @@ static int parse_dbf_record(dbc_reader *reader)
                 SET_STRING_ELT(
                     field->column,
                     row,
-                    mkCharLen((const char *)value, (int)length)
+                    mkCharLenCE((const char *)value, (int)length, CE_BYTES)
                 );
             }
         } else if (field->kind == DBF_COLUMN_LOGICAL) {
@@ -338,13 +347,9 @@ static void read_header(dbc_reader *reader)
     }
 }
 
-/* Leaves data_frame protected for the duration of read_dbc_body(). */
-static void parse_header(dbc_reader *reader)
+static void validate_header_structure(dbc_reader *reader)
 {
-    unsigned int index;
-    unsigned int running_offset = 1u;
     unsigned int descriptor_bytes;
-    SEXP names;
 
     if (!valid_dbf_version(reader->header[0])) {
         error("Unsupported or invalid DBF version in DBC file.");
@@ -363,7 +368,8 @@ static void parse_header(dbc_reader *reader)
         error("DBC file has more rows than an R data frame can represent.");
     }
 
-    descriptor_bytes = (unsigned int)reader->header_size - DBF_MIN_HEADER_SIZE;
+    descriptor_bytes = (unsigned int)reader->header_size -
+        DBF_MIN_HEADER_SIZE;
     if (descriptor_bytes % DBF_FIELD_DESCRIPTOR_SIZE != 0u) {
         error("Invalid DBF field descriptor section in DBC file.");
     }
@@ -371,6 +377,16 @@ static void parse_header(dbc_reader *reader)
     if (reader->field_count == 0u) {
         error("No DBF fields found in DBC file.");
     }
+}
+
+/* Leaves data_frame protected for the duration of read_dbc_body(). */
+static void parse_header(dbc_reader *reader)
+{
+    unsigned int index;
+    unsigned int running_offset = 1u;
+    SEXP names;
+
+    validate_header_structure(reader);
 
     reader->fields = (dbf_field *)calloc(
         reader->field_count,
@@ -384,9 +400,43 @@ static void parse_header(dbc_reader *reader)
         error("Could not allocate the DBF record buffer.");
     }
 
-    reader->data_frame = PROTECT(allocVector(VECSXP, reader->field_count));
-    names = PROTECT(allocVector(STRSXP, reader->field_count));
-    reader->data_types = PROTECT(allocVector(STRSXP, reader->field_count));
+    if (reader->selection == R_NilValue) {
+        reader->selected_count = reader->field_count;
+        for (index = 0; index < reader->field_count; index++) {
+            reader->fields[index].selected = 1;
+            reader->fields[index].output_index = (int)index;
+        }
+    } else {
+        R_xlen_t selection_index;
+
+        if (TYPEOF(reader->selection) != INTSXP) {
+            error("column selection must be an integer vector");
+        }
+        if (XLENGTH(reader->selection) > (R_xlen_t)UINT_MAX) {
+            error("too many selected DBF fields");
+        }
+        reader->selected_count = (unsigned int)XLENGTH(reader->selection);
+        for (selection_index = 0;
+             selection_index < XLENGTH(reader->selection);
+             selection_index++) {
+            int field_index = INTEGER(reader->selection)[selection_index];
+
+            if (field_index == NA_INTEGER || field_index < 1 ||
+                (unsigned int)field_index > reader->field_count) {
+                error("column selection contains an invalid field index");
+            }
+            field_index--;
+            if (reader->fields[field_index].selected) {
+                error("column selection contains a duplicated field index");
+            }
+            reader->fields[field_index].selected = 1;
+            reader->fields[field_index].output_index = (int)selection_index;
+        }
+    }
+
+    reader->data_frame = PROTECT(allocVector(VECSXP, reader->selected_count));
+    names = PROTECT(allocVector(STRSXP, reader->selected_count));
+    reader->data_types = PROTECT(allocVector(STRSXP, reader->selected_count));
 
     for (index = 0; index < reader->field_count; index++) {
         const unsigned char *descriptor =
@@ -416,6 +466,10 @@ static void parse_header(dbc_reader *reader)
         }
         running_offset += field->width;
 
+        if (!field->selected) {
+            continue;
+        }
+
         if (field->type == 'N' || field->type == 'F') {
             field->kind = DBF_COLUMN_NUMBER;
             field->integer_candidate = field->decimals == 0u;
@@ -428,12 +482,20 @@ static void parse_header(dbc_reader *reader)
             column = PROTECT(allocVector(STRSXP, reader->record_count));
         }
 
-        SET_VECTOR_ELT(reader->data_frame, index, column);
-        field->column = VECTOR_ELT(reader->data_frame, index);
-        SET_STRING_ELT(names, index, mkCharLen(field->name, (int)name_length));
+        SET_VECTOR_ELT(reader->data_frame, field->output_index, column);
+        field->column = VECTOR_ELT(reader->data_frame, field->output_index);
+        SET_STRING_ELT(
+            names,
+            field->output_index,
+            mkCharLenCE(field->name, (int)name_length, CE_BYTES)
+        );
         type_text[0] = field->type;
         type_text[1] = '\0';
-        SET_STRING_ELT(reader->data_types, index, mkChar(type_text));
+        SET_STRING_ELT(
+            reader->data_types,
+            field->output_index,
+            mkChar(type_text)
+        );
         UNPROTECT(1);
     }
 
@@ -449,7 +511,8 @@ static void finalize_integer_columns(dbc_reader *reader)
     for (index = 0; index < reader->field_count; index++) {
         dbf_field *field = reader->fields + index;
 
-        if (field->kind == DBF_COLUMN_NUMBER && field->integer_candidate) {
+        if (field->selected && field->kind == DBF_COLUMN_NUMBER &&
+            field->integer_candidate) {
             R_xlen_t row;
             SEXP integer_column = PROTECT(
                 allocVector(INTSXP, reader->record_count)
@@ -460,8 +523,15 @@ static void finalize_integer_columns(dbc_reader *reader)
                 INTEGER(integer_column)[row] = ISNA(value) ?
                     NA_INTEGER : (int)value;
             }
-            SET_VECTOR_ELT(reader->data_frame, index, integer_column);
-            field->column = VECTOR_ELT(reader->data_frame, index);
+            SET_VECTOR_ELT(
+                reader->data_frame,
+                field->output_index,
+                integer_column
+            );
+            field->column = VECTOR_ELT(
+                reader->data_frame,
+                field->output_index
+            );
             UNPROTECT(1);
         }
     }
@@ -482,6 +552,76 @@ static void finish_data_frame(dbc_reader *reader)
     setAttrib(reader->data_frame, R_ClassSymbol, class_value);
     setAttrib(reader->data_frame, R_RowNamesSymbol, row_names);
     UNPROTECT(2);
+}
+
+static SEXP read_dbc_info_body(void *context)
+{
+    dbc_reader *reader = (dbc_reader *)context;
+    unsigned int index;
+    unsigned int running_offset = 1u;
+    SEXP result;
+    SEXP names;
+    SEXP data_types;
+    SEXP rows;
+    SEXP language_driver;
+    SEXP result_names;
+
+    reader->file = fopen(reader->path, "rb");
+    if (reader->file == NULL) {
+        error("Unable to open DBC file.");
+    }
+
+    read_header(reader);
+    validate_header_structure(reader);
+
+    result = PROTECT(allocVector(VECSXP, 4));
+    names = PROTECT(allocVector(STRSXP, reader->field_count));
+    data_types = PROTECT(allocVector(STRSXP, reader->field_count));
+    rows = PROTECT(ScalarInteger((int)reader->record_count));
+    language_driver = PROTECT(ScalarInteger((int)reader->header[29]));
+    result_names = PROTECT(allocVector(STRSXP, 4));
+
+    for (index = 0; index < reader->field_count; index++) {
+        const unsigned char *descriptor =
+            reader->header + 32u + index * DBF_FIELD_DESCRIPTOR_SIZE;
+        unsigned int name_length = 0u;
+        unsigned int width = (unsigned int)descriptor[16];
+        char type_text[2];
+
+        while (name_length < 11u && descriptor[name_length] != '\0') {
+            name_length++;
+        }
+        while (name_length > 0u && descriptor[name_length - 1u] == ' ') {
+            name_length--;
+        }
+        if (width == 0u || running_offset > reader->record_size ||
+            width > reader->record_size - running_offset) {
+            error("DBF field layout exceeds the declared record size.");
+        }
+        running_offset += width;
+
+        SET_STRING_ELT(
+            names,
+            index,
+            mkCharLenCE((const char *)descriptor, (int)name_length, CE_BYTES)
+        );
+        type_text[0] = (char)descriptor[11];
+        type_text[1] = '\0';
+        SET_STRING_ELT(data_types, index, mkChar(type_text));
+    }
+
+    SET_VECTOR_ELT(result, 0, names);
+    SET_VECTOR_ELT(result, 1, data_types);
+    SET_VECTOR_ELT(result, 2, rows);
+    SET_VECTOR_ELT(result, 3, language_driver);
+    SET_STRING_ELT(result_names, 0, mkChar("names"));
+    SET_STRING_ELT(result_names, 1, mkChar("data_types"));
+    SET_STRING_ELT(result_names, 2, mkChar("rows"));
+    SET_STRING_ELT(result_names, 3, mkChar("language_driver"));
+    setAttrib(result, R_NamesSymbol, result_names);
+
+    UNPROTECT(6);
+    return result;
 }
 
 static SEXP read_dbc_body(void *context)
@@ -556,7 +696,7 @@ static SEXP read_dbc_body(void *context)
     return result;
 }
 
-SEXP microdatasus_read_dbc(SEXP file)
+SEXP microdatasus_dbc_info(SEXP file)
 {
     dbc_reader reader;
     const char *path;
@@ -572,6 +712,33 @@ SEXP microdatasus_read_dbc(SEXP file)
 
     memset(&reader, 0, sizeof(reader));
     reader.path = path;
+
+    return R_UnwindProtect(
+        read_dbc_info_body,
+        &reader,
+        reader_cleanup,
+        &reader,
+        NULL
+    );
+}
+
+SEXP microdatasus_read_dbc(SEXP file, SEXP selection)
+{
+    dbc_reader reader;
+    const char *path;
+
+    if (TYPEOF(file) != STRSXP || XLENGTH(file) != 1 ||
+        STRING_ELT(file, 0) == NA_STRING) {
+        error("file must be one non-missing character string");
+    }
+    path = CHAR(STRING_ELT(file, 0));
+    if (path[0] == '\0') {
+        error("file must not be empty");
+    }
+
+    memset(&reader, 0, sizeof(reader));
+    reader.path = path;
+    reader.selection = selection;
 
     return R_UnwindProtect(
         read_dbc_body,

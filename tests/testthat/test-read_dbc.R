@@ -26,12 +26,74 @@ dbc_bytes_with_compressed_body <- function(bytes = raw()) {
   c(header, raw(4L), bytes)
 }
 
+little_endian_raw <- function(value, size) {
+  as.raw((value %/% (256^(seq_len(size) - 1L))) %% 256)
+}
+
+blast_literal_stream <- function(value) {
+  literal_bits <- unlist(lapply(as.integer(value), function(byte) {
+    c(0L, as.integer(intToBits(byte))[seq_len(8L)])
+  }), use.names = FALSE)
+  # Length symbol 15 plus an eight-bit value of 255 is blast's end code 519.
+  bits <- c(literal_bits, 1L, rep(0L, 7L), rep(1L, 8L))
+  bits <- c(bits, rep(0L, (-length(bits)) %% 8L))
+  starts <- seq.int(1L, length(bits), by = 8L)
+  packed <- vapply(starts, function(start) {
+    sum(bits[start + 0:7] * 2^(0:7))
+  }, numeric(1))
+  c(as.raw(c(0L, 6L)), as.raw(packed))
+}
+
+literal_dbc_fixture <- function(fields, rows, language_driver = 0L) {
+  field_count <- length(fields)
+  header_size <- 33L + 32L * field_count
+  record_size <- 1L + sum(vapply(fields, `[[`, integer(1), "width"))
+  header <- raw(header_size)
+  header[1L] <- as.raw(3L)
+  header[5:8] <- little_endian_raw(length(rows), 4L)
+  header[9:10] <- little_endian_raw(header_size, 2L)
+  header[11:12] <- little_endian_raw(record_size, 2L)
+  header[30L] <- as.raw(language_driver)
+
+  for (index in seq_along(fields)) {
+    field <- fields[[index]]
+    start <- 33L + (index - 1L) * 32L
+    name <- field$name
+    if (is.character(name)) name <- charToRaw(name)
+    stopifnot(length(name) <= 11L, field$width <= 255L)
+    header[start + seq_along(name) - 1L] <- name
+    header[start + 11L] <- charToRaw(field$type)
+    header[start + 16L] <- as.raw(field$width)
+    decimals <- if (is.null(field$decimals)) 0L else field$decimals
+    header[start + 17L] <- as.raw(decimals)
+  }
+  header[header_size] <- as.raw(13L)
+
+  records <- unlist(lapply(rows, function(row) {
+    record <- as.raw(32L)
+    for (index in seq_along(fields)) {
+      value <- row[[index]]
+      if (is.character(value)) value <- charToRaw(value)
+      width <- fields[[index]]$width
+      stopifnot(length(value) <= width)
+      record <- c(record, value, as.raw(rep(32L, width - length(value))))
+    }
+    record
+  }), use.names = FALSE)
+
+  path <- tempfile(fileext = ".dbc")
+  writeBin(c(header, raw(4L), blast_literal_stream(records)), path)
+  path
+}
+
 test_that("read_dbc public signature remains stable", {
   expect_identical(
     formals(read_dbc),
     as.pairlist(alist(
       file = ,
-      as_character = TRUE
+      as_character = TRUE,
+      vars = NULL,
+      encoding = "auto"
     ))
   )
 })
@@ -61,6 +123,74 @@ test_that("read_dbc can preserve DBF column types", {
   expect_equal(result$VALUE, c(1.5, NA_real_))
   expect_s3_class(result$WHEN, "Date")
   expect_equal(result$WHEN, as.Date(c("2020-01-02", NA)))
+})
+
+test_that("read_dbc projects columns natively in requested order", {
+  path <- dbc_fixture()
+  on.exit(unlink(path), add = TRUE)
+
+  result <- read_dbc(
+    path,
+    as_character = FALSE,
+    vars = c("WHEN", "CODE")
+  )
+
+  expect_named(result, c("WHEN", "CODE"))
+  expect_s3_class(result$WHEN, "Date")
+  expect_identical(result$CODE, c("001", "010"))
+  expect_false("VALUE" %in% names(result))
+})
+
+test_that("read_dbc decodes CP1252 and skips invalid unselected text", {
+  cp1252_text <- as.raw(c(
+    83L, 227L, 111L, 32L, 74L, 111L, 115L, 233L,
+    32L, 151L, 32L, 99L, 97L, 102L, 233L
+  ))
+  path <- literal_dbc_fixture(
+    fields = list(
+      list(
+        name = as.raw(c(78L, 79L, 77L, 201L)),
+        type = "C", width = 20L, decimals = 0L
+      ),
+      list(name = "INVALID", type = "C", width = 1L, decimals = 0L)
+    ),
+    rows = list(list(cp1252_text, as.raw(129L))),
+    language_driver = 3L
+  )
+  on.exit(unlink(path), add = TRUE)
+
+  result <- read_dbc(path, vars = "NOMÉ")
+
+  expect_named(result, "NOMÉ")
+  expect_identical(result[[1L]], "São José — café")
+  expect_identical(attr(result, "dbc_encoding"), "CP1252")
+  expect_identical(attr(result, "dbf_language_driver"), 3L)
+  expect_error(
+    read_dbc(path),
+    "Failed to decode",
+    class = "microdatasus_dbc_encoding_error"
+  )
+})
+
+test_that("read_dbc detects CP850 and accepts an encoding override", {
+  cp850 <- literal_dbc_fixture(
+    fields = list(
+      list(name = "TEXT", type = "C", width = 4L, decimals = 0L)
+    ),
+    rows = list(list(as.raw(c(67L, 97L, 102L, 130L)))),
+    language_driver = 2L
+  )
+  unmarked <- literal_dbc_fixture(
+    fields = list(
+      list(name = "TEXT", type = "C", width = 4L, decimals = 0L)
+    ),
+    rows = list(list(as.raw(c(67L, 97L, 102L, 233L)))),
+    language_driver = 0L
+  )
+  on.exit(unlink(c(cp850, unmarked)), add = TRUE)
+
+  expect_identical(read_dbc(cp850)$TEXT, "Café")
+  expect_identical(read_dbc(unmarked, encoding = "latin1")$TEXT, "Café")
 })
 
 test_that("DBC decompression supports spaced paths and overwrites output", {
@@ -96,6 +226,22 @@ test_that("read_dbc validates its arguments", {
     "TRUE.*FALSE"
   )
   expect_error(read_dbc(path, as_character = NULL), "TRUE.*FALSE")
+  expect_error(read_dbc(path, vars = character()), "vars.*NULL")
+  expect_error(read_dbc(path, vars = c("CODE", NA)), "vars.*NULL")
+  expect_error(read_dbc(path, vars = c("CODE", "CODE")), "duplicated")
+  expect_error(read_dbc(path, vars = 1), "vars.*NULL")
+  expect_error(read_dbc(path, encoding = character()), "encoding.*auto")
+  expect_error(read_dbc(path, encoding = NA_character_), "encoding.*auto")
+  expect_error(
+    read_dbc(path, encoding = "not-a-real-code-page"),
+    "not supported",
+    class = "microdatasus_dbc_encoding_error"
+  )
+  expect_error(
+    read_dbc(path, vars = "MISSING"),
+    "Unknown variable",
+    class = "microdatasus_unknown_vars"
+  )
   expect_error(read_dbc(tempfile(fileext = ".dbc")), "File not found")
 })
 

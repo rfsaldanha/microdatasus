@@ -188,7 +188,20 @@ dados <- read_dbc("arquivo.dbc")
 
 # Preserva os tipos inferidos dos metadados DBF
 dados_tipados <- read_dbc("arquivo.dbc", as_character = FALSE)
+
+# Lê somente as colunas necessárias, sem alocar as demais
+dados_selecionados <- read_dbc(
+  "arquivo.dbc",
+  vars = c("CODMUNRES", "DTOBITO")
+)
+
+# Para arquivos cujo marcador de code page esteja ausente ou incorreto
+dados_latin1 <- read_dbc("arquivo.dbc", encoding = "latin1")
 ```
+
+`read_dbc()` descomprime e interpreta os registros diretamente, sem criar um
+DBF intermediário. O texto é convertido para UTF-8; sequências inválidas geram
+um erro explícito em vez de substituição silenciosa.
 
 ## Guias
 

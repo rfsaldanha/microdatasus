@@ -43,8 +43,10 @@ systems published only as national files.}
 \item{information_system}{A single system identifier listed in
 \strong{Supported systems}.}
 
-\item{vars}{\code{NULL}, or a character vector of column names to retain. Selection
-is applied to each file before the files are combined.}
+\item{vars}{\code{NULL}, or a character vector of column names to retain. When
+neither \code{process} nor \code{row_filter} needs a complete row, selection is
+pushed into the DBC reader so unselected fields are not allocated or
+parsed. Selection is always applied before files are combined.}
 
 \item{stop_on_error}{Logical scalar. If \code{TRUE}, abort after any listing,
 download, or read failure. If \code{FALSE}, warn and return the files that could
