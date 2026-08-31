@@ -148,9 +148,9 @@
 #'
 #' @details
 #' Decompression is performed through the package's bundled DBC implementation.
-#' The intermediate DBF file is created in the R temporary directory and removed
-#' before the function returns or aborts. The implementation was adapted from
-#' the `healthbR` package.
+#' The DBF header and decompressed fixed-width records are parsed directly into
+#' R columns without creating an intermediate DBF file. The decompressor was
+#' adapted from the `healthbR` package.
 #'
 #' Invalid input files, decompression failures, and DBF reading failures abort
 #' with errors in the `microdatasus_dbc_error` family.
@@ -176,18 +176,16 @@ read_dbc <- function(file, as_character = TRUE) {
   }
   .dbc_assert_regular_file(file, "file")
 
-  # Create a temporary DBF file.
-  temp_dbf <- tempfile(fileext = ".dbf")
-  on.exit(unlink(temp_dbf), add = TRUE)
-
-  # Decompress the DBC file and read the resulting DBF.
-  .dbc2dbf(file, temp_dbf)
+  # Stream the compressed DBF record area directly into R columns.
   df <- tryCatch(
-    foreign::read.dbf(temp_dbf, as.is = TRUE),
+    .Call(
+      microdatasus_read_dbc,
+      as.character(normalizePath(file, mustWork = TRUE))
+    ),
     error = function(error) {
       cli::cli_abort(
         c(
-          "Failed to read the decompressed DBF file.",
+          "Failed to read the DBC file.",
           "i" = "DBC file: {.file {file}}",
           "x" = "Reason: {conditionMessage(error)}"
         ),
@@ -199,6 +197,27 @@ read_dbc <- function(file, as_character = TRUE) {
       )
     }
   )
+
+  original_names <- names(df)
+  repaired_names <- make.names(original_names, unique = TRUE)
+  names(df) <- repaired_names
+  changed <- original_names != repaired_names
+  if (any(changed)) {
+    for (index in which(changed)) {
+      message(
+        sprintf(
+          "Field name: %s changed to: %s",
+          sQuote(original_names[[index]]),
+          sQuote(repaired_names[[index]])
+        )
+      )
+    }
+  }
+
+  data_types <- attr(df, "data_types", exact = TRUE)
+  for (index in which(data_types == "D")) {
+    df[[index]] <- as.Date(df[[index]], format = "%Y%m%d")
+  }
 
   if (as_character) {
     df[] <- lapply(df, as.character)

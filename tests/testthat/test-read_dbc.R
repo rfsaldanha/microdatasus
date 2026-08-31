@@ -270,8 +270,8 @@ test_that("DBC decompressor reports specific malformed-file errors", {
 
   expect_error(
     read_dbc(paths[[1L]]),
-    "Failed to decompress the DBC file",
-    class = "microdatasus_dbc_decompression_error"
+    "Failed to read the DBC file",
+    class = "microdatasus_dbc_read_error"
   )
 })
 
@@ -322,24 +322,12 @@ test_that("DBC decompressor rejects output whose size cannot be determined", {
   )
 })
 
-test_that("read_dbc removes its temporary DBF after successful reading", {
+test_that("read_dbc uses the direct native reader", {
   input <- dbc_fixture()
-  dbf_fixture <- tempfile(fileext = ".dbf")
-  on.exit(unlink(c(input, dbf_fixture)), add = TRUE)
-  foreign::write.dbf(
-    data.frame(
-      CODE = c("01", "02"),
-      FLAG = c(TRUE, NA),
-      stringsAsFactors = FALSE
-    ),
-    dbf_fixture
-  )
-  temporary <- character()
+  on.exit(unlink(input), add = TRUE)
   local_mocked_bindings(
-    .dbc2dbf = function(input_file, output_file) {
-      temporary <<- c(temporary, output_file)
-      expect_true(file.copy(dbf_fixture, output_file))
-      invisible(TRUE)
+    .dbc2dbf = function(...) {
+      stop("the DBF conversion path must not be called")
     },
     .package = "microdatasus"
   )
@@ -347,42 +335,13 @@ test_that("read_dbc removes its temporary DBF after successful reading", {
   result <- read_dbc(input)
   repeated <- read_dbc(input)
 
-  expect_identical(result$CODE, c("01", "02"))
-  expect_identical(result$FLAG, c("TRUE", NA_character_))
+  expect_identical(result$CODE, c("001", "010"))
   expect_identical(repeated, result)
-  expect_length(unique(temporary), 2L)
-  expect_false(any(file.exists(temporary)))
 })
 
-test_that("read_dbc removes its temporary DBF after decompression failure", {
-  input <- dbc_fixture()
-  temporary <- NULL
+test_that("read_dbc reports native reader failures with stable classes", {
+  input <- write_dbc_bytes(as.raw(1:10))
   on.exit(unlink(input), add = TRUE)
-  local_mocked_bindings(
-    .dbc2dbf = function(input_file, output_file) {
-      temporary <<- output_file
-      writeBin(charToRaw("partial DBF"), output_file)
-      stop("mock decompression failure")
-    },
-    .package = "microdatasus"
-  )
-
-  expect_error(read_dbc(input), "mock decompression failure")
-  expect_false(file.exists(temporary))
-})
-
-test_that("read_dbc removes its temporary DBF after DBF reading failure", {
-  input <- dbc_fixture()
-  temporary <- NULL
-  on.exit(unlink(input), add = TRUE)
-  local_mocked_bindings(
-    .dbc2dbf = function(input_file, output_file) {
-      temporary <<- output_file
-      writeBin(charToRaw("not a DBF"), output_file)
-      invisible(TRUE)
-    },
-    .package = "microdatasus"
-  )
 
   error <- tryCatch(read_dbc(input), error = identity)
 
@@ -390,9 +349,8 @@ test_that("read_dbc removes its temporary DBF after DBF reading failure", {
   expect_s3_class(error, "microdatasus_dbc_error")
   expect_match(
     conditionMessage(error),
-    "Failed to read the decompressed DBF file"
+    "Failed to read the DBC file"
   )
   expect_match(conditionMessage(error), basename(input), fixed = TRUE)
   expect_s3_class(error$parent, "error")
-  expect_false(file.exists(temporary))
 })

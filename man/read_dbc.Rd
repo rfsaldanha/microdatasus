@@ -25,9 +25,9 @@ a tibble. Use this function for a DBC file already available locally; use
 }
 \details{
 Decompression is performed through the package's bundled DBC implementation.
-The intermediate DBF file is created in the R temporary directory and removed
-before the function returns or aborts. The implementation was adapted from
-the \code{healthbR} package.
+The DBF header and decompressed fixed-width records are parsed directly into
+R columns without creating an intermediate DBF file. The decompressor was
+adapted from the \code{healthbR} package.
 
 Invalid input files, decompression failures, and DBF reading failures abort
 with errors in the \code{microdatasus_dbc_error} family.
