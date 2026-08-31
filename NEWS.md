@@ -8,6 +8,11 @@
   metadata (with an `encoding` override), and `vars` avoids allocating or
   parsing unselected fields. `fetch_datasus()` uses this projection before
   reading whenever processing and row filtering do not require the full row.
+* Hardens native DBC parsing with strict field-layout, record-marker, end-code,
+  trailing-data, I/O, and non-finite numeric checks. Fixes undefined pointer
+  arithmetic in the vendored blast sliding window found by UBSan, and adds
+  deterministic mutation, truncation, real-corpus, gctorture, sanitizer, and
+  performance validation workflows.
 * Adds per-file `row_filter` execution before processing, deterministic schema
   sampling across historical layouts, and richer coercion/unknown-code counts.
 * Uses SHA-256 for new cache manifests while reading legacy MD5 manifests,

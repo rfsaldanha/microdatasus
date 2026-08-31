@@ -250,7 +250,8 @@
 #'
 #' @return A tibble with one column per DBF field. By default, all columns are
 #'   character vectors; with `as_character = FALSE`, DBF-inferred types are
-#'   retained.
+#'   retained. The `dbc_encoding` and `dbf_language_driver` attributes record
+#'   the resolved source encoding and the original header byte.
 #'
 #' @details
 #' Decompression is performed through the package's bundled DBC implementation.
@@ -263,7 +264,12 @@
 #' replaced. Supply `encoding` when a file has a missing or incorrect code-page
 #' marker.
 #'
-#' Invalid input files, decompression failures, and DBF reading failures abort
+#' The native parser accepts the fixed-width DBF field types used by DataSUS:
+#' character (`C`), date (`D`), floating point (`F`), logical (`L`), and
+#' numeric (`N`). As in [foreign::read.dbf()], records carrying the DBF deleted
+#' marker are retained; no DataSUS row is discarded implicitly.
+#'
+#' Invalid input files, decompression failures, and record parsing failures abort
 #' with errors in the `microdatasus_dbc_error` family.
 #'
 #' @references

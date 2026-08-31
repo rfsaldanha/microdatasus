@@ -11,8 +11,8 @@ extern SEXP microdatasus_dbc_info(SEXP file);
 extern SEXP microdatasus_read_dbc(SEXP file, SEXP selection);
 
 static const R_CMethodDef CEntries[] = {
-    {"microdatasus_dbc2dbf", (DL_FUNC) &dbc2dbf, 4},
-    {NULL, NULL, 0}
+    {"microdatasus_dbc2dbf", (DL_FUNC) &dbc2dbf, 4, NULL},
+    {NULL, NULL, 0, NULL}
 };
 
 static const R_CallMethodDef CallEntries[] = {

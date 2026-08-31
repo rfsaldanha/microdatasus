@@ -25,6 +25,7 @@
 #define DBF_FIELD_DESCRIPTOR_SIZE 32u
 #define DBF_MAX_FIELD_WIDTH 255u
 #define DBC_ERROR_SIZE 256u
+#define DBC_INTERRUPT_BYTES (8u * 1024u * 1024u)
 
 typedef enum {
     DBF_COLUMN_STRING = 1,
@@ -48,9 +49,10 @@ typedef struct {
 typedef struct {
     FILE *file;
     unsigned char buffer[DBC_INPUT_BUFFER_SIZE];
+    struct dbc_reader_tag *reader;
 } dbc_input;
 
-typedef struct {
+typedef struct dbc_reader_tag {
     const char *path;
     FILE *file;
     unsigned char *header;
@@ -64,6 +66,8 @@ typedef struct {
     uint32_t record_count;
     uint32_t row;
     unsigned int invalid_logicals;
+    unsigned int trailing_count;
+    size_t bytes_since_interrupt;
     int callback_failed;
     char error[DBC_ERROR_SIZE];
     SEXP data_frame;
@@ -158,10 +162,50 @@ static int all_zero_date(const unsigned char *value, unsigned int length)
     return 1;
 }
 
+static void validate_dbf_field(
+    char type,
+    unsigned int width,
+    unsigned int decimals,
+    unsigned int name_length,
+    unsigned int offset,
+    unsigned int record_size
+)
+{
+    if (name_length == 0u) {
+        error("DBF field has an empty name.");
+    }
+    if (type != 'C' && type != 'D' && type != 'F' &&
+        type != 'L' && type != 'N') {
+        error(
+            "Unsupported DBF field type 0x%02x.",
+            (unsigned int)(unsigned char)type
+        );
+    }
+    if (width == 0u || offset > record_size ||
+        width > record_size - offset) {
+        error("DBF field layout exceeds the declared record size.");
+    }
+    if (type == 'D' && width != 8u) {
+        error("DBF date fields must have width 8.");
+    }
+    if (type == 'L' && width != 1u) {
+        error("DBF logical fields must have width 1.");
+    }
+    if ((type == 'N' || type == 'F') && decimals > 0u &&
+        decimals + 1u >= width) {
+        error("Invalid decimal count in DBF numeric field.");
+    }
+}
+
 static int parse_dbf_record(dbc_reader *reader)
 {
     unsigned int index;
     R_xlen_t row = (R_xlen_t)reader->row;
+
+    if (reader->record[0] != ' ' && reader->record[0] != '*') {
+        set_reader_error(reader, "Invalid DBF record status marker");
+        return 1;
+    }
 
     for (index = 0; index < reader->field_count; index++) {
         dbf_field *field = reader->fields + index;
@@ -210,8 +254,6 @@ static int parse_dbf_record(dbc_reader *reader)
                     reader->invalid_logicals++;
                     break;
                 }
-            } else {
-                reader->invalid_logicals++;
             }
             LOGICAL(field->column)[row] = logical_value;
         } else {
@@ -235,8 +277,8 @@ static int parse_dbf_record(dbc_reader *reader)
 
             REAL(field->column)[row] = number;
             if (field->integer_candidate && !ISNA(number)) {
-                if (number > (double)INT_MAX ||
-                    number < -2147483646.0 ||
+                if (!R_FINITE(number) || number > (double)INT_MAX ||
+                    number < (double)(INT_MIN + 1) ||
                     number != (double)((int)number)) {
                     field->integer_candidate = 0;
                 }
@@ -250,14 +292,19 @@ static int parse_dbf_record(dbc_reader *reader)
 static unsigned dbc_input_callback(void *context, unsigned char **buffer)
 {
     dbc_input *input = (dbc_input *)context;
+    size_t count;
 
     *buffer = input->buffer;
-    return (unsigned)fread(
+    count = fread(
         input->buffer,
         1,
         sizeof(input->buffer),
         input->file
     );
+    if (count == 0u && ferror(input->file)) {
+        set_reader_error(input->reader, "Failed to read compressed DBC data");
+    }
+    return (unsigned)count;
 }
 
 static int dbc_output_callback(void *context, unsigned char *buffer, unsigned len)
@@ -271,8 +318,20 @@ static int dbc_output_callback(void *context, unsigned char *buffer, unsigned le
         unsigned int take;
 
         /* A conventional DBF may end in 0x1a. Once all declared records have
-         * been read, trailing decompressed bytes are irrelevant to the table. */
+         * been read, accept that marker but reject every other extra byte. */
         if (reader->row >= reader->record_count) {
+            while (position < len) {
+                if (reader->trailing_count == 0u && buffer[position] == 0x1a) {
+                    reader->trailing_count++;
+                    position++;
+                } else {
+                    set_reader_error(
+                        reader,
+                        "Unexpected data after the declared DBF records"
+                    );
+                    return 1;
+                }
+            }
             return 0;
         }
 
@@ -282,6 +341,11 @@ static int dbc_output_callback(void *context, unsigned char *buffer, unsigned le
         memcpy(reader->record + reader->record_used, buffer + position, take);
         reader->record_used += take;
         position += take;
+        reader->bytes_since_interrupt += take;
+        if (reader->bytes_since_interrupt >= DBC_INTERRUPT_BYTES) {
+            R_CheckUserInterrupt();
+            reader->bytes_since_interrupt = 0u;
+        }
 
         if (reader->record_used == reader->record_size) {
             if (parse_dbf_record(reader) != 0) {
@@ -459,11 +523,14 @@ static void parse_header(dbc_reader *reader)
         field->decimals = (unsigned int)descriptor[17];
         field->offset = running_offset;
 
-        if (field->width == 0u ||
-            field->offset > reader->record_size ||
-            field->width > reader->record_size - field->offset) {
-            error("DBF field layout exceeds the declared record size.");
-        }
+        validate_dbf_field(
+            field->type,
+            field->width,
+            field->decimals,
+            name_length,
+            field->offset,
+            reader->record_size
+        );
         running_offset += field->width;
 
         if (!field->selected) {
@@ -594,10 +661,14 @@ static SEXP read_dbc_info_body(void *context)
         while (name_length > 0u && descriptor[name_length - 1u] == ' ') {
             name_length--;
         }
-        if (width == 0u || running_offset > reader->record_size ||
-            width > reader->record_size - running_offset) {
-            error("DBF field layout exceeds the declared record size.");
-        }
+        validate_dbf_field(
+            (char)descriptor[11],
+            width,
+            (unsigned int)descriptor[17],
+            name_length,
+            running_offset,
+            reader->record_size
+        );
         running_offset += width;
 
         SET_STRING_ELT(
@@ -629,6 +700,8 @@ static SEXP read_dbc_body(void *context)
     dbc_reader *reader = (dbc_reader *)context;
     dbc_input input;
     int blast_result;
+    unsigned int compressed_left = 0u;
+    unsigned char *compressed_next = NULL;
     SEXP result;
 
     reader->file = fopen(reader->path, "rb");
@@ -645,13 +718,14 @@ static SEXP read_dbc_body(void *context)
     }
 
     input.file = reader->file;
+    input.reader = reader;
     blast_result = blast(
         dbc_input_callback,
         &input,
         dbc_output_callback,
         reader,
-        NULL,
-        NULL
+        &compressed_left,
+        &compressed_next
     );
 
     if (reader->callback_failed) {
@@ -672,6 +746,12 @@ static SEXP read_dbc_body(void *context)
         default:
             error("DBC decompression failed.");
         }
+    }
+    if (compressed_left > 0u || fgetc(reader->file) != EOF) {
+        error("Unexpected data after the compressed DBC stream.");
+    }
+    if (ferror(reader->file)) {
+        error("Failed while checking the end of the DBC file.");
     }
     if (reader->row != reader->record_count || reader->record_used != 0u) {
         error(

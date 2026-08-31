@@ -2,7 +2,8 @@
  * Copyright (C) 2003, 2012, 2013 Mark Adler
  * For conditions of distribution and use, see copyright notice in blast.h
  * version 1.3, 24 Aug 2013
- * Modified for microdatasus in 2026 to use per-call decoding tables.
+ * Modified for microdatasus in 2026 to use per-call decoding tables and
+ * avoid out-of-bounds pointer formation in the sliding-window copy.
  *
  * blast.c decompresses data compressed by the PKWare Compression Library.
  * This function provides functionality similar to the explode() function of
@@ -341,13 +342,14 @@ local int decomp(struct state *s)
             /* copy length bytes from distance bytes back */
             do {
                 to = s->out + s->next;
-                from = to - dist;
-                copy = MAXWIN;
                 if (s->next < dist) {
-                    from += copy;
-                    copy = dist;
+                    from = s->out + (MAXWIN + s->next - dist);
+                    copy = dist - s->next;
                 }
-                copy -= s->next;
+                else {
+                    from = s->out + (s->next - dist);
+                    copy = MAXWIN - s->next;
+                }
                 if (copy > len) copy = len;
                 len -= copy;
                 s->next += copy;

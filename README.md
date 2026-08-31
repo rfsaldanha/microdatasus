@@ -197,11 +197,16 @@ dados_selecionados <- read_dbc(
 
 # Para arquivos cujo marcador de code page esteja ausente ou incorreto
 dados_latin1 <- read_dbc("arquivo.dbc", encoding = "latin1")
+
+# Alguns arquivos históricos usam a página de código DOS CP850
+dados_cp850 <- read_dbc("arquivo_historico.dbc", encoding = "CP850")
 ```
 
 `read_dbc()` descomprime e interpreta os registros diretamente, sem criar um
 DBF intermediário. O texto é convertido para UTF-8; sequências inválidas geram
-um erro explícito em vez de substituição silenciosa.
+um erro explícito em vez de substituição silenciosa. `encoding = "auto"` usa o
+marcador DBF e assume Windows-1252 nos arquivos sem marcador; use o argumento
+explícito para arquivos históricos em CP850 ou outra codificação.
 
 ## Guias
 

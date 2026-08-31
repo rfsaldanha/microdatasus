@@ -44,7 +44,13 @@ blast_literal_stream <- function(value) {
   c(as.raw(c(0L, 6L)), as.raw(packed))
 }
 
-literal_dbc_fixture <- function(fields, rows, language_driver = 0L) {
+literal_dbc_fixture <- function(
+  fields,
+  rows,
+  language_driver = 0L,
+  statuses = NULL,
+  trailing = raw()
+) {
   field_count <- length(fields)
   header_size <- 33L + 32L * field_count
   record_size <- 1L + sum(vapply(fields, `[[`, integer(1), "width"))
@@ -69,8 +75,11 @@ literal_dbc_fixture <- function(fields, rows, language_driver = 0L) {
   }
   header[header_size] <- as.raw(13L)
 
-  records <- unlist(lapply(rows, function(row) {
-    record <- as.raw(32L)
+  if (is.null(statuses)) statuses <- rep(32L, length(rows))
+  stopifnot(length(statuses) == length(rows))
+  records <- unlist(lapply(seq_along(rows), function(row_index) {
+    row <- rows[[row_index]]
+    record <- as.raw(statuses[[row_index]])
     for (index in seq_along(fields)) {
       value <- row[[index]]
       if (is.character(value)) value <- charToRaw(value)
@@ -82,7 +91,8 @@ literal_dbc_fixture <- function(fields, rows, language_driver = 0L) {
   }), use.names = FALSE)
 
   path <- tempfile(fileext = ".dbc")
-  writeBin(c(header, raw(4L), blast_literal_stream(records)), path)
+  body <- c(records, trailing)
+  writeBin(c(header, raw(4L), blast_literal_stream(body)), path)
   path
 }
 
@@ -191,6 +201,195 @@ test_that("read_dbc detects CP850 and accepts an encoding override", {
 
   expect_identical(read_dbc(cp850)$TEXT, "Café")
   expect_identical(read_dbc(unmarked, encoding = "latin1")$TEXT, "Café")
+})
+
+test_that("read_dbc accepts one DBF EOF marker and rejects extra output", {
+  field <- list(name = "VALUE", type = "C", width = 1L, decimals = 0L)
+  valid <- literal_dbc_fixture(
+    fields = list(field),
+    rows = list(list("x")),
+    trailing = as.raw(26L)
+  )
+  extra <- literal_dbc_fixture(
+    fields = list(field),
+    rows = list(list("x")),
+    trailing = as.raw(c(26L, 0L))
+  )
+  on.exit(unlink(c(valid, extra)), add = TRUE)
+
+  expect_identical(read_dbc(valid)$VALUE, "x")
+  expect_error(
+    read_dbc(extra),
+    "Unexpected data after",
+    class = "microdatasus_dbc_read_error"
+  )
+})
+
+test_that("read_dbc rejects bytes after the compressed stream", {
+  path <- literal_dbc_fixture(
+    fields = list(
+      list(name = "VALUE", type = "C", width = 1L, decimals = 0L)
+    ),
+    rows = list(list("x"))
+  )
+  bytes <- readBin(path, "raw", n = file.info(path)$size)
+  writeBin(c(bytes, as.raw(0L)), path)
+  on.exit(unlink(path), add = TRUE)
+
+  expect_error(
+    read_dbc(path),
+    "Unexpected data after the compressed DBC stream",
+    class = "microdatasus_dbc_read_error"
+  )
+})
+
+test_that("read_dbc validates field metadata and record status markers", {
+  cases <- list(
+    list(
+      fields = list(
+        list(name = raw(), type = "C", width = 1L, decimals = 0L)
+      ),
+      regexp = "empty name"
+    ),
+    list(
+      fields = list(
+        list(name = "VALUE", type = "X", width = 1L, decimals = 0L)
+      ),
+      regexp = "Unsupported DBF field type"
+    ),
+    list(
+      fields = list(
+        list(name = "DATE", type = "D", width = 7L, decimals = 0L)
+      ),
+      regexp = "date fields must have width 8"
+    ),
+    list(
+      fields = list(
+        list(name = "FLAG", type = "L", width = 2L, decimals = 0L)
+      ),
+      regexp = "logical fields must have width 1"
+    ),
+    list(
+      fields = list(
+        list(name = "VALUE", type = "N", width = 2L, decimals = 1L)
+      ),
+      regexp = "Invalid decimal count"
+    )
+  )
+  paths <- vapply(cases, function(case) {
+    width <- case$fields[[1L]]$width
+    literal_dbc_fixture(case$fields, list(list(raw(width))))
+  }, character(1))
+  invalid_status <- literal_dbc_fixture(
+    fields = list(
+      list(name = "VALUE", type = "C", width = 1L, decimals = 0L)
+    ),
+    rows = list(list("x")),
+    statuses = 0L
+  )
+  on.exit(unlink(c(paths, invalid_status)), add = TRUE)
+
+  for (index in seq_along(cases)) {
+    expect_error(
+      read_dbc(paths[[index]]),
+      cases[[index]]$regexp,
+      class = "microdatasus_dbc_read_error"
+    )
+  }
+  expect_error(
+    read_dbc(invalid_status),
+    "Invalid DBF record status marker",
+    class = "microdatasus_dbc_read_error"
+  )
+})
+
+test_that("read_dbc handles non-finite numerics without integer overflow", {
+  path <- literal_dbc_fixture(
+    fields = list(
+      list(name = "VALUE", type = "N", width = 4L, decimals = 0L)
+    ),
+    rows = list(list("NaN"), list("Inf"), list("-Inf"))
+  )
+  on.exit(unlink(path), add = TRUE)
+
+  result <- read_dbc(path, as_character = FALSE)
+
+  expect_type(result$VALUE, "double")
+  expect_true(is.nan(result$VALUE[[1L]]))
+  expect_identical(result$VALUE[2:3], c(Inf, -Inf))
+})
+
+test_that("read_dbc treats blank logicals as missing and warns on invalid ones", {
+  blank <- literal_dbc_fixture(
+    fields = list(
+      list(name = "FLAG", type = "L", width = 1L, decimals = 0L)
+    ),
+    rows = list(list(" "))
+  )
+  invalid <- literal_dbc_fixture(
+    fields = list(
+      list(name = "FLAG", type = "L", width = 1L, decimals = 0L)
+    ),
+    rows = list(list("z"))
+  )
+  on.exit(unlink(c(blank, invalid)), add = TRUE)
+
+  expect_no_warning(blank_result <- read_dbc(blank, as_character = FALSE))
+  expect_identical(blank_result$FLAG, NA)
+  expect_warning(
+    invalid_result <- read_dbc(invalid, as_character = FALSE),
+    "invalid value"
+  )
+  expect_identical(invalid_result$FLAG, NA)
+})
+
+test_that("read_dbc includes DBF records marked as deleted", {
+  path <- literal_dbc_fixture(
+    fields = list(
+      list(name = "VALUE", type = "C", width = 1L, decimals = 0L)
+    ),
+    rows = list(list("x")),
+    statuses = 42L
+  )
+  on.exit(unlink(path), add = TRUE)
+
+  expect_identical(read_dbc(path)$VALUE, "x")
+})
+
+test_that("read_dbc handles a valid zero-row table", {
+  path <- literal_dbc_fixture(
+    fields = list(
+      list(name = "VALUE", type = "C", width = 1L, decimals = 0L)
+    ),
+    rows = list()
+  )
+  on.exit(unlink(path), add = TRUE)
+
+  result <- read_dbc(path)
+
+  expect_named(result, "VALUE")
+  expect_equal(nrow(result), 0L)
+  expect_identical(result$VALUE, character())
+})
+
+test_that("read_dbc streams records across decompressor chunk boundaries", {
+  fields <- lapply(seq_len(20L), function(index) {
+    list(
+      name = sprintf("F%02d", index),
+      type = "C",
+      width = 255L,
+      decimals = 0L
+    )
+  })
+  row <- lapply(seq_along(fields), function(index) as.character(index))
+  path <- literal_dbc_fixture(fields, list(row, row))
+  on.exit(unlink(path), add = TRUE)
+
+  result <- read_dbc(path, vars = c("F01", "F20"))
+
+  expect_equal(nrow(result), 2L)
+  expect_identical(result$F01, c("1", "1"))
+  expect_identical(result$F20, c("20", "20"))
 })
 
 test_that("DBC decompression supports spaced paths and overwrites output", {

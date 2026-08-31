@@ -23,7 +23,8 @@ default to Windows-1252.}
 \value{
 A tibble with one column per DBF field. By default, all columns are
 character vectors; with \code{as_character = FALSE}, DBF-inferred types are
-retained.
+retained. The \code{dbc_encoding} and \code{dbf_language_driver} attributes record
+the resolved source encoding and the original header byte.
 }
 \description{
 Reads a DataSUS DBC file directly into a tibble, without creating an
@@ -41,7 +42,12 @@ abort with a \code{microdatasus_dbc_encoding_error} instead of being silently
 replaced. Supply \code{encoding} when a file has a missing or incorrect code-page
 marker.
 
-Invalid input files, decompression failures, and DBF reading failures abort
+The native parser accepts the fixed-width DBF field types used by DataSUS:
+character (\code{C}), date (\code{D}), floating point (\code{F}), logical (\code{L}), and
+numeric (\code{N}). As in \code{\link[foreign:read.dbf]{foreign::read.dbf()}}, records carrying the DBF deleted
+marker are retained; no DataSUS row is discarded implicitly.
+
+Invalid input files, decompression failures, and record parsing failures abort
 with errors in the \code{microdatasus_dbc_error} family.
 }
 \references{
