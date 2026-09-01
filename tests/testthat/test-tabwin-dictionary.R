@@ -962,7 +962,7 @@ test_that("CNV parser recovers codes displaced by overflowing descriptions", {
     rep("Description beyond the declared field", 2), collapse = " "
   )
   overflow_row <- paste0(
-    sprintf("%7d", 1L), "  ", long_label, "  ", "000061"
+    sprintf("%7d", 1L), "  ", long_label, " ", "000061"
   )
   write_tabwin_text(overflow, c("1 6", overflow_row))
   write_tabwin_text(trailing_junk, c(
@@ -987,6 +987,22 @@ test_that("CNV parser recovers codes displaced by overflowing descriptions", {
     unname(overlong_conversion$map[["12345678901234"]]), "CNPJ"
   )
   expect_identical(overlong_conversion$overflow_code_rows, 0L)
+})
+
+test_that("CNV overflow recovery does not reinterpret prose after a code", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  label <- paste(rep("Long category description", 3), collapse = " ")
+  row <- paste0(
+    sprintf("%7d", 1L), "  ", label,
+    "O938,valid values from O930 to O935"
+  )
+  write_tabwin_text(path, c("1 4", row))
+
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+
+  expect_identical(conversion$overflow_code_rows, 0L)
+  expect_false("O935" %in% names(conversion$map))
 })
 
 test_that("later duplicate CNV codes take official source precedence", {

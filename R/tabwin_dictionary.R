@@ -974,16 +974,18 @@
     token_pattern, candidate_trimmed,
     perl = TRUE
   )
-  separated <- grepl("[[:space:]]{2,}$", candidate_prefix)
+  compact_separated <- grepl("[[:space:]]{2,}$", candidate_prefix)
   compact <- !identical(mode, "L") &
     line_width < code_start &
     !nzchar(trimws(code_text)) &
     candidate_start > 9L &
     candidate_valid &
-    separated
+    compact_separated
   declared_trimmed <- trimws(code_text)
   declared_valid <- grepl(token_pattern, declared_trimmed, perl = TRUE)
   full_width <- nchar(candidate_trimmed, type = "chars") == code_width
+  overflow_separated <- grepl("[[:space:]]$", candidate_prefix)
+  overflow_unambiguous <- !grepl(",", declared_trimmed, fixed = TRUE)
   overflow <- !identical(mode, "L") &
     line_width >= code_start &
     candidate_start > code_start &
@@ -991,7 +993,8 @@
     !declared_valid &
     candidate_valid &
     full_width &
-    separated
+    overflow_separated &
+    overflow_unambiguous
   recover <- compact | overflow
   code_text[recover] <- candidate[recover]
   attr(code_text, "compact") <- compact
@@ -1249,7 +1252,7 @@
   )
 }
 
-.tabwin_parser_version <- 10L
+.tabwin_parser_version <- 11L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {
