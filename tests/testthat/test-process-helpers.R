@@ -72,23 +72,6 @@ test_that("batched dictionaries preserve row-specific conversion results", {
     dictionary_rows
   )
 
-  # Reproduce the former dictionary-first loop to guard output compatibility.
-  sequential <- source
-  for (key in names(dictionaries)) {
-    for (field in c("FIRST", "SECOND")) {
-      values <- as.character(sequential[[field]])
-      rows <- dictionary_rows[[key]]
-      values[rows] <- as.character(
-        microdatasus:::.tabwin_apply_conversion(
-          sequential[[field]][rows],
-          dictionaries[[key]]$selected
-        )
-      )
-      sequential[[field]] <- factor(values)
-    }
-  }
-
-  expect_identical(batched, sequential)
   expect_identical(
     as.character(batched$FIRST),
     c("Old one", "Old two", "9", "Current one")
@@ -96,6 +79,14 @@ test_that("batched dictionaries preserve row-specific conversion results", {
   expect_identical(
     as.character(batched$SECOND),
     c("Old two", "Old one", "9", "Current two")
+  )
+  expect_identical(
+    levels(batched$FIRST),
+    c("Old one", "Old two", "Current one", "9")
+  )
+  expect_identical(
+    levels(batched$SECOND),
+    c("Old one", "Old two", "Current two", "9")
   )
 })
 

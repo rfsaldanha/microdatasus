@@ -628,13 +628,10 @@ test_that("CNV parser supports official long and compact dialect prefixes", {
   compact <- tempfile(fileext = ".CNV")
   on.exit(unlink(c(long, compact)), add = TRUE)
   long_row <- paste0(
-    sprintf("%9d", 1L), sprintf("%-100s", "Long description"),
-    " ", "A001"
+    sprintf("%4s", ""), " ", sprintf("%4d", 1L), "  ",
+    sprintf("%-100s", "Long description"), " ", "A001"
   )
-  compact_row <- paste0(
-    sprintf("%9d", 1L), sprintf("%-50s", "Compact description"),
-    " ", "01"
-  )
+  compact_row <- tabwin_cnv_line(1, "Compact description", "01")
   write_tabwin_text(long, c("N 1 4 L", long_row))
   write_tabwin_text(compact, c("s 1 2", compact_row))
 
@@ -645,6 +642,302 @@ test_that("CNV parser supports official long and compact dialect prefixes", {
   expect_identical(unname(compact_conversion$map[["01"]]), "Compact description")
 })
 
+test_that("CNV continuations resolve labels by category sequence", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  write_tabwin_text(path, c(
+    "3 1 L",
+    tabwin_cnv_line(1, "Norte", "A"),
+    tabwin_cnv_line(2, "Sul", "B"),
+    tabwin_cnv_line(1, "", "C")
+  ))
+
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+
+  expect_identical(unname(conversion$map[c("A", "B", "C")]),
+                   c("Norte", "Sul", "Norte"))
+})
+
+test_that("CNV parser distinguishes literal and numeric padding", {
+  literal <- tempfile(fileext = ".CNV")
+  numeric <- tempfile(fileext = ".CNV")
+  on.exit(unlink(c(literal, numeric)), add = TRUE)
+  write_tabwin_text(literal, c(
+    "2 3 L",
+    tabwin_cnv_line(1, "Right padded", "1  "),
+    tabwin_cnv_line(2, "Leading zeroes", "001")
+  ))
+  write_tabwin_text(numeric, c(
+    "1 3",
+    tabwin_cnv_line(1, "One hundred", "1  ,10 ")
+  ))
+
+  literal_conversion <- microdatasus:::.tabwin_parse_cnv(literal)
+  numeric_conversion <- microdatasus:::.tabwin_parse_cnv(numeric)
+  literal_selected <- list(
+    definition = data.frame(position = 1L),
+    conversion = literal_conversion
+  )
+  numeric_selected <- list(
+    definition = data.frame(position = 1L),
+    conversion = numeric_conversion
+  )
+
+  expect_identical(
+    microdatasus:::.tabwin_apply_conversion_values(
+      c("1  ", "001", "1"), literal_selected
+    ),
+    c("Right padded", "Leading zeroes", "Right padded")
+  )
+  expect_identical(
+    microdatasus:::.tabwin_apply_conversion_values(
+      c("100", "1  ", "10 "), numeric_selected
+    ),
+    rep("One hundred", 3)
+  )
+})
+
+test_that("CNV parser recovers narrow official layout inconformities", {
+  blank <- tempfile(fileext = ".CNV")
+  compact <- tempfile(fileext = ".CNV")
+  embedded <- tempfile(fileext = ".CNV")
+  on.exit(unlink(c(blank, compact, embedded)), add = TRUE)
+
+  write_tabwin_text(blank, c(
+    "1 3 L",
+    tabwin_cnv_line(1, "Blank literal", "   ,")
+  ))
+  compact_rows <- paste0(
+    sprintf("%7d", 1:2), "  ",
+    sprintf("%-50s", c("Novo", "Antigo")), c("1", "0")
+  )
+  write_tabwin_text(compact, c("2 1", compact_rows))
+  embedded_header <- paste0(
+    sprintf("%10s", "1 2"), strrep(" ", 50), "01"
+  )
+  write_tabwin_text(embedded, c(
+    embedded_header,
+    tabwin_cnv_line(1, "First category", "02")
+  ))
+
+  blank_conversion <- microdatasus:::.tabwin_parse_cnv(blank)
+  compact_conversion <- microdatasus:::.tabwin_parse_cnv(compact)
+  embedded_conversion <- microdatasus:::.tabwin_parse_cnv(embedded)
+  blank_selected <- list(
+    definition = data.frame(position = 1L),
+    conversion = blank_conversion
+  )
+
+  expect_identical(
+    unname(blank_conversion$map[[strrep(" ", 3)]]),
+    "Blank literal"
+  )
+  expect_identical(
+    microdatasus:::.tabwin_apply_conversion_values("", blank_selected),
+    "Blank literal"
+  )
+  expect_identical(unname(compact_conversion$map[c("1", "0")]),
+                   c("Novo", "Antigo"))
+  expect_identical(compact_conversion$compact_code_rows, 2L)
+  expect_identical(unname(embedded_conversion$map[c("01", "02")]),
+                   rep("First category", 2))
+  expect_true(embedded_conversion$embedded_header)
+  expect_identical(embedded_conversion$recovered_leading_sequence, 1L)
+})
+
+test_that("later duplicate CNV codes take official source precedence", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  write_tabwin_text(path, c(
+    "2 1 L",
+    tabwin_cnv_line(1, "First", "A"),
+    tabwin_cnv_line(2, "Second", "A")
+  ))
+
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+  selected <- list(
+    definition = data.frame(position = 1L),
+    conversion = conversion
+  )
+
+  expect_identical(conversion$normalized_collisions, 1L)
+  expect_identical(unname(conversion$map[["A"]]), "Second")
+  expect_identical(
+    microdatasus:::.tabwin_apply_conversion_values("A", selected),
+    "Second"
+  )
+})
+
+test_that("CNV parser expands purely alphabetic ranges", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  write_tabwin_text(
+    path,
+    c("1 1 L", tabwin_cnv_line(1, "Alphabet", "A-Z"))
+  )
+
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+
+  expect_identical(unname(conversion$map[c("A", "X", "Z")]),
+                   rep("Alphabet", 3))
+})
+
+test_that("F mode categorizes numeric values by upper limits", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  write_tabwin_text(path, c(
+    "3 5 F",
+    tabwin_cnv_line(1, "Zero", "00000"),
+    tabwin_cnv_line(2, "One to seven", "00007"),
+    tabwin_cnv_line(3, "Eight or more", "09999")
+  ))
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+  selected <- list(
+    definition = data.frame(position = 1L),
+    conversion = conversion
+  )
+
+  expect_identical(conversion$mode, "F")
+  expect_identical(
+    microdatasus:::.tabwin_apply_conversion_values(
+      c("0", "1", "7", "8", "9999", "10000"), selected
+    ),
+    c("Zero", "One to seven", "One to seven", "Eight or more",
+      "Eight or more", "10000")
+  )
+})
+
+test_that("CNV parser preserves subtotals and reports count mismatches", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  subtotal_row <- paste0(
+    sprintf("%3s", "1"), sprintf("%4d", 2L), "  ",
+    sprintf("%-50s", "Child"), " ", "2"
+  )
+  write_tabwin_text(path, c(
+    "99 1",
+    tabwin_cnv_line(1, "Parent", "1"),
+    subtotal_row
+  ))
+
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+
+  expect_true(conversion$category_count_mismatch)
+  expect_identical(conversion$observed_category_count, 2L)
+  expect_identical(
+    conversion$categories[, c("sequence", "subtotal", "label")],
+    data.frame(
+      sequence = c("1", "2"),
+      subtotal = c("", "1"),
+      label = c("Parent", "Child"),
+      stringsAsFactors = FALSE
+    )
+  )
+})
+
+test_that("subtotal and sequence jointly identify a CNV category", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  row <- function(subtotal, sequence, label, code) {
+    paste0(
+      sprintf("%3s", subtotal), sprintf("%4d", sequence), "  ",
+      sprintf("%-50s", label), " ", code
+    )
+  }
+  write_tabwin_text(path, c(
+    "2 1 L",
+    row("23", 24, "First subtotal", "A"),
+    row("22", 24, "Second subtotal", "B")
+  ))
+
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+
+  expect_identical(conversion$observed_category_count, 2L)
+  expect_false(conversion$category_count_mismatch)
+  expect_identical(unname(conversion$map[c("A", "B")]),
+                   c("First subtotal", "Second subtotal"))
+  expect_false(any(conversion$categories$label_conflict))
+})
+
+test_that("CNV parser detects UTF-8 and recovers official tab alignment", {
+  utf8 <- tempfile(fileext = ".CNV")
+  legacy <- tempfile(fileext = ".CNV")
+  tabbed <- tempfile(fileext = ".CNV")
+  on.exit(unlink(c(utf8, legacy, tabbed)), add = TRUE)
+  writeLines(
+    c("1 1", tabwin_cnv_line(1, "Águas", "1")),
+    utf8,
+    useBytes = TRUE
+  )
+  write_tabwin_text(
+    legacy,
+    c("1 1", tabwin_cnv_line(1, "Atenção", "1"))
+  )
+  write_tabwin_text(tabbed, c(
+    "1 4 L",
+    "      1  Aparelho de Hemodialise - Hospitalar\t            1002"
+  ))
+
+  utf8_conversion <- microdatasus:::.tabwin_parse_cnv(utf8)
+  legacy_conversion <- microdatasus:::.tabwin_parse_cnv(legacy)
+  tabbed_conversion <- microdatasus:::.tabwin_parse_cnv(tabbed)
+
+  expect_identical(unname(utf8_conversion$map[["1"]]), "Águas")
+  expect_identical(utf8_conversion$source_encoding, "UTF-8")
+  expect_identical(unname(legacy_conversion$map[["1"]]), "Atenção")
+  expect_identical(legacy_conversion$source_encoding, "windows-1252")
+  expect_identical(
+    unname(tabbed_conversion$map[["1002"]]),
+    "Aparelho de Hemodialise - Hospitalar"
+  )
+  expect_identical(tabbed_conversion$tabs_recovered, 1L)
+})
+
+test_that("CNV header tolerates colon comments but rejects trailing garbage", {
+  valid <- tempfile(fileext = ".CNV")
+  invalid <- tempfile(fileext = ".CNV")
+  on.exit(unlink(c(valid, invalid)), add = TRUE)
+  write_tabwin_text(valid, c(
+    ": legacy pseudo-comment",
+    "1 1",
+    tabwin_cnv_line(1, "Valid", "1")
+  ))
+  write_tabwin_text(invalid, c(
+    "1 1 trailing garbage",
+    tabwin_cnv_line(1, "Invalid", "1")
+  ))
+
+  expect_identical(
+    unname(microdatasus:::.tabwin_parse_cnv(valid)$map[["1"]]),
+    "Valid"
+  )
+  expect_error(
+    microdatasus:::.tabwin_parse_cnv(invalid),
+    class = "microdatasus_dictionary_invalid_error"
+  )
+})
+
+test_that("factor levels follow CNV category sequence", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  write_tabwin_text(path, c(
+    "3 1 L",
+    tabwin_cnv_line(3, "Ignorado", "I"),
+    tabwin_cnv_line(1, "Masculino", "M"),
+    tabwin_cnv_line(2, "Feminino", "F")
+  ))
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+  selected <- list(
+    definition = data.frame(position = 1L),
+    conversion = conversion
+  )
+
+  result <- microdatasus:::.tabwin_apply_conversion(
+    c("I", "F", "M"), selected
+  )
+
+  expect_identical(levels(result), c("Masculino", "Feminino", "Ignorado"))
+})
 test_that("dictionary failures expose stable condition classes", {
   expect_error(
     microdatasus:::.tabwin_find_entry("path/one.cnv", "missing.cnv"),

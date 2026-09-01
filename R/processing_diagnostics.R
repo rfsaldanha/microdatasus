@@ -90,8 +90,9 @@
     return(invisible(NULL))
   }
   collector$mapped_fields <- unique(c(collector$mapped_fields, field))
-  source <- trimws(as.character(source))
-  lookup <- source
+  raw_source <- as.character(source)
+  source <- trimws(raw_source)
+  lookup <- raw_source
   conversion <- selected$conversion
   if (identical(conversion$type, "cnv")) {
     definition <- selected$definition
@@ -100,7 +101,9 @@
       definition$position,
       definition$position + conversion$code_width - 1L
     )
-    lookup <- .tabwin_normalize_code(lookup, conversion$code_width)
+    lookup <- .tabwin_normalize_code(
+      lookup, conversion$code_width, conversion$mode
+    )
   }
   # Membership in the official map is more precise than comparing labels with
   # source text, because a legitimate label can equal its source code.

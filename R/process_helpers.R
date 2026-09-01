@@ -141,6 +141,7 @@
     }
     values <- as.character(data[[field]])
     converted <- FALSE
+    conversion_levels <- character()
 
     for (key in keys) {
       rows <- dictionary_rows[[key]]
@@ -166,6 +167,13 @@
         )
         if (!identical(labels, "none")) {
           values[rows] <- converted_values
+          selected_levels <- selected$conversion$levels
+          if (is.null(selected_levels)) {
+            selected_levels <- unique(unname(selected$conversion$map))
+          }
+          conversion_levels <- unique(c(
+            conversion_levels, selected_levels
+          ))
         }
         converted <- TRUE
       }
@@ -175,7 +183,7 @@
     }
     if (converted && !identical(labels, "none")) {
       data[[field]] <- if (identical(labels, "factor")) {
-        factor(values)
+        .tabwin_factor(values, conversion_levels)
       } else {
         values
       }

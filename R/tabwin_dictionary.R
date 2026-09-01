@@ -212,9 +212,27 @@
   )
 }
 
+.tabwin_expand_tabs <- function(line, tab_width = 8L) {
+  if (!grepl("\t", line, fixed = TRUE)) return(line)
+  characters <- strsplit(line, "", fixed = TRUE)[[1L]]
+  result <- character()
+  column <- 1L
+  for (character in characters) {
+    if (identical(character, "\t")) {
+      spaces <- tab_width - ((column - 1L) %% tab_width)
+      result <- c(result, rep(" ", spaces))
+      column <- column + spaces
+    } else {
+      result <- c(result, character)
+      column <- column + 1L
+    }
+  }
+  paste0(result, collapse = "")
+}
+
 .tabwin_read_text <- function(path) {
-  # TabWin text files are published with a legacy Windows encoding. Read the
-  # bytes explicitly so the result does not depend on the user's locale.
+  # Official archives mix Windows-1252 and UTF-8. Detect valid UTF-8 first and
+  # use the legacy encoding only as a fallback, independently of the R locale.
   size <- file.info(path)$size
   if (is.na(size) || size == 0) {
     .tabwin_abort(
@@ -224,15 +242,38 @@
   }
   con <- file(path, open = "rb")
   on.exit(close(con), add = TRUE)
-  text <- rawToChar(readBin(con, what = "raw", n = size))
-  text <- iconv(text, from = "windows-1252", to = "UTF-8", sub = "byte")
+  bytes <- readBin(con, what = "raw", n = size)
+  if (any(bytes == as.raw(0L))) {
+    .tabwin_abort(
+      "TabWin file {.file {basename(path)}} is binary, not text.",
+      "microdatasus_dictionary_invalid_error"
+    )
+  }
+  if (length(bytes) >= 3L &&
+      identical(bytes[1:3], as.raw(c(0xef, 0xbb, 0xbf)))) {
+    bytes <- bytes[-(1:3)]
+  }
+  encoded <- rawToChar(bytes)
+  text <- iconv(encoded, from = "UTF-8", to = "UTF-8")
+  encoding <- "UTF-8"
+  if (is.na(text)) {
+    text <- iconv(
+      encoded, from = "windows-1252", to = "UTF-8", sub = "byte"
+    )
+    encoding <- "windows-1252"
+  }
   if (is.na(text)) {
     .tabwin_abort(
       "Could not convert TabWin file {.file {basename(path)}} to UTF-8.",
       "microdatasus_dictionary_invalid_error"
     )
   }
-  strsplit(text, "\r\n|\n|\r", perl = TRUE)[[1L]]
+  lines <- strsplit(text, "\r\n|\n|\r", perl = TRUE)[[1L]]
+  tabs <- lengths(regmatches(lines, gregexpr("\t", lines, fixed = TRUE)))
+  lines <- vapply(lines, .tabwin_expand_tabs, character(1), USE.NAMES = FALSE)
+  attr(lines, "encoding") <- encoding
+  attr(lines, "tabs_recovered") <- sum(tabs)
+  lines
 }
 
 .tabwin_parse_def <- function(path) {
@@ -443,11 +484,50 @@
   destination
 }
 
+.tabwin_alpha_to_number <- function(value) {
+  if (length(value) != 1L || is.na(value) || !nzchar(value)) {
+    return(NA_real_)
+  }
+
+  characters <- utf8ToInt(toupper(value))
+  if (!length(characters) || any(characters < 65L | characters > 90L)) {
+    return(NA_real_)
+  }
+  sum((characters - 65L) * 26^(rev(seq_along(characters)) - 1L))
+}
+
+.tabwin_number_to_alpha <- function(number, width) {
+  digits <- integer(width)
+  for (index in rev(seq_len(width))) {
+    digits[[index]] <- number %% 26
+    number <- number %/% 26
+  }
+  intToUtf8(digits + 65L)
+}
+
 .tabwin_expand_range <- function(token, width, max_codes = 100000L) {
-  # Short CNV codes may use compact intervals such as 01-09 or A01-A05.
+  # Short CNV codes may use compact intervals such as 01-09, A-Z, or A01-A05.
+  token <- trimws(token)
   bounds <- strsplit(token, "-", fixed = TRUE)[[1L]]
   if (length(bounds) != 2L || any(!nzchar(bounds))) {
     return(token)
+  }
+  if (all(grepl("^[[:alpha:]]+$", bounds)) &&
+      length(unique(nchar(bounds))) == 1L) {
+    limits <- vapply(bounds, .tabwin_alpha_to_number, numeric(1))
+    size <- limits[[2L]] - limits[[1L]] + 1
+    if (anyNA(limits) || size < 1) return(token)
+    if (size > max_codes) {
+      cli::cli_abort(
+        "TabWin alphabetic range {.val {token}} is too large to expand as labels."
+      )
+    }
+    return(vapply(
+      seq.int(limits[[1L]], limits[[2L]]),
+      .tabwin_number_to_alpha,
+      character(1),
+      width = nchar(bounds[[1L]])
+    ))
   }
   if (all(grepl("^[0-9]+$", bounds))) {
     limits <- suppressWarnings(as.numeric(bounds))
@@ -498,8 +578,20 @@
 .tabwin_range_rule <- function(token, width) {
   # Parse a compact interval without materialising its members. Keeping the
   # bounds lets every processor handle large analytical TabWin bands safely.
+  token <- trimws(token)
   bounds <- strsplit(token, "-", fixed = TRUE)[[1L]]
   if (length(bounds) != 2L || any(!nzchar(bounds))) return(NULL)
+  if (all(grepl("^[[:alpha:]]+$", bounds)) &&
+      length(unique(nchar(bounds))) == 1L) {
+    limits <- vapply(bounds, .tabwin_alpha_to_number, numeric(1))
+    if (anyNA(limits) || limits[[1L]] > limits[[2L]]) return(NULL)
+    return(data.frame(
+      token = token, kind = "alphabetic", prefix = "",
+      lower = limits[[1L]], upper = limits[[2L]],
+      size = limits[[2L]] - limits[[1L]] + 1, width = width,
+      stringsAsFactors = FALSE
+    ))
+  }
   if (all(grepl("^[0-9]+$", bounds))) {
     limits <- suppressWarnings(as.numeric(bounds))
     if (anyNA(limits) || limits[[1L]] > limits[[2L]]) return(NULL)
@@ -534,25 +626,50 @@
   )
 }
 
-.tabwin_normalize_code <- function(code, width) {
-  # DBF readers can drop leading zeroes from numeric-looking codes.
-  code <- trimws(as.character(code))
+.tabwin_normalize_code <- function(code, width, mode = "") {
+  code <- as.character(code)
+  literal <- identical(toupper(mode), "L")
+  if (literal) {
+    # Literal fields are fixed-width and right padded. This keeps "1  " distinct
+    # from "001", as required by the L mode.
+    code <- sub("^[[:space:]]+", "", code)
+    short <- !is.na(code) & nchar(code, type = "chars") < width
+    code[short] <- paste0(
+      code[short],
+      vapply(
+        width - nchar(code[short], type = "chars"),
+        strrep,
+        character(1),
+        x = " "
+      )
+    )
+    return(substr(code, 1L, width))
+  }
+
+  # In numeric mode, right-padding represents zeroes: both "1  " and "10 "
+  # denote 100 at width three. Unpadded official tokens remain tolerated by
+  # left-padding numeric codes, which also repairs DBF readers that drop zeroes.
+  right_padded <- !is.na(code) & grepl("^[0-9]+[[:space:]]+$", code)
+  code[right_padded] <- gsub(
+    "[[:space:]]", "0", code[right_padded]
+  )
+  code <- trimws(code)
   numeric <- !is.na(code) & grepl("^[0-9]+$", code) & nchar(code) < width
   code[numeric] <- vapply(
     code[numeric],
-    function(value) {
-      paste0(strrep("0", width - nchar(value)), value)
-    },
+    function(value) paste0(strrep("0", width - nchar(value)), value),
     character(1)
   )
   code
 }
 
-.tabwin_parse_cnv <- function(path) {
-  lines <- .tabwin_read_text(path)
-  # The first effective line declares the number of categories, comparison
-  # width, and (optionally) the literal/range mode.
-  useful <- which(nzchar(trimws(lines)) & !startsWith(trimws(lines), ";"))
+.tabwin_parse_cnv_header <- function(lines, path) {
+  trimmed <- trimws(lines)
+  useful <- which(
+    nzchar(trimmed) &
+      !startsWith(trimmed, ";") &
+      !startsWith(trimmed, ":")
+  )
   if (!length(useful)) {
     .tabwin_abort(
       "TabWin conversion {.file {basename(path)}} is empty.",
@@ -560,67 +677,307 @@
     )
   }
   header_index <- useful[[1L]]
-  header <- trimws(lines[[header_index]])
-  # Official CNVs use both the compact header (`2 1`) and a long-description
-  # dialect (`N 924 4 L`). A lower-case `s` also precedes some compact files.
+  header_line <- lines[[header_index]]
+  header <- toupper(trimmed[[header_index]])
   match <- regexec(
-    "^([[:alpha:]])?\\s*([0-9]+)\\s+([0-9]+)\\s*([[:alpha:]]*)",
-    header
+    "^(?:([NS])[[:space:]]+)?([0-9]+)[[:space:]]+([0-9]+)(?:[[:space:]]+([[:alpha:]]+))?[[:space:]]*$",
+    header,
+    perl = TRUE
   )
   parts <- regmatches(header, match)[[1L]]
+  embedded_row <- NULL
+
   if (length(parts) != 5L) {
+    # A published SINASC relation overwrites the first row prefix with its
+    # header while leaving that row code in column 61. Accept only this exact
+    # shape: a valid short header, an empty description area, and a code tail.
+    embedded_header <- toupper(trimws(substr(header_line, 1L, 10L)))
+    embedded_match <- regexec(
+      "^([0-9]+)[[:space:]]+([0-9]+)(?:[[:space:]]+([[:alpha:]]+))?$",
+      embedded_header,
+      perl = TRUE
+    )
+    embedded_parts <- regmatches(embedded_header, embedded_match)[[1L]]
+    middle <- substr(header_line, 11L, 60L)
+    tail <- substring(header_line, 61L)
+    if (length(embedded_parts) != 4L || nzchar(trimws(middle)) ||
+        !nzchar(trimws(tail))) {
+      .tabwin_abort(
+        "TabWin conversion {.file {basename(path)}} has an invalid header.",
+        "microdatasus_dictionary_invalid_error"
+      )
+    }
+    parts <- c(
+      embedded_parts[[1L]], "", embedded_parts[[2L]],
+      embedded_parts[[3L]], embedded_parts[[4L]]
+    )
+    embedded_row <- paste0(strrep(" ", 60L), tail)
+  }
+
+  dialect <- parts[[2L]]
+  category_count <- suppressWarnings(as.integer(parts[[3L]]))
+  code_width <- suppressWarnings(as.integer(parts[[4L]]))
+  mode <- parts[[5L]]
+  if (identical(mode, "FAIXAS")) mode <- "F"
+  if (is.na(category_count) || category_count < 1L ||
+      is.na(code_width) || code_width < 1L ||
+      !mode %in% c("", "L", "F")) {
     .tabwin_abort(
-      "TabWin conversion {.file {basename(path)}} has an invalid header.",
+      "TabWin conversion {.file {basename(path)}} has unsupported header values.",
       "microdatasus_dictionary_invalid_error"
     )
   }
-  dialect <- toupper(parts[[2L]])
-  category_count <- as.integer(parts[[3L]])
-  code_width <- as.integer(parts[[4L]])
-  mode <- toupper(parts[[5L]])
-  if (mode %in% c("F", "FAIXAS")) {
+  list(
+    index = header_index,
+    dialect = dialect,
+    category_count = category_count,
+    code_width = code_width,
+    mode = mode,
+    embedded_row = embedded_row
+  )
+}
+
+.tabwin_category_key <- function(sequence, subtotal) {
+  key <- paste(subtotal, sequence, sep = "\034")
+  key[!nzchar(sequence)] <- ""
+  key
+}
+
+.tabwin_category_metadata <- function(sequence, subtotal, labels) {
+  key <- .tabwin_category_key(sequence, subtotal)
+  unique_key <- unique(key[nzchar(key)])
+  if (!length(unique_key)) {
+    return(data.frame(
+      sequence = character(), subtotal = character(), label = character(),
+      source_order = integer(), label_conflict = logical(),
+      stringsAsFactors = FALSE
+    ))
+  }
+
+  source_order <- match(unique_key, key)
+  label_present <- nzchar(key) & nzchar(labels)
+  label_key <- key[label_present]
+  label_value <- labels[label_present]
+  label_index <- match(unique_key, label_key)
+  first_label <- label_value[label_index]
+
+  distinct_pair <- !duplicated(paste(label_key, label_value, sep = "\035"))
+  distinct_count <- tabulate(
+    match(label_key[distinct_pair], unique_key),
+    nbins = length(unique_key)
+  )
+  categories <- data.frame(
+    sequence = sequence[source_order],
+    subtotal = subtotal[source_order],
+    label = first_label,
+    source_order = source_order,
+    label_conflict = distinct_count > 1L,
+    stringsAsFactors = FALSE
+  )
+  numeric_sequence <- suppressWarnings(as.integer(categories$sequence))
+  categories[order(numeric_sequence, categories$source_order), , drop = FALSE]
+}
+
+.tabwin_cnv_code_text <- function(rows, code_start, code_width, mode) {
+  code_text <- sub(";.*$", "", substring(rows, code_start))
+  line_width <- nchar(rows, type = "chars")
+  candidate_start <- pmax.int(1L, line_width - code_width + 1L)
+  candidate <- substring(rows, candidate_start)
+  candidate_prefix <- substr(rows, 1L, pmax.int(0L, candidate_start - 1L))
+  candidate_trimmed <- trimws(candidate)
+  candidate_valid <- grepl(
+    "^[[:alnum:]][[:alnum:]-]*(?:[[:space:]]*,[[:space:]]*[[:alnum:]][[:alnum:]-]*)*$",
+    candidate_trimmed,
+    perl = TRUE
+  )
+  separated <- grepl("[[:space:]]{2,}$", candidate_prefix)
+  recover <- !identical(mode, "L") &
+    line_width < code_start &
+    !nzchar(trimws(code_text)) &
+    candidate_start > 9L &
+    candidate_valid &
+    separated
+  code_text[recover] <- candidate[recover]
+  attr(code_text, "compact") <- recover
+  attr(code_text, "candidate_start") <- candidate_start
+  attr(code_text, "compact_rows") <- sum(recover)
+  code_text
+}
+
+.tabwin_empty_thresholds <- function() {
+  data.frame(
+    upper = numeric(), label = character(), priority = integer(),
+    stringsAsFactors = FALSE
+  )
+}
+
+.tabwin_parse_cnv <- function(path) {
+  lines <- .tabwin_read_text(path)
+  source_encoding <- attr(lines, "encoding")
+  tabs_recovered <- attr(lines, "tabs_recovered")
+  header <- .tabwin_parse_cnv_header(lines, path)
+  dialect <- header$dialect
+  category_count <- header$category_count
+  code_width <- header$code_width
+  mode <- header$mode
+
+  rows <- if (header$index < length(lines)) {
+    lines[seq.int(header$index + 1L, length(lines))]
+  } else {
+    character()
+  }
+  if (!is.null(header$embedded_row)) {
+    rows <- c(header$embedded_row, rows)
+  }
+  active <- nzchar(trimws(rows)) &
+    !startsWith(trimws(rows), ";") &
+    !startsWith(trimws(rows), ":")
+  rows <- rows[active]
+  extended <- identical(dialect, "N")
+  subtotal_end <- if (extended) 4L else 3L
+  sequence_start <- if (extended) 6L else 4L
+  sequence_end <- if (extended) 9L else 7L
+  label_start <- if (extended) 12L else 10L
+  label_end <- if (extended) 111L else 59L
+  code_start <- if (extended) 113L else 61L
+
+  subtotal <- trimws(substr(rows, 1L, subtotal_end))
+  sequence <- trimws(substr(rows, sequence_start, sequence_end))
+  code_text <- .tabwin_cnv_code_text(rows, code_start, code_width, mode)
+  compact <- attr(code_text, "compact")
+  compact_start <- attr(code_text, "candidate_start")
+  compact_code_rows <- attr(code_text, "compact_rows")
+  row_labels <- trimws(substr(rows, label_start, label_end))
+  if (any(compact)) {
+    row_labels[compact] <- trimws(substr(
+      rows[compact], label_start, compact_start[compact] - 1L
+    ))
+  }
+
+  # Some published files omit a repeated sequence on a physical continuation
+  # line. Recover only that local omission; descriptions are still resolved by
+  # subtotal and sequence in a separate pass, preserving non-adjacent continuations.
+  recovered_sequence <- 0L
+  if (length(sequence)) {
+    current <- ""
+    for (index in seq_along(sequence)) {
+      if (nzchar(sequence[[index]])) {
+        current <- sequence[[index]]
+      } else if (nzchar(current) && nzchar(trimws(code_text[[index]]))) {
+        sequence[[index]] <- current
+        recovered_sequence <- recovered_sequence + 1L
+      }
+    }
+  }
+  recovered_leading_sequence <- 0L
+  first_sequence <- which(nzchar(sequence))
+  if (length(first_sequence) && first_sequence[[1L]] > 1L) {
+    first_sequence <- first_sequence[[1L]]
+    leading <- seq_len(first_sequence - 1L)
+    has_codes <- nzchar(trimws(code_text[leading]))
+    recover <- leading[!nzchar(sequence[leading]) & has_codes]
+    if (length(recover)) {
+      sequence[recover] <- sequence[[first_sequence]]
+      recovered_leading_sequence <- length(recover)
+    }
+  }
+  invalid_sequence <- nzchar(sequence) & !grepl("^[0-9]+$", sequence)
+  if (any(invalid_sequence)) {
     .tabwin_abort(
-      "Numeric-range TabWin conversion {.file {basename(path)}} cannot be used as labels.",
+      "TabWin conversion {.file {basename(path)}} has an invalid category sequence.",
       "microdatasus_dictionary_invalid_error"
     )
   }
 
-  rows <- lines[seq.int(header_index + 1L, length(lines))]
-  active <- nzchar(trimws(rows)) & !startsWith(trimws(rows), ";")
-  rows <- rows[active]
-  # `N` reserves 100 columns for descriptions; compact/S files reserve 50.
-  # Both dialects place descriptions at column 10 and codes two columns after
-  # the description. Parsing by the header is more reliable than line length.
-  label_end <- if (identical(dialect, "N")) 109L else 59L
-  code_start <- label_end + 2L
-  row_labels <- trimws(substr(rows, 10L, label_end))
-  code_text <- sub(";.*$", "", substring(rows, code_start))
+  categories <- .tabwin_category_metadata(sequence, subtotal, row_labels)
+  category_keys <- .tabwin_category_key(
+    categories$sequence, categories$subtotal
+  )
+  label_lookup <- stats::setNames(categories$label, category_keys)
+  row_category_keys <- .tabwin_category_key(sequence, subtotal)
+  resolved_labels <- unname(label_lookup[row_category_keys])
   tokens <- strsplit(code_text, ",", fixed = TRUE)
   tokens <- lapply(tokens, function(values) {
-    values <- trimws(values)
-    values[nzchar(values)]
-  })
-  # A blank description continues the previous category. Hierarchical `N`
-  # files use more than one sequence column, so source order is the only key
-  # that is stable across both official dialects.
-  code_parts <- vector("list", length(tokens))
-  label_parts <- vector("list", length(tokens))
-  current_label <- NA_character_
-  for (index in seq_along(tokens)) {
-    if (nzchar(row_labels[[index]])) current_label <- row_labels[[index]]
-    if (!is.na(current_label) && length(tokens[[index]])) {
-      code_parts[[index]] <- tokens[[index]]
-      label_parts[[index]] <- rep(current_label, length(tokens[[index]]))
+    if (identical(mode, "L")) {
+      # Literal blanks are valid fixed-width codes in published CNVs.
+      return(values[nzchar(values)])
     }
+    # Leading whitespace aligns numeric code lists. Trailing whitespace is
+    # significant and is converted to zeroes during numeric normalization.
+    values <- sub("^[[:space:]]+", "", values)
+    values[nzchar(trimws(values))]
+  })
+  unresolved <- lengths(tokens) > 0L &
+    (is.na(resolved_labels) | !nzchar(resolved_labels))
+  if (any(unresolved)) {
+    .tabwin_abort(
+      "TabWin conversion {.file {basename(path)}} has codes without a category description.",
+      "microdatasus_dictionary_invalid_error"
+    )
   }
+
+  code_parts <- lapply(seq_along(tokens), function(index) tokens[[index]])
+  label_parts <- lapply(seq_along(tokens), function(index) {
+    rep(resolved_labels[[index]], length(tokens[[index]]))
+  })
   raw_codes <- unlist(code_parts, use.names = FALSE)
   raw_labels <- unlist(label_parts, use.names = FALSE)
   if (is.null(raw_codes)) raw_codes <- character()
   if (is.null(raw_labels)) raw_labels <- character()
-  # Literal codes dominate large CNVs. Only range tokens need the relatively
-  # expensive interval parser and its materialisation safety check.
+
+  levels <- unique(categories$label[!is.na(categories$label)])
+  common <- list(
+    type = "cnv",
+    dialect = dialect,
+    mode = mode,
+    code_width = code_width,
+    category_count = category_count,
+    observed_category_count = nrow(categories),
+    category_count_mismatch = category_count != nrow(categories),
+    categories = categories,
+    levels = levels,
+    source_encoding = source_encoding,
+    tabs_recovered = tabs_recovered,
+    embedded_header = !is.null(header$embedded_row),
+    compact_code_rows = compact_code_rows,
+    recovered_sequence = recovered_sequence,
+    recovered_leading_sequence = recovered_leading_sequence
+  )
+
+  if (identical(mode, "F")) {
+    upper <- suppressWarnings(as.numeric(trimws(raw_codes)))
+    if (!length(upper) || anyNA(upper)) {
+      .tabwin_abort(
+        "Numeric-range TabWin conversion {.file {basename(path)}} has invalid limits.",
+        "microdatasus_dictionary_invalid_error"
+      )
+    }
+    thresholds <- data.frame(
+      upper = upper,
+      label = raw_labels,
+      priority = seq_along(upper),
+      stringsAsFactors = FALSE
+    )
+    thresholds <- thresholds[order(thresholds$upper, thresholds$priority), ]
+    if (anyDuplicated(thresholds$upper)) {
+      .tabwin_abort(
+        "Numeric-range TabWin conversion {.file {basename(path)}} has duplicate limits.",
+        "microdatasus_dictionary_invalid_error"
+      )
+    }
+    return(structure(
+      c(common, list(
+        map = stats::setNames(character(), character()),
+        map_priority = stats::setNames(integer(), character()),
+        ranges = .tabwin_empty_ranges(),
+        thresholds = thresholds
+      )),
+      class = "microdatasus_tabwin_conversion"
+    ))
+  }
+
   expanded <- as.list(raw_codes)
-  range_indexes <- which(grepl("-", raw_codes, fixed = TRUE))
+  range_indexes <- which(grepl("-", trimws(raw_codes), fixed = TRUE))
   parsed_ranges <- lapply(
     raw_codes[range_indexes], .tabwin_range_rule, width = code_width
   )
@@ -635,7 +992,6 @@
     rules <- do.call(rbind, parsed_ranges[symbolic])
     rules$label <- raw_labels[symbolic_indexes]
     rules$priority <- symbolic_indexes
-    # Symbolic rules are applied by bounds and add no enumerated map member.
     expanded[symbolic_indexes] <- rep(
       list(character()), length(symbolic_indexes)
     )
@@ -647,12 +1003,11 @@
     width = code_width
   )
   map_codes <- .tabwin_normalize_code(
-    unlist(expanded, use.names = FALSE), code_width
+    unlist(expanded, use.names = FALSE), code_width, mode
   )
   map_labels <- rep(raw_labels, lengths(expanded))
   map_priorities <- rep(seq_along(raw_codes), lengths(expanded))
-  # Later, more specific categories override broad catch-all ranges declared
-  # earlier (for example 1 and 2 override the legacy SEXO range 0-9).
+  normalized_collisions <- sum(duplicated(map_codes))
   keep <- !duplicated(map_codes, fromLast = TRUE)
   map <- map_labels[keep]
   names(map) <- map_codes[keep]
@@ -665,14 +1020,13 @@
     )
   }
   structure(
-    list(
-      type = "cnv",
-      code_width = code_width,
-      category_count = category_count,
+    c(common, list(
       map = map,
       map_priority = map_priority,
-      ranges = rules
-    ),
+      ranges = rules,
+      thresholds = .tabwin_empty_thresholds(),
+      normalized_collisions = normalized_collisions
+    )),
     class = "microdatasus_tabwin_conversion"
   )
 }
@@ -692,7 +1046,7 @@
   )
 }
 
-.tabwin_parser_version <- 3L
+.tabwin_parser_version <- 4L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {
@@ -801,11 +1155,14 @@
     conversion <- structure(
       list(
         type = "dbf",
+        mode = "",
         code_width = max(nchar(codes[keep]), 0L),
         category_count = sum(keep),
+        levels = unique(labels[keep]),
         map = map,
         map_priority = stats::setNames(rep(0L, length(map)), names(map)),
         ranges = .tabwin_empty_ranges(),
+        thresholds = .tabwin_empty_thresholds(),
         fallback_label = fallback_label,
         requested_label_field = definition$argument,
         label_field = names(table)[[label_index]]
@@ -818,12 +1175,16 @@
   conversion
 }
 
-.tabwin_range_matches <- function(values, rule) {
-  values <- .tabwin_normalize_code(values, rule$width[[1L]])
+.tabwin_range_matches <- function(values, rule, mode = "") {
+  values <- .tabwin_normalize_code(values, rule$width[[1L]], mode)
   prefix <- rule$prefix[[1L]]
-  if (identical(rule$kind[[1L]], "numeric")) {
+  kind <- rule$kind[[1L]]
+  if (identical(kind, "numeric")) {
     comparable <- grepl("^[0-9]+$", values)
     number <- suppressWarnings(as.numeric(values))
+  } else if (identical(kind, "alphabetic")) {
+    comparable <- grepl("^[[:alpha:]]+$", values)
+    number <- vapply(values, .tabwin_alpha_to_number, numeric(1))
   } else {
     comparable <- startsWith(toupper(values), prefix)
     suffix <- substring(values, nchar(prefix) + 1L)
@@ -834,7 +1195,22 @@
     number >= rule$lower[[1L]] & number <= rule$upper[[1L]]
 }
 
+.tabwin_threshold_labels <- function(lookup, thresholds) {
+  number <- suppressWarnings(as.numeric(trimws(lookup)))
+  labels <- rep(NA_character_, length(number))
+  valid <- which(!is.na(number))
+  for (index in valid) {
+    category <- which(number[[index]] <= thresholds$upper)[1L]
+    if (!is.na(category)) labels[[index]] <- thresholds$label[[category]]
+  }
+  labels
+}
+
 .tabwin_conversion_labels <- function(lookup, conversion) {
+  mode <- if (is.null(conversion$mode)) "" else conversion$mode
+  if (identical(mode, "F")) {
+    return(.tabwin_threshold_labels(lookup, conversion$thresholds))
+  }
   labels <- unname(conversion$map[lookup])
   map_priority <- conversion$map_priority
   if (is.null(map_priority)) {
@@ -848,7 +1224,7 @@
   # Later source rules override earlier broad intervals, matching TabWin.
   for (index in seq_len(nrow(ranges))) {
     rule <- ranges[index, , drop = FALSE]
-    matched <- .tabwin_range_matches(lookup, rule) &
+    matched <- .tabwin_range_matches(lookup, rule, mode) &
       rule$priority[[1L]] >= priorities
     labels[matched] <- rule$label[[1L]]
     priorities[matched] <- rule$priority[[1L]]
@@ -911,12 +1287,14 @@
   if (inherits(conversion, "error")) {
     return(NULL)
   }
-  observed <- unique(trimws(as.character(values)))
-  observed <- observed[!is.na(observed) & nzchar(observed)]
+  observed <- unique(as.character(values))
+  observed <- observed[!is.na(observed) & nzchar(trimws(observed))]
   if (identical(conversion$type, "cnv")) {
     start <- definition$position
     observed <- substring(observed, start, start + conversion$code_width - 1L)
-    observed <- .tabwin_normalize_code(observed, conversion$code_width)
+    observed <- .tabwin_normalize_code(
+      observed, conversion$code_width, conversion$mode
+    )
   }
   coverage <- if (length(observed)) {
     mean(!is.na(.tabwin_conversion_labels(observed, conversion)))
@@ -1004,15 +1382,18 @@
 .tabwin_apply_conversion_values <- function(values, selected) {
   definition <- selected$definition
   conversion <- selected$conversion
-  source <- trimws(as.character(values))
-  lookup <- source
+  raw_source <- as.character(values)
+  source <- trimws(raw_source)
+  lookup <- raw_source
   if (identical(conversion$type, "cnv")) {
     lookup <- substring(
       lookup,
       definition$position,
       definition$position + conversion$code_width - 1L
     )
-    lookup <- .tabwin_normalize_code(lookup, conversion$code_width)
+    lookup <- .tabwin_normalize_code(
+      lookup, conversion$code_width, conversion$mode
+    )
   }
   # Replace known codes only. Unknown codes remain visible so a DataSUS
   # revision cannot silently turn valid information into missing data.
@@ -1024,7 +1405,17 @@
   result
 }
 
+.tabwin_factor <- function(values, conversion_levels = character()) {
+  present <- unique(values[!is.na(values)])
+  ordered <- conversion_levels[conversion_levels %in% present]
+  unknown <- present[!present %in% ordered]
+  factor(values, levels = unique(c(ordered, unknown)))
+}
+
 # Preserve the factor return used by the original single-conversion helper.
 .tabwin_apply_conversion <- function(values, selected) {
-  factor(.tabwin_apply_conversion_values(values, selected))
+  values <- .tabwin_apply_conversion_values(values, selected)
+  levels <- selected$conversion$levels
+  if (is.null(levels)) levels <- unique(unname(selected$conversion$map))
+  .tabwin_factor(values, levels)
 }
