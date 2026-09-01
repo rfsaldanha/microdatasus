@@ -483,7 +483,10 @@
 #'   character vectors; with `as_character = FALSE`, DBF-inferred types are
 #'   retained. The `dbc_encoding` and `dbf_language_driver` attributes record
 #'   the header-derived source encoding and the original header byte;
-#'   `dbc_column_encodings` records the encoding used for each column.
+#'   `dbc_column_encodings` records the encoding used for each column. The
+#'   `dbf_field_types`, `dbf_field_widths`, and `dbf_field_decimals`
+#'   attributes retain the complete physical DBF layout so DEF conversions
+#'   whose fixed-width code crosses adjacent fields can be reproduced.
 #'
 #' @details
 #' Decompression is performed through the package's bundled DBC implementation.
@@ -703,6 +706,29 @@ read_dbc <- function(
   attr(result, "dbc_column_encodings") <- stats::setNames(
     column_encodings,
     names(result)
+  )
+  descriptor_offsets <- 32L + (seq_along(repaired_names) - 1L) * 32L
+  field_widths <- vapply(
+    descriptor_offsets + 17L,
+    function(index) as.integer(info$header[[index]]),
+    integer(1)
+  )
+  field_decimals <- vapply(
+    descriptor_offsets + 18L,
+    function(index) as.integer(info$header[[index]]),
+    integer(1)
+  )
+  attr(result, "dbf_field_types") <- stats::setNames(
+    info$data_types,
+    repaired_names
+  )
+  attr(result, "dbf_field_widths") <- stats::setNames(
+    field_widths,
+    repaired_names
+  )
+  attr(result, "dbf_field_decimals") <- stats::setNames(
+    field_decimals,
+    repaired_names
   )
   result
 }

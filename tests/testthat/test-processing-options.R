@@ -9,7 +9,7 @@ test_that("label policy preserves factor default and supports alternatives", {
   )
   local_mocked_bindings(
     fetch_tabwin_dictionary = function(...) list(),
-    .tabwin_select_conversion = function(dictionary, field, values) selected,
+    .tabwin_select_conversion = function(dictionary, field, values, ...) selected,
     .package = "microdatasus"
   )
   source <- data.frame(SEXO = c("1", "9"), stringsAsFactors = FALSE)
@@ -43,7 +43,7 @@ test_that("processing diagnostics report unknown dictionary codes", {
   )
   local_mocked_bindings(
     fetch_tabwin_dictionary = function(...) list(),
-    .tabwin_select_conversion = function(dictionary, field, values) selected,
+    .tabwin_select_conversion = function(dictionary, field, values, ...) selected,
     .package = "microdatasus"
   )
 

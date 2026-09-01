@@ -207,18 +207,22 @@
       selected <- .tabwin_select_conversion(
         dictionaries[[key]],
         dictionary_field,
-        values[rows]
+        values[rows],
+        data[rows, , drop = FALSE],
+        field
       )
       if (!is.null(selected)) {
+        source_values <- selected$source_values
+        if (is.null(source_values)) source_values <- values[rows]
         converted_values <- .tabwin_apply_conversion_values(
-          values[rows],
+          source_values,
           selected
         )
         .process_record_dictionary_diagnostics(
           collector,
           field,
           key,
-          values[rows],
+          source_values,
           selected
         )
         if (!identical(labels, "none")) {

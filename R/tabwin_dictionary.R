@@ -687,6 +687,137 @@
   code
 }
 
+.tabwin_dbf_field_text <- function(value, type, width) {
+  value <- as.character(value)
+  missing <- is.na(value)
+  value[missing] <- ""
+  padding <- vapply(
+    pmax.int(0L, width - nchar(value, type = "chars")),
+    strrep,
+    character(1),
+    x = " "
+  )
+  if (identical(type, "C")) {
+    value <- paste0(substr(value, 1L, width), padding)
+    value <- substr(value, 1L, width)
+  } else {
+    value <- paste0(padding, value)
+    value <- substr(
+      value,
+      pmax.int(1L, nchar(value, type = "chars") - width + 1L),
+      nchar(value, type = "chars")
+    )
+  }
+  value[missing] <- strrep(" ", width)
+  value
+}
+
+.tabwin_definition_coverage <- function(values, definition, conversion) {
+  observed <- unique(as.character(values))
+  observed <- observed[!is.na(observed) & nzchar(trimws(observed))]
+  if (!length(observed)) return(0)
+  lookup <- observed
+  if (identical(conversion$type, "cnv")) {
+    start <- definition$position[[1L]]
+    lookup <- substring(
+      lookup, start, start + conversion$code_width - 1L
+    )
+    lookup <- .tabwin_normalize_code(
+      lookup, conversion$code_width, conversion$mode
+    )
+  }
+  mean(!is.na(.tabwin_conversion_labels(lookup, conversion)))
+}
+
+.tabwin_definition_values <- function(
+  data,
+  field,
+  definition,
+  conversion,
+  values
+) {
+  if (is.null(data) || !conversion$type %in% c("cnv", "dbf")) {
+    return(values)
+  }
+  widths <- attr(data, "dbf_field_widths", exact = TRUE)
+  types <- attr(data, "dbf_field_types", exact = TRUE)
+  if (is.null(widths) || is.null(types) || is.null(names(widths)) ||
+      is.null(names(types))) {
+    return(values)
+  }
+  layout_names <- names(widths)
+  start <- match(toupper(field), toupper(layout_names))
+  if (is.na(start)) return(values)
+  position <- if (identical(conversion$type, "cnv")) {
+    definition$position[[1L]]
+  } else {
+    1L
+  }
+  required <- position + conversion$code_width - 1L
+  if (widths[[start]] >= required) return(values)
+
+  cumulative <- cumsum(widths[seq.int(start, length(widths))])
+  finish_offsets <- which(cumulative >= required)
+  if (!length(finish_offsets)) return(values)
+  finish <- start + finish_offsets[[1L]] - 1L
+  physical_names <- layout_names[seq.int(start, finish)]
+  actual <- match(toupper(physical_names), toupper(names(data)))
+  if (anyNA(actual)) return(values)
+
+  pieces <- lapply(seq_along(actual), function(index) {
+    .tabwin_dbf_field_text(
+      data[[actual[[index]]]],
+      types[[physical_names[[index]]]],
+      widths[[physical_names[[index]]]]
+    )
+  })
+  physical <- substr(do.call(paste0, pieces), 1L, required)
+  candidates <- list(direct = values, physical = physical)
+
+  mode <- if (is.null(conversion$mode)) "" else toupper(conversion$mode)
+  prefix_fallback <- identical(conversion$type, "cnv") &&
+    !identical(mode, "F") && position == 1L
+  if (prefix_fallback) {
+    for (endpoint in seq.int(start, max(start, finish - 1L))) {
+      prefix_names <- layout_names[seq.int(start, endpoint)]
+      prefix_actual <- match(toupper(prefix_names), toupper(names(data)))
+      if (anyNA(prefix_actual)) next
+      prefix <- lapply(prefix_actual, function(index) {
+        value <- as.character(data[[index]])
+        value[is.na(value)] <- ""
+        trimws(value)
+      })
+      padded <- do.call(paste0, prefix)
+      numeric <- grepl("^[0-9]+$", padded) &
+        nchar(padded, type = "chars") < conversion$code_width
+      padded[numeric] <- vapply(
+        padded[numeric],
+        function(value) {
+          zeros <- strrep(
+            "0", conversion$code_width - nchar(value, type = "chars")
+          )
+          if (identical(mode, "L")) {
+            paste0(zeros, value)
+          } else {
+            paste0(value, zeros)
+          }
+        },
+        character(1)
+      )
+      candidates[[paste0("padded_", endpoint)]] <- padded
+    }
+  }
+
+  coverage <- vapply(
+    candidates,
+    .tabwin_definition_coverage,
+    numeric(1),
+    definition = definition,
+    conversion = conversion
+  )
+  candidates[[which.max(coverage)]]
+}
+
 .tabwin_parse_cnv_header <- function(lines, path) {
   trimmed <- trimws(lines)
   useful <- which(
@@ -1071,7 +1202,7 @@
   )
 }
 
-.tabwin_parser_version <- 7L
+.tabwin_parser_version <- 8L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {
@@ -1146,6 +1277,33 @@
   if (length(matches) == 1L) matches else NA_integer_
 }
 
+.tabwin_dbf_encoding <- function(path) {
+  header <- readBin(path, what = "raw", n = 32L)
+  if (length(header) < 30L) {
+    .tabwin_abort(
+      "TabWin table {.file {basename(path)}} has a truncated DBF header.",
+      "microdatasus_dictionary_invalid_error"
+    )
+  }
+  language_driver <- as.integer(header[[30L]])
+  list(
+    language_driver = language_driver,
+    encoding = .dbc_resolve_encoding("auto", language_driver)
+  )
+}
+
+.tabwin_decode_dbf_values <- function(value, metadata, context, path) {
+  decoded <- .dbc_decode_text_auto(
+    as.character(value),
+    metadata$encoding,
+    metadata$language_driver,
+    context,
+    path
+  )
+  attr(decoded, "dbc_encoding_used") <- NULL
+  decoded
+}
+
 .tabwin_read_conversion <- function(dictionary, definition) {
   key <- .tabwin_conversion_key(definition)
   # Parsed maps are memoised separately from extracted files. The nested
@@ -1173,6 +1331,7 @@
         ), "microdatasus_dictionary_relation_error")
       }
     )
+    dbf_encoding <- .tabwin_dbf_encoding(path)
     code_index <- .tabwin_match_dbf_field(definition$field, names(table))
     # The TabWin specification uses the first DBF field when the related table
     # does not repeat the source field name.
@@ -1197,8 +1356,16 @@
         )
       }
     }
-    codes <- trimws(as.character(table[[code_index]]))
-    labels <- stringi::stri_enc_toutf8(as.character(table[[label_index]]))
+    codes <- trimws(.tabwin_decode_dbf_values(
+      table[[code_index]], dbf_encoding,
+      sprintf("TabWin DBF key field %s", sQuote(names(table)[[code_index]])),
+      path
+    ))
+    labels <- .tabwin_decode_dbf_values(
+      table[[label_index]], dbf_encoding,
+      sprintf("TabWin DBF label field %s", sQuote(names(table)[[label_index]])),
+      path
+    )
     keep <- !is.na(codes) & nzchar(codes) & !duplicated(codes)
     map <- labels[keep]
     names(map) <- codes[keep]
@@ -1215,7 +1382,9 @@
         thresholds = .tabwin_empty_thresholds(),
         fallback_label = fallback_label,
         requested_label_field = definition$argument,
-        label_field = names(table)[[label_index]]
+        label_field = names(table)[[label_index]],
+        source_encoding = dbf_encoding$encoding,
+        language_driver = dbf_encoding$language_driver
       ),
       class = "microdatasus_tabwin_conversion"
     )
@@ -1343,7 +1512,13 @@
   suppressWarnings(as.numeric(parts[[2L]]))
 }
 
-.tabwin_score_definition <- function(dictionary, definition, values) {
+.tabwin_score_definition <- function(
+  dictionary,
+  definition,
+  values,
+  data = NULL,
+  source_field = definition$field[[1L]]
+) {
   # A source field can have direct labels and several analytical groupings.
   # Score each usable definition against the codes actually present in data.
   conversion <- tryCatch(
@@ -1353,6 +1528,9 @@
   if (inherits(conversion, "error")) {
     return(NULL)
   }
+  values <- .tabwin_definition_values(
+    data, source_field, definition, conversion, values
+  )
   observed <- unique(as.character(values))
   observed <- observed[!is.na(observed) & nzchar(trimws(observed))]
   if (identical(conversion$type, "cnv")) {
@@ -1391,7 +1569,13 @@
   )
 }
 
-.tabwin_select_conversion <- function(dictionary, field, values) {
+.tabwin_select_conversion <- function(
+  dictionary,
+  field,
+  values,
+  data = NULL,
+  source_field = field
+) {
   definitions <- dictionary$definitions
   candidates <- definitions[
     definitions$field == toupper(field) &
@@ -1410,7 +1594,9 @@
     .tabwin_score_definition(
       dictionary,
       candidates[i, , drop = FALSE],
-      values
+      values,
+      data,
+      source_field
     )
   })
   scores <- Filter(Negate(is.null), scores)
@@ -1440,7 +1626,15 @@
     -ranking$codes,
     -ranking$categories
   )[[1L]]
-  scores[[best]]
+  selected <- scores[[best]]
+  selected$source_values <- .tabwin_definition_values(
+    data,
+    source_field,
+    selected$definition,
+    selected$conversion,
+    values
+  )
+  selected
 }
 
 # Return converted text without allocating factor levels. Historical batch

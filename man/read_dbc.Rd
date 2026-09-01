@@ -26,7 +26,10 @@ A tibble with one column per DBF field. By default, all columns are
 character vectors; with \code{as_character = FALSE}, DBF-inferred types are
 retained. The \code{dbc_encoding} and \code{dbf_language_driver} attributes record
 the header-derived source encoding and the original header byte;
-\code{dbc_column_encodings} records the encoding used for each column.
+\code{dbc_column_encodings} records the encoding used for each column. The
+\code{dbf_field_types}, \code{dbf_field_widths}, and \code{dbf_field_decimals}
+attributes retain the complete physical DBF layout so DEF conversions
+whose fixed-width code crosses adjacent fields can be reproduced.
 }
 \description{
 Reads a DataSUS DBC file directly into a tibble, without creating an

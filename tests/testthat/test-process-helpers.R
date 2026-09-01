@@ -87,7 +87,7 @@ test_that("batched dictionaries preserve row-specific conversion results", {
     stringsAsFactors = FALSE
   )
   local_mocked_bindings(
-    .tabwin_select_conversion = function(dictionary, field, values) {
+    .tabwin_select_conversion = function(dictionary, field, values, ...) {
       dictionary$selected
     },
     .package = "microdatasus"

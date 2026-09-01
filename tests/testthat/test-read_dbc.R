@@ -136,6 +136,18 @@ test_that("read_dbc reads DBC data and preserves leading zeros", {
   expect_true(all(vapply(result, is.character, logical(1))))
   expect_identical(names(result), c("CODE", "VALUE", "WHEN"))
   expect_equal(nrow(result), 2L)
+  expect_identical(
+    attr(result, "dbf_field_types"),
+    c(CODE = "C", VALUE = "N", WHEN = "D")
+  )
+  expect_identical(
+    attr(result, "dbf_field_widths"),
+    c(CODE = 4L, VALUE = 19L, WHEN = 8L)
+  )
+  expect_identical(
+    attr(result, "dbf_field_decimals"),
+    c(CODE = 0L, VALUE = 15L, WHEN = 0L)
+  )
 })
 
 test_that("read_dbc can preserve DBF column types", {

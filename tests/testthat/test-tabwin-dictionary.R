@@ -144,6 +144,115 @@ test_that("CNV parser reads labels, aliases, and numeric ranges", {
   )
 })
 
+test_that("literal CNV codes can span adjacent physical DBF fields", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  write_tabwin_text(
+    path,
+    c(
+      "2 4 L",
+      tabwin_cnv_line(1, "Primeiro", "1000"),
+      tabwin_cnv_line(2, "Segundo", "0101")
+    )
+  )
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+  definition <- data.frame(
+    field = "FLAG1", extension = "CNV", position = 1L,
+    command = "L", file = path, argument = "1",
+    stringsAsFactors = FALSE
+  )
+  dictionary <- list(
+    definitions = definition,
+    conversions = new.env(parent = emptyenv())
+  )
+  key <- microdatasus:::.tabwin_conversion_key(definition)
+  assign(key, conversion, envir = dictionary$conversions)
+  data <- data.frame(
+    FLAG1 = c("1", "0"), FLAG2 = c("0", "1"),
+    FLAG5 = c("0", "0"), FLAG6 = c("0", "1"),
+    stringsAsFactors = FALSE
+  )
+  attr(data, "dbf_field_types") <- c(
+    FLAG1 = "C", FLAG2 = "C", FLAG5 = "C", FLAG6 = "C"
+  )
+  attr(data, "dbf_field_widths") <- c(
+    FLAG1 = 1L, FLAG2 = 1L, FLAG5 = 1L, FLAG6 = 1L
+  )
+
+  selected <- microdatasus:::.tabwin_select_conversion(
+    dictionary, "FLAG1", data$FLAG1, data, "FLAG1"
+  )
+
+  expect_identical(selected$source_values, c("1000", "0101"))
+  expect_identical(
+    microdatasus:::.tabwin_apply_conversion_values(
+      selected$source_values, selected
+    ),
+    c("Primeiro", "Segundo")
+  )
+})
+
+test_that("physical DEF reconstruction is chosen only when coverage improves", {
+  definition <- data.frame(position = 1L)
+  country_conversion <- list(
+    type = "cnv", mode = "", code_width = 3L,
+    map = c("010" = "Brasil")
+  )
+  country <- data.frame(
+    NACION_PAC = c("01", "01"), SEXO = c("M", "F"),
+    stringsAsFactors = FALSE
+  )
+  attr(country, "dbf_field_types") <- c(NACION_PAC = "C", SEXO = "C")
+  attr(country, "dbf_field_widths") <- c(NACION_PAC = 2L, SEXO = 1L)
+
+  country_values <- microdatasus:::.tabwin_definition_values(
+    country, "NACION_PAC", definition, country_conversion,
+    country$NACION_PAC
+  )
+  expect_identical(country_values, c("010", "010"))
+
+  service_conversion <- list(
+    type = "dbf", mode = "", code_width = 6L,
+    map = c("115001" = "Servico")
+  )
+  service <- data.frame(
+    PA_SRV = "115", PA_CLASS_S = "001", SIT_RUA = "",
+    stringsAsFactors = FALSE
+  )
+  attr(service, "dbf_field_types") <- c(
+    PA_SRV = "C", PA_CLASS_S = "C", SIT_RUA = "C"
+  )
+  attr(service, "dbf_field_widths") <- c(
+    PA_SRV = 3L, PA_CLASS_S = 3L, SIT_RUA = 3L
+  )
+
+  service_values <- microdatasus:::.tabwin_definition_values(
+    service, "PA_SRV", definition, service_conversion, service$PA_SRV
+  )
+  expect_identical(service_values, "115001")
+
+  equipment_conversion <- list(
+    type = "cnv", mode = "L", code_width = 4L,
+    map = c("0221" = "Equipamento")
+  )
+  equipment <- data.frame(
+    TIPEQUIP = "2", CODEQUIP = "21", QT_EXIST = "1",
+    stringsAsFactors = FALSE
+  )
+  attr(equipment, "dbf_field_types") <- c(
+    TIPEQUIP = "C", CODEQUIP = "C", QT_EXIST = "N"
+  )
+  attr(equipment, "dbf_field_widths") <- c(
+    TIPEQUIP = 1L, CODEQUIP = 2L, QT_EXIST = 3L
+  )
+
+  equipment_values <- microdatasus:::.tabwin_definition_values(
+    equipment, "TIPEQUIP", definition, equipment_conversion,
+    equipment$TIPEQUIP
+  )
+  expect_identical(equipment_values, "0221")
+})
+
 test_that("specific CNV categories override earlier catch-all ranges", {
   path <- tempfile(fileext = ".CNV")
   on.exit(unlink(path), add = TRUE)
@@ -932,6 +1041,29 @@ test_that("CNV parser detects UTF-8 and recovers official tab alignment", {
     "Aparelho de Hemodialise - Hospitalar"
   )
   expect_identical(tabbed_conversion$tabs_recovered, 1L)
+})
+
+test_that("DBF relation labels honor their legacy byte encoding", {
+  path <- tempfile(fileext = ".dbf")
+  on.exit(unlink(path), add = TRUE)
+  value <- rawToChar(as.raw(c(
+    as.integer(charToRaw("ATEN")), 0xc7, 0xc3,
+    as.integer(charToRaw("O"))
+  )))
+  Encoding(value) <- "unknown"
+  foreign::write.dbf(
+    data.frame(CODE = "1", LABEL = value, stringsAsFactors = FALSE),
+    path
+  )
+  table <- foreign::read.dbf(path, as.is = TRUE)
+  metadata <- microdatasus:::.tabwin_dbf_encoding(path)
+  decoded <- microdatasus:::.tabwin_decode_dbf_values(
+    table$LABEL, metadata, "test label", path
+  )
+
+  expect_identical(metadata$language_driver, 0L)
+  expect_identical(metadata$encoding, "CP1252")
+  expect_identical(decoded, "ATENÇÃO")
 })
 
 test_that("CNV header tolerates colon comments but rejects trailing garbage", {
