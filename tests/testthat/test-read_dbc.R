@@ -4,7 +4,7 @@ dbc_fixture <- function() {
     "434f444500000000000000430000000004000000000000000000000000000000",
     "56414c55450000000000004e00000000130f0000000000000000000000000000",
     "5748454e00000000000000440000000008000000000000000000000000000000",
-    "0d00000000000640c080110364470c17355bc40c90f9c186b659ff6d80508934",
+    "0d6f8f7a5e000640c080110364470c17355bc40c90f9c186b659ff6d80508934",
     "903f03fe01"
   )
   starts <- seq.int(1L, nchar(hex), by = 2L)
@@ -44,18 +44,30 @@ blast_literal_stream <- function(value) {
   c(as.raw(c(0L, 6L)), as.raw(packed))
 }
 
+dbc_crc32 <- function(value) {
+  hex <- digest::digest(value, algo = "crc32", serialize = FALSE)
+  starts <- seq.int(1L, nchar(hex), by = 2L)
+  rev(as.raw(strtoi(substring(hex, starts, starts + 1L), base = 16L)))
+}
+
 literal_dbc_fixture <- function(
   fields,
   rows,
   language_driver = 0L,
   statuses = NULL,
-  trailing = raw()
+  trailing = raw(),
+  record_padding = raw(),
+  version = 3L,
+  header_extension = raw(),
+  terminator = 13L
 ) {
   field_count <- length(fields)
-  header_size <- 33L + 32L * field_count
-  record_size <- 1L + sum(vapply(fields, `[[`, integer(1), "width"))
+  base_header_size <- 33L + 32L * field_count
+  header_size <- base_header_size + length(header_extension)
+  record_size <- 1L + sum(vapply(fields, `[[`, integer(1), "width")) +
+    length(record_padding)
   header <- raw(header_size)
-  header[1L] <- as.raw(3L)
+  header[1L] <- as.raw(version)
   header[5:8] <- little_endian_raw(length(rows), 4L)
   header[9:10] <- little_endian_raw(header_size, 2L)
   header[11:12] <- little_endian_raw(record_size, 2L)
@@ -73,7 +85,10 @@ literal_dbc_fixture <- function(
     decimals <- if (is.null(field$decimals)) 0L else field$decimals
     header[start + 17L] <- as.raw(decimals)
   }
-  header[header_size] <- as.raw(13L)
+  header[base_header_size] <- as.raw(terminator)
+  if (length(header_extension)) {
+    header[base_header_size + seq_along(header_extension)] <- header_extension
+  }
 
   if (is.null(statuses)) statuses <- rep(32L, length(rows))
   stopifnot(length(statuses) == length(rows))
@@ -87,12 +102,12 @@ literal_dbc_fixture <- function(
       stopifnot(length(value) <= width)
       record <- c(record, value, as.raw(rep(32L, width - length(value))))
     }
-    record
+    c(record, record_padding)
   }), use.names = FALSE)
 
   path <- tempfile(fileext = ".dbc")
   body <- c(records, trailing)
-  writeBin(c(header, raw(4L), blast_literal_stream(body)), path)
+  writeBin(c(header, dbc_crc32(c(header, body)), blast_literal_stream(body)), path)
   path
 }
 
@@ -135,6 +150,23 @@ test_that("read_dbc can preserve DBF column types", {
   expect_equal(result$WHEN, as.Date(c("2020-01-02", NA)))
 })
 
+test_that("read_dbc diagnoses impossible non-missing DBF dates", {
+  path <- literal_dbc_fixture(
+    fields = list(
+      list(name = "WHEN", type = "D", width = 8L, decimals = 0L)
+    ),
+    rows = list(list("20230231"))
+  )
+  on.exit(unlink(path), add = TRUE)
+
+  expect_warning(
+    result <- read_dbc(path, as_character = FALSE),
+    "invalid DBF date value.*record 1"
+  )
+  expect_s3_class(result$WHEN, "Date")
+  expect_true(is.na(result$WHEN))
+})
+
 test_that("read_dbc projects columns natively in requested order", {
   path <- dbc_fixture()
   on.exit(unlink(path), add = TRUE)
@@ -175,8 +207,15 @@ test_that("read_dbc decodes CP1252 and skips invalid unselected text", {
   expect_identical(result[[1L]], "São José — café")
   expect_identical(attr(result, "dbc_encoding"), "CP1252")
   expect_identical(attr(result, "dbf_language_driver"), 3L)
+  expect_warning(
+    full <- read_dbc(path),
+    "preserved losslessly",
+    class = "microdatasus_dbc_encoding_warning"
+  )
+  expect_identical(charToRaw(full$INVALID[[1L]]), as.raw(129L))
+  expect_identical(Encoding(full$INVALID[[1L]]), "bytes")
   expect_error(
-    read_dbc(path),
+    read_dbc(path, encoding = "CP1252"),
     "Failed to decode",
     class = "microdatasus_dbc_encoding_error"
   )
@@ -201,6 +240,80 @@ test_that("read_dbc detects CP850 and accepts an encoding override", {
 
   expect_identical(read_dbc(cp850)$TEXT, "Café")
   expect_identical(read_dbc(unmarked, encoding = "latin1")$TEXT, "Café")
+})
+
+test_that("read_dbc auto-detects unmarked CP850, UTF-8, and binary IDs", {
+  cp850 <- literal_dbc_fixture(
+    fields = list(list(name = "TEXT", type = "C", width = 9L, decimals = 0L)),
+    rows = list(list(c(charToRaw("DORM"), as.raw(210L), charToRaw("NCIA"))))
+  )
+  utf8 <- literal_dbc_fixture(
+    fields = list(list(name = "TEXT", type = "C", width = 7L, decimals = 0L)),
+    rows = list(list(charToRaw("MÁCULA")))
+  )
+  identifier_bytes <- as.raw(c(123:132, 123L))
+  binary <- literal_dbc_fixture(
+    fields = list(list(name = "CNS", type = "C", width = 11L, decimals = 0L)),
+    rows = list(list(identifier_bytes)),
+    language_driver = 88L
+  )
+  on.exit(unlink(c(cp850, utf8, binary)), add = TRUE)
+
+  expect_no_warning(cp850_result <- read_dbc(cp850))
+  expect_identical(cp850_result$TEXT, "DORMÊNCIA")
+  expect_identical(
+    unname(attr(cp850_result, "dbc_column_encodings")[["TEXT"]]),
+    "CP850"
+  )
+  expect_no_warning(utf8_result <- read_dbc(utf8))
+  expect_identical(utf8_result$TEXT, "MÁCULA")
+  expect_identical(
+    unname(attr(utf8_result, "dbc_column_encodings")[["TEXT"]]),
+    "UTF-8"
+  )
+  expect_warning(
+    binary_result <- read_dbc(binary),
+    "obfuscated identifier bytes",
+    class = "microdatasus_dbc_encoding_warning"
+  )
+  expect_identical(charToRaw(binary_result$CNS[[1L]]), identifier_bytes)
+  expect_identical(Encoding(binary_result$CNS[[1L]]), "bytes")
+})
+
+test_that("read_dbc recognizes DataSUS and Portuguese LDIDs", {
+  datasus <- literal_dbc_fixture(
+    fields = list(
+      list(name = "TEXT", type = "C", width = 3L, decimals = 0L)
+    ),
+    rows = list(list(as.raw(c(65L, 151L, 66L)))),
+    language_driver = 53L
+  )
+  portuguese <- literal_dbc_fixture(
+    fields = list(
+      list(name = "TEXT", type = "C", width = 3L, decimals = 0L)
+    ),
+    rows = list(list(as.raw(c(83L, 132L, 111L)))),
+    language_driver = 36L
+  )
+  latin1 <- literal_dbc_fixture(
+    fields = list(
+      list(name = "TEXT", type = "C", width = 1L, decimals = 0L)
+    ),
+    rows = list(list(as.raw(128L))),
+    language_driver = 87L
+  )
+  on.exit(unlink(c(datasus, portuguese, latin1)), add = TRUE)
+
+  expect_no_warning(datasus_result <- read_dbc(datasus))
+  expect_identical(datasus_result$TEXT, "A—B")
+  expect_identical(attr(datasus_result, "dbc_encoding"), "CP1252")
+  expect_identical(read_dbc(portuguese)$TEXT, "São")
+  expect_identical(attr(read_dbc(portuguese), "dbc_encoding"), "CP860")
+  expect_identical(
+    enc2utf8(read_dbc(latin1)$TEXT),
+    intToUtf8(128L)
+  )
+  expect_identical(attr(read_dbc(latin1), "dbc_encoding"), "ISO-8859-1")
 })
 
 test_that("read_dbc accepts one DBF EOF marker and rejects extra output", {
@@ -241,6 +354,36 @@ test_that("read_dbc rejects bytes after the compressed stream", {
     "Unexpected data after the compressed DBC stream",
     class = "microdatasus_dbc_read_error"
   )
+})
+
+test_that("DBC readers reject a CRC32 mismatch", {
+  path <- literal_dbc_fixture(
+    fields = list(
+      list(name = "VALUE", type = "C", width = 1L, decimals = 0L)
+    ),
+    rows = list(list("x"))
+  )
+  bytes <- readBin(path, "raw", n = file.info(path)$size)
+  header_size <- sum(as.integer(bytes[9:10]) * c(1L, 256L))
+  checksum_index <- header_size + 1L
+  bytes[[checksum_index]] <- as.raw(
+    bitwXor(as.integer(bytes[[checksum_index]]), 1L)
+  )
+  writeBin(bytes, path)
+  output <- tempfile(fileext = ".dbf")
+  on.exit(unlink(c(path, output)), add = TRUE)
+
+  expect_error(
+    read_dbc(path),
+    "checksum mismatch",
+    class = "microdatasus_dbc_read_error"
+  )
+  expect_error(
+    microdatasus:::.dbc2dbf(path, output),
+    "CRC32 checksum mismatch",
+    class = "microdatasus_dbc_decompression_error"
+  )
+  expect_false(file.exists(output))
 })
 
 test_that("read_dbc validates field metadata and record status markers", {
@@ -303,20 +446,135 @@ test_that("read_dbc validates field metadata and record status markers", {
   )
 })
 
-test_that("read_dbc handles non-finite numerics without integer overflow", {
-  path <- literal_dbc_fixture(
+test_that("read_dbc validates the terminator and exact record layout", {
+  invalid_terminator <- literal_dbc_fixture(
+    fields = list(
+      list(name = "VALUE", type = "C", width = 1L, decimals = 0L)
+    ),
+    rows = list(list("x"))
+  )
+  bytes <- readBin(
+    invalid_terminator,
+    "raw",
+    n = file.info(invalid_terminator)$size
+  )
+  header_size <- sum(as.integer(bytes[9:10]) * c(1L, 256L))
+  bytes[[header_size]] <- as.raw(10L)
+  writeBin(bytes, invalid_terminator)
+
+  extra_record_byte <- literal_dbc_fixture(
+    fields = list(
+      list(name = "VALUE", type = "C", width = 1L, decimals = 0L)
+    ),
+    rows = list(list("x")),
+    record_padding = as.raw(0L)
+  )
+  on.exit(unlink(c(invalid_terminator, extra_record_byte)), add = TRUE)
+
+  expect_error(
+    read_dbc(invalid_terminator),
+    "field descriptor terminator",
+    class = "microdatasus_dbc_read_error"
+  )
+  expect_error(
+    read_dbc(extra_record_byte),
+    "field widths do not match",
+    class = "microdatasus_dbc_read_error"
+  )
+})
+
+test_that("read_dbc supports validated DataSUS header variants", {
+  field <- list(name = "VALUE", type = "C", width = 1L, decimals = 0L)
+  padded <- literal_dbc_fixture(
+    fields = list(field), rows = list(list("x")),
+    header_extension = as.raw(0L)
+  )
+  foxpro <- literal_dbc_fixture(
+    fields = list(field), rows = list(list("x")),
+    version = 48L, header_extension = raw(263L)
+  )
+  nul_terminated <- literal_dbc_fixture(
+    fields = list(field), rows = list(list("x")), terminator = 0L
+  )
+  unsupported <- literal_dbc_fixture(
+    fields = list(field), rows = list(list("x")),
+    header_extension = raw(2L)
+  )
+  on.exit(
+    unlink(c(padded, foxpro, nul_terminated, unsupported)),
+    add = TRUE
+  )
+
+  expect_identical(read_dbc(padded)$VALUE, "x")
+  expect_identical(read_dbc(foxpro)$VALUE, "x")
+  expect_identical(read_dbc(nul_terminated)$VALUE, "x")
+  expect_error(
+    read_dbc(unsupported),
+    "Unsupported DBF header extension",
+    class = "microdatasus_dbc_read_error"
+  )
+})
+
+test_that("read_dbc rejects malformed and non-finite numerics", {
+  invalid_values <- c("NaN", "Inf", "-Inf", "12x", "*12", "1e999")
+  paths <- vapply(invalid_values, function(value) {
+    literal_dbc_fixture(
+      fields = list(
+        list(
+          name = "VALUE",
+          type = "N",
+          width = max(5L, nchar(value)),
+          decimals = 0L
+        )
+      ),
+      rows = list(list(value))
+    )
+  }, character(1))
+  null_path <- literal_dbc_fixture(
     fields = list(
       list(name = "VALUE", type = "N", width = 4L, decimals = 0L)
     ),
-    rows = list(list("NaN"), list("Inf"), list("-Inf"))
+    rows = list(list("****"))
   )
-  on.exit(unlink(path), add = TRUE)
+  on.exit(unlink(c(paths, null_path)), add = TRUE)
 
-  result <- read_dbc(path, as_character = FALSE)
+  for (path in paths) {
+    expect_warning(
+      result <- read_dbc(path, as_character = FALSE),
+      "invalid numeric value"
+    )
+    expect_identical(result$VALUE, NA_integer_)
+  }
+  expect_identical(
+    read_dbc(null_path, as_character = FALSE)$VALUE,
+    NA_integer_
+  )
+})
 
-  expect_type(result$VALUE, "double")
-  expect_true(is.nan(result$VALUE[[1L]]))
-  expect_identical(result$VALUE[2:3], c(Inf, -Inf))
+test_that("read_dbc does not silently round plain DBF integers", {
+  exact <- literal_dbc_fixture(
+    fields = list(
+      list(name = "VALUE", type = "N", width = 16L, decimals = 0L)
+    ),
+    rows = list(list("9007199254740992"))
+  )
+  inexact <- literal_dbc_fixture(
+    fields = list(
+      list(name = "VALUE", type = "N", width = 16L, decimals = 0L)
+    ),
+    rows = list(list("9007199254740993"))
+  )
+  on.exit(unlink(c(exact, inexact)), add = TRUE)
+
+  expect_identical(
+    read_dbc(exact, as_character = FALSE)$VALUE,
+    9007199254740992
+  )
+  expect_error(
+    read_dbc(inexact),
+    "cannot be represented exactly",
+    class = "microdatasus_dbc_read_error"
+  )
 })
 
 test_that("read_dbc treats blank logicals as missing and warns on invalid ones", {
@@ -631,6 +889,19 @@ test_that("DBC decompressor reports output paths that cannot be created", {
     "cannot open output"
   )
   expect_false(file.exists(output))
+})
+
+test_that("DBC decompressor never overwrites its input", {
+  input <- dbc_fixture()
+  before <- readBin(input, "raw", n = file.info(input)$size)
+  on.exit(unlink(input), add = TRUE)
+
+  expect_error(
+    microdatasus:::.dbc2dbf(input, input),
+    "must refer to different files",
+    class = "microdatasus_dbc_decompression_error"
+  )
+  expect_identical(readBin(input, "raw", n = file.info(input)$size), before)
 })
 
 test_that("DBC decompressor rejects a zero-sized output target", {

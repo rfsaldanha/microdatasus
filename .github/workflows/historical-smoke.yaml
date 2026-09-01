@@ -32,3 +32,31 @@ jobs:
         with:
           name: historical-layout-results
           path: historical-results/
+
+  dbc-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      MICRODATASUS_DBC_MATRIX_CACHE: ${{ github.workspace }}/.cache/dbc-matrix
+      MICRODATASUS_DBC_MATRIX_RESULTS: ${{ github.workspace }}/historical-results/dbc-matrix.csv
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: local::.
+          needs: check
+      - uses: actions/cache@v4
+        with:
+          path: .cache/dbc-matrix
+          key: historical-dbc-matrix-${{ runner.os }}-v1
+      - name: Audit old, middle, and recent DBC files for every system
+        run: Rscript tests/smoke/historical-dbc-matrix.R
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: historical-dbc-matrix-results
+          path: historical-results/dbc-matrix.csv

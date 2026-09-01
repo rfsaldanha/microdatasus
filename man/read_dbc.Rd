@@ -17,14 +17,16 @@ character. If \code{FALSE}, preserves the types inferred from the DBF metadata.}
 columns to read. Unselected columns are neither allocated nor parsed.}
 
 \item{encoding}{Character scalar naming the source encoding, or \code{"auto"}
-(the default) to use the DBF language-driver byte. Unmarked DataSUS files
-default to Windows-1252.}
+(the default) to use the DBF language-driver byte together with byte-level
+evidence from each character field. Unmarked DataSUS files start with
+Windows-1252 and switch to UTF-8 or CP850 only when the data support it.}
 }
 \value{
 A tibble with one column per DBF field. By default, all columns are
 character vectors; with \code{as_character = FALSE}, DBF-inferred types are
 retained. The \code{dbc_encoding} and \code{dbf_language_driver} attributes record
-the resolved source encoding and the original header byte.
+the header-derived source encoding and the original header byte;
+\code{dbc_column_encodings} records the encoding used for each column.
 }
 \description{
 Reads a DataSUS DBC file directly into a tibble, without creating an
@@ -35,12 +37,22 @@ locally; use \code{\link[=fetch_datasus]{fetch_datasus()}} to discover and downl
 Decompression is performed through the package's bundled DBC implementation.
 The DBF header and decompressed fixed-width records are parsed directly into
 R columns without creating an intermediate DBF file. The decompressor was
-adapted from the \code{healthbR} package.
+adapted from the \code{healthbR} package. The DBC CRC32 is verified against the
+complete decompressed DBF contents before a result is returned.
 
-Character fields are converted explicitly to UTF-8. Invalid byte sequences
-abort with a \code{microdatasus_dbc_encoding_error} instead of being silently
-replaced. Supply \code{encoding} when a file has a missing or incorrect code-page
-marker.
+In automatic mode, character fields are converted to UTF-8 when their byte
+encoding can be identified safely. Undecodable mixed data and the obfuscated
+byte representation used by some CPF/CNS fields are preserved losslessly as
+strings marked with encoding \code{"bytes"}, with a warning. An explicit
+\code{encoding} requests strict decoding and invalid byte sequences then abort
+with a \code{microdatasus_dbc_encoding_error}.
+
+Header layout, field widths, record markers, compressed-stream termination,
+numeric syntax, finite numeric values, calendar dates, and the complete DBF
+CRC32 are validated. Structural corruption and internal contradictions abort
+instead of returning a partial table. Malformed numeric or date values found
+in otherwise valid official files are converted to \code{NA} with a warning that
+reports their count and first location.
 
 The native parser accepts the fixed-width DBF field types used by DataSUS:
 character (\code{C}), date (\code{D}), floating point (\code{F}), logical (\code{L}), and

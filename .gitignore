@@ -13,3 +13,5 @@ src/*.o
 src/*.so
 src/*.dll
 benchmarks/results.csv
+/.cache/
+/historical-results/

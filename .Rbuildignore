@@ -15,3 +15,5 @@ README.md
 ^CRAN-SUBMISSION$
 ^benchmarks$
 ^tests/smoke$
+^\.cache$
+^historical-results$

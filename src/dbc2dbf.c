@@ -8,7 +8,7 @@
  *   offset 0x00..0x07: first 8 bytes of the original DBF header
  *   offset 0x08..0x09: uint16 LE = total DBF header size to copy (hdr_size)
  *   offset 0x0A..hdr_size-1: remaining uncompressed DBF header bytes
- *   offset hdr_size..hdr_size+3: 4-byte CRC32 (skipped)
+ *   offset hdr_size..hdr_size+3: CRC32 of the complete decompressed DBF
  *   offset hdr_size+4..: PKWare DCL compressed data (decompressed with blast)
  *
  * This code was written from scratch for the healthbR package.
@@ -20,24 +20,40 @@
 #include <string.h>
 #include <stdint.h>
 #include "blast.h"
+#include "dbc_crc32.h"
 
 struct input_state {
     FILE *file;
     unsigned char buffer[16384];
+    int read_failed;
+};
+
+struct output_state {
+    FILE *file;
+    dbc_crc32_state checksum;
 };
 
 /* input callback for blast(): reads from a per-call buffer */
 static unsigned inf(void *how, unsigned char **buf)
 {
     struct input_state *input = (struct input_state *)how;
+    size_t count;
+
     *buf = input->buffer;
-    return (unsigned)fread(input->buffer, 1, sizeof(input->buffer), input->file);
+    count = fread(input->buffer, 1, sizeof(input->buffer), input->file);
+    if (count == 0u && ferror(input->file)) {
+        input->read_failed = 1;
+    }
+    return (unsigned)count;
 }
 
-/* output callback for blast(): writes to a FILE* */
+/* output callback for blast(): updates the DBF checksum and writes the bytes */
 static int outf(void *how, unsigned char *buf, unsigned len)
 {
-    return fwrite(buf, 1, len, (FILE *)how) != len;
+    struct output_state *output = (struct output_state *)how;
+
+    dbc_crc32_update(&output->checksum, buf, (size_t)len);
+    return fwrite(buf, 1, len, output->file) != len;
 }
 
 /*
@@ -55,11 +71,16 @@ void dbc2dbf(char **input_file, char **output_file,
     FILE *fin = NULL;
     FILE *fout = NULL;
     unsigned char raw_hdr[2];
+    unsigned char raw_crc[4];
     unsigned char *buf = NULL;
     uint16_t hdr_size;
     size_t nread, nwritten;
     int blast_ret;
+    unsigned int compressed_left = 0u;
+    unsigned char *compressed_next = NULL;
+    uint32_t expected_checksum;
     struct input_state input;
+    struct output_state output;
 
     *ret_code = 0;
     *error_str = "";
@@ -144,29 +165,41 @@ void dbc2dbf(char **input_file, char **output_file,
     }
 
     nwritten = fwrite(buf, 1, hdr_size, fout);
-    free(buf);
     if (nwritten != hdr_size) {
         *ret_code = 6;
         *error_str = "failed to write DBF header to output file";
+        free(buf);
         fclose(fin);
         fclose(fout);
         remove(*output_file);
         return;
     }
 
-    /* seek to hdr_size + 4 (skip 4-byte CRC32 after the DBF header) */
-    if (fseek(fin, (long)hdr_size + 4, SEEK_SET) != 0) {
+    dbc_crc32_start(&output.checksum);
+    dbc_crc32_update(&output.checksum, buf, hdr_size);
+    free(buf);
+    output.file = fout;
+
+    /* Read the little-endian CRC32. The compressed stream follows it. */
+    if (fread(raw_crc, 1, sizeof(raw_crc), fin) != sizeof(raw_crc)) {
         *ret_code = 7;
-        *error_str = "failed to seek past CRC in .dbc file";
+        *error_str = "failed to read CRC32 from .dbc file";
         fclose(fin);
         fclose(fout);
         remove(*output_file);
         return;
     }
+    expected_checksum = (uint32_t)raw_crc[0] |
+        ((uint32_t)raw_crc[1] << 8) |
+        ((uint32_t)raw_crc[2] << 16) |
+        ((uint32_t)raw_crc[3] << 24);
 
     /* decompress the remaining data using blast */
     input.file = fin;
-    blast_ret = blast(inf, &input, outf, fout, NULL, NULL);
+    input.read_failed = 0;
+    blast_ret = blast(
+        inf, &input, outf, &output, &compressed_left, &compressed_next
+    );
     if (blast_ret != 0) {
         *ret_code = 8;
         switch (blast_ret) {
@@ -189,6 +222,39 @@ void dbc2dbf(char **input_file, char **output_file,
             *error_str = "blast decompression failed";
             break;
         }
+        fclose(fin);
+        fclose(fout);
+        remove(*output_file);
+        return;
+    }
+
+    if (input.read_failed) {
+        *ret_code = 8;
+        *error_str = "failed to read compressed data";
+        fclose(fin);
+        fclose(fout);
+        remove(*output_file);
+        return;
+    }
+    if (compressed_left > 0u || fgetc(fin) != EOF) {
+        *ret_code = 8;
+        *error_str = "unexpected data after compressed stream";
+        fclose(fin);
+        fclose(fout);
+        remove(*output_file);
+        return;
+    }
+    if (ferror(fin)) {
+        *ret_code = 8;
+        *error_str = "failed while checking end of input file";
+        fclose(fin);
+        fclose(fout);
+        remove(*output_file);
+        return;
+    }
+    if (dbc_crc32_finish(&output.checksum) != expected_checksum) {
+        *ret_code = 10;
+        *error_str = "DBC CRC32 checksum mismatch";
         fclose(fin);
         fclose(fout);
         remove(*output_file);

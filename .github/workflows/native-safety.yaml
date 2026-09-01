@@ -3,7 +3,7 @@ on:
     branches: [dev]
     paths:
       - "src/**"
-      - "R/read_dbc.R"
+      - "R/dbc_functions.R"
       - "tests/native/**"
       - "tests/testthat/test-read_dbc.R"
       - ".github/workflows/native-safety.yaml"
