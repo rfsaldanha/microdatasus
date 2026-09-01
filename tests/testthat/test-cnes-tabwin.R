@@ -108,6 +108,25 @@ test_that("CNES registry covers every downloadable layout and one official ZIP",
   )
 })
 
+test_that("CNES reference months are identifiers, not full dates", {
+  data <- data.frame(
+    DT_ATUAL = "202601", DT_ATIVA = "202501", DT_DESAT = "900001",
+    DT_ABERTU = "20250131", stringsAsFactors = FALSE
+  )
+  dictionary <- list(list(
+    numeric_fields = character(),
+    definitions = data.frame(field = character())
+  ))
+
+  types <- microdatasus:::.cnes_type_fields(data, dictionary)
+
+  expect_identical(types$date, "DT_ABERTU")
+  expect_setequal(
+    intersect(types$identifier, names(data)),
+    c("DT_ATUAL", "DT_ATIVA", "DT_DESAT")
+  )
+})
+
 test_that("all CNES layouts share one archive and label from their DEF", {
   archive <- create_cnes_tabwin_fixture()
   on.exit(unlink(archive), add = TRUE)

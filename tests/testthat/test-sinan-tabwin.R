@@ -284,6 +284,40 @@ test_that("generic SINAN definitions label only verified common fields", {
   expect_identical(fields, "CS_SEXO")
 })
 
+test_that("SINAN date roles use content and accept legacy date syntax", {
+  existing_date <- as.Date(c("2024-01-01", "2024-01-02"))
+  data <- data.frame(
+    TRATAMENTO = c("1", "4"),
+    DTRATA = c("20240101", "20240102"),
+    EXISTING = existing_date,
+    stringsAsFactors = FALSE
+  )
+
+  types <- microdatasus:::.sinan_type_fields(data, list())
+
+  expect_false("TRATAMENTO" %in% types$date)
+  expect_true(all(c("DTRATA", "EXISTING") %in% types$date))
+
+  collector <- microdatasus:::.process_diagnostic_collector(
+    TRUE, "SINAN-TEST", data.frame(DATE = character())
+  )
+  parsed <- microdatasus:::.sinan_as_date(
+    c("29/10/15", "02/03/10", "0", "********", "26/12"),
+    collector, "DATE"
+  )
+  finalized <- microdatasus:::.process_finalize(
+    data.frame(DATE = parsed), collector
+  )
+  failures <- processing_diagnostics(finalized)$coercion_failures
+
+  expect_identical(
+    as.character(parsed),
+    c("2015-10-29", "2010-03-02", NA, NA, NA)
+  )
+  expect_identical(failures$value, "26/12")
+  expect_identical(failures$n, 1L)
+})
+
 test_that("process_sinan standardizes common types and message order", {
   archives <- create_sinan_tabwin_fixtures()
   on.exit(unlink(unlist(archives)), add = TRUE)

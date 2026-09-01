@@ -42,10 +42,11 @@
   fields <- names(data)
   upper <- toupper(fields)
 
-  # Full dates begin with DT in CNES. DT_ATUAL is a six-digit reference month,
-  # not a calendar date, and therefore stays character.
+  # Full dates begin with DT in CNES. These three fields are six-digit
+  # reference months, not calendar dates, and therefore stay character.
+  reference_months <- c("DT_ATUAL", "DT_ATIVA", "DT_DESAT")
   date_fields <- fields[
-    grepl("^DT", upper) & upper != "DT_ATUAL"
+    grepl("^DT", upper) & !upper %in% reference_months
   ]
 
   declared_numeric <- unique(unlist(lapply(
@@ -79,14 +80,17 @@
     )
   )
 
-  identifiers <- fields[grepl(
-    paste0(
-      "CNES|CNPJ|CPF|CNS|CEP|CODUFMUN|UFMUN|COMPETEN|^CMPT_|",
-      "^MAPORTAR$|^PORTARIA$|^REGISTRO$|^SOURCE$|^CO_BANCO$|",
-      "^CO_AGENC$|^C_CORREN$|^CONTRAT|^ALVARA$|^CLASS_SR$"
-    ),
-    upper
-  )]
+  identifiers <- unique(c(
+    fields[grepl(
+      paste0(
+        "CNES|CNPJ|CPF|CNS|CEP|CODUFMUN|UFMUN|COMPETEN|^CMPT_|",
+        "^MAPORTAR$|^PORTARIA$|^REGISTRO$|^SOURCE$|^CO_BANCO$|",
+        "^CO_AGENC$|^C_CORREN$|^CONTRAT|^ALVARA$|^CLASS_SR$"
+      ),
+      upper
+    )],
+    fields[upper %in% reference_months]
+  ))
   free_text <- fields[grepl(
     "^(NOME|DESC)|^REGSAUDE$|^MICR_REG$|^DISTRSAN$|^DISTRADM$",
     upper

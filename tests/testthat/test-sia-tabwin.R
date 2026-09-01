@@ -129,6 +129,19 @@ test_that("SIA registry covers every downloadable layout and official ZIP", {
   )
 })
 
+test_that("SIA categorical flags are not coerced to integers", {
+  data <- data.frame(
+    AB_PONTBAR = "E", AQ_LINFIN = "S", AR_LINFIN = "N",
+    PESO = "70", TABBARR = "1", stringsAsFactors = FALSE
+  )
+
+  types <- microdatasus:::.sia_type_fields(data)
+
+  expect_false(any(c("AB_PONTBAR", "AQ_LINFIN", "AR_LINFIN") %in%
+    types$integer))
+  expect_true(all(c("PESO", "TABBARR") %in% types$integer))
+})
+
 test_that("all current SIA layouts share one archive and label from their DEF", {
   archive <- create_sia_tabwin_fixture()
   on.exit(unlink(archive), add = TRUE)

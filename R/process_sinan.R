@@ -3,15 +3,20 @@
     return(x)
   }
   values <- trimws(as.character(x))
-  values[!nzchar(values)] <- NA_character_
+  missing <- c("0", "000000", "00000000", "********")
+  values[!nzchar(values) | values %in% missing] <- NA_character_
   result <- as.Date(rep(NA_character_, length(values)))
   iso <- !is.na(values) & grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", values)
   ymd <- !is.na(values) & grepl("^[0-9]{8}$", values)
   dmy <- !is.na(values) & grepl("^[0-9]{2}/[0-9]{2}/[0-9]{4}$", values)
+  dmy_short <- !is.na(values) & grepl(
+    "^[0-9]{2}/[0-9]{2}/[0-9]{2}$", values
+  )
   result[iso] <- as.Date(values[iso])
   result[ymd] <- as.Date(values[ymd], format = "%Y%m%d")
   result[dmy] <- as.Date(values[dmy], format = "%d/%m/%Y")
-  .process_record_coercion(collector, field, "Date", x, result)
+  result[dmy_short] <- as.Date(values[dmy_short], format = "%d/%m/%y")
+  .process_record_coercion(collector, field, "Date", x, result, missing)
   result
 }
 
@@ -32,9 +37,26 @@
   # authoritative and must never be passed to a categorical CNV conversion.
   date_aliases <- c("PARASITO", "RESUL_HIS", "TRATAMENTO", "DEXAME", "DTRATA")
   existing_dates <- vapply(data, inherits, logical(1), "Date")
+  alias_dates <- vapply(seq_along(fields), function(index) {
+    if (!upper[[index]] %in% date_aliases || existing_dates[[index]]) {
+      return(FALSE)
+    }
+    values <- trimws(as.character(data[[index]]))
+    values <- values[
+      !is.na(values) & nzchar(values) &
+        !values %in% c("0", "000000", "00000000", "********")
+    ]
+    any(grepl(
+      paste0(
+        "^[0-9]{8}$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$|",
+        "^[0-9]{2}/[0-9]{2}/[0-9]{2}([0-9]{2})?$"
+      ),
+      values
+    ))
+  }, logical(1))
   date_fields <- fields[
     grepl("^DT(_|[A-Z])", upper) |
-      upper %in% date_aliases |
+      alias_dates |
       existing_dates
   ]
   municipality_fields <- .sinan_municipality_fields(data)
