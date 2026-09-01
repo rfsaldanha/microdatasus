@@ -261,6 +261,7 @@ test_that("process_sih parses six-digit historical dates without a pivot", {
     diagnostics = TRUE
   ))
 
+  expect_identical(result$ANO_CMPT, c(1992L, 1992L, 1992L))
   expect_identical(
     as.character(result$NASC),
     c("1923-11-02", "1992-01-01", NA)

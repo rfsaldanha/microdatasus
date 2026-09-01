@@ -32,6 +32,13 @@
   "SP_DES_HOS", "SP_DES_PAC", "SP_QT_PROC", "ANO", "MES"
 )
 
+.sih_competence_year <- function(x) {
+  year <- .process_as_integer(x)
+  historical <- !is.na(year) & year >= 0L & year <= 99L
+  year[historical] <- year[historical] + 1900L
+  year
+}
+
 .sih_date_fields <- c(
   "NASC", "DT_INTER", "DT_SAIDA", "GESTOR_DT",
   "SP_DTINTER", "SP_DTSAIDA"
@@ -84,7 +91,7 @@
   if (!length(year_field)) {
     return(stats::setNames(list(rows), information_system))
   }
-  year <- .process_as_integer(data[[year_field[[1L]]]])
+  year <- .sih_competence_year(data[[year_field[[1L]]]])
   month_field <- .process_find_fields(data, "MES_CMPT")
   month <- if (length(month_field)) {
     .process_as_integer(data[[month_field[[1L]]]])
@@ -224,7 +231,7 @@ process_sih <- function(
   # ANO_CMPT instead of R percent-y pivot rules; later layouts use YYYYMMDD.
   year_field <- .process_find_fields(result, "ANO_CMPT")
   reference_year <- if (length(year_field)) {
-    result[[year_field[[1L]]]]
+    .sih_competence_year(result[[year_field[[1L]]]])
   } else {
     rep(NA_integer_, nrow(result))
   }
@@ -242,6 +249,9 @@ process_sih <- function(
   }
   for (field in .process_find_fields(result, .sih_integer_fields)) {
     result[[field]] <- .process_as_integer(result[[field]], collector = collector, field = field)
+    if (toupper(field) == "ANO_CMPT") {
+      result[[field]] <- .sih_competence_year(result[[field]])
+    }
   }
 
   result <- .sih_add_age_fields(result)

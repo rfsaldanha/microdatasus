@@ -653,6 +653,13 @@
     return(substr(code, 1L, width))
   }
 
+  # Discard physical line padding beyond the declared code width. Spaces
+  # inside that width remain significant: "1  " still denotes 100 at width 3.
+  overlong <- !is.na(code) & nchar(code, type = "chars") > width
+  suffix <- substring(code, width + 1L)
+  physical_padding <- overlong & grepl("^[[:space:]]+$", suffix)
+  code[physical_padding] <- substr(code[physical_padding], 1L, width)
+
   # In numeric mode, right-padding represents zeroes: both "1  " and "10 "
   # denote 100 at width three. Unpadded official tokens remain tolerated by
   # left-padding numeric codes, which also repairs DBF readers that drop zeroes.
@@ -1053,7 +1060,7 @@
   )
 }
 
-.tabwin_parser_version <- 5L
+.tabwin_parser_version <- 6L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {

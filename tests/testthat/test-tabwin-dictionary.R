@@ -697,6 +697,25 @@ test_that("CNV parser distinguishes literal and numeric padding", {
   )
 })
 
+test_that("CNV parser discards physical padding beyond code width", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  write_tabwin_text(path, c(
+    "2 1",
+    tabwin_cnv_line(1, "Com óbito", "1"),
+    paste0(tabwin_cnv_line(2, "Sem óbito", "0"), "   ")
+  ))
+
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+
+  expect_setequal(names(conversion$map), c("0", "1"))
+  expect_identical(unname(conversion$map[["0"]]), "Sem óbito")
+  expect_identical(
+    microdatasus:::.tabwin_normalize_code("0   ", 1L),
+    "0"
+  )
+})
+
 test_that("CNV parser recovers narrow official layout inconformities", {
   blank <- tempfile(fileext = ".CNV")
   compact <- tempfile(fileext = ".CNV")
