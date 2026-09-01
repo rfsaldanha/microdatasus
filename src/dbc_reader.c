@@ -129,13 +129,15 @@ static void set_reader_error(dbc_reader *reader, const char *message)
 static unsigned int trimmed_span(
     const unsigned char *value,
     unsigned int width,
-    unsigned int *start
+    unsigned int *start,
+    int *invalid_nul_suffix
 )
 {
     unsigned int first = 0;
     unsigned int last = width;
     unsigned int index;
 
+    *invalid_nul_suffix = 0;
     while (first < last && value[first] == ' ') {
         first++;
     }
@@ -144,6 +146,14 @@ static unsigned int trimmed_span(
     }
     for (index = first; index < last; index++) {
         if (value[index] == '\0') {
+            unsigned int suffix;
+
+            for (suffix = index + 1u; suffix < last; suffix++) {
+                if (value[suffix] != '\0' && value[suffix] != ' ') {
+                    *invalid_nul_suffix = 1;
+                    break;
+                }
+            }
             last = index;
             break;
         }
@@ -320,8 +330,26 @@ static int parse_dbf_record(dbc_reader *reader)
 
         const unsigned char *raw = reader->record + field->offset;
         unsigned int start = 0;
-        unsigned int length = trimmed_span(raw, field->width, &start);
+        int invalid_nul_suffix = 0;
+        unsigned int length = trimmed_span(
+            raw,
+            field->width,
+            &start,
+            &invalid_nul_suffix
+        );
         const unsigned char *value = raw + start;
+
+        if (invalid_nul_suffix) {
+            snprintf(
+                reader->error,
+                sizeof(reader->error),
+                "Non-padding byte after NUL in DBF field %u at record %u",
+                index + 1u,
+                reader->row + 1u
+            );
+            reader->callback_failed = 1;
+            return 1;
+        }
 
         if (field->kind == DBF_COLUMN_STRING) {
             if (length == 0u ||

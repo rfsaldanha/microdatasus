@@ -11,14 +11,14 @@
   `fetch_datasus()` uses this projection before reading whenever processing and
   row filtering do not require the full row.
 * Hardens native DBC parsing with strict field-layout, record-marker, end-code,
-  trailing-data, I/O, CRC32, numeric syntax and precision, and calendar-date
-  checks. The reader recognizes the DBF language-driver variants found in
-  official DataSUS files and detects a file changed between metadata and record
-  reads. Malformed numeric and date cells in structurally valid official files
-  become `NA` with diagnostics. Fixes undefined pointer arithmetic in the
-  vendored blast sliding window found by UBSan, and adds deterministic mutation,
-  truncation, full historical-system matrix, real-corpus, gctorture, sanitizer,
-  and performance validation workflows.
+  trailing-data, I/O, CRC32, embedded-NUL padding, numeric syntax and precision,
+  and calendar-date checks. The reader recognizes the DBF language-driver
+  variants found in official DataSUS files and detects a file changed between
+  metadata and record reads. Malformed numeric and date cells in structurally
+  valid official files become `NA` with diagnostics. Fixes undefined pointer
+  arithmetic in the vendored blast sliding window found by UBSan, and adds
+  deterministic mutation, truncation, full historical-system matrix,
+  real-corpus, gctorture, sanitizer, and performance validation workflows.
 * Adds per-file `row_filter` execution before processing, deterministic schema
   sampling across historical layouts, and richer coercion/unknown-code counts.
 * Uses SHA-256 for new cache manifests while reading legacy MD5 manifests,

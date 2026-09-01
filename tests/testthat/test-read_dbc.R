@@ -150,6 +150,25 @@ test_that("read_dbc can preserve DBF column types", {
   expect_equal(result$WHEN, as.Date(c("2020-01-02", NA)))
 })
 
+test_that("read_dbc rejects meaningful bytes after an embedded NUL", {
+  malformed <- literal_dbc_fixture(
+    fields = list(list(name = "TEXT", type = "C", width = 4L)),
+    rows = list(list(as.raw(c(65L, 0L, 66L))))
+  )
+  padded <- literal_dbc_fixture(
+    fields = list(list(name = "TEXT", type = "C", width = 4L)),
+    rows = list(list(as.raw(c(65L, 0L, 0L))))
+  )
+  on.exit(unlink(c(malformed, padded)), add = TRUE)
+
+  expect_error(
+    read_dbc(malformed),
+    "Non-padding byte after NUL in DBF field 1 at record 1",
+    class = "microdatasus_dbc_read_error"
+  )
+  expect_identical(read_dbc(padded)$TEXT, "A")
+})
+
 test_that("read_dbc diagnoses impossible non-missing DBF dates", {
   path <- literal_dbc_fixture(
     fields = list(
