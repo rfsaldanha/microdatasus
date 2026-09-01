@@ -587,7 +587,7 @@
   # bounds lets every processor handle large analytical TabWin bands safely.
   token <- trimws(token)
   bounds <- strsplit(token, "-", fixed = TRUE)[[1L]]
-  if (identical(toupper(mode), "L") &&
+  if (.tabwin_codes_are_literal(width, mode) &&
       (startsWith(token, "-") || endsWith(token, "-"))) {
     separators <- gregexpr("-", token, fixed = TRUE)[[1L]]
     if (length(separators) != 1L || separators[[1L]] < 1L) return(NULL)
@@ -643,13 +643,33 @@
   )
 }
 
+.tabwin_codes_are_literal <- function(width, mode = "") {
+  mode <- if (length(mode) && !is.na(mode[[1L]])) {
+    toupper(mode[[1L]])
+  } else {
+    ""
+  }
+  identical(mode, "L") || (identical(mode, "") && width >= 5L)
+}
+
 .tabwin_normalize_code <- function(code, width, mode = "") {
   code <- as.character(code)
-  literal <- identical(toupper(mode), "L")
+  explicit_literal <- identical(toupper(mode), "L")
+  literal <- .tabwin_codes_are_literal(width, mode)
   if (literal) {
-    # Literal fields are fixed-width and right padded. This keeps "1  " distinct
-    # from "001", as required by the L mode.
+    # TabWin treats widths of five or more as alphanumeric automatically; L
+    # forces the same treatment for shorter fields. Literal fields are
+    # right-padded, keeping "1  " distinct from "001".
     code <- sub("^[[:space:]]+", "", code)
+    # Preserve non-padding suffixes in implicit literal mode. Official tables
+    # occasionally declare a width that is shorter than their actual codes;
+    # silently truncating those inconformities would create false matches.
+    if (!explicit_literal) {
+      overlong <- !is.na(code) & nchar(code, type = "chars") > width
+      suffix <- substring(code, width + 1L)
+      physical_padding <- overlong & grepl("^[[:space:]]+$", suffix)
+      code[physical_padding] <- substr(code[physical_padding], 1L, width)
+    }
     short <- !is.na(code) & nchar(code, type = "chars") < width
     code[short] <- paste0(
       code[short],
@@ -660,7 +680,8 @@
         x = " "
       )
     )
-    return(substr(code, 1L, width))
+    if (explicit_literal) return(substr(code, 1L, width))
+    return(code)
   }
 
   # Discard physical line padding beyond the declared code width. Spaces
@@ -790,20 +811,25 @@
       padded <- do.call(paste0, prefix)
       numeric <- grepl("^[0-9]+$", padded) &
         nchar(padded, type = "chars") < conversion$code_width
-      padded[numeric] <- vapply(
-        padded[numeric],
-        function(value) {
-          zeros <- strrep(
-            "0", conversion$code_width - nchar(value, type = "chars")
-          )
-          if (identical(mode, "L")) {
-            paste0(zeros, value)
-          } else {
-            paste0(value, zeros)
-          }
-        },
-        character(1)
-      )
+      implicit_literal <- .tabwin_codes_are_literal(
+        conversion$code_width, mode
+      ) && !identical(mode, "L")
+      if (!implicit_literal) {
+        padded[numeric] <- vapply(
+          padded[numeric],
+          function(value) {
+            zeros <- strrep(
+              "0", conversion$code_width - nchar(value, type = "chars")
+            )
+            if (identical(mode, "L")) {
+              paste0(zeros, value)
+            } else {
+              paste0(value, zeros)
+            }
+          },
+          character(1)
+        )
+      }
       candidates[[paste0("padded_", endpoint)]] <- padded
     }
   }
@@ -1053,7 +1079,7 @@
   resolved_labels <- unname(label_lookup[row_category_keys])
   tokens <- strsplit(code_text, ",", fixed = TRUE)
   tokens <- lapply(tokens, function(values) {
-    if (identical(mode, "L")) {
+    if (.tabwin_codes_are_literal(code_width, mode)) {
       # Literal blanks are valid fixed-width codes in published CNVs.
       return(values[nzchar(values)])
     }
@@ -1202,7 +1228,7 @@
   )
 }
 
-.tabwin_parser_version <- 8L
+.tabwin_parser_version <- 9L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {

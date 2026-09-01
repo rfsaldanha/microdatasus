@@ -828,6 +828,63 @@ test_that("CNV parser distinguishes literal and numeric padding", {
   )
 })
 
+test_that("CNV widths of five or more are implicitly alphanumeric", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  write_tabwin_text(path, c(
+    "3 5",
+    tabwin_cnv_line(1, "Right padded", "1    "),
+    tabwin_cnv_line(2, "Leading zeroes", "001  "),
+    tabwin_cnv_line(3, "Blank literal", "     ,")
+  ))
+
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+  selected <- list(
+    definition = data.frame(position = 1L),
+    conversion = conversion
+  )
+
+  expect_identical(
+    names(conversion$map),
+    c("1    ", "001  ", "     ")
+  )
+  expect_identical(
+    microdatasus:::.tabwin_apply_conversion_values(
+      c("1", "001", "", "1    ", "001  "), selected
+    ),
+    c("Right padded", "Leading zeroes", "Blank literal",
+      "Right padded", "Leading zeroes")
+  )
+  expect_identical(
+    microdatasus:::.tabwin_normalize_code("123456", 5L),
+    "123456"
+  )
+})
+
+test_that("implicit alphanumeric CNVs support open literal ranges", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  write_tabwin_text(path, c(
+    "2 5",
+    tabwin_cnv_line(2, "Through Z", "-ZZZZZ"),
+    tabwin_cnv_line(1, "Exact", "00000")
+  ))
+
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+  selected <- list(
+    definition = data.frame(position = 1L),
+    conversion = conversion
+  )
+
+  expect_identical(conversion$ranges$kind, "literal")
+  expect_identical(
+    microdatasus:::.tabwin_apply_conversion_values(
+      c("00000", "ABCDE", "ZZZZZ", "zzzzz"), selected
+    ),
+    c("Exact", "Through Z", "Through Z", "zzzzz")
+  )
+})
+
 test_that("CNV parser discards physical padding beyond code width", {
   path <- tempfile(fileext = ".CNV")
   on.exit(unlink(path), add = TRUE)
