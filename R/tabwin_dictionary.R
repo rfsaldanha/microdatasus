@@ -966,22 +966,39 @@
   candidate <- substring(rows, candidate_start)
   candidate_prefix <- substr(rows, 1L, pmax.int(0L, candidate_start - 1L))
   candidate_trimmed <- trimws(candidate)
+  token_pattern <- paste0(
+    "^[[:alnum:]][[:alnum:]-]*",
+    "(?:[[:space:]]*,[[:space:]]*[[:alnum:]][[:alnum:]-]*)*$"
+  )
   candidate_valid <- grepl(
-    "^[[:alnum:]][[:alnum:]-]*(?:[[:space:]]*,[[:space:]]*[[:alnum:]][[:alnum:]-]*)*$",
-    candidate_trimmed,
+    token_pattern, candidate_trimmed,
     perl = TRUE
   )
   separated <- grepl("[[:space:]]{2,}$", candidate_prefix)
-  recover <- !identical(mode, "L") &
+  compact <- !identical(mode, "L") &
     line_width < code_start &
     !nzchar(trimws(code_text)) &
     candidate_start > 9L &
     candidate_valid &
     separated
+  declared_trimmed <- trimws(code_text)
+  declared_valid <- grepl(token_pattern, declared_trimmed, perl = TRUE)
+  full_width <- nchar(candidate_trimmed, type = "chars") == code_width
+  overflow <- !identical(mode, "L") &
+    line_width >= code_start &
+    candidate_start > code_start &
+    nzchar(declared_trimmed) &
+    !declared_valid &
+    candidate_valid &
+    full_width &
+    separated
+  recover <- compact | overflow
   code_text[recover] <- candidate[recover]
-  attr(code_text, "compact") <- recover
+  attr(code_text, "compact") <- compact
+  attr(code_text, "overflow") <- overflow
   attr(code_text, "candidate_start") <- candidate_start
-  attr(code_text, "compact_rows") <- sum(recover)
+  attr(code_text, "compact_rows") <- sum(compact)
+  attr(code_text, "overflow_rows") <- sum(overflow)
   code_text
 }
 
@@ -1026,12 +1043,15 @@
   sequence <- trimws(substr(rows, sequence_start, sequence_end))
   code_text <- .tabwin_cnv_code_text(rows, code_start, code_width, mode)
   compact <- attr(code_text, "compact")
-  compact_start <- attr(code_text, "candidate_start")
+  overflow <- attr(code_text, "overflow")
+  realigned <- compact | overflow
+  realigned_start <- attr(code_text, "candidate_start")
   compact_code_rows <- attr(code_text, "compact_rows")
+  overflow_code_rows <- attr(code_text, "overflow_rows")
   row_labels <- trimws(substr(rows, label_start, label_end))
-  if (any(compact)) {
-    row_labels[compact] <- trimws(substr(
-      rows[compact], label_start, compact_start[compact] - 1L
+  if (any(realigned)) {
+    row_labels[realigned] <- trimws(substr(
+      rows[realigned], label_start, realigned_start[realigned] - 1L
     ))
   }
 
@@ -1121,6 +1141,7 @@
     tabs_recovered = tabs_recovered,
     embedded_header = !is.null(header$embedded_row),
     compact_code_rows = compact_code_rows,
+    overflow_code_rows = overflow_code_rows,
     recovered_sequence = recovered_sequence,
     recovered_leading_sequence = recovered_leading_sequence
   )
@@ -1228,7 +1249,7 @@
   )
 }
 
-.tabwin_parser_version <- 9L
+.tabwin_parser_version <- 10L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {

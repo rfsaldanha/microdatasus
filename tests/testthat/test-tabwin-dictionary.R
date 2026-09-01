@@ -952,6 +952,43 @@ test_that("CNV parser recovers narrow official layout inconformities", {
   expect_identical(embedded_conversion$recovered_leading_sequence, 1L)
 })
 
+test_that("CNV parser recovers codes displaced by overflowing descriptions", {
+  overflow <- tempfile(fileext = ".CNV")
+  trailing_junk <- tempfile(fileext = ".CNV")
+  overlong_code <- tempfile(fileext = ".CNV")
+  on.exit(unlink(c(overflow, trailing_junk, overlong_code)), add = TRUE)
+
+  long_label <- paste(
+    rep("Description beyond the declared field", 2), collapse = " "
+  )
+  overflow_row <- paste0(
+    sprintf("%7d", 1L), "  ", long_label, "  ", "000061"
+  )
+  write_tabwin_text(overflow, c("1 6", overflow_row))
+  write_tabwin_text(trailing_junk, c(
+    "1 6",
+    paste0(tabwin_cnv_line(1, "Valid", "120039"), strrep(" ", 33), "m")
+  ))
+  write_tabwin_text(overlong_code, c(
+    "1 13",
+    tabwin_cnv_line(1, "CNPJ", "12345678901234")
+  ))
+
+  overflow_conversion <- microdatasus:::.tabwin_parse_cnv(overflow)
+  junk_conversion <- microdatasus:::.tabwin_parse_cnv(trailing_junk)
+  overlong_conversion <- microdatasus:::.tabwin_parse_cnv(overlong_code)
+
+  expect_identical(unname(overflow_conversion$map[["000061"]]), long_label)
+  expect_identical(overflow_conversion$compact_code_rows, 0L)
+  expect_identical(overflow_conversion$overflow_code_rows, 1L)
+  expect_false("m" %in% names(junk_conversion$map))
+  expect_identical(junk_conversion$overflow_code_rows, 0L)
+  expect_identical(
+    unname(overlong_conversion$map[["12345678901234"]]), "CNPJ"
+  )
+  expect_identical(overlong_conversion$overflow_code_rows, 0L)
+})
+
 test_that("later duplicate CNV codes take official source precedence", {
   path <- tempfile(fileext = ".CNV")
   on.exit(unlink(path), add = TRUE)
