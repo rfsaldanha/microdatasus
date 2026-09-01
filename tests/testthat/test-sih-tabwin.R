@@ -247,6 +247,33 @@ test_that("process_sih labels and types every current SIH file family", {
   )
 })
 
+test_that("process_sih parses six-digit historical dates without a pivot", {
+  result <- suppressMessages(process_sih(
+    data.frame(
+      ANO_CMPT = c("1992", "1992", "1992"),
+      MES_CMPT = c("1", "1", "1"),
+      NASC = c("231102", "920101", "000000"),
+      DT_SAIDA = c("910123", "920102", "invalid"),
+      stringsAsFactors = FALSE
+    ),
+    municipality_data = FALSE,
+    labels = "none",
+    diagnostics = TRUE
+  ))
+
+  expect_identical(
+    as.character(result$NASC),
+    c("1923-11-02", "1992-01-01", NA)
+  )
+  expect_identical(
+    as.character(result$DT_SAIDA),
+    c("1991-01-23", "1992-01-02", NA)
+  )
+  failures <- processing_diagnostics(result)$coercion_failures
+  expect_identical(failures$field, "DT_SAIDA")
+  expect_identical(failures$value, "invalid")
+})
+
 test_that("process_sih chooses historical dictionaries row by row", {
   periods <- c(
     "current", "1992-1997", "1998-2003-07", "2003-08-2007"

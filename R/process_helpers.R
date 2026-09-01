@@ -48,10 +48,58 @@
 }
 
 .process_as_date <- function(x, format = "%d%m%Y", collector = NULL,
-                             field = NA_character_) {
+                             field = NA_character_,
+                             missing = c("00000000", "000000")) {
   if (inherits(x, "Date")) return(x)
-  result <- as.Date(as.character(x), format = format)
-  .process_record_coercion(collector, field, "Date", x, result)
+  source <- x
+  values <- trimws(as.character(x))
+  values[values %in% missing] <- NA_character_
+  pattern <- switch(
+    format,
+    "%d%m%Y" = "^[0-9]{8}$",
+    "%Y%m%d" = "^[0-9]{8}$",
+    NULL
+  )
+  valid <- !is.na(values)
+  if (!is.null(pattern)) valid <- valid & grepl(pattern, values)
+  result <- rep(as.Date(NA), length(values))
+  result[valid] <- as.Date(values[valid], format = format)
+  .process_record_coercion(
+    collector, field, "Date", source, result, missing
+  )
+  result
+}
+
+.process_as_sih_date <- function(x, reference_year, collector = NULL,
+                                 field = NA_character_) {
+  if (inherits(x, "Date")) return(x)
+  source <- x
+  missing <- c("00000000", "000000")
+  values <- trimws(as.character(x))
+  values[values %in% missing] <- NA_character_
+  result <- rep(as.Date(NA), length(values))
+
+  modern <- !is.na(values) & grepl("^[0-9]{8}$", values)
+  result[modern] <- as.Date(values[modern], format = "%Y%m%d")
+
+  historical <- !is.na(values) & grepl("^[0-9]{6}$", values)
+  reference_year <- suppressWarnings(as.integer(as.character(reference_year)))
+  resolvable <- historical & !is.na(reference_year)
+  if (any(resolvable)) {
+    year <- suppressWarnings(as.integer(substr(values, 1L, 2L)))
+    full_year <- (reference_year %/% 100L) * 100L + year
+    after_reference <- !is.na(full_year) & !is.na(reference_year) &
+      full_year > reference_year
+    full_year[after_reference] <- full_year[after_reference] - 100L
+    expanded <- paste0(
+      sprintf("%04d", full_year[resolvable]),
+      substring(values[resolvable], 3L)
+    )
+    result[resolvable] <- as.Date(expanded, format = "%Y%m%d")
+  }
+  .process_record_coercion(
+    collector, field, "Date", source, result, missing
+  )
   result
 }
 
@@ -83,19 +131,27 @@
   data
 }
 
+.process_normalize_character <- function(x) {
+  # Obfuscated identifiers emitted by the DBC reader are intentionally tagged
+  # as bytes. They are lossless binary identifiers, not text to be transcoded.
+  bytes <- !is.na(x) & Encoding(x) == "bytes"
+  result <- x
+  text <- !bytes
+  result[text] <- stringi::stri_unescape_unicode(
+    stringi::stri_enc_toutf8(x[text])
+  )
+  result
+}
+
 .process_normalize_text <- function(data) {
   # Normalize only text and factor levels; numeric and Date columns retain the
   # types assigned by each processor.
   for (name in names(data)) {
     column <- data[[name]]
     if (is.character(column)) {
-      data[[name]] <- stringi::stri_unescape_unicode(
-        stringi::stri_enc_toutf8(column)
-      )
+      data[[name]] <- .process_normalize_character(column)
     } else if (is.factor(column)) {
-      levels(column) <- stringi::stri_unescape_unicode(
-        stringi::stri_enc_toutf8(levels(column))
-      )
+      levels(column) <- .process_normalize_character(levels(column))
       data[[name]] <- droplevels(column)
     }
   }

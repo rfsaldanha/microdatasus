@@ -129,6 +129,9 @@ test_that("process_sinasc labels and types the layout from 1996 onward", {
   expect_equal(downloads, 1L)
   expect_type(result$contador, "integer")
   expect_s3_class(result$DTNASC, "Date")
+  expect_identical(
+    as.character(result$DTNASC), c("2024-01-01", "2024-01-02")
+  )
   expect_type(result$IDADEMAE, "integer")
   expect_type(result$PESO, "integer")
   expect_true(is.na(result$IDADEMAE[[2L]]))
@@ -162,7 +165,7 @@ test_that("process_sinasc labels and types the 1994-1995 layout", {
   result <- process_sinasc(
     data.frame(
       contador = c("1", "2"),
-      DATA_NASC = c("01011994", "02011994"),
+      DATA_NASC = c("19940101", "19940102"),
       LOCAL_OCOR = c("1", "3"),
       SEXO = c("1", "2"),
       TIPO_GRAV = c("1", "2"),
@@ -175,6 +178,9 @@ test_that("process_sinasc labels and types the 1994-1995 layout", {
   )
 
   expect_s3_class(result$DATA_NASC, "Date")
+  expect_identical(
+    as.character(result$DATA_NASC), c("1994-01-01", "1994-01-02")
+  )
   expect_type(result$contador, "integer")
   expect_type(result$IDADE_MAE, "integer")
   expect_type(result$PESO, "integer")

@@ -135,14 +135,21 @@ process_sinasc <- function(
     "Starting {.strong SINASC} data pre-processing..."
   )
 
-  # Every DT* column is an eight-digit DataSUS date. The original files use
-  # DATA_NASC and DATA_CART instead.
-  date_fields <- c(
-    names(result)[startsWith(toupper(names(result)), "DT")],
-    .process_find_fields(result, c("DATA_NASC", "DATA_CART"))
-  )
-  for (field in unique(date_fields)) {
-    result[[field]] <- .process_as_date(result[[field]], collector = collector, field = field)
+  # Current DT* fields use DDMMYYYY. The 1994-1995 DATA_* layout
+  # instead publishes YYYYMMDD, as observed in its official DBC files.
+  modern_date_fields <- names(result)[
+    startsWith(toupper(names(result)), "DT")
+  ]
+  for (field in modern_date_fields) {
+    result[[field]] <- .process_as_date(
+      result[[field]], collector = collector, field = field
+    )
+  }
+  for (field in .process_find_fields(result, c("DATA_NASC", "DATA_CART"))) {
+    result[[field]] <- .process_as_date(
+      result[[field]], format = "%Y%m%d", collector = collector,
+      field = field
+    )
   }
 
   for (field in .process_find_fields(result, .sinasc_integer_fields)) {

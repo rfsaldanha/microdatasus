@@ -40,6 +40,34 @@ test_that("numeric helpers preserve values while using their direct path", {
   )
 })
 
+test_that("text normalization preserves byte identifiers losslessly", {
+  identifier <- rawToChar(as.raw(c(0x81, 0x90, 0xff)))
+  Encoding(identifier) <- "bytes"
+  source <- data.frame(
+    VALUE = c(identifier, "S\u00e3o", NA_character_),
+    stringsAsFactors = FALSE
+  )
+
+  result <- microdatasus:::.process_normalize_text(source)
+
+  expect_identical(charToRaw(result$VALUE[[1L]]), charToRaw(identifier))
+  expect_identical(Encoding(result$VALUE[[1L]]), "bytes")
+  expect_identical(result$VALUE[[2L]], "São")
+  expect_true(is.na(result$VALUE[[3L]]))
+})
+
+test_that("historical SIH dates resolve centuries from competence", {
+  result <- microdatasus:::.process_as_sih_date(
+    c("231102", "920101", "000000", "invalid", "20000102"),
+    c("1992", "1992", "1992", "1992", NA_character_)
+  )
+
+  expect_identical(
+    as.character(result),
+    c("1923-11-02", "1992-01-01", NA, NA, "2000-01-02")
+  )
+})
+
 test_that("batched dictionaries preserve row-specific conversion results", {
   old <- list(
     selected = make_selected_conversion(

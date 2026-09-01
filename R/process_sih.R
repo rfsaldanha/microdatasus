@@ -220,9 +220,25 @@ process_sih <- function(
     "Starting {.strong {information_system}} data pre-processing..."
   )
 
-  # SIH dates are stored as YYYYMMDD in every supported layout.
+  # RD/RJ files through 1997 use YYMMDD. Resolve their century from
+  # ANO_CMPT instead of R percent-y pivot rules; later layouts use YYYYMMDD.
+  year_field <- .process_find_fields(result, "ANO_CMPT")
+  reference_year <- if (length(year_field)) {
+    result[[year_field[[1L]]]]
+  } else {
+    rep(NA_integer_, nrow(result))
+  }
   for (field in .process_find_fields(result, .sih_date_fields)) {
-    result[[field]] <- .process_as_date(result[[field]], format = "%Y%m%d", collector = collector, field = field)
+    result[[field]] <- if (information_system %in% c("SIH-RD", "SIH-RJ")) {
+      .process_as_sih_date(
+        result[[field]], reference_year, collector, field
+      )
+    } else {
+      .process_as_date(
+        result[[field]], format = "%Y%m%d", collector = collector,
+        field = field
+      )
+    }
   }
   for (field in .process_find_fields(result, .sih_integer_fields)) {
     result[[field]] <- .process_as_integer(result[[field]], collector = collector, field = field)
