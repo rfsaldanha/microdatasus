@@ -856,6 +856,51 @@
   labels
 }
 
+.tabwin_range_is_catch_all <- function(rule) {
+  # Catch-all bands are useful as a final display fallback, but they provide no
+  # evidence that a relation is the right one for a field. In particular, an
+  # unrelated 000000-999999 rule must not outrank a table containing the exact
+  # observed codes.
+  if (!identical(rule$kind[[1L]], "numeric") ||
+      !identical(rule$prefix[[1L]], "")) {
+    return(FALSE)
+  }
+  width <- rule$width[[1L]]
+  if (is.na(width) || width < 1L || width > 15L) return(FALSE)
+  rule$lower[[1L]] <= 0 && rule$upper[[1L]] >= (10^width - 1)
+}
+
+.tabwin_specific_conversion_labels <- function(lookup, conversion) {
+  # Exclude only full-domain fallbacks. Literal codes and bounded analytical
+  # ranges both remain positive evidence when alternative DEF rows compete.
+  ranges <- conversion$ranges
+  if (is.null(ranges) || !nrow(ranges)) {
+    return(.tabwin_conversion_labels(lookup, conversion))
+  }
+  catch_all <- vapply(
+    seq_len(nrow(ranges)),
+    function(index) .tabwin_range_is_catch_all(ranges[index, , drop = FALSE]),
+    logical(1)
+  )
+  if (!any(catch_all)) {
+    return(.tabwin_conversion_labels(lookup, conversion))
+  }
+  specific <- conversion
+  specific$ranges <- ranges[!catch_all, , drop = FALSE]
+  .tabwin_conversion_labels(lookup, specific)
+}
+
+.tabwin_relation_revision <- function(path) {
+  # Only a two- or four-digit suffix preceded by a non-digit is a plausible
+  # year/revision (CNES26, CNES2026). Domain identifiers such as P040605 are
+  # codes, not versions.
+  stem <- tools::file_path_sans_ext(basename(path))
+  match <- regexec("^.*[^0-9]([0-9]{2}|[0-9]{4})$", stem)
+  parts <- regmatches(stem, match)[[1L]]
+  if (length(parts) != 2L) return(-Inf)
+  suppressWarnings(as.numeric(parts[[2L]]))
+}
+
 .tabwin_score_definition <- function(dictionary, definition, values) {
   # A source field can have direct labels and several analytical groupings.
   # Score each usable definition against the codes actually present in data.
@@ -878,13 +923,24 @@
   } else {
     0
   }
+  specific_coverage <- if (length(observed)) {
+    mean(!is.na(.tabwin_specific_conversion_labels(observed, conversion)))
+  } else {
+    0
+  }
   stem <- toupper(tools::file_path_sans_ext(basename(definition$file)))
   exact_name <- identical(gsub("[^A-Z0-9]", "", stem), definition$field)
   list(
     definition = definition,
     conversion = conversion,
     exact_name = exact_name,
-    direct_command = definition$command %in% c("X", "D"),
+    # D controls simultaneous line/table display in TabWin; it does not mean
+    # that the related table is more detailed than an L/S/C alternative.
+    direct_command = definition$command == "X",
+    national_relation = identical(conversion$type, "dbf") &&
+      grepl("BR$", stem),
+    revision = .tabwin_relation_revision(definition$file),
+    specific_coverage = specific_coverage,
     coverage = coverage,
     codes = length(conversion$map),
     categories = conversion$category_count
@@ -896,48 +952,16 @@
   candidates <- definitions[
     definitions$field == toupper(field) &
       (definitions$extension == "DBF" |
-        (!is.na(definitions$position) & definitions$position == 1L)),
+        (!is.na(definitions$position) & definitions$position >= 1L)),
     ,
     drop = FALSE
   ]
   if (!nrow(candidates)) {
     return(NULL)
   }
-  # A DBF relationship provides the detailed entity description and therefore
-  # takes precedence over CNV groupings for the same source field.
-  if (any(candidates$extension == "DBF")) {
-    candidates <- candidates[
-      candidates$extension == "DBF",
-      ,
-      drop = FALSE
-    ]
-    # National entity tables (for example TCNESBR and TCHBR) contain every
-    # state and avoid opening one DBF per UF merely to compare coverage.
-    stems <- toupper(tools::file_path_sans_ext(basename(candidates$file)))
-    national <- grepl("BR$", stems)
-    if (any(national)) {
-      candidates <- candidates[national, , drop = FALSE]
-    }
-    # TabWin's D command denotes the detailed relation. Prefer it to the
-    # alternative line/column groupings of the same procedure or entity.
-    if (any(candidates$command == "D")) {
-      candidates <- candidates[candidates$command == "D", , drop = FALSE]
-    }
-    # Annual related tables are named with a numeric suffix (for example,
-    # CNES24 and CNES26). Use the newest version declared by the current DEF.
-    versions <- regmatches(
-      tools::file_path_sans_ext(basename(candidates$file)),
-      regexpr("[0-9]+$", tools::file_path_sans_ext(basename(candidates$file)))
-    )
-    versions <- suppressWarnings(as.integer(versions))
-    if (any(!is.na(versions))) {
-      candidates <- candidates[
-        which.max(replace(versions, is.na(versions), -Inf)),
-        ,
-        drop = FALSE
-      ]
-    }
-  }
+  # Score every usable relation independently. Official DEFs sometimes name a
+  # missing DBF while also declaring working CNV alternatives, and no command
+  # letter or file extension is sufficient evidence to discard those fallbacks.
   scores <- lapply(seq_len(nrow(candidates)), function(i) {
     .tabwin_score_definition(
       dictionary,
@@ -952,16 +976,23 @@
   ranking <- data.frame(
     exact_name = vapply(scores, `[[`, logical(1), "exact_name"),
     direct_command = vapply(scores, `[[`, logical(1), "direct_command"),
+    national_relation = vapply(scores, `[[`, logical(1), "national_relation"),
+    revision = vapply(scores, `[[`, numeric(1), "revision"),
+    specific_coverage = vapply(scores, `[[`, numeric(1), "specific_coverage"),
     coverage = vapply(scores, `[[`, numeric(1), "coverage"),
     codes = vapply(scores, `[[`, integer(1), "codes"),
     categories = vapply(scores, `[[`, integer(1), "categories")
   )
-  # Homonymous files and X definitions normally represent direct labels.
-  # Coverage then distinguishes current and legacy code systems.
+  # Specific matches are the strongest evidence. Overall coverage follows so
+  # bounded ranges remain useful, while homonymous/X/national/current relations
+  # resolve only genuine ties. Source order is the final deterministic tie-break.
   best <- order(
+    -ranking$specific_coverage,
+    -ranking$coverage,
     -ranking$exact_name,
     -ranking$direct_command,
-    -ranking$coverage,
+    -ranking$national_relation,
+    -ranking$revision,
     -ranking$codes,
     -ranking$categories
   )[[1L]]

@@ -308,6 +308,122 @@ test_that("DBF selection prefers national and detailed official relations", {
   expect_identical(procedure$definition$file, "DBF/TB_SIGTAW.DBF")
 })
 
+test_that("selection evaluates CNV fallbacks and substring positions", {
+  definitions <- data.frame(
+    order = 1:3,
+    command = c("L", "D", "X"),
+    description = c("Missing DBF", "Wrong D relation", "Position two"),
+    field = "CODE",
+    argument = c("LABEL", "1", "2"),
+    position = c(NA_integer_, 1L, 2L),
+    file = c("MISSING.DBF", "WRONG.CNV", "POSITION.CNV"),
+    extension = c("DBF", "CNV", "CNV"),
+    stringsAsFactors = FALSE
+  )
+  dictionary <- list(
+    definitions = definitions,
+    conversions = new.env(parent = emptyenv())
+  )
+  conversion <- function(map) {
+    structure(
+      list(
+        type = "cnv", code_width = 1L, category_count = length(map),
+        map = map, map_priority = stats::setNames(seq_along(map), names(map)),
+        ranges = microdatasus:::.tabwin_empty_ranges()
+      ),
+      class = "microdatasus_tabwin_conversion"
+    )
+  }
+  assign(
+    microdatasus:::.tabwin_conversion_key(definitions[2, , drop = FALSE]),
+    conversion(c("Z" = "Wrong")),
+    envir = dictionary$conversions
+  )
+  assign(
+    microdatasus:::.tabwin_conversion_key(definitions[3, , drop = FALSE]),
+    conversion(c("2" = "Position matched")),
+    envir = dictionary$conversions
+  )
+
+  selected <- microdatasus:::.tabwin_select_conversion(
+    dictionary, "CODE", "A2"
+  )
+
+  expect_identical(selected$definition$file, "POSITION.CNV")
+  expect_identical(
+    microdatasus:::.tabwin_apply_conversion_values("A2", selected),
+    "Position matched"
+  )
+})
+
+test_that("specific matches outrank full-domain CNV fallbacks", {
+  definitions <- data.frame(
+    order = 1:2,
+    command = "X",
+    description = c("Generic financing type", "Financing"),
+    field = "PA_TPFIN",
+    argument = "1",
+    position = 1L,
+    file = c("TP_FINAN.CNV", "FINANC.CNV"),
+    extension = "CNV",
+    stringsAsFactors = FALSE
+  )
+  dictionary <- list(
+    definitions = definitions,
+    conversions = new.env(parent = emptyenv())
+  )
+  catch_all <- structure(
+    list(
+      type = "cnv", code_width = 2L, category_count = 1L,
+      map = stats::setNames(character(), character()),
+      map_priority = stats::setNames(integer(), character()),
+      ranges = data.frame(
+        token = "00-99", kind = "numeric", prefix = "",
+        lower = 0, upper = 99, size = 100, width = 2L,
+        label = "Nao discriminado", priority = 1L,
+        stringsAsFactors = FALSE
+      )
+    ),
+    class = "microdatasus_tabwin_conversion"
+  )
+  specific <- structure(
+    list(
+      type = "cnv", code_width = 2L, category_count = 1L,
+      map = c("02" = "Assistencia Farmaceutica"),
+      map_priority = c("02" = 1L),
+      ranges = microdatasus:::.tabwin_empty_ranges()
+    ),
+    class = "microdatasus_tabwin_conversion"
+  )
+  assign(
+    microdatasus:::.tabwin_conversion_key(definitions[1, , drop = FALSE]),
+    catch_all,
+    envir = dictionary$conversions
+  )
+  assign(
+    microdatasus:::.tabwin_conversion_key(definitions[2, , drop = FALSE]),
+    specific,
+    envir = dictionary$conversions
+  )
+
+  selected <- microdatasus:::.tabwin_select_conversion(
+    dictionary, "PA_TPFIN", rep("02", 10)
+  )
+
+  expect_identical(selected$definition$file, "FINANC.CNV")
+  expect_equal(selected$specific_coverage, 1)
+  expect_identical(
+    microdatasus:::.tabwin_apply_conversion_values("02", selected),
+    "Assistencia Farmaceutica"
+  )
+})
+
+test_that("relation revisions do not confuse domain codes with years", {
+  expect_equal(microdatasus:::.tabwin_relation_revision("CNES26.DBF"), 26)
+  expect_equal(microdatasus:::.tabwin_relation_revision("CNES2026.DBF"), 2026)
+  expect_equal(microdatasus:::.tabwin_relation_revision("P040605.DBF"), -Inf)
+})
+
 test_that("all SIM types share one TabWin archive download", {
   archive <- create_tabwin_fixture()
   on.exit(unlink(archive), add = TRUE)

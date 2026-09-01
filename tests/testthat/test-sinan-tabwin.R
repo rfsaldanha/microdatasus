@@ -245,15 +245,43 @@ test_that("all SINAN families use one of two shared archives", {
   microdatasus:::.tabwin_clear_cache()
   on.exit(restore_empty_tabwin_cache(), add = TRUE)
 
+  specs <- microdatasus:::.sinan_system_specs()
   for (information_system in microdatasus:::.sinan_information_systems()) {
     result <- process_sinan(
       data.frame(FLAG = "1"),
       information_system = information_system,
       municipality_data = FALSE
     )
-    expect_identical(as.character(result$FLAG), "Rotulo SINAN")
+    definition <- specs$definition[
+      match(information_system, specs$information_system)
+    ]
+    expected <- if (tolower(definition) == "notindivinet.def") {
+      "1"
+    } else {
+      "Rotulo SINAN"
+    }
+    expect_identical(as.character(result$FLAG), expected)
   }
   expect_equal(downloads, 2L)
+})
+
+test_that("generic SINAN definitions label only verified common fields", {
+  definitions <- data.frame(
+    field = c("CS_SEXO", "CLASSI_FIN", "CRITERIO", "EVOLUCAO"),
+    stringsAsFactors = FALSE
+  )
+  dictionary <- list(
+    definition = "TAB_SINANNET/NotIndiviNet.def",
+    definitions = definitions
+  )
+  data <- data.frame(
+    CS_SEXO = "M", CLASSI_FIN = "1", CRITERIO = "1", EVOLUCAO = "1"
+  )
+  types <- list(protected = character())
+
+  fields <- microdatasus:::.sinan_dictionary_fields(data, dictionary, types)
+
+  expect_identical(fields, "CS_SEXO")
 })
 
 test_that("process_sinan standardizes common types and message order", {
@@ -274,8 +302,11 @@ test_that("process_sinan standardizes common types and message order", {
   microdatasus:::.tabwin_clear_cache()
   on.exit(restore_empty_tabwin_cache(), add = TRUE)
 
+  treatment <- as.Date(c("2024-02-02", "2024-02-03"))
   source <- data.frame(
     DT_NOTIFIC = c("2024-01-31", "20240201"),
+    DEXAME = c("20240202", "2024-02-03"),
+    TRATAMENTO = treatment,
     NU_ANO = c("2024", "2024"),
     NU_IDADE_N = c("4116", "3023"),
     NU_NOTIFIC = c("0000001", "0000002"),
@@ -292,6 +323,8 @@ test_that("process_sinan standardizes common types and message order", {
   })
 
   expect_s3_class(result$DT_NOTIFIC, "Date")
+  expect_s3_class(result$DEXAME, "Date")
+  expect_identical(result$TRATAMENTO, treatment)
   expect_type(result$NU_ANO, "integer")
   expect_identical(result$NU_IDADE_N, c("4116", "3023"))
   expect_identical(result$IDADEanos, c(116L, NA_integer_))

@@ -27,7 +27,16 @@
 .sinan_type_fields <- function(data, dictionary) {
   fields <- names(data)
   upper <- toupper(fields)
-  date_fields <- fields[grepl("^DT(_|[A-Z])", upper)]
+  # Most SINAN dates start with DT, but several official DBF layouts expose
+  # historical date fields under semantic names. Existing Date columns are
+  # authoritative and must never be passed to a categorical CNV conversion.
+  date_aliases <- c("PARASITO", "RESUL_HIS", "TRATAMENTO", "DEXAME", "DTRATA")
+  existing_dates <- vapply(data, inherits, logical(1), "Date")
+  date_fields <- fields[
+    grepl("^DT(_|[A-Z])", upper) |
+      upper %in% date_aliases |
+      existing_dates
+  ]
   municipality_fields <- .sinan_municipality_fields(data)
   identifiers <- fields[grepl(
     paste0(
@@ -91,6 +100,18 @@
 
 .sinan_dictionary_fields <- function(data, dictionary, types) {
   declared <- unique(dictionary$definitions$field)
+  # NotIndiviNet.def is a catalogue containing disease-specific alternatives,
+  # not a disease-neutral dictionary. Only fields whose definitions are shared
+  # unchanged by the dedicated official DEFs are safe for generic families.
+  definition <- dictionary$definition
+  generic <- length(definition) == 1L &&
+    identical(tolower(basename(definition)), "notindivinet.def")
+  if (generic) {
+    declared <- intersect(
+      declared,
+      c("CS_ESCOL_N", "CS_RACA", "CS_SEXO", "CS_GESTANT", "CS_ZONA")
+    )
+  }
   .process_find_fields(
     data,
     setdiff(declared, toupper(types$protected))
