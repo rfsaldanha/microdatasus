@@ -938,6 +938,29 @@ test_that("factor levels follow CNV category sequence", {
 
   expect_identical(levels(result), c("Masculino", "Feminino", "Ignorado"))
 })
+test_that("ZIP entry matching observes path component boundaries", {
+  expect_identical(
+    microdatasus:::.tabwin_find_entry(c("REGUF.CNV", "UF.CNV"), "UF.CNV"),
+    "UF.CNV"
+  )
+  expect_identical(
+    microdatasus:::.tabwin_find_entry(c("MESANO.CNV", "ANO.CNV"), "ANO.CNV"),
+    "ANO.CNV"
+  )
+  expect_identical(
+    microdatasus:::.tabwin_find_entry(
+      c("root/CNV/UF.CNV", "root/CNV/REGUF.CNV"), "CNV/UF.CNV"
+    ),
+    "root/CNV/UF.CNV"
+  )
+  expect_identical(
+    microdatasus:::.tabwin_find_entry(
+      "root/tabdo/Obito.def", "/tabdo/Obito.def"
+    ),
+    "root/tabdo/Obito.def"
+  )
+})
+
 test_that("dictionary failures expose stable condition classes", {
   expect_error(
     microdatasus:::.tabwin_find_entry("path/one.cnv", "missing.cnv"),
@@ -956,6 +979,53 @@ test_that("dictionary failures expose stable condition classes", {
     microdatasus:::.tabwin_parse_cnv(path),
     class = "microdatasus_dictionary_invalid_error"
   )
+})
+
+test_that("DBF fields use only deterministic dBase physical names", {
+  expect_identical(
+    microdatasus:::.tabwin_match_dbf_field("NM_DISTRITO", "NM_DISTRIT"),
+    1L
+  )
+  expect_identical(
+    microdatasus:::.tabwin_match_dbf_field("NM_DISTRITO 1", "NM_DISTRIT"),
+    1L
+  )
+  expect_identical(
+    microdatasus:::.tabwin_match_dbf_field("NM_BAIRRO 1", "NM_BAIRRO"),
+    1L
+  )
+  expect_true(is.na(
+    microdatasus:::.tabwin_match_dbf_field("NM_BA_OCOR", "NM_BAIRRO")
+  ))
+
+  directory <- tempfile("dbf-physical-name-")
+  dir.create(directory)
+  on.exit(unlink(directory, recursive = TRUE), add = TRUE)
+  path <- file.path(directory, "district.dbf")
+  foreign::write.dbf(
+    data.frame(
+      ID_DISTRIT = c("1", "2"), NM_DISTRIT = c("One", "Two"),
+      ACTIVE = c("Y", "Y"), stringsAsFactors = FALSE
+    ),
+    path
+  )
+  dictionary <- list(
+    extracted_all = TRUE, cache_dir = directory, persistent = FALSE,
+    conversions = new.env(parent = emptyenv())
+  )
+  definition <- data.frame(
+    file = "district.dbf", extension = "DBF", field = "ID_DISTRITO",
+    argument = "NM_DISTRITO 1", stringsAsFactors = FALSE
+  )
+
+  result <- microdatasus:::.datasus_dictionary_conversion(
+    dictionary, definition
+  )
+
+  expect_identical(result$status, "ok")
+  expect_false(result$conversion$fallback_label)
+  expect_identical(result$conversion$label_field, "NM_DISTRIT")
+  expect_identical(unname(result$conversion$map), c("One", "Two"))
 })
 
 test_that("two-column DBFs use an explicit audited label fallback", {

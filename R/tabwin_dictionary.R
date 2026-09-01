@@ -354,7 +354,14 @@
   # ZIP members and DEF references vary in path separator and letter case.
   entries_normalized <- gsub("\\\\", "/", entries)
   suffix <- gsub("\\\\", "/", suffix)
-  matches <- which(endsWith(tolower(entries_normalized), tolower(suffix)))
+  entries_lower <- tolower(entries_normalized)
+  suffix_lower <- tolower(sub("^/+", "", sub("^\\./", "", suffix)))
+  # Match complete path components. A plain UF.CNV reference must not also
+  # match REGUF.CNV, nor may ANO.CNV match MESANO.CNV.
+  matches <- which(
+    entries_lower == suffix_lower |
+      endsWith(entries_lower, paste0("/", suffix_lower))
+  )
   if (!length(matches)) {
     .tabwin_abort(
       "The TabWin archive contains no file matching {.file {suffix}}.",
@@ -1046,7 +1053,7 @@
   )
 }
 
-.tabwin_parser_version <- 4L
+.tabwin_parser_version <- 5L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {
@@ -1097,6 +1104,30 @@
   invisible(path)
 }
 
+.tabwin_match_dbf_field <- function(field, table_names) {
+  if (length(field) != 1L || is.na(field) || !nzchar(trimws(field))) {
+    return(NA_integer_)
+  }
+  requested <- toupper(trimws(field))
+  names_upper <- toupper(table_names)
+  exact <- which(names_upper == requested)
+  if (length(exact) == 1L) return(exact)
+  if (length(exact) > 1L) return(NA_integer_)
+
+  # dBase III field names occupy at most ten non-NUL bytes. Some official DEFs
+  # retain the longer logical name, and a few append an ordinal such as " 1".
+  # Resolve only those deterministic physical representations; never fuzzy
+  # match a different semantic name.
+  logical <- sub("[[:space:]]+[0-9]+$", "", requested)
+  aliases <- logical
+  if (nchar(logical, type = "bytes") > 10L &&
+      identical(logical, iconv(logical, to = "ASCII"))) {
+    aliases <- c(aliases, substr(logical, 1L, 10L))
+  }
+  matches <- which(names_upper %in% unique(aliases))
+  if (length(matches) == 1L) matches else NA_integer_
+}
+
 .tabwin_read_conversion <- function(dictionary, definition) {
   key <- .tabwin_conversion_key(definition)
   # Parsed maps are memoised separately from extracted files. The nested
@@ -1124,14 +1155,15 @@
         ), "microdatasus_dictionary_relation_error")
       }
     )
-    names_upper <- toupper(names(table))
-    code_index <- match(toupper(definition$field), names_upper)
+    code_index <- .tabwin_match_dbf_field(definition$field, names(table))
     # The TabWin specification uses the first DBF field when the related table
     # does not repeat the source field name.
     if (is.na(code_index)) {
       code_index <- 1L
     }
-    label_index <- match(toupper(definition$argument), names_upper)
+    label_index <- .tabwin_match_dbf_field(
+      definition$argument, names(table)
+    )
     fallback_label <- FALSE
     if (is.na(label_index)) {
       # Some official DEF rows retain an old description-column name after a
