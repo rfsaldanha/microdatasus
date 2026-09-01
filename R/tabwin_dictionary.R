@@ -582,11 +582,21 @@
   token
 }
 
-.tabwin_range_rule <- function(token, width) {
+.tabwin_range_rule <- function(token, width, mode = "") {
   # Parse a compact interval without materialising its members. Keeping the
   # bounds lets every processor handle large analytical TabWin bands safely.
   token <- trimws(token)
   bounds <- strsplit(token, "-", fixed = TRUE)[[1L]]
+  if (identical(toupper(mode), "L") &&
+      (startsWith(token, "-") || endsWith(token, "-"))) {
+    separators <- gregexpr("-", token, fixed = TRUE)[[1L]]
+    if (length(separators) != 1L || separators[[1L]] < 1L) return(NULL)
+    return(data.frame(
+      token = token, kind = "literal", prefix = "",
+      lower = NA_real_, upper = NA_real_, size = Inf, width = width,
+      stringsAsFactors = FALSE
+    ))
+  }
   if (length(bounds) != 2L || any(!nzchar(bounds))) return(NULL)
   if (all(grepl("^[[:alpha:]]+$", bounds)) &&
       length(unique(nchar(bounds))) == 1L) {
@@ -993,7 +1003,8 @@
   expanded <- as.list(raw_codes)
   range_indexes <- which(grepl("-", trimws(raw_codes), fixed = TRUE))
   parsed_ranges <- lapply(
-    raw_codes[range_indexes], .tabwin_range_rule, width = code_width
+    raw_codes[range_indexes], .tabwin_range_rule, width = code_width,
+    mode = mode
   )
   symbolic <- vapply(
     parsed_ranges,
@@ -1060,7 +1071,7 @@
   )
 }
 
-.tabwin_parser_version <- 6L
+.tabwin_parser_version <- 7L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {
@@ -1218,6 +1229,22 @@
   values <- .tabwin_normalize_code(values, rule$width[[1L]], mode)
   prefix <- rule$prefix[[1L]]
   kind <- rule$kind[[1L]]
+  if (identical(kind, "literal")) {
+    token <- rule$token[[1L]]
+    separator <- regexpr("-", token, fixed = TRUE)[[1L]]
+    lower <- substr(token, 1L, separator - 1L)
+    upper <- substring(token, separator + 1L)
+    matched <- !is.na(values)
+    if (nzchar(lower)) {
+      lower <- .tabwin_normalize_code(lower, rule$width[[1L]], "L")
+      matched <- matched & values >= lower
+    }
+    if (nzchar(upper)) {
+      upper <- .tabwin_normalize_code(upper, rule$width[[1L]], "L")
+      matched <- matched & values <= upper
+    }
+    return(matched)
+  }
   if (identical(kind, "numeric")) {
     comparable <- grepl("^[0-9]+$", values)
     number <- suppressWarnings(as.numeric(values))

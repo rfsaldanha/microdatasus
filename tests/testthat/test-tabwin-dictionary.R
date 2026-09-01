@@ -209,6 +209,28 @@ test_that("symbolic ranges preserve later-category priority", {
   expect_identical(result, c("Codigo especifico", "Faixa ampla", "90000000"))
 })
 
+test_that("literal CNV ranges support open bounds and later overrides", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  write_tabwin_text(path, c(
+    "2 10 L",
+    tabwin_cnv_line(2, "Inscrito", "-ZZZZZZZZZZ"),
+    tabwin_cnv_line(1, "Não inscrito", "0000000000")
+  ))
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+  selected <- list(
+    definition = data.frame(position = 1L), conversion = conversion
+  )
+
+  result <- microdatasus:::.tabwin_apply_conversion_values(
+    c("1208100112", "0000000000", NA_character_), selected
+  )
+
+  expect_identical(conversion$ranges$kind, "literal")
+  expect_identical(names(conversion$map), "0000000000")
+  expect_identical(result, c("Inscrito", "Não inscrito", NA_character_))
+})
+
 test_that("symbolic alphanumeric CNV ranges retain their prefix", {
   path <- tempfile(fileext = ".CNV")
   on.exit(unlink(path), add = TRUE)
