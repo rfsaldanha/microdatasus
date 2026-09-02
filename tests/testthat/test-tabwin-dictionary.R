@@ -2442,6 +2442,42 @@ test_that("official DBFs recover exact key-as-label definition drift", {
   )))
 })
 
+test_that("duplicate DBF keys remain deterministic and auditable", {
+  directory <- tempfile("dbf-duplicate-keys-")
+  dir.create(directory)
+  on.exit(unlink(directory, recursive = TRUE), add = TRUE)
+  path <- file.path(directory, "labels.dbf")
+  foreign::write.dbf(data.frame(
+    CODE = c("1", "1", "2", "2"),
+    LABEL = c("First", "Second", "Same", "Same")
+  ), path)
+  dictionary <- list(
+    extracted_all = TRUE, cache_dir = directory, persistent = FALSE,
+    conversions = new.env(parent = emptyenv())
+  )
+  definition <- data.frame(
+    file = "labels.dbf", extension = "DBF", field = "CODE",
+    argument = "LABEL", stringsAsFactors = FALSE
+  )
+
+  result <- microdatasus:::.datasus_dictionary_conversion(
+    dictionary, definition
+  )
+
+  expect_identical(result$status, "fallback")
+  expect_identical(result$issue_class, "upstream_duplicate_keys")
+  expect_identical(result$conversion$duplicate_key_rows, 2L)
+  expect_identical(result$conversion$conflicting_key_count, 1L)
+  expect_identical(
+    result$conversion$duplicate_key_policy,
+    "first_physical_record"
+  )
+  expect_identical(
+    result$conversion$map, c(`1` = "First", `2` = "Same")
+  )
+  expect_match(result$message, "first physical record")
+})
+
 test_that("dictionary inspection classifies structured relation failures", {
   dictionary <- list()
   definition <- data.frame(field = "X")

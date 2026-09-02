@@ -2106,7 +2106,7 @@
   )
 }
 
-.tabwin_parser_version <- 28L
+.tabwin_parser_version <- 29L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {
@@ -2473,7 +2473,15 @@
       sprintf("TabWin DBF label field %s", sQuote(names(table)[[label_index]])),
       path, cp850_rows
     )
-    keep <- !is.na(codes) & nzchar(codes) & !duplicated(codes)
+    valid_codes <- !is.na(codes) & nzchar(codes)
+    duplicate_key_rows <- sum(duplicated(codes[valid_codes]))
+    labels_by_code <- split(labels[valid_codes], codes[valid_codes])
+    conflicting_key_count <- sum(vapply(
+      labels_by_code,
+      function(value) length(unique(value[!is.na(value)])) > 1L,
+      logical(1)
+    ))
+    keep <- valid_codes & !duplicated(codes)
     map <- labels[keep]
     names(map) <- codes[keep]
     conversion <- structure(
@@ -2489,6 +2497,9 @@
         thresholds = .tabwin_empty_thresholds(),
         fallback_label = fallback_label,
         recovered_label = recovered_label,
+        duplicate_key_rows = duplicate_key_rows,
+        conflicting_key_count = conflicting_key_count,
+        duplicate_key_policy = "first_physical_record",
         fallback_key = fallback_key,
         recovered_key = recovered_key,
         requested_key_field = definition$field,

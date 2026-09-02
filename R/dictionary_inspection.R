@@ -24,6 +24,13 @@
     symbolic <- !is.null(conversion$ranges) && nrow(conversion$ranges) > 0L
     fallback <- isTRUE(conversion$fallback_label)
     recovered_label <- isTRUE(conversion$recovered_label)
+    conflicting_keys <- if (is.null(conversion$conflicting_key_count)) {
+      0L
+    } else {
+      conversion$conflicting_key_count
+    }
+    duplicate_fallback <- conflicting_keys > 0L
+    fallback <- fallback || duplicate_fallback
     list(
       conversion = conversion,
       status = if (fallback) {
@@ -33,14 +40,22 @@
       } else {
         "ok"
       },
-      issue_class = if (fallback) {
+      issue_class = if (duplicate_fallback) {
+        "upstream_duplicate_keys"
+      } else if (fallback) {
         "definition_drift"
       } else if (symbolic) {
         "analytical_range"
       } else {
         NA_character_
       },
-      message = if (fallback) {
+      message = if (duplicate_fallback) {
+        paste0(
+          "The related DBF has ", conflicting_keys,
+          " key(s) with conflicting labels; the first physical record was ",
+          "used deterministically."
+        )
+      } else if (fallback) {
         if (recovered_label) {
           paste0(
             "The DEF repeats key field ", conversion$requested_label_field,
@@ -169,8 +184,10 @@
 #'   `issue_class` independently identifies upstream absence/content drift,
 #'   archive ambiguity, parser/I/O errors, analytical ranges, or definition
 #'   fallback, so severity is not confused with origin.
-#'   fallback is reported when an official two-column DBF renamed its sole
-#'   description field while the DEF retained the previous name. Parsed relations
+#'   Fallback is reported when an official two-column DBF renamed its sole
+#'   description field while the DEF retained the previous name. DBFs with
+#'   duplicate keys and conflicting labels are also explicit fallbacks: the
+#'   first physical record is retained deterministically. Parsed relations
 #'   persist on disk when `cache_dir` is set, and completed result tables are
 #'   reused during the R session.
 #'

@@ -57,8 +57,10 @@ fallback, non-enumerable, missing, invalid, and failed relations. A
 \code{issue_class} independently identifies upstream absence/content drift,
 archive ambiguity, parser/I/O errors, analytical ranges, or definition
 fallback, so severity is not confused with origin.
-fallback is reported when an official two-column DBF renamed its sole
-description field while the DEF retained the previous name. Parsed relations
+Fallback is reported when an official two-column DBF renamed its sole
+description field while the DEF retained the previous name. DBFs with
+duplicate keys and conflicting labels are also explicit fallbacks: the
+first physical record is retained deterministically. Parsed relations
 persist on disk when \code{cache_dir} is set, and completed result tables are
 reused during the R session.
 }
