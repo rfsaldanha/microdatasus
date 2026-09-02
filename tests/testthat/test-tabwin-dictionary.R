@@ -2362,6 +2362,64 @@ test_that("two-column DBFs use an explicit audited label fallback", {
   expect_match(result$message, "CURRENT_LA")
 })
 
+test_that("official DBFs recover exact key-as-label definition drift", {
+  directory <- tempfile("dbf-key-label-drift-")
+  dir.create(directory)
+  on.exit(unlink(directory, recursive = TRUE), add = TRUE)
+  area <- file.path(directory, "AREA_AC.dbf")
+  subgroup <- file.path(directory, "TB_SUBGR.dbf")
+  foreign::write.dbf(data.frame(
+    ID_AREA = c("1200010001", "1200010002"),
+    NOMEAREA = c("Urban", "Rural")
+  ), area)
+  foreign::write.dbf(data.frame(
+    CO_SUB_GRU = c("0101", "0102"),
+    NO_SUB_GRU = c("Health promotion", "Surveillance"),
+    DT_COMPET = c("202407", "202407")
+  ), subgroup)
+  dictionary <- list(
+    extracted_all = TRUE, cache_dir = directory, persistent = FALSE,
+    conversions = new.env(parent = emptyenv())
+  )
+
+  area_result <- microdatasus:::.datasus_dictionary_conversion(
+    dictionary,
+    data.frame(
+      file = "AREA_AC.DBF", extension = "DBF", field = "ID_AREA",
+      argument = "ID_AREA", stringsAsFactors = FALSE
+    )
+  )
+  subgroup_result <- microdatasus:::.datasus_dictionary_conversion(
+    dictionary,
+    data.frame(
+      file = "TB_SUBGR.DBF", extension = "DBF", field = "PA_PROC_ID",
+      argument = "CO_SUB_GRU", stringsAsFactors = FALSE
+    )
+  )
+
+  expect_identical(area_result$status, "fallback")
+  expect_true(area_result$conversion$recovered_label)
+  expect_identical(area_result$conversion$label_field, "NOMEAREA")
+  expect_identical(unname(area_result$conversion$map), c("Urban", "Rural"))
+  expect_match(area_result$message, "repeats key field")
+  expect_identical(subgroup_result$status, "fallback")
+  expect_true(subgroup_result$conversion$fallback_key)
+  expect_true(subgroup_result$conversion$recovered_label)
+  expect_identical(subgroup_result$conversion$label_field, "NO_SUB_GRU")
+  expect_identical(
+    unname(subgroup_result$conversion$map),
+    c("Health promotion", "Surveillance")
+  )
+
+  unrelated <- foreign::read.dbf(area, as.is = TRUE)
+  expect_true(is.na(microdatasus:::.tabwin_recover_official_dbf_label(
+    "ID_AREA", 1L, unrelated, file.path(directory, "OTHER.DBF")
+  )))
+  expect_true(is.na(microdatasus:::.tabwin_recover_official_dbf_label(
+    NA_character_, 1L, unrelated, area
+  )))
+})
+
 test_that("dictionary inspection classifies structured relation failures", {
   dictionary <- list()
   definition <- data.frame(field = "X")

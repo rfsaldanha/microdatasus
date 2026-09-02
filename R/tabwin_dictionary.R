@@ -2093,7 +2093,7 @@
   )
 }
 
-.tabwin_parser_version <- 26L
+.tabwin_parser_version <- 27L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {
@@ -2193,6 +2193,62 @@
     return(NA_integer_)
   }
   notification
+}
+
+# Some official DEF rows repeat the DBF key in the description-field slot even
+# though the related table contains a stable, named description column. Recover
+# only the exact file/field pairs observed in the official archives; retaining
+# the key as its own label is valid for every unrelated table.
+.tabwin_recover_official_dbf_label <- function(
+  field,
+  code_index,
+  table,
+  path
+) {
+  if (
+    length(field) != 1L ||
+      is.na(field) ||
+      !nzchar(trimws(field)) ||
+      length(code_index) != 1L ||
+      is.na(code_index) ||
+      code_index < 1L ||
+      code_index > length(table)
+  ) {
+    return(NA_integer_)
+  }
+  requested <- toupper(trimws(field))
+  key_field <- toupper(names(table)[[code_index]])
+  if (!identical(requested, key_field)) return(NA_integer_)
+
+  file <- toupper(basename(path))
+  label <- if (
+    grepl("^AREA_[A-Z]{2}\\.DBF$", file) &&
+      identical(key_field, "ID_AREA")
+  ) {
+    "NOMEAREA"
+  } else if (
+    grepl("^SEGM_[A-Z]{2}\\.DBF$", file) &&
+      identical(key_field, "ID_SEGM")
+  ) {
+    "DESCSEGM"
+  } else {
+    switch(
+      file,
+      "TB_GRUPO.DBF" = if (identical(key_field, "CO_GRUPO")) {
+        "NO_GRUPO"
+      },
+      "TB_SUBGR.DBF" = if (identical(key_field, "CO_SUB_GRU")) {
+        "NO_SUB_GRU"
+      },
+      "TB_FORMA.DBF" = if (identical(key_field, "CO_FORMA")) {
+        "NO_FORMA"
+      },
+      NULL
+    )
+  }
+  if (is.null(label)) return(NA_integer_)
+  index <- .tabwin_match_dbf_field(label, names(table))
+  if (is.na(index) || identical(index, code_index)) NA_integer_ else index
 }
 
 .tabwin_dbf_encoding <- function(path) {
@@ -2369,7 +2425,17 @@
     label_index <- .tabwin_match_dbf_field(
       definition$argument, names(table)
     )
-    fallback_label <- FALSE
+    recovered_label <- FALSE
+    if (!is.na(label_index) && identical(label_index, code_index)) {
+      recovered_index <- .tabwin_recover_official_dbf_label(
+        definition$argument, code_index, table, path
+      )
+      if (!is.na(recovered_index)) {
+        label_index <- recovered_index
+        recovered_label <- TRUE
+      }
+    }
+    fallback_label <- recovered_label
     if (is.na(label_index)) {
       # Some official DEF rows retain an old description-column name after a
       # two-column DBF was revised. The sole non-key column is unambiguous.
@@ -2409,6 +2475,7 @@
         ranges = .tabwin_empty_ranges(),
         thresholds = .tabwin_empty_thresholds(),
         fallback_label = fallback_label,
+        recovered_label = recovered_label,
         fallback_key = fallback_key,
         recovered_key = recovered_key,
         requested_key_field = definition$field,

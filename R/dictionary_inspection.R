@@ -23,6 +23,7 @@
     conversion <- .tabwin_read_conversion(dictionary, definition)
     symbolic <- !is.null(conversion$ranges) && nrow(conversion$ranges) > 0L
     fallback <- isTRUE(conversion$fallback_label)
+    recovered_label <- isTRUE(conversion$recovered_label)
     list(
       conversion = conversion,
       status = if (fallback) {
@@ -40,11 +41,20 @@
         NA_character_
       },
       message = if (fallback) {
-        paste0(
-          "The DEF requests label field ", conversion$requested_label_field,
-          "; the only non-key DBF field ", conversion$label_field,
-          " was used."
-        )
+        if (recovered_label) {
+          paste0(
+            "The DEF repeats key field ", conversion$requested_label_field,
+            " as its label; audited official DBF field ",
+            conversion$label_field, " was used."
+          )
+        } else {
+          paste0(
+            "The DEF requests label field ",
+            conversion$requested_label_field,
+            "; the only non-key DBF field ", conversion$label_field,
+            " was used."
+          )
+        }
       } else if (symbolic) {
         "One or more analytical ranges are represented symbolically."
       } else {
