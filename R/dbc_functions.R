@@ -270,14 +270,15 @@
     ""
   }
   undefined <- if (normalized %in% c("CP1252", "WINDOWS1252")) {
-    c(0x81L, 0x8dL, 0x8fL, 0x90L, 0x9dL)
+    as.raw(c(0x81L, 0x8dL, 0x8fL, 0x90L, 0x9dL))
   } else {
-    integer()
+    raw()
   }
   if (!length(undefined)) return(rep(FALSE, length(value)))
-  vapply(value, function(item) {
-    !is.na(item) && any(as.integer(charToRaw(item)) %in% undefined)
-  }, logical(1))
+  patterns <- vapply(undefined, rawToChar, character(1))
+  Reduce(`|`, lapply(patterns, grepl,
+    x = value, fixed = TRUE, useBytes = TRUE
+  ))
 }
 
 .dbc_iconv_to_utf8 <- function(value, encoding) {
