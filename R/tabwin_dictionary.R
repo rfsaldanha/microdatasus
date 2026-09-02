@@ -238,8 +238,9 @@
 }
 
 .tabwin_read_text <- function(path) {
-  # Official archives mix Windows-1252 and UTF-8. Detect valid UTF-8 first and
-  # use the legacy encoding only as a fallback, independently of the R locale.
+  # Official archives mix UTF-8, CP1252, CP850, and CP860, and occasionally
+  # multiple legacy code pages in one file. Split on ASCII line bytes before decoding so each
+  # physical row can retain independent encoding evidence.
   size <- file.info(path)$size
   if (is.na(size) || size == 0) {
     .tabwin_abort(
@@ -261,21 +262,61 @@
     bytes <- bytes[-(1:3)]
   }
   encoded <- rawToChar(bytes)
-  text <- iconv(encoded, from = "UTF-8", to = "UTF-8")
-  encoding <- "UTF-8"
-  if (is.na(text)) {
-    text <- iconv(
-      encoded, from = "windows-1252", to = "UTF-8", sub = "byte"
-    )
-    encoding <- "windows-1252"
+  Encoding(encoded) <- "bytes"
+  lines <- strsplit(
+    encoded, "\n", fixed = TRUE, useBytes = TRUE
+  )[[1L]]
+  lines <- unlist(lapply(lines, function(line) {
+    strsplit(line, "\r", fixed = TRUE, useBytes = TRUE)[[1L]]
+  }), use.names = FALSE)
+  Encoding(lines) <- "unknown"
+
+  utf8 <- stringi::stri_enc_isutf8(lines)
+  if (all(utf8)) {
+    lines <- iconv(lines, from = "UTF-8", to = "UTF-8")
+    encoding <- "UTF-8"
+  } else {
+    lines <- suppressWarnings(.dbc_decode_text_auto(
+      lines,
+      "CP1252",
+      0L,
+      paste0("TabWin file ", basename(path)),
+      path
+    ))
+    encoding <- attr(lines, "dbc_encoding_used", exact = TRUE)
+    if (identical(encoding, "CP1252")) encoding <- "windows-1252"
+    attr(lines, "dbc_encoding_used") <- NULL
   }
-  if (is.na(text)) {
+  unresolved <- is.na(lines) | Encoding(lines) == "bytes"
+  if (any(unresolved)) {
+    # DOS code pages preserve one source byte as one display character. Start
+    # with CP850 only after conservative auto-decoding declines a row, then
+    # promote strong CP860 evidence so corrupt labels cannot shift CNV columns.
+    fallback <- suppressWarnings(iconv(
+      lines[unresolved], from = "CP850", to = "UTF-8", sub = NA
+    ))
+    cp860 <- .dbc_recover_mixed_cp860(lines[unresolved], fallback)
+    fallback[cp860$recover] <- cp860$value[cp860$recover]
+    recovered <- !is.na(fallback)
+    indices <- which(unresolved)
+    lines[indices[recovered]] <- fallback[recovered]
+    used <- strsplit(
+      sub("^mixed:", "", encoding), "+", fixed = TRUE
+    )[[1L]]
+    fallback_used <- c("CP850", if (any(cp860$recover)) "CP860")
+    used <- unique(c(setdiff(used, "bytes"), fallback_used))
+    encoding <- if (length(used) == 1L) {
+      used
+    } else {
+      paste0("mixed:", paste(used, collapse = "+"))
+    }
+  }
+  if (anyNA(lines) || any(Encoding(lines) == "bytes")) {
     .tabwin_abort(
       "Could not convert TabWin file {.file {basename(path)}} to UTF-8.",
       "microdatasus_dictionary_invalid_error"
     )
   }
-  lines <- strsplit(text, "\r\n|\n|\r", perl = TRUE)[[1L]]
   tabs <- lengths(regmatches(lines, gregexpr("\t", lines, fixed = TRUE)))
   lines <- vapply(lines, .tabwin_expand_tabs, character(1), USE.NAMES = FALSE)
   attr(lines, "encoding") <- encoding
@@ -1724,7 +1765,7 @@
   )
 }
 
-.tabwin_parser_version <- 21L
+.tabwin_parser_version <- 22L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {

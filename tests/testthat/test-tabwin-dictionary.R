@@ -1668,8 +1668,11 @@ test_that("subtotal and sequence jointly identify a CNV category", {
 test_that("CNV parser detects UTF-8 and recovers official tab alignment", {
   utf8 <- tempfile(fileext = ".CNV")
   legacy <- tempfile(fileext = ".CNV")
+  cp850 <- tempfile(fileext = ".CNV")
+  cp860 <- tempfile(fileext = ".CNV")
+  mixed <- tempfile(fileext = ".CNV")
   tabbed <- tempfile(fileext = ".CNV")
-  on.exit(unlink(c(utf8, legacy, tabbed)), add = TRUE)
+  on.exit(unlink(c(utf8, legacy, cp850, cp860, mixed, tabbed)), add = TRUE)
   writeLines(
     c("1 1", tabwin_cnv_line(1, "Águas", "1")),
     utf8,
@@ -1679,6 +1682,33 @@ test_that("CNV parser detects UTF-8 and recovers official tab alignment", {
     legacy,
     c("1 1", tabwin_cnv_line(1, "Atenção", "1"))
   )
+  cp850_lines <- iconv(
+    c("1 1", tabwin_cnv_line(1, "Aplicação", "1")),
+    from = "UTF-8", to = "CP850"
+  )
+  writeBin(charToRaw(paste(cp850_lines, collapse = "\r\n")), cp850)
+  cp860_bytes <- c(
+    charToRaw("1 4 L\r\n"),
+    iconv(
+      tabwin_cnv_line(1, "localizações", "1001"),
+      from = "UTF-8", to = "CP860", toRaw = TRUE
+    )[[1L]]
+  )
+  writeBin(cp860_bytes, cp860)
+  crlf <- charToRaw("\r\n")
+  mixed_bytes <- c(
+    charToRaw("2 1"), crlf,
+    iconv(
+      tabwin_cnv_line(1, "Aeronáutica", "1"),
+      from = "UTF-8", to = "CP1252", toRaw = TRUE
+    )[[1L]],
+    crlf,
+    iconv(
+      tabwin_cnv_line(2, "Aplicação", "2"),
+      from = "UTF-8", to = "CP850", toRaw = TRUE
+    )[[1L]]
+  )
+  writeBin(mixed_bytes, mixed)
   write_tabwin_text(tabbed, c(
     "1 4 L",
     "      1  Aparelho de Hemodialise - Hospitalar\t            1002"
@@ -1686,17 +1716,50 @@ test_that("CNV parser detects UTF-8 and recovers official tab alignment", {
 
   utf8_conversion <- microdatasus:::.tabwin_parse_cnv(utf8)
   legacy_conversion <- microdatasus:::.tabwin_parse_cnv(legacy)
+  cp850_conversion <- microdatasus:::.tabwin_parse_cnv(cp850)
+  cp860_conversion <- microdatasus:::.tabwin_parse_cnv(cp860)
+  mixed_conversion <- microdatasus:::.tabwin_parse_cnv(mixed)
   tabbed_conversion <- microdatasus:::.tabwin_parse_cnv(tabbed)
 
   expect_identical(unname(utf8_conversion$map[["1"]]), "Águas")
   expect_identical(utf8_conversion$source_encoding, "UTF-8")
   expect_identical(unname(legacy_conversion$map[["1"]]), "Atenção")
   expect_identical(legacy_conversion$source_encoding, "windows-1252")
+  expect_identical(unname(cp850_conversion$map[["1"]]), "Aplicação")
+  expect_identical(cp850_conversion$source_encoding, "CP850")
+  expect_identical(
+    unname(cp860_conversion$map[["1001"]]), "localizações"
+  )
+  expect_identical(cp860_conversion$source_encoding, "CP860")
+  expect_identical(
+    unname(mixed_conversion$map[c("1", "2")]),
+    c("Aeronáutica", "Aplicação")
+  )
+  expect_match(mixed_conversion$source_encoding, "^mixed:")
+  expect_match(mixed_conversion$source_encoding, "CP1252")
+  expect_match(mixed_conversion$source_encoding, "CP850")
   expect_identical(
     unname(tabbed_conversion$map[["1002"]]),
     "Aparelho de Hemodialise - Hospitalar"
   )
   expect_identical(tabbed_conversion$tabs_recovered, 1L)
+})
+
+test_that("CNV fallback preserves columns for undefined CP1252 bytes", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  line <- tabwin_cnv_line(1, "FATIMA", "1548")
+  label_start <- regexpr("FATIMA", line, fixed = TRUE)[[1L]]
+  bytes <- charToRaw(line)
+  bytes[[label_start + 1L]] <- as.raw(0x8f)
+  writeBin(c(charToRaw("1 4 L\r\n"), bytes), path)
+
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+
+  expect_identical(conversion$observed_category_count, 1L)
+  expect_identical(names(conversion$map), "1548")
+  expect_identical(unname(conversion$map[["1548"]]), "FÂTIMA")
+  expect_identical(conversion$source_encoding, "CP860")
 })
 
 test_that("DBF relation labels honor mixed legacy byte encodings", {

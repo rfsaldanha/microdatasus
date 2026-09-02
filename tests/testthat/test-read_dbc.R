@@ -385,6 +385,89 @@ test_that("automatic decoding recovers exact CP850 UTF-8 ordinals", {
   expect_identical(unname(decoded), c("1\u00aa", "1\u00ba", "1\u00b0"))
 })
 
+test_that("mixed CP850 recovery recognizes adjacent diagnostic accents", {
+  value <- rawToChar(as.raw(c(
+    charToRaw("GUARNI"), 135L, 198L, charToRaw("O")
+  )))
+  Encoding(value) <- "unknown"
+
+  decoded <- microdatasus:::.dbc_decode_text_auto(
+    value, "CP1252", 88L, "test field", "test.dbf"
+  )
+
+  actual <- decoded
+  attr(actual, "dbc_encoding_used") <- NULL
+  expect_identical(unname(actual), "GUARNI\u00e7\u00e3O")
+  expect_identical(
+    attr(decoded, "dbc_encoding_used"),
+    "mixed:CP850+CP1252"
+  )
+})
+
+test_that("automatic decoding selects and mixes CP860 safely", {
+  as_unknown <- function(value, encoding) {
+    item <- rawToChar(iconv(
+      value, from = "UTF-8", to = encoding, toRaw = TRUE
+    )[[1L]])
+    Encoding(item) <- "unknown"
+    item
+  }
+  cp860 <- vapply(
+    c("São", "localizações"),
+    as_unknown,
+    character(1),
+    encoding = "CP860"
+  )
+  decoded <- microdatasus:::.dbc_decode_text_auto(
+    cp860, "CP1252", 0L, "test field", "test.dbf"
+  )
+  actual <- decoded
+  attr(actual, "dbc_encoding_used") <- NULL
+
+  expect_identical(unname(actual), c("São", "localizações"))
+  expect_identical(attr(decoded, "dbc_encoding_used"), "CP860")
+
+  mixed <- c(
+    as_unknown("APLICAÇÃO", "CP850"),
+    as_unknown("GUARNIÇÃO", "CP850"),
+    as_unknown("SÃO", "CP860"),
+    as_unknown("FÂTIMA", "CP860")
+  )
+  decoded_mixed <- microdatasus:::.dbc_decode_text_auto(
+    mixed, "CP850", 29L, "test field", "test.dbf"
+  )
+  actual_mixed <- decoded_mixed
+  attr(actual_mixed, "dbc_encoding_used") <- NULL
+
+  expect_identical(
+    unname(actual_mixed),
+    c("APLICAÇÃO", "GUARNIÇÃO", "SÃO", "FÂTIMA")
+  )
+  expect_match(attr(decoded_mixed, "dbc_encoding_used"), "CP850")
+  expect_match(attr(decoded_mixed, "dbc_encoding_used"), "CP860")
+  expect_false(any(Encoding(decoded_mixed) == "bytes"))
+
+  cp850_name <- as_unknown("Maître", "CP850")
+  decoded_name <- microdatasus:::.dbc_decode_text_auto(
+    cp850_name, "CP850", 29L, "test field", "test.dbf"
+  )
+  actual_name <- decoded_name
+  attr(actual_name, "dbc_encoding_used") <- NULL
+  expect_identical(unname(actual_name), "Maître")
+  expect_identical(attr(decoded_name, "dbc_encoding_used"), "CP850")
+
+  singleton <- c(
+    as_unknown("APLICAÇÃO", "CP850"),
+    as_unknown("SÃO", "CP860")
+  )
+  decoded_singleton <- microdatasus:::.dbc_decode_text_auto(
+    singleton, "CP850", 29L, "test field", "test.dbf"
+  )
+  actual_singleton <- decoded_singleton
+  attr(actual_singleton, "dbc_encoding_used") <- NULL
+  expect_identical(unname(actual_singleton), c("APLICAÇÃO", "SÃO"))
+})
+
 test_that("UTF-8 mojibake recovery is signature scoped", {
   recovered <- microdatasus:::.dbc_recover_utf8_mojibake(c(
     "M\u00c2\u00aa", "Com\u00c3\u00a9rcio", "M\u00c2\u00b0",

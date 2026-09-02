@@ -326,7 +326,7 @@
 
 .dbc_select_legacy_encoding <- function(value, encoding, language_driver) {
   normalized <- toupper(encoding)
-  supported <- c("CP1252", "CP850")
+  supported <- c("CP1252", "CP850", "CP860")
   if (language_driver != 0L || !normalized %in% supported) {
     return(list(encoding = encoding, low_confidence = FALSE))
   }
@@ -416,13 +416,34 @@
     between_letters <- is_letter(previous) & is_letter(following)
     beside_upper <- is_upper(previous) | is_upper(following)
     between_upper <- is_upper(previous) & is_upper(following)
+    diagnostic_bytes <- c(128L, 135L, 161L, 198L, 229L)
+    diagnostic <- bytes %in% diagnostic_bytes
+    accent <- bytes %in% c(
+      diagnostic_bytes, 130L, 131L, 133L, 136L, 144L, 147L,
+      160L, 162L, 163L, 181L, 182L, 183L, 199L, 210L,
+      214L, 224L, 226L, 228L, 233L
+    )
+    accent_starts <- which(accent & !c(FALSE, utils::head(accent, -1L)))
+    accent_ends <- which(accent & !c(utils::tail(accent, -1L), FALSE))
+    diagnostic_run <- length(accent_starts) && any(vapply(
+      seq_along(accent_starts),
+      function(index) {
+        run <- seq.int(accent_starts[[index]], accent_ends[[index]])
+        before <- accent_starts[[index]] - 1L
+        after <- accent_ends[[index]] + 1L
+        any(diagnostic[run]) &&
+          before >= 1L && after <= length(bytes) &&
+          is_letter(bytes[[before]]) && is_letter(bytes[[after]])
+      },
+      logical(1)
+    ))
 
     cp850_utf8_ordinal <- any(
       utils::head(bytes, -1L) == 182L &
         utils::tail(bytes, -1L) %in% c(166L, 167L, 248L)
     )
     cp850_utf8_ordinal |
-      any(bytes %in% c(128L, 135L, 161L, 198L, 229L) & between_letters) |
+      diagnostic_run |
       any(bytes %in% c(181L, 182L) & beside_upper) |
       any(bytes == 162L & between_letters) |
       any(bytes %in% c(224L, 233L) & between_upper)
@@ -463,7 +484,70 @@
     )
   }, logical(1))
   evidence <- .dbc_cp850_byte_evidence(value[indices])
-  recover[indices] <- clean & (evidence | force[indices])
+  different <- vapply(indices, function(index) {
+    is.na(primary[[index]]) ||
+      !identical(candidate[[index]], primary[[index]])
+  }, logical(1))
+  recover[indices] <- clean & (evidence | force[indices]) &
+    (different | force[indices])
+  list(value = candidate, recover = recover)
+}
+
+.dbc_cp860_byte_evidence <- function(value) {
+  # Mixed CP860 evidence is restricted to uppercase Portuguese accents in an
+  # uppercase word. Lowercase DOS bytes are ambiguous with legitimate CP850
+  # names such as Maître and are handled only by whole-field selection.
+  diagnostic <- c(134L, 137L, 139L, 140L, 142L, 143L, 145L,
+                  150L, 153L, 159L)
+  shared_accents <- c(
+    128L, 130L, 131L, 133L, 135L, 136L,
+    147L, 160L, 161L, 162L, 163L
+  )
+  vapply(value, function(item) {
+    bytes <- as.integer(charToRaw(item))
+    if (!length(bytes)) return(FALSE)
+    accent <- bytes %in% c(diagnostic, shared_accents)
+    starts <- which(accent & !c(FALSE, utils::head(accent, -1L)))
+    ends <- which(accent & !c(utils::tail(accent, -1L), FALSE))
+    if (!length(starts)) return(FALSE)
+    is_upper <- function(x) !is.na(x) & x >= 65L & x <= 90L
+    any(vapply(seq_along(starts), function(index) {
+      run <- seq.int(starts[[index]], ends[[index]])
+      before <- starts[[index]] - 1L
+      after <- ends[[index]] + 1L
+      any(bytes[run] %in% diagnostic) &&
+        (
+          (before >= 1L && is_upper(bytes[[before]])) ||
+            (after <= length(bytes) && is_upper(bytes[[after]]))
+        )
+    }, logical(1)))
+  }, logical(1))
+}
+
+.dbc_recover_mixed_cp860 <- function(value, primary) {
+  candidate <- suppressWarnings(iconv(
+    value, from = "CP860", to = "UTF-8", sub = NA
+  ))
+  recover <- !is.na(candidate) & !is.na(primary) &
+    .dbc_cp860_byte_evidence(value)
+# The official legacy corpus contains this exact singleton signature.
+  exact_sao <- vapply(value, function(item) {
+    bytes <- as.integer(charToRaw(item))
+    length(bytes) >= 3L && any(
+      utils::head(bytes, -2L) == 83L &
+        bytes[seq.int(2L, length(bytes) - 1L)] == 142L &
+        utils::tail(bytes, -2L) == 79L
+    )
+  }, logical(1))
+  if (sum(recover) < 2L) recover <- recover & exact_sao
+  indices <- which(recover)
+  if (length(indices)) {
+    recover[indices] <- vapply(indices, function(index) {
+      candidate_score <- .dbc_text_penalty(candidate[[index]])
+      candidate_score <= 0.0125 &&
+        candidate_score < .dbc_text_penalty(primary[[index]])
+    }, logical(1))
+  }
   list(value = candidate, recover = recover)
 }
 
@@ -578,7 +662,8 @@
       sub = NA
     ))
     recovered_rows <- rep(FALSE, length(converted))
-    if (identical(toupper(legacy_encoding), "CP1252")) {
+    normalized_legacy <- toupper(legacy_encoding)
+    if (identical(normalized_legacy, "CP1252")) {
       recovered <- .dbc_recover_mixed_cp850(
         value[remaining],
         converted,
@@ -589,14 +674,36 @@
         converted[recovered_rows] <- recovered$value[recovered_rows]
         used <- c(used, "CP850")
       }
-    } else if (identical(toupper(legacy_encoding), "CP850")) {
-      recovered <- .dbc_recover_mixed_cp1252(
-        value[remaining],
-        converted
-      )
-      recovered_rows <- recovered$recover
+    } else if (identical(normalized_legacy, "CP850")) {
+      cp860 <- .dbc_recover_mixed_cp860(value[remaining], converted)
+      recovered_rows <- cp860$recover
       if (any(recovered_rows)) {
-        converted[recovered_rows] <- recovered$value[recovered_rows]
+        converted[recovered_rows] <- cp860$value[recovered_rows]
+        used <- c(used, "CP860")
+      }
+      recovered <- .dbc_recover_mixed_cp1252(
+        value[remaining], converted
+      )
+      cp1252_rows <- recovered$recover & !recovered_rows
+      if (any(cp1252_rows)) {
+        converted[cp1252_rows] <- recovered$value[cp1252_rows]
+        recovered_rows <- recovered_rows | cp1252_rows
+        used <- c(used, "CP1252")
+      }
+    } else if (identical(normalized_legacy, "CP860")) {
+      cp850 <- .dbc_recover_mixed_cp850(value[remaining], converted)
+      recovered_rows <- cp850$recover
+      if (any(recovered_rows)) {
+        converted[recovered_rows] <- cp850$value[recovered_rows]
+        used <- c(used, "CP850")
+      }
+      recovered <- .dbc_recover_mixed_cp1252(
+        value[remaining], converted
+      )
+      cp1252_rows <- recovered$recover & !recovered_rows
+      if (any(cp1252_rows)) {
+        converted[cp1252_rows] <- recovered$value[cp1252_rows]
+        recovered_rows <- recovered_rows | cp1252_rows
         used <- c(used, "CP1252")
       }
     }
@@ -700,7 +807,7 @@
 #' @param encoding Character scalar naming the source encoding, or `"auto"`
 #'   (the default) to use the DBF language-driver byte together with byte-level
 #'   evidence from each character field. Unmarked DataSUS files start with
-#'   Windows-1252 and switch to UTF-8 or CP850 only when the data support it.
+#'   Windows-1252 and switch to UTF-8, CP850, or CP860 only when the data support it.
 #'
 #' @return A tibble with one column per DBF field. By default, all columns are
 #'   character vectors; with `as_character = FALSE`, DBF-inferred types are

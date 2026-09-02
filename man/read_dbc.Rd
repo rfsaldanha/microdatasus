@@ -19,7 +19,7 @@ columns to read. Unselected columns are neither allocated nor parsed.}
 \item{encoding}{Character scalar naming the source encoding, or \code{"auto"}
 (the default) to use the DBF language-driver byte together with byte-level
 evidence from each character field. Unmarked DataSUS files start with
-Windows-1252 and switch to UTF-8 or CP850 only when the data support it.}
+Windows-1252 and switch to UTF-8, CP850, or CP860 only when the data support it.}
 }
 \value{
 A tibble with one column per DBF field. By default, all columns are
