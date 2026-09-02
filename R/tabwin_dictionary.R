@@ -443,11 +443,24 @@
       # source value, so TabWin's normal starting position of one is unambiguous.
       position <- 1L
     }
+    description <- trimws(substring(fields[[1L]], 2L))
+    field <- toupper(trimws(fields[[2L]]))
+    field_recovered <- identical(toupper(basename(path)), "ROTANET.DEF") &&
+      identical(command, "S") &&
+      identical(description, "Bact Ident Amost") &&
+      identical(field, "BACT\u00c9RIA") &&
+      identical(toupper(basename(file_name)), "SIM_NAO.CNV")
+    if (field_recovered) {
+      # Paired T/S rows name the same physical field; the S row alone contains
+      # an accented typo that cannot be a dBase field identifier.
+      field <- "BACTERIA"
+    }
     data.frame(
       order = i,
       command = command,
-      description = trimws(substring(fields[[1L]], 2L)),
-      field = toupper(trimws(fields[[2L]])),
+      description = description,
+      field = field,
+      field_recovered = field_recovered,
       argument = argument,
       position = position,
       position_recovered = position_recovered,
@@ -2093,7 +2106,7 @@
   )
 }
 
-.tabwin_parser_version <- 27L
+.tabwin_parser_version <- 28L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {

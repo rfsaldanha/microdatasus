@@ -320,6 +320,28 @@ test_that("DEF parser recovers unambiguous official CNV punctuation errors", {
   expect_false(unrelated_definitions[["syntax_recovered"]])
 })
 
+test_that("DEF parser recovers the paired official ROTANet field typo", {
+  directory <- tempfile("def-rotanet-field-")
+  dir.create(directory)
+  path <- file.path(directory, "ROTANet.def")
+  unrelated <- file.path(directory, "Other.def")
+  on.exit(unlink(directory, recursive = TRUE), add = TRUE)
+  lines <- c(
+    "TBact Ident Amost, BACTERIA, 1, SIM_NAO.CNV",
+    "SBact Ident Amost, BACT\u00c9RIA, 1, SIM_NAO.CNV"
+  )
+  write_tabwin_text(path, lines)
+  write_tabwin_text(unrelated, lines[[2L]])
+
+  definitions <- microdatasus:::.tabwin_parse_def(path)
+  unrelated_definition <- microdatasus:::.tabwin_parse_def(unrelated)
+
+  expect_identical(definitions$field, rep("BACTERIA", 2L))
+  expect_identical(definitions$field_recovered, c(FALSE, TRUE))
+  expect_identical(unrelated_definition$field, "BACT\u00c9RIA")
+  expect_false(unrelated_definition$field_recovered)
+})
+
 test_that("CNV parser reads labels, aliases, and numeric ranges", {
   path <- tempfile(fileext = ".CNV")
   on.exit(unlink(path), add = TRUE)
