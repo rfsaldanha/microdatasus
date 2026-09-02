@@ -1712,7 +1712,7 @@
   )
 }
 
-.tabwin_parser_version <- 17L
+.tabwin_parser_version <- 18L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {
@@ -1785,6 +1785,33 @@
   }
   matches <- which(names_upper %in% unique(aliases))
   if (length(matches) == 1L) matches else NA_integer_
+}
+
+# The official EpizotNet DEF requests ID_RG_OCOR, while REGIONET omits it.
+# Recover ID_REGIONA only when its notification and residence key copies agree.
+.tabwin_recover_official_dbf_key <- function(field, table, path) {
+  if (
+    length(field) != 1L ||
+      is.na(field) ||
+      !nzchar(trimws(field)) ||
+      !identical(toupper(basename(path)), "REGIONET.DBF") ||
+      !identical(toupper(trimws(field)), "ID_RG_OCOR")
+  ) {
+    return(NA_integer_)
+  }
+  notification <- .tabwin_match_dbf_field("ID_REGIONA", names(table))
+  residence <- .tabwin_match_dbf_field("ID_RG_RESI", names(table))
+  if (
+    is.na(notification) ||
+      is.na(residence) ||
+      !identical(
+        as.character(table[[notification]]),
+        as.character(table[[residence]])
+      )
+  ) {
+    return(NA_integer_)
+  }
+  notification
 }
 
 .tabwin_dbf_encoding <- function(path) {
@@ -1945,9 +1972,17 @@
     dbf_encoding <- .tabwin_dbf_encoding(path)
     cp850_rows <- .tabwin_dbf_cp850_rows(table, dbf_encoding, path)
     code_index <- .tabwin_match_dbf_field(definition$field, names(table))
+    recovered_key <- FALSE
+    if (is.na(code_index)) {
+      code_index <- .tabwin_recover_official_dbf_key(
+        definition$field, table, path
+      )
+      recovered_key <- !is.na(code_index)
+    }
     # The TabWin specification uses the first DBF field when the related table
     # does not repeat the source field name.
-    if (is.na(code_index)) {
+    fallback_key <- is.na(code_index)
+    if (fallback_key) {
       code_index <- 1L
     }
     label_index <- .tabwin_match_dbf_field(
@@ -1993,6 +2028,10 @@
         ranges = .tabwin_empty_ranges(),
         thresholds = .tabwin_empty_thresholds(),
         fallback_label = fallback_label,
+        fallback_key = fallback_key,
+        recovered_key = recovered_key,
+        requested_key_field = definition$field,
+        key_field = names(table)[[code_index]],
         requested_label_field = definition$argument,
         label_field = names(table)[[label_index]],
         source_encoding = dbf_encoding$encoding,

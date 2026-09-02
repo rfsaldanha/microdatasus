@@ -2014,6 +2014,54 @@ test_that("DBF fields use only deterministic dBase physical names", {
   expect_identical(unname(result$conversion$map), c("One", "Two"))
 })
 
+test_that("official REGIONET notification keys use the equivalent regional ID", {
+  directory <- tempfile("dbf-regionet-key-")
+  dir.create(directory)
+  on.exit(unlink(directory, recursive = TRUE), add = TRUE)
+  table <- data.frame(
+    SG_UF = c("SP", "SP"),
+    ID_REGIONA = c("1340", "1341"),
+    NM_REGIONA = c("Bauru", "Botucatu"),
+    ID_RG_RESI = c("1340", "1341"),
+    stringsAsFactors = FALSE
+  )
+  path <- file.path(directory, "REGIONET.DBF")
+  foreign::write.dbf(table, path)
+  dictionary <- list(
+    extracted_all = TRUE, cache_dir = directory, persistent = FALSE,
+    conversions = new.env(parent = emptyenv())
+  )
+  definition <- data.frame(
+    file = "REGIONET.DBF", extension = "DBF", field = "ID_RG_OCOR",
+    argument = "NM_REGIONA", stringsAsFactors = FALSE
+  )
+
+  result <- microdatasus:::.datasus_dictionary_conversion(
+    dictionary, definition
+  )
+
+  expect_identical(result$status, "ok")
+  expect_true(result$conversion$recovered_key)
+  expect_false(result$conversion$fallback_key)
+  expect_identical(result$conversion$requested_key_field, "ID_RG_OCOR")
+  expect_identical(result$conversion$key_field, "ID_REGIONA")
+  expect_identical(
+    result$conversion$map,
+    c(`1340` = "Bauru", `1341` = "Botucatu")
+  )
+
+  expect_true(is.na(microdatasus:::.tabwin_recover_official_dbf_key(
+    "ID_RG_OCOR", table, file.path(directory, "OTHER.DBF")
+  )))
+  table$ID_RG_RESI[[2L]] <- "9999"
+  expect_true(is.na(microdatasus:::.tabwin_recover_official_dbf_key(
+    "ID_RG_OCOR", table, path
+  )))
+  expect_true(is.na(microdatasus:::.tabwin_recover_official_dbf_key(
+    NA_character_, table, path
+  )))
+})
+
 test_that("two-column DBFs use an explicit audited label fallback", {
   directory <- tempfile("dbf-fallback-")
   dir.create(directory)
