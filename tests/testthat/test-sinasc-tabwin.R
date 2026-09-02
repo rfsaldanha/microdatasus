@@ -136,6 +136,9 @@ test_that("process_sinasc labels and types the layout from 1996 onward", {
         LOCNASC = c("1", "3"),
         DTNASC = c("01012024", "02012024"),
         IDADEMAE = c("25", "99"),
+        IDADEPAI = c("99", "00"),
+        CONSPRENAT = c("99", "10"),
+        MESPRENAT = c("99", "01"),
         SEXO = c("1", "2"),
         PESO = c("3200", "9999"),
         CODMUNRES = c("120020", "120030"),
@@ -152,6 +155,9 @@ test_that("process_sinasc labels and types the layout from 1996 onward", {
     as.character(result$DTNASC), c("2024-01-01", "2024-01-02")
   )
   expect_type(result$IDADEMAE, "integer")
+  expect_identical(result$IDADEPAI, c(99L, NA_integer_))
+  expect_identical(result$CONSPRENAT, c(NA_integer_, 10L))
+  expect_identical(result$MESPRENAT, c(NA_integer_, 1L))
   expect_type(result$PESO, "integer")
   expect_true(is.na(result$IDADEMAE[[2L]]))
   expect_true(is.na(result$PESO[[2L]]))

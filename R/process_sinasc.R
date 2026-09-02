@@ -34,13 +34,15 @@
 
 # Missing-value conventions retained from the published SINASC layouts.
 .sinasc_integer_missing <- list(
-  "IDADEMAE" = c("0", "99"),
-  "IDADEPAI" = c("0", "99"),
+  "IDADEMAE" = c("0", "00", "99"),
+  "IDADEPAI" = c("0", "00"),
   "QTDFILVIVO" = "99",
   "QTDFILMORT" = "99",
   "APGAR1" = "99",
   "APGAR5" = "99",
-  "IDADE_MAE" = c("0", "99"),
+  "CONSPRENAT" = "99",
+  "MESPRENAT" = "99",
+  "IDADE_MAE" = c("0", "00", "99"),
   "FIL_VIVOS" = "99",
   "FIL_MORTOS" = "99",
   "FIL_ABORT" = "99"
