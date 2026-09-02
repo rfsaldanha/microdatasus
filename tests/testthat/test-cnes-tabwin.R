@@ -19,11 +19,16 @@ create_cnes_tabwin_fixture <- function() {
     "CNES-GM" = "Gestao_de_Metas.def"
   )
   for (information_system in names(definitions)) {
+    management_relation <- if (identical(information_system, "CNES-RC")) {
+      "CNV/NIVELDEP.CNV"
+    } else {
+      "CNV/TPGESTAO.CNV"
+    }
     lines <- c(
       "A*.dbc",
       "XFlag, FLAG, 1, CNV/FLAG.CNV",
       "XAdministrative sphere, ESFERA_A, 1, CNV/ESFERA.CNV",
-      "XManagement, TPGESTAO, 1, CNV/TPGESTAO.CNV",
+      paste0("XManagement, TPGESTAO, 1, ", management_relation),
       "IQuantidade de teste, QT_TEST",
       "DNome fantasia, CNES, FANTASIA, DBF/CADGERBR.DBF"
     )
@@ -69,6 +74,14 @@ create_cnes_tabwin_fixture <- function() {
       tabwin_cnv_line(1, "Dupla gestao", "D"),
       tabwin_cnv_line(2, "Estadual gestao", "E"),
       tabwin_cnv_line(3, "Municipal gestao", "M")
+    )
+  )
+  write_tabwin_text(
+    file.path(root, "CNV", "NIVELDEP.CNV"),
+    c(
+      "2 1 L",
+      tabwin_cnv_line(1, "Individual", "1"),
+      tabwin_cnv_line(2, "Mantido", "3")
     )
   )
   foreign::write.dbf(
@@ -293,6 +306,48 @@ test_that("process_cnes resolves both official ESFERA_A domains", {
   expect_setequal(
     report[["dictionaries"]][["information_system"]],
     c("CNES-PF", "CNES-ST")
+  )
+  expect_equal(downloads, 1L)
+})
+
+test_that("process_cnes repairs the official CNES-RC TPGESTAO relation", {
+  archive <- create_cnes_tabwin_fixture()
+  on.exit(unlink(archive), add = TRUE)
+  downloads <- 0L
+  local_mocked_bindings(
+    .datasus_download_file = function(
+      url,
+      destination,
+      timeout,
+      quiet = FALSE
+    ) {
+      downloads <<- downloads + 1L
+      file.copy(archive, destination)
+      invisible(destination)
+    },
+    .package = "microdatasus"
+  )
+  microdatasus:::.tabwin_clear_cache()
+  on.exit(restore_empty_tabwin_cache(), add = TRUE)
+
+  result <- process_cnes(
+    data.frame(TPGESTAO = c("D", "E", "M")),
+    information_system = "CNES-RC",
+    municipality_data = FALSE,
+    diagnostics = TRUE
+  )
+
+  expect_s3_class(result[["TPGESTAO"]], "factor")
+  expect_identical(
+    as.character(result[["TPGESTAO"]]),
+    c("Dupla gestao", "Estadual gestao", "Municipal gestao")
+  )
+  report <- processing_diagnostics(result)
+  expect_false("TPGESTAO" %in% report[["unmapped_fields"]])
+  expect_false("TPGESTAO" %in% report[["unknown_codes"]][["field"]])
+  expect_setequal(
+    report[["dictionaries"]][["information_system"]],
+    c("CNES-RC", "CNES-ST")
   )
   expect_equal(downloads, 1L)
 })

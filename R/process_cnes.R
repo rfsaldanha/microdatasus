@@ -323,7 +323,25 @@ process_cnes <- function(
       toupper(categorical_fields) != "ESFERA_A"
     ]
   }
-  if (length(management_sphere_rows)) {
+  # Regras_Contratuais.def is the sole CNES DEF that mistakenly assigns
+  # TPGESTAO to NIVELDEP.CNV (codes 1/3). Actual RC records use the same D/E/M
+  # domain declared as TPGESTAO.CNV by every other CNES family.
+  contract_management <- if (identical(information_system, "CNES-RC")) {
+    .process_find_fields(result, "TPGESTAO")
+  } else {
+    character()
+  }
+  contract_management_rows <- if (length(contract_management)) {
+    seq_len(nrow(result))
+  } else {
+    integer()
+  }
+  if (length(contract_management_rows)) {
+    categorical_fields <- categorical_fields[
+      toupper(categorical_fields) != "TPGESTAO"
+    ]
+  }
+  if (length(c(management_sphere_rows, contract_management_rows))) {
     management_dictionary <- if ("CNES-ST" %in% names(dictionaries)) {
       dictionaries[["CNES-ST"]]
     } else {
@@ -373,6 +391,16 @@ process_cnes <- function(
       administrative_sphere,
       aliases = c("ESFERA_A" = "TPGESTAO"),
       rows = management_sphere_rows,
+      labels = labels,
+      collector = collector
+    )
+  }
+  if (length(contract_management_rows)) {
+    result <- .process_apply_dictionary(
+      result,
+      management_dictionary,
+      contract_management,
+      rows = contract_management_rows,
       labels = labels,
       collector = collector
     )
