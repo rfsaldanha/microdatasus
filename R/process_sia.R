@@ -64,9 +64,15 @@
     grepl("(^|_)(VL|VAL)", upper) |
       grepl("DIF_VAL|VALPRO|VALAPR", upper)
   ]
+  # The published nephrology CNVs contain only example values for these
+  # quantitative fields. Preserve measurements as doubles and the fistula
+  # intervention count as an integer instead of treating them as categories.
+  measurement_fields <- fields[grepl(
+    "^AN_(TRU|ALBUMI|HB)$", upper
+  )]
   integer_fields <- fields[
     grepl(
-      "QTD|QTDATE|PERMANEN|NUIDADE|IDADEPAC|(^|_)IDADE$|IDADEMIN|IDADEMAX|PESO|ALTURA|DIURES|GLICOS|ESTADI|NUMC[0-9]*$|TOTM|ANOACOM|MESACOM|TABBARR",
+      "QTD|QTDATE|PERMANEN|NUIDADE|IDADEPAC|(^|_)IDADE$|IDADEMIN|IDADEMAX|PESO|ALTURA|DIURES|GLICOS|ESTADI|NUMC[0-9]*$|TOTM|ANOACOM|MESACOM|TABBARR|^AN_INTFIS$",
       upper
     ) &
       !grepl("COIDADE|TPIDADE|FLIDADE", upper)
@@ -83,15 +89,17 @@
     length(values) > 0L && all(grepl("^[0-9]{8}$", values))
   }, logical(1))]
 
+  double_fields <- setdiff(
+    unique(c(value_fields, measurement_fields, source_numeric)),
+    unique(c(date_fields, integer_fields))
+  )
+
   list(
     date = unique(date_fields),
     integer = setdiff(unique(integer_fields), date_fields),
-    double = setdiff(
-      unique(c(value_fields, source_numeric)),
-      unique(c(date_fields, integer_fields))
-    ),
+    double = double_fields,
     protected = unique(c(
-      date_fields, integer_fields, value_fields, source_numeric,
+      date_fields, integer_fields, double_fields,
       age_unit_fields,
       # Codes below remain stable identifiers even if the DEF offers
       # analytical groupings for TabWin rows or columns.

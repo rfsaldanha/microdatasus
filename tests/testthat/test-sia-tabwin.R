@@ -166,6 +166,58 @@ test_that("SIA categorical flags are not coerced to integers", {
   expect_true(all(c("PESO", "TABBARR") %in% types$integer))
 })
 
+test_that("SIA nephrology measurements remain quantitative", {
+  data <- data.frame(
+    AN_TRU = c("67", "65.5", "bad"),
+    AN_ALBUMI = c("4", "3.5", "bad"),
+    AN_HB = c("11", "10.5", "bad"),
+    AN_INTFIS = c("2", "3", "bad"),
+    stringsAsFactors = FALSE
+  )
+  types <- microdatasus:::.sia_type_fields(data)
+
+  expect_setequal(types$double, c("AN_TRU", "AN_ALBUMI", "AN_HB"))
+  expect_identical(types$integer, "AN_INTFIS")
+  expect_true(all(names(data) %in% types$protected))
+
+  archive <- create_sia_tabwin_fixture()
+  on.exit(unlink(archive), add = TRUE)
+  local_mocked_bindings(
+    .datasus_download_file = function(
+      url,
+      destination,
+      timeout,
+      quiet = FALSE
+    ) {
+      file.copy(archive, destination)
+      invisible(destination)
+    },
+    .package = "microdatasus"
+  )
+  microdatasus:::.tabwin_clear_cache()
+  on.exit(restore_empty_tabwin_cache(), add = TRUE)
+
+  result <- process_sia(
+    data,
+    information_system = "SIA-AN",
+    nome_proced = FALSE,
+    nome_ocupacao = FALSE,
+    nome_equipe = FALSE,
+    municipality_data = FALSE,
+    diagnostics = TRUE
+  )
+
+  expect_identical(result$AN_TRU, c(67, 65.5, NA_real_))
+  expect_identical(result$AN_ALBUMI, c(4, 3.5, NA_real_))
+  expect_identical(result$AN_HB, c(11, 10.5, NA_real_))
+  expect_identical(result$AN_INTFIS, c(2L, 3L, NA_integer_))
+  report <- processing_diagnostics(result)
+  expect_equal(nrow(report$unknown_codes), 0L)
+  failures <- report$coercion_failures
+  expect_setequal(failures$field, names(data))
+  expect_setequal(failures$target, c("double", "integer"))
+})
+
 test_that("all current SIA layouts share one archive and label from their DEF", {
   archive <- create_sia_tabwin_fixture()
   on.exit(unlink(archive), add = TRUE)
