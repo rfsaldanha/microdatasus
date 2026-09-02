@@ -311,6 +311,30 @@ test_that("read_dbc auto-detects unmarked CP850, UTF-8, and binary IDs", {
   expect_identical(Encoding(binary_result$CNS[[1L]]), "bytes")
 })
 
+test_that("read_dbc preserves low-confidence unmarked text losslessly", {
+  path <- literal_dbc_fixture(
+    fields = list(
+      list(name = "TEXT", type = "C", width = 2L, decimals = 0L)
+    ),
+    rows = list(list(as.raw(c(226L, 148L)))),
+    language_driver = 0L
+  )
+  on.exit(unlink(path), add = TRUE)
+
+  expect_warning(
+    result <- read_dbc(path),
+    "could not be decoded safely",
+    class = "microdatasus_dbc_encoding_warning"
+  )
+
+  expect_identical(charToRaw(result$TEXT[[1L]]), as.raw(c(226L, 148L)))
+  expect_identical(Encoding(result$TEXT[[1L]]), "bytes")
+  expect_identical(
+    unname(attr(result, "dbc_column_encodings")[["TEXT"]]),
+    "mixed:CP1252+bytes"
+  )
+})
+
 test_that("read_dbc recognizes DataSUS and Portuguese LDIDs", {
   datasus <- literal_dbc_fixture(
     fields = list(

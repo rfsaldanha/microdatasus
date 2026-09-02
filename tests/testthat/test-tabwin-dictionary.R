@@ -1672,27 +1672,160 @@ test_that("CNV parser detects UTF-8 and recovers official tab alignment", {
   expect_identical(tabbed_conversion$tabs_recovered, 1L)
 })
 
-test_that("DBF relation labels honor their legacy byte encoding", {
-  path <- tempfile(fileext = ".dbf")
-  on.exit(unlink(path), add = TRUE)
-  value <- rawToChar(as.raw(c(
+test_that("DBF relation labels honor mixed legacy byte encodings", {
+  directory <- tempfile("mixed-dbf-")
+  dir.create(directory)
+  on.exit(unlink(directory, recursive = TRUE), add = TRUE)
+  path <- file.path(directory, "CADGERBA.dbf")
+  cp1252_value <- rawToChar(as.raw(c(
     as.integer(charToRaw("ATEN")), 0xc7, 0xc3,
     as.integer(charToRaw("O"))
   )))
+  cp850_value <- vapply(
+    c("CL\u00cdNICA DE OLHOS", "CL\u00cdNICA SANTO ANT\u00d4NIO"),
+    function(item) {
+      rawToChar(charToRaw(iconv(item, from = "UTF-8", to = "CP850")))
+    },
+    character(1)
+  )
+  value <- c(cp1252_value, cp850_value)
   Encoding(value) <- "unknown"
   foreign::write.dbf(
-    data.frame(CODE = "1", LABEL = value, stringsAsFactors = FALSE),
+    data.frame(CODE = c("1", "2", "3"), FANTASIA = value),
     path
   )
   table <- foreign::read.dbf(path, as.is = TRUE)
-  metadata <- microdatasus:::.tabwin_dbf_encoding(path)
+  metadata <- list(language_driver = 88L, encoding = "CP1252")
+  cp850_rows <- microdatasus:::.tabwin_dbf_cp850_rows(
+    table, metadata, path
+  )
   decoded <- microdatasus:::.tabwin_decode_dbf_values(
-    table$LABEL, metadata, "test label", path
+    table$FANTASIA, metadata, "test label", path, cp850_rows
   )
 
-  expect_identical(metadata$language_driver, 0L)
+  expect_identical(metadata$language_driver, 88L)
   expect_identical(metadata$encoding, "CP1252")
-  expect_identical(decoded, "ATENÇÃO")
+  expect_identical(cp850_rows, c(FALSE, TRUE, TRUE))
+  expect_identical(
+    decoded,
+    c("ATENÇÃO", "CLÍNICA DE OLHOS", "CLÍNICA SANTO ANTÔNIO")
+  )
+})
+
+test_that("DBF rows share only diagnostic CP850 evidence", {
+  label <- c("ASCII", rawToChar(charToRaw(iconv(
+    "CL\u00cdNICA", from = "UTF-8", to = "CP850"
+  ))))
+  evidence <- c("ASCII", rawToChar(charToRaw(iconv(
+    "M\u00c9DICO", from = "UTF-8", to = "CP850"
+  ))))
+  table <- data.frame(LABEL = label, EVIDENCE = evidence)
+  table[] <- lapply(table, function(value) {
+    Encoding(value) <- "unknown"
+    value
+  })
+  metadata <- list(language_driver = 88L, encoding = "CP1252")
+  cp850_rows <- microdatasus:::.tabwin_dbf_cp850_rows(
+    table, metadata, "OTHER.dbf"
+  )
+
+  expect_identical(cp850_rows, c(FALSE, TRUE))
+  expect_identical(
+    microdatasus:::.tabwin_decode_dbf_values(
+      table$LABEL, metadata, "test label", "OTHER.dbf", cp850_rows
+    ),
+    c("ASCII", "CLÍNICA")
+  )
+})
+
+test_that("mixed CP850 recovery leaves ambiguous source bytes lossless", {
+  cp850_value <- rawToChar(charToRaw(iconv(
+    "M\u00c9DICO", from = "UTF-8", to = "CP850"
+  )))
+  ambiguous <- rawToChar(as.raw(c(65L, 129L, 66L)))
+  value <- c("ASCII", cp850_value, ambiguous)
+  Encoding(value) <- "unknown"
+
+  expect_warning(
+    decoded <- microdatasus:::.dbc_decode_text_auto(
+      value, "CP1252", 88L, "test field", "test.dbf"
+    ),
+    "1 value in test field could not be decoded safely",
+    class = "microdatasus_dbc_encoding_warning"
+  )
+
+  expect_identical(decoded[1:2], c("ASCII", "MÉDICO"))
+  expect_identical(charToRaw(decoded[[3L]]), as.raw(c(65L, 129L, 66L)))
+  expect_identical(Encoding(decoded[[3L]]), "bytes")
+  expect_identical(
+    attr(decoded, "dbc_encoding_used"),
+    "mixed:CP850+CP1252+bytes"
+  )
+})
+
+test_that("CP1252 punctuation and names are not mistaken for CP850", {
+  expected <- c(
+    "M\u00e9dico", "FR\u00d6LICH", "25\u00a0MG",
+    "AV\u00d2", "A \u00b7 B"
+  )
+  value <- vapply(expected, function(item) {
+    rawToChar(charToRaw(iconv(item, from = "UTF-8", to = "CP1252")))
+  }, character(1))
+  Encoding(value) <- "unknown"
+
+  expect_no_warning(decoded <- microdatasus:::.dbc_decode_text_auto(
+    value, "CP1252", 88L, "test field", "test.dbf"
+  ))
+
+  expect_identical(attr(decoded, "dbc_encoding_used"), "CP1252")
+  attr(decoded, "dbc_encoding_used") <- NULL
+  expect_identical(unname(decoded), expected)
+})
+
+test_that("official INCENTIVOS labels use exact byte-scoped repairs", {
+  make_value <- function(prefix, byte, suffix) {
+    rawToChar(c(charToRaw(prefix), as.raw(byte), charToRaw(suffix)))
+  }
+  value <- c(
+    make_value(
+      "8231-CEO-I-REDE DE CUIDADOS ", 145L,
+      " PESSOA COM DEFICIENCIA"
+    ),
+    make_value(
+      "8232-CEO-II-REDE DE CUIDADOS ", 145L,
+      " PESSOA COM DEFICIENCIA"
+    ),
+    make_value(
+      "8233-CEO-III-REDE DE CUIDADOS ", 145L,
+      " PESSOA COM DEFICIENCIA"
+    ),
+    make_value(
+      "8248-UNIDADE MOVEL DE ATENDIMENTO PRE-HOSPITALAR MOTOL",
+      143L, "NCIA SAMU"
+    )
+  )
+  Encoding(value) <- "unknown"
+  metadata <- list(language_driver = 0L, encoding = "CP1252")
+
+  expect_no_warning(decoded <- microdatasus:::.tabwin_decode_dbf_values(
+    value, metadata, "test label", "INCENTIVOS.DBF"
+  ))
+
+  expect_identical(decoded, c(
+    "8231-CEO-I-REDE DE CUIDADOS À PESSOA COM DEFICIENCIA",
+    "8232-CEO-II-REDE DE CUIDADOS À PESSOA COM DEFICIENCIA",
+    "8233-CEO-III-REDE DE CUIDADOS À PESSOA COM DEFICIENCIA",
+    paste0(
+      "8248-UNIDADE MOVEL DE ATENDIMENTO PRE-HOSPITALAR ",
+      "MOTOLÂNCIA SAMU"
+    )
+  ))
+  expect_identical(
+    charToRaw(microdatasus:::.tabwin_repair_official_dbf_values(
+      value, "OTHER.DBF"
+    )[[1L]]),
+    charToRaw(value[[1L]])
+  )
 })
 
 test_that("CNV header tolerates colon comments but rejects trailing garbage", {

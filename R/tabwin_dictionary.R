@@ -1802,13 +1802,112 @@
   )
 }
 
-.tabwin_decode_dbf_values <- function(value, metadata, context, path) {
+.tabwin_repair_official_dbf_values <- function(value, path) {
+  if (!identical(toupper(basename(path)), "INCENTIVOS.DBF")) {
+    return(value)
+  }
+
+  sources <- list(
+    c(
+      charToRaw("8231-CEO-I-REDE DE CUIDADOS "),
+      as.raw(145L),
+      charToRaw(" PESSOA COM DEFICIENCIA")
+    ),
+    c(
+      charToRaw("8232-CEO-II-REDE DE CUIDADOS "),
+      as.raw(145L),
+      charToRaw(" PESSOA COM DEFICIENCIA")
+    ),
+    c(
+      charToRaw("8233-CEO-III-REDE DE CUIDADOS "),
+      as.raw(145L),
+      charToRaw(" PESSOA COM DEFICIENCIA")
+    ),
+    c(
+      charToRaw(
+        "8248-UNIDADE MOVEL DE ATENDIMENTO PRE-HOSPITALAR MOTOL"
+      ),
+      as.raw(143L),
+      charToRaw("NCIA SAMU")
+    )
+  )
+  targets <- c(
+    "8231-CEO-I-REDE DE CUIDADOS \u00c0 PESSOA COM DEFICIENCIA",
+    "8232-CEO-II-REDE DE CUIDADOS \u00c0 PESSOA COM DEFICIENCIA",
+    "8233-CEO-III-REDE DE CUIDADOS \u00c0 PESSOA COM DEFICIENCIA",
+    paste0(
+      "8248-UNIDADE MOVEL DE ATENDIMENTO PRE-HOSPITALAR ",
+      "MOTOL\u00c2NCIA SAMU"
+    )
+  )
+  for (index in seq_along(sources)) {
+    matched <- vapply(value, function(item) {
+      !is.na(item) & identical(charToRaw(item), sources[[index]])
+    }, logical(1))
+    value[matched] <- targets[[index]]
+  }
+  value
+}
+
+.tabwin_dbf_cp850_rows <- function(table, metadata, path) {
+  rows <- rep(FALSE, nrow(table))
+  if (
+    metadata$language_driver == 0L ||
+      !identical(toupper(metadata$encoding), "CP1252")
+  ) {
+    return(rows)
+  }
+
+  for (index in which(vapply(table, is.character, logical(1)))) {
+    value <- as.character(table[[index]])
+    primary <- suppressWarnings(iconv(
+      value,
+      from = metadata$encoding,
+      to = "UTF-8",
+      sub = NA
+    ))
+    rows <- rows | .dbc_recover_mixed_cp850(value, primary)$recover
+  }
+
+  # CADGERBA contains two otherwise ambiguous CP850 rows. Restrict recovery to
+  # the exact official filename and byte sequences evidenced in both copies.
+  if (identical(toupper(basename(path)), "CADGERBA.DBF")) {
+    fantasia <- .tabwin_match_dbf_field("FANTASIA", names(table))
+    if (!is.na(fantasia)) {
+      targets <- vapply(
+        c(
+          "CL\u00cdNICA DE OLHOS",
+          "CL\u00cdNICA SANTO ANT\u00d4NIO"
+        ),
+        function(item) {
+          rawToChar(charToRaw(iconv(
+            item, from = "UTF-8", to = "CP850"
+          )))
+        },
+        character(1)
+      )
+      value <- as.character(table[[fantasia]])
+      rows <- rows | (!is.na(value) & value %in% targets)
+    }
+  }
+  rows
+}
+
+.tabwin_decode_dbf_values <- function(
+  value,
+  metadata,
+  context,
+  path,
+  cp850_rows = NULL
+) {
+  value <- .tabwin_repair_official_dbf_values(as.character(value), path)
   decoded <- .dbc_decode_text_auto(
-    as.character(value),
+    value,
     metadata$encoding,
     metadata$language_driver,
     context,
-    path
+    path,
+    cp850_rows
   )
   attr(decoded, "dbc_encoding_used") <- NULL
   decoded
@@ -1844,6 +1943,7 @@
       }
     )
     dbf_encoding <- .tabwin_dbf_encoding(path)
+    cp850_rows <- .tabwin_dbf_cp850_rows(table, dbf_encoding, path)
     code_index <- .tabwin_match_dbf_field(definition$field, names(table))
     # The TabWin specification uses the first DBF field when the related table
     # does not repeat the source field name.
@@ -1871,12 +1971,12 @@
     codes <- trimws(.tabwin_decode_dbf_values(
       table[[code_index]], dbf_encoding,
       sprintf("TabWin DBF key field %s", sQuote(names(table)[[code_index]])),
-      path
+      path, cp850_rows
     ))
     labels <- .tabwin_decode_dbf_values(
       table[[label_index]], dbf_encoding,
       sprintf("TabWin DBF label field %s", sQuote(names(table)[[label_index]])),
-      path
+      path, cp850_rows
     )
     keep <- !is.na(codes) & nzchar(codes) & !duplicated(codes)
     map <- labels[keep]

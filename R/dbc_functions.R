@@ -324,6 +324,66 @@
   .dbc_text_penalty(valid) + 0.25 * mean(invalid)
 }
 
+.dbc_cp850_byte_evidence <- function(value) {
+  vapply(value, function(item) {
+    bytes <- as.integer(charToRaw(item))
+    if (!length(bytes)) return(FALSE)
+    if (144L %in% bytes) return(TRUE)
+
+    previous <- c(NA_integer_, utils::head(bytes, -1L))
+    following <- c(utils::tail(bytes, -1L), NA_integer_)
+    is_letter <- function(x) {
+      !is.na(x) & ((x >= 65L & x <= 90L) | (x >= 97L & x <= 122L))
+    }
+    is_upper <- function(x) !is.na(x) & x >= 65L & x <= 90L
+    between_letters <- is_letter(previous) & is_letter(following)
+    beside_upper <- is_upper(previous) | is_upper(following)
+    between_upper <- is_upper(previous) & is_upper(following)
+
+    any(bytes %in% c(128L, 135L, 198L, 229L) & between_letters) |
+      any(bytes %in% c(181L, 182L) & beside_upper) |
+      any(bytes == 162L & between_letters) |
+      any(bytes %in% c(224L, 233L) & between_upper)
+  }, logical(1))
+}
+
+.dbc_recover_mixed_cp850 <- function(value, primary, force = FALSE) {
+  if (length(force) == 1L) force <- rep(force, length(value))
+  stopifnot(length(force) == length(value))
+  candidate <- suppressWarnings(iconv(
+    value,
+    from = "CP850",
+    to = "UTF-8",
+    sub = NA
+  ))
+  recover <- !is.na(candidate) & grepl("[^ -~]", candidate)
+  if (!any(recover)) {
+    return(list(value = candidate, recover = recover))
+  }
+
+  # Some official DataSUS fields declare CP1252 but contain isolated CP850
+  # rows. Require diagnostic CP850 bytes in alphabetic context, and accept only
+  # candidates made of printable ASCII and common Portuguese accents. Ambiguous
+  # bytes such as 0xA0, 0xB7, 0xC7 and 0xD2 never establish evidence alone.
+  portuguese_text <- paste0(
+    "\u00c0\u00c1\u00c2\u00c3\u00c9\u00ca\u00cd\u00d3\u00d4\u00d5",
+    "\u00da\u00c7\u00e0\u00e1\u00e2\u00e3\u00e9\u00ea\u00ed\u00f3\u00f4\u00f5\u00fa\u00e7"
+  )
+  portuguese <- utf8ToInt(portuguese_text)
+  indices <- which(recover)
+  clean <- vapply(candidate[indices], function(item) {
+    if (grepl("+", item, fixed = TRUE)) return(FALSE)
+    codepoints <- utf8ToInt(item)
+    length(codepoints) > 0L & all(
+      (codepoints >= 32L & codepoints <= 126L) |
+        codepoints %in% portuguese
+    )
+  }, logical(1))
+  evidence <- .dbc_cp850_byte_evidence(value[indices])
+  recover[indices] <- clean & (evidence | force[indices])
+  list(value = candidate, recover = recover)
+}
+
 .dbc_obfuscated_numeric_bytes <- function(value) {
   value <- value[!is.na(value) & nzchar(value)]
   if (!length(value)) return(FALSE)
@@ -344,8 +404,15 @@
   encoding,
   language_driver,
   context,
-  file
+  file,
+  cp850_rows = NULL
 ) {
+  if (is.null(cp850_rows)) cp850_rows <- rep(FALSE, length(value))
+  stopifnot(
+    is.logical(cp850_rows),
+    length(cp850_rows) == length(value),
+    !anyNA(cp850_rows)
+  )
   present <- !is.na(value)
   if (!any(present)) {
     attr(value, "dbc_encoding_used") <- encoding
@@ -387,6 +454,7 @@
   remaining <- present & !(use_utf8 & utf8_non_ascii)
   legacy_encoding <- encoding
   legacy_non_ascii <- remaining & non_ascii
+  low_confidence_non_ascii <- rep(FALSE, length(value))
   if (language_driver == 0L && any(legacy_non_ascii)) {
     sample <- utils::head(value[legacy_non_ascii], 5000L)
     candidates <- unique(c(encoding, "CP850"))
@@ -398,10 +466,16 @@
     best <- which.min(scores)
     source_score <- scores[[match(encoding, candidates)]]
     # Change an unmarked file away from the conservative CP1252 default only
-    # when the evidence is strong. Ambiguous/mixed fields retain source bytes
-    # for values that CP1252 cannot decode instead of being mis-transcoded.
+    # when the relative and absolute evidence are strong. Otherwise, retain
+    # ambiguous source bytes instead of selecting the less-bad codec.
     if (scores[[best]] + 0.05 < source_score) {
-      legacy_encoding <- candidates[[best]]
+      if (scores[[best]] <= 0.0125) {
+        legacy_encoding <- candidates[[best]]
+      } else {
+        # The alternative is less implausible but still not clean text. Keep
+        # ambiguous values losslessly instead of selecting the less-bad codec.
+        low_confidence_non_ascii <- legacy_non_ascii
+      }
     }
   }
 
@@ -412,6 +486,21 @@
       to = "UTF-8",
       sub = NA
     ))
+    recovered_rows <- rep(FALSE, length(converted))
+    if (identical(toupper(legacy_encoding), "CP1252")) {
+      recovered <- .dbc_recover_mixed_cp850(
+        value[remaining],
+        converted,
+        force = cp850_rows[remaining]
+      )
+      recovered_rows <- recovered$recover
+      if (any(recovered_rows)) {
+        converted[recovered_rows] <- recovered$value[recovered_rows]
+        used <- c(used, "CP850")
+      }
+    }
+    uncertain <- low_confidence_non_ascii[remaining] & !recovered_rows
+    converted[uncertain] <- NA_character_
     valid <- !is.na(converted)
     remaining_indices <- which(remaining)
     result[remaining_indices[valid]] <- converted[valid]
@@ -423,8 +512,10 @@
 
     invalid_indices <- remaining_indices[!valid]
     if (length(invalid_indices)) {
-      # Keep the native CE_BYTES strings. This is the only lossless
-      # representation when a field mixes text and non-text bytes.
+      # Keep CE_BYTES strings. This is the only lossless representation when a
+      # field mixes text and non-text bytes; foreign::read.dbf() supplies
+      # unknown-encoded strings, so mark those explicitly as well.
+      Encoding(result[invalid_indices]) <- "bytes"
       used <- c(used, "bytes")
       cli::cli_warn(
         c(
