@@ -45,7 +45,7 @@
 )
 
 .sih_double_fields <- c(
-  "US_TOT", "SP_VALATO", "SP_M_HOSP", "SP_M_PAC"
+  "US_TOT", "SP_VALATO"
 )
 
 .sih_add_age_fields <- function(data) {
@@ -281,7 +281,10 @@ process_sih <- function(
   # Municipality codes are identifiers, not measurements or categories.
   result <- .process_normalize_code_fields(
     result,
-    c("MUNIC_RES", "MUNIC_MOV", "MUN_RES", "MUN_MOV")
+    c(
+      "MUNIC_RES", "MUNIC_MOV", "MUN_RES", "MUN_MOV",
+      "SP_M_HOSP", "SP_M_PAC"
+    )
   )
   if (municipality_data) {
     residence_field <- switch(
