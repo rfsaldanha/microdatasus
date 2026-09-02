@@ -301,6 +301,36 @@ process_cnes <- function(
     types
   )
 
+  # Current CNES DBCs duplicate TPGESTAO's D/E/M codes in ESFERA_A, while
+  # historical files retain the 01--04 administrative-sphere domain declared
+  # by the DEF. Route each physical domain through its own official CNV.
+  administrative_sphere <- .process_find_fields(result, "ESFERA_A")
+  management_sphere_rows <- integer()
+  sphere_dictionary_rows <- dictionary_rows
+  if (length(administrative_sphere)) {
+    sphere_field <- administrative_sphere[[1L]]
+    sphere_values <- toupper(trimws(as.character(result[[sphere_field]])))
+    for (key in names(sphere_dictionary_rows)) {
+      rows <- sphere_dictionary_rows[[key]]
+      management <- rows[
+        !is.na(sphere_values[rows]) &
+          grepl("^[[:alpha:]]$", sphere_values[rows])
+      ]
+      sphere_dictionary_rows[[key]] <- setdiff(rows, management)
+      management_sphere_rows <- c(management_sphere_rows, management)
+    }
+    categorical_fields <- categorical_fields[
+      toupper(categorical_fields) != "ESFERA_A"
+    ]
+  }
+  if (length(management_sphere_rows)) {
+    management_dictionary <- if ("CNES-ST" %in% names(dictionaries)) {
+      dictionaries[["CNES-ST"]]
+    } else {
+      fetch_tabwin_dictionary("CNES-ST")
+    }
+  }
+
   cli::cli_alert_info(
     "Starting {.strong {information_system}} data pre-processing..."
   )
@@ -326,6 +356,27 @@ process_cnes <- function(
     labels = labels,
     collector = collector
   )
+  if (length(administrative_sphere)) {
+    result <- .process_apply_dictionaries(
+      result,
+      dictionaries,
+      administrative_sphere,
+      sphere_dictionary_rows,
+      labels = labels,
+      collector = collector
+    )
+  }
+  if (length(management_sphere_rows)) {
+    result <- .process_apply_dictionary(
+      result,
+      management_dictionary,
+      administrative_sphere,
+      aliases = c("ESFERA_A" = "TPGESTAO"),
+      rows = management_sphere_rows,
+      labels = labels,
+      collector = collector
+    )
+  }
   if (identical(information_system, "CNES-SR")) {
     result <- .cnes_apply_service_classification(
       result,

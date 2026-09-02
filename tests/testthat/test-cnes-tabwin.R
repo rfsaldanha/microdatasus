@@ -22,6 +22,8 @@ create_cnes_tabwin_fixture <- function() {
     lines <- c(
       "A*.dbc",
       "XFlag, FLAG, 1, CNV/FLAG.CNV",
+      "XAdministrative sphere, ESFERA_A, 1, CNV/ESFERA.CNV",
+      "XManagement, TPGESTAO, 1, CNV/TPGESTAO.CNV",
       "IQuantidade de teste, QT_TEST",
       "DNome fantasia, CNES, FANTASIA, DBF/CADGERBR.DBF"
     )
@@ -49,6 +51,25 @@ create_cnes_tabwin_fixture <- function() {
   write_tabwin_text(
     file.path(root, "CNV", "FLAG.CNV"),
     c("1 1", tabwin_cnv_line(1, "Rotulo CNES", "1"))
+  )
+  write_tabwin_text(
+    file.path(root, "CNV", "ESFERA.CNV"),
+    c(
+      "4 2 L",
+      tabwin_cnv_line(1, "Federal administrativa", "01"),
+      tabwin_cnv_line(2, "Estadual administrativa", "02"),
+      tabwin_cnv_line(3, "Municipal administrativa", "03"),
+      tabwin_cnv_line(4, "Privada administrativa", "04")
+    )
+  )
+  write_tabwin_text(
+    file.path(root, "CNV", "TPGESTAO.CNV"),
+    c(
+      "3 1 L",
+      tabwin_cnv_line(1, "Dupla gestao", "D"),
+      tabwin_cnv_line(2, "Estadual gestao", "E"),
+      tabwin_cnv_line(3, "Municipal gestao", "M")
+    )
   )
   foreign::write.dbf(
     data.frame(CHAVE = "024103", LABEL = "Servico antigo"),
@@ -228,6 +249,52 @@ test_that("process_cnes standardizes types, identifiers, names, and messages", {
     which(grepl("Starting CNES-ST", messages)),
     which(grepl("Finished CNES-ST", messages))
   )
+})
+
+test_that("process_cnes resolves both official ESFERA_A domains", {
+  archive <- create_cnes_tabwin_fixture()
+  on.exit(unlink(archive), add = TRUE)
+  downloads <- 0L
+  local_mocked_bindings(
+    .datasus_download_file = function(
+      url,
+      destination,
+      timeout,
+      quiet = FALSE
+    ) {
+      downloads <<- downloads + 1L
+      file.copy(archive, destination)
+      invisible(destination)
+    },
+    .package = "microdatasus"
+  )
+  microdatasus:::.tabwin_clear_cache()
+  on.exit(restore_empty_tabwin_cache(), add = TRUE)
+
+  result <- process_cnes(
+    data.frame(ESFERA_A = c("02", "03", "04", "D", "E", "M")),
+    information_system = "CNES-PF",
+    municipality_data = FALSE,
+    labels = "character",
+    diagnostics = TRUE
+  )
+
+  expect_identical(
+    result[["ESFERA_A"]],
+    c(
+      "Estadual administrativa", "Municipal administrativa",
+      "Privada administrativa", "Dupla gestao", "Estadual gestao",
+      "Municipal gestao"
+    )
+  )
+  report <- processing_diagnostics(result)
+  expect_false("ESFERA_A" %in% report[["unmapped_fields"]])
+  expect_false("ESFERA_A" %in% report[["unknown_codes"]][["field"]])
+  expect_setequal(
+    report[["dictionaries"]][["information_system"]],
+    c("CNES-PF", "CNES-ST")
+  )
+  expect_equal(downloads, 1L)
 })
 
 test_that("process_cnes selects both service definitions row by row", {
