@@ -191,6 +191,7 @@ test_that("process_sih labels and types every current SIH file family", {
       SP_MM = "1",
       SP_DTINTER = "20240101",
       SP_QTD_ATO = "3",
+      SP_NF = "000000000000.011.995",
       SP_VALATO = "12.50",
       IN_TP_VAL = "1",
       stringsAsFactors = FALSE
@@ -227,6 +228,7 @@ test_that("process_sih labels and types every current SIH file family", {
   expect_identical(as.character(rj$SEXO), "Feminino")
   expect_identical(as.character(rj$ST_SITUAC), "Rejeitada")
   expect_type(sp$SP_QTD_ATO, "integer")
+  expect_identical(sp$SP_NF, "000000000000.011.995")
   expect_type(sp$SP_VALATO, "double")
   expect_s3_class(sp$SP_DTINTER, "Date")
   expect_identical(as.character(sp$IN_TP_VAL), "Valor aprovado")
