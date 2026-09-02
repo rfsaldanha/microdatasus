@@ -22,7 +22,7 @@
   tryCatch({
     conversion <- .tabwin_read_conversion(dictionary, definition)
     symbolic <- !is.null(conversion$ranges) && nrow(conversion$ranges) > 0L
-    fallback <- isTRUE(conversion$fallback_label)
+    definition_fallback <- isTRUE(conversion$fallback_label)
     recovered_label <- isTRUE(conversion$recovered_label)
     conflicting_keys <- if (is.null(conversion$conflicting_key_count)) {
       0L
@@ -30,7 +30,8 @@
       conversion$conflicting_key_count
     }
     duplicate_fallback <- conflicting_keys > 0L
-    fallback <- fallback || duplicate_fallback
+    count_mismatch <- isTRUE(conversion$category_count_mismatch)
+    fallback <- definition_fallback || duplicate_fallback || count_mismatch
     list(
       conversion = conversion,
       status = if (fallback) {
@@ -42,7 +43,9 @@
       },
       issue_class = if (duplicate_fallback) {
         "upstream_duplicate_keys"
-      } else if (fallback) {
+      } else if (count_mismatch) {
+        "upstream_category_count_mismatch"
+      } else if (definition_fallback) {
         "definition_drift"
       } else if (symbolic) {
         "analytical_range"
@@ -55,7 +58,19 @@
           " key(s) with conflicting labels; the last physical record was ",
           "used following TabWin precedence."
         )
-      } else if (fallback) {
+      } else if (count_mismatch) {
+        paste0(
+          "The CNV declares ", conversion$category_count,
+          if (conversion$category_count == 1L) " category" else " categories",
+          " but defines ", conversion$observed_category_count,
+          if (conversion$observed_category_count == 1L) {
+            " category"
+          } else {
+            " categories"
+          },
+          "; all physical categories were retained."
+        )
+      } else if (definition_fallback) {
         if (recovered_label) {
           paste0(
             "The DEF repeats key field ", conversion$requested_label_field,
@@ -187,10 +202,11 @@
 #'   Fallback is reported when an official two-column DBF renamed its sole
 #'   description field while the DEF retained the previous name. DBFs with
 #'   duplicate keys and conflicting labels are also explicit fallbacks: the
-#'   last physical record is retained, following TabWin precedence. Parsed
-#'   relations
-#'   persist on disk when `cache_dir` is set, and completed result tables are
-#'   reused during the R session.
+#'   last physical record is retained, following TabWin precedence. A CNV whose
+#'   declared category count differs from its physical definitions is reported
+#'   as an upstream fallback, while every physical category is retained. Parsed
+#'   relations persist on disk when `cache_dir` is set, and completed result
+#'   tables are reused during the R session.
 #'
 #' @return A tibble with one row per categorical definition or numeric field.
 #'

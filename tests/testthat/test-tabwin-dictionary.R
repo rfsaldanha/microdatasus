@@ -1820,6 +1820,26 @@ test_that("CNV parser preserves subtotals and reports count mismatches", {
       stringsAsFactors = FALSE
     )
   )
+
+  dictionary <- list(
+    extracted_all = TRUE, cache_dir = dirname(path), persistent = FALSE,
+    conversions = new.env(parent = emptyenv())
+  )
+  definition <- data.frame(
+    file = basename(path), extension = "CNV", field = "CODE",
+    argument = "1", stringsAsFactors = FALSE
+  )
+  result <- microdatasus:::.datasus_dictionary_conversion(
+    dictionary, definition
+  )
+
+  expect_identical(result$status, "fallback")
+  expect_identical(
+    result$issue_class, "upstream_category_count_mismatch"
+  )
+  expect_match(result$message, "declares 99 categories but defines 2")
+  expect_identical(result$conversion$observed_category_count, 2L)
+  expect_identical(nrow(result$conversion$categories), 2L)
 })
 
 test_that("subtotal and sequence jointly identify a CNV category", {
