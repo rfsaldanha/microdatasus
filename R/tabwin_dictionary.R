@@ -962,6 +962,57 @@
   code
 }
 
+.tabwin_recover_numeric_collision_codes <- function(
+  codes,
+  labels,
+  width,
+  mode = ""
+) {
+  attr(codes, "recovered_numeric_collision_codes") <- 0L
+  if (.tabwin_codes_are_literal(width, mode) || length(codes) < 2L) {
+    return(codes)
+  }
+
+  padded <- grepl("^[0-9]+[[:space:]]+$", codes)
+  candidates <- which(padded)
+  if (!length(candidates)) return(codes)
+
+  normalized <- .tabwin_normalize_code(codes, width, mode)
+  trimmed <- trimws(codes)
+  complete <- grepl(
+    paste0("^[0-9]{", width, "}$"),
+    trimmed,
+    perl = TRUE
+  )
+  alternatives <- vapply(
+    trimmed[candidates],
+    function(value) paste0(strrep("0", width - nchar(value)), value),
+    character(1)
+  )
+
+  recover <- vapply(seq_along(candidates), function(offset) {
+    index <- candidates[[offset]]
+    conflicts <- which(
+      seq_along(codes) != index &
+        complete &
+        normalized == normalized[[index]] &
+        labels != labels[[index]]
+    )
+    length(conflicts) > 0L &&
+      identical(alternatives[[offset]], trimws(labels[[index]])) &&
+      !alternatives[[offset]] %in% normalized[-index]
+  }, logical(1))
+
+  recovered <- candidates[recover]
+  if (length(recovered)) {
+    codes[recovered] <- alternatives[recover]
+  }
+  attr(codes, "recovered_numeric_collision_codes") <- as.integer(
+    length(recovered)
+  )
+  codes
+}
+
 .tabwin_dbf_field_text <- function(value, type, width) {
   value <- as.character(value)
   missing <- is.na(value)
@@ -1414,6 +1465,7 @@
     placeholder_code_tokens = 0L,
     discarded_code_tokens = 0L,
     truncated_code_tokens = 0L,
+    recovered_numeric_collision_codes = 0L,
     recovered_sequence = recovered_sequence,
     recovered_leading_sequence = recovered_leading_sequence
   )
@@ -1496,6 +1548,13 @@
   raw_labels <- rep(raw_labels, split_lengths)
   raw_codes <- unlist(split_codes, use.names = FALSE)
   if (is.null(raw_codes)) raw_codes <- character()
+
+  raw_codes <- .tabwin_recover_numeric_collision_codes(
+    raw_codes, raw_labels, code_width, mode
+  )
+  common$recovered_numeric_collision_codes <- attr(
+    raw_codes, "recovered_numeric_collision_codes"
+  )
 
   expanded <- as.list(raw_codes)
   range_indexes <- which(grepl("-", trimws(raw_codes), fixed = TRUE))
@@ -1614,7 +1673,7 @@
   )
 }
 
-.tabwin_parser_version <- 15L
+.tabwin_parser_version <- 16L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {

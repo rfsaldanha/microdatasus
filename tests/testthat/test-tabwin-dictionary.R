@@ -902,6 +902,36 @@ test_that("CNV parser distinguishes literal and numeric padding", {
   )
 })
 
+test_that("CNV parser recovers contradictory short numeric aliases", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  write_tabwin_text(path, c(
+    "2 2",
+    tabwin_cnv_line(1, "01", "1 ,"),
+    tabwin_cnv_line(2, "10", "10")
+  ))
+
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+  selected <- list(
+    definition = data.frame(position = 1L),
+    conversion = conversion
+  )
+
+  expect_identical(
+    unname(conversion[["map"]][c("01", "10")]),
+    c("01", "10")
+  )
+  expect_identical(
+    conversion[["recovered_numeric_collision_codes"]],
+    1L
+  )
+  expect_identical(conversion[["normalized_collisions"]], 0L)
+  expect_identical(
+    microdatasus:::.tabwin_apply_conversion_values(c("1", "10"), selected),
+    c("01", "10")
+  )
+})
+
 test_that("CNV widths of five or more are implicitly alphanumeric", {
   path <- tempfile(fileext = ".CNV")
   on.exit(unlink(path), add = TRUE)
