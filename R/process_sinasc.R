@@ -48,6 +48,19 @@
   "FIL_ABORT" = "99"
 )
 
+.sinasc_integer_domains <- list(
+  "IDADEMAE" = c(1L, 70L),
+  "IDADEPAI" = c(10L, 99L),
+  "APGAR1" = c(0L, 10L),
+  "APGAR5" = c(0L, 10L),
+  "QTDGESTANT" = c(0L, 30L),
+  "QTDPARTNOR" = c(0L, 30L),
+  "QTDPARTCES" = c(0L, 30L),
+  "SEMAGESTAC" = c(1L, 50L),
+  "MESPRENAT" = c(1L, 9L),
+  "IDADE_MAE" = c(1L, 59L)
+)
+
 .sinasc_rows_with_values <- function(data, fields) {
   rows <- rep(FALSE, nrow(data))
   for (field in .process_find_fields(data, fields)) {
@@ -79,6 +92,26 @@
     source,
     result,
     missing = c("0", "00", "000", "0000", "9999")
+  )
+  result
+}
+
+.sinasc_as_bounded_integer <- function(
+  x,
+  bounds,
+  missing = character(),
+  collector = NULL,
+  field = NA_character_
+) {
+  source <- x
+  values <- trimws(as.character(x))
+  values[values %in% missing] <- NA_character_
+  result <- suppressWarnings(as.integer(values))
+  invalid <- !is.na(result) &
+    (result < bounds[[1L]] | result > bounds[[2L]])
+  result[invalid] <- NA_integer_
+  .process_record_coercion(
+    collector, field, "integer", source, result, missing
   )
   result
 }
@@ -212,15 +245,20 @@ process_sinasc <- function(
   }
 
   for (field in .process_find_fields(result, .sinasc_integer_fields)) {
+    missing <- .sinasc_integer_missing[[toupper(field)]]
+    if (is.null(missing)) {
+      missing <- character()
+    }
+    bounds <- .sinasc_integer_domains[[toupper(field)]]
     if (identical(toupper(field), "PESO")) {
       result[[field]] <- .sinasc_as_birth_weight(
         result[[field]], legacy_rows, collector, field
       )
+    } else if (!is.null(bounds)) {
+      result[[field]] <- .sinasc_as_bounded_integer(
+        result[[field]], bounds, missing, collector, field
+      )
     } else {
-      missing <- .sinasc_integer_missing[[toupper(field)]]
-      if (is.null(missing)) {
-        missing <- character()
-      }
       result[[field]] <- .process_as_integer(
         result[[field]], missing, collector, field
       )

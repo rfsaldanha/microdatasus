@@ -297,3 +297,54 @@ test_that("process_sinasc enforces the official birth-weight domain", {
   failures <- failures[failures$field == "PESO", , drop = FALSE]
   expect_setequal(failures$value, c("9000", "9998", "bad"))
 })
+
+test_that("process_sinasc enforces current numeric CNV domains", {
+  result <- process_sinasc(
+    data.frame(
+      DTNASC = rep("01012024", 2L),
+      APGAR1 = c("10", "11"),
+      IDADEMAE = c("70", "71"),
+      IDADEPAI = c("99", "09"),
+      QTDGESTANT = c("30", "31"),
+      QTDPARTNOR = c("30", "31"),
+      QTDPARTCES = c("30", "31"),
+      SEMAGESTAC = c("50", "51"),
+      MESPRENAT = c("09", "10"),
+      stringsAsFactors = FALSE
+    ),
+    municipality_data = FALSE,
+    labels = "none",
+    diagnostics = TRUE
+  )
+
+  fields <- setdiff(names(result), "DTNASC")
+  first_valid <- vapply(
+    result[fields], function(x) !is.na(x[[1L]]), logical(1)
+  )
+  second_missing <- vapply(
+    result[fields], function(x) is.na(x[[2L]]), logical(1)
+  )
+  expect_true(all(first_valid))
+  expect_true(all(second_missing))
+  failures <- processing_diagnostics(result)$coercion_failures
+  expect_setequal(failures$field, fields)
+})
+
+test_that("process_sinasc enforces legacy numeric CNV domains", {
+  result <- process_sinasc(
+    data.frame(
+      DATA_NASC = c("19940101", "19940102"),
+      APGAR5 = c("10", "11"),
+      IDADE_MAE = c("59", "60"),
+      stringsAsFactors = FALSE
+    ),
+    municipality_data = FALSE,
+    labels = "none",
+    diagnostics = TRUE
+  )
+
+  expect_identical(result$APGAR5, c(10L, NA_integer_))
+  expect_identical(result$IDADE_MAE, c(59L, NA_integer_))
+  failures <- processing_diagnostics(result)$coercion_failures
+  expect_setequal(failures$field, c("APGAR5", "IDADE_MAE"))
+})
