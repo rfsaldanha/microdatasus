@@ -118,6 +118,31 @@ test_that("batched dictionaries preserve row-specific conversion results", {
   )
 })
 
+test_that("dictionary substrings never truncate unmatched source values", {
+  selected <- make_selected_conversion(c("1" = "Known"))
+  selected$source_values <- c("1", "9")
+  dictionary <- list(selected = selected)
+  source <- data.frame(
+    CODE = c("known composite value", "complete unknown value"),
+    stringsAsFactors = FALSE
+  )
+  local_mocked_bindings(
+    .tabwin_select_conversion = function(dictionary, field, values, ...) {
+      dictionary$selected
+    },
+    .package = "microdatasus"
+  )
+
+  result <- microdatasus:::.process_apply_dictionaries(
+    source,
+    list(test = dictionary),
+    "CODE",
+    labels = "character"
+  )
+
+  expect_identical(result$CODE, c("Known", "complete unknown value"))
+})
+
 test_that("batched dictionaries leave data unchanged when none are supplied", {
   source <- data.frame(CODE = c("1", "2"), stringsAsFactors = FALSE)
 

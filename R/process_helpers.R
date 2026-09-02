@@ -218,7 +218,8 @@
         if (is.null(source_values)) source_values <- values[rows]
         converted_values <- .tabwin_apply_conversion_values(
           source_values,
-          selected
+          selected,
+          fallback = values[rows]
         )
         .process_record_dictionary_diagnostics(
           collector,

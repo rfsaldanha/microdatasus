@@ -2140,11 +2140,15 @@
 
 # Return converted text without allocating factor levels. Historical batch
 # processing combines every row period before factorizing the complete field.
-.tabwin_apply_conversion_values <- function(values, selected) {
+.tabwin_apply_conversion_values <- function(
+  values,
+  selected,
+  fallback = values
+) {
   definition <- selected$definition
   conversion <- selected$conversion
   raw_source <- as.character(values)
-  source <- trimws(raw_source)
+  source <- trimws(as.character(fallback))
   lookup <- raw_source
   if (identical(conversion$type, "cnv")) {
     lookup <- substring(
@@ -2162,7 +2166,7 @@
   result <- source
   matched <- !is.na(labels)
   result[matched] <- labels[matched]
-  result[is.na(values)] <- NA_character_
+  result[is.na(fallback)] <- NA_character_
   result
 }
 
