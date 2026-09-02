@@ -1563,6 +1563,41 @@
   )
 }
 
+.tabwin_recover_official_source_aliases <- function(conversion, path) {
+  # Exact, evidence-backed aliases for published DBC values that drift from
+  # their accompanying CNV. Keep this filename-scoped so unrelated domains
+  # can never acquire a guessed equivalence.
+  aliases <- switch(
+    toupper(basename(path)),
+    "GRAU_HIS.CNV" = c(
+      "1 " = "G1", "01" = "G1",
+      "2 " = "G2", "02" = "G2",
+      "3 " = "G3", "03" = "G3",
+      "4 " = "G4", "04" = "G4"
+    ),
+    stats::setNames(character(), character())
+  )
+  conversion$source_aliases <- stats::setNames(character(), character())
+  conversion$recovered_source_aliases <- 0L
+  if (!identical(conversion$type, "cnv") || !length(aliases)) {
+    return(conversion)
+  }
+
+  recover <- !names(aliases) %in% names(conversion$map) &
+    unname(aliases) %in% names(conversion$map)
+  if (!any(recover)) return(conversion)
+  recovered <- aliases[recover]
+  alias_names <- names(recovered)
+  canonical_names <- unname(recovered)
+  conversion$map[alias_names] <- unname(conversion$map[canonical_names])
+  conversion$map_priority[alias_names] <- unname(
+    conversion$map_priority[canonical_names]
+  )
+  conversion$source_aliases <- recovered
+  conversion$recovered_source_aliases <- as.integer(length(recovered))
+  conversion
+}
+
 .tabwin_conversion_key <- function(definition) {
   file <- tolower(definition$file)
   if (identical(definition$extension, "CNV")) {
@@ -1578,7 +1613,7 @@
   )
 }
 
-.tabwin_parser_version <- 13L
+.tabwin_parser_version <- 14L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {
@@ -1694,7 +1729,9 @@
   }
   path <- .tabwin_extract_entry(dictionary, definition$file)
   if (identical(definition$extension, "CNV")) {
-    conversion <- .tabwin_parse_cnv(path)
+    conversion <- .tabwin_recover_official_source_aliases(
+      .tabwin_parse_cnv(path), path
+    )
   } else {
     table <- tryCatch(
       # Some official DBFs contain blank legacy fields. Their name-repair

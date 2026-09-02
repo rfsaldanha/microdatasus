@@ -21,6 +21,17 @@ create_sia_tabwin_fixture <- function(period = "current") {
   if (identical(period, "current")) {
     for (information_system in names(current_definitions)) {
       lines <- c("A*.dbc", "XFlag, FLAG, 1, CNV/FLAG.CNV")
+      if (information_system %in% c("SIA-AQ", "SIA-AR")) {
+        field <- if (identical(information_system, "SIA-AQ")) {
+          "AQ_GRAHIS"
+        } else {
+          "AR_GRAHIS"
+        }
+        lines <- c(
+          lines,
+          paste0("XGrau histologico, ", field, ", 1, CNV/GRAU_HIS.CNV")
+        )
+      }
       if (identical(information_system, "SIA-PA")) {
         lines <- c(
           lines,
@@ -70,6 +81,19 @@ create_sia_tabwin_fixture <- function(period = "current") {
     file.path(root, "CNV", "FLAG.CNV"),
     c("1 1", tabwin_cnv_line(1, label, "1"))
   )
+  if (identical(period, "current")) {
+    write_tabwin_text(
+      file.path(root, "CNV", "GRAU_HIS.CNV"),
+      c(
+        "5 2 L",
+        tabwin_cnv_line(1, "Grau nao avaliavel", "GX"),
+        tabwin_cnv_line(2, "Bem diferenciado", "G1"),
+        tabwin_cnv_line(3, "Moderadamente diferenciado", "G2"),
+        tabwin_cnv_line(4, "Pouco diferenciado", "G3"),
+        tabwin_cnv_line(5, "Indiferenciado", "G4")
+      )
+    )
+  }
   archive <- tempfile(fileext = ".zip")
   zip::zipr(
     archive,
@@ -237,6 +261,58 @@ test_that("process_sia standardizes types and honors optional label flags", {
     which(grepl("Starting SIA-PA", messages)),
     which(grepl("Finished SIA-PA", messages))
   )
+})
+
+test_that("process_sia recovers only audited histological-grade aliases", {
+  archive <- create_sia_tabwin_fixture()
+  on.exit(unlink(archive), add = TRUE)
+  local_mocked_bindings(
+    .datasus_download_file = function(
+      url,
+      destination,
+      timeout,
+      quiet = FALSE
+    ) {
+      file.copy(archive, destination)
+      invisible(destination)
+    },
+    .package = "microdatasus"
+  )
+  microdatasus:::.tabwin_clear_cache()
+  on.exit(restore_empty_tabwin_cache(), add = TRUE)
+
+  source <- c("1", "01", "2", "02", "3", "03", "4", "04", "0", "00", "99")
+  expected <- c(
+    "Bem diferenciado", "Bem diferenciado",
+    "Moderadamente diferenciado", "Moderadamente diferenciado",
+    "Pouco diferenciado", "Pouco diferenciado",
+    "Indiferenciado", "Indiferenciado",
+    "0", "00", "99"
+  )
+  for (information_system in c("SIA-AQ", "SIA-AR")) {
+    field <- if (identical(information_system, "SIA-AQ")) {
+      "AQ_GRAHIS"
+    } else {
+      "AR_GRAHIS"
+    }
+    data <- stats::setNames(data.frame(source), field)
+    result <- process_sia(
+      data,
+      information_system = information_system,
+      nome_proced = FALSE,
+      nome_ocupacao = FALSE,
+      nome_equipe = FALSE,
+      municipality_data = FALSE,
+      labels = "character",
+      diagnostics = TRUE
+    )
+
+    expect_identical(result[[field]], expected)
+    unknown <- processing_diagnostics(result)$unknown_codes
+    unknown <- unknown[unknown$field == field, , drop = FALSE]
+    expect_setequal(unknown$code, c("0", "00", "99"))
+    expect_true(all(unknown$n == 1L))
+  }
 })
 
 test_that("process_sia selects historical PA definitions row by row", {

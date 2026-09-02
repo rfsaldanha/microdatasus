@@ -1681,6 +1681,53 @@ test_that("CNV parser recovers one-position literal width conflicts", {
   )
 })
 
+test_that("official source aliases are exact, auditable, and filename-scoped", {
+  directory <- tempfile("source-aliases-")
+  dir.create(directory)
+  on.exit(unlink(directory, recursive = TRUE), add = TRUE)
+  lines <- c(
+    "5 2 L",
+    tabwin_cnv_line(1, "Not evaluable", "GX"),
+    tabwin_cnv_line(2, "Grade one", "G1"),
+    tabwin_cnv_line(3, "Grade two", "G2"),
+    tabwin_cnv_line(4, "Grade three", "G3"),
+    tabwin_cnv_line(5, "Grade four", "G4")
+  )
+  official <- file.path(directory, "GRAU_HIS.CNV")
+  unrelated <- file.path(directory, "OTHER.CNV")
+  write_tabwin_text(official, lines)
+  write_tabwin_text(unrelated, lines)
+
+  conversion <- microdatasus:::.tabwin_recover_official_source_aliases(
+    microdatasus:::.tabwin_parse_cnv(official), official
+  )
+  other_conversion <- microdatasus:::.tabwin_recover_official_source_aliases(
+    microdatasus:::.tabwin_parse_cnv(unrelated), unrelated
+  )
+  selected <- list(
+    definition = data.frame(position = 1L),
+    conversion = conversion
+  )
+
+  expect_identical(conversion$recovered_source_aliases, 8L)
+  expect_identical(
+    unname(conversion$source_aliases),
+    rep(paste0("G", 1:4), each = 2L)
+  )
+  expect_identical(other_conversion$recovered_source_aliases, 0L)
+  expect_identical(
+    microdatasus:::.tabwin_apply_conversion_values(
+      c("1", "01", "2", "02", "3", "03", "4", "04", "0", "00", "99"),
+      selected
+    ),
+    c(
+      "Grade one", "Grade one", "Grade two", "Grade two",
+      "Grade three", "Grade three", "Grade four", "Grade four",
+      "0", "00", "99"
+    )
+  )
+})
+
 test_that("CNV parser repairs evidenced malformed interval spellings", {
   equals <- tempfile(fileext = ".CNV")
   padded <- tempfile(fileext = ".CNV")
