@@ -339,6 +339,68 @@
       return(NULL)
     }
     fields <- strsplit(line, ",", fixed = TRUE)[[1L]]
+    syntax_recovered <- FALSE
+    # A few official DEFs contain one of three unambiguous punctuation errors
+    # in an otherwise complete CNV relation: the comma before the source field
+    # or its position is missing. Three exact SINAN records instead omit
+    # position 1 completely. Limit recovery to three-field rows ending in an
+    # explicit CNV; incomplete DBF relations do not contain enough metadata to
+    # infer their label field.
+    if (length(fields) == 3L &&
+        identical(toupper(tools::file_ext(trimws(fields[[3L]]))), "CNV") &&
+        !grepl(
+          "^[SLCQDTX][[:space:]]*[*+]", trimws(fields[[1L]]),
+          ignore.case = TRUE
+        )) {
+      first <- trimws(fields[[1L]])
+      second <- trimws(fields[[2L]])
+      identifier <- "[A-Za-z_][A-Za-z0-9_]*"
+      omitted_position <- switch(
+        toupper(basename(path)),
+        "AIDSNET.DEF" = identical(
+          c(toupper(second), toupper(basename(trimws(fields[[3L]])))),
+          c("ID_UNIDADE", "PENITENCIARIO.CNV")
+        ),
+        "HEPAVIRNET.DEF" =
+          toupper(second) %in% c("RE_ANTIHBC", "RE_ANTIHCV") &&
+          identical(
+            toupper(basename(trimws(fields[[3L]]))), "HEPREAG.CNV"
+          ),
+        FALSE
+      )
+      missing_source_comma <- regexec(
+        paste0("^(.*[^[:space:]])[[:space:]]+(", identifier, ")$"),
+        first,
+        perl = TRUE
+      )
+      missing_source_parts <- regmatches(first, missing_source_comma)[[1L]]
+      missing_position_comma <- regexec(
+        paste0("^(", identifier, ")[[:space:]]+([0-9]+)$"),
+        second,
+        perl = TRUE
+      )
+      missing_position_parts <- regmatches(
+        second, missing_position_comma
+      )[[1L]]
+
+      if (grepl("^[0-9]+$", second) &&
+          length(missing_source_parts) == 3L) {
+        fields <- c(
+          missing_source_parts[[2L]], missing_source_parts[[3L]],
+          second, fields[[3L]]
+        )
+        syntax_recovered <- TRUE
+      } else if (length(missing_position_parts) == 3L) {
+        fields <- c(
+          fields[[1L]], missing_position_parts[[2L]],
+          missing_position_parts[[3L]], fields[[3L]]
+        )
+        syntax_recovered <- TRUE
+      } else if (omitted_position) {
+        fields <- c(fields[[1L]], second, "1", fields[[3L]])
+        syntax_recovered <- TRUE
+      }
+    }
     if (length(fields) < 4L) {
       return(NULL)
     }
@@ -389,6 +451,7 @@
       argument = argument,
       position = position,
       position_recovered = position_recovered,
+      syntax_recovered = syntax_recovered,
       file = file_name,
       file_recovered = relation_index != 4L,
       extension = extension,
@@ -1768,7 +1831,7 @@
   )
 }
 
-.tabwin_parser_version <- 22L
+.tabwin_parser_version <- 23L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {

@@ -284,6 +284,42 @@ test_that("DEF parser recovers documented official relation-field drift", {
   )
 })
 
+test_that("DEF parser recovers unambiguous official CNV punctuation errors", {
+  directory <- tempfile("def-punctuation-")
+  dir.create(directory)
+  path <- file.path(directory, "AidsNET.def")
+  unrelated <- file.path(directory, "Other.DEF")
+  on.exit(unlink(directory, recursive = TRUE), add = TRUE)
+  write_tabwin_text(path, c(
+    "LRegion and state  CODUFMUN, 1, REGION.CNV",
+    "XFunctional result, STRESULTA 1, RESULT.CNV",
+    "XPrison health unit, ID_UNIDADE, PENITENCIARIO.CNV",
+    "LIncomplete DBF, CODE, TABLE.DBF",
+    "X* section title, TITULO, DOCUMENTATION.CNV"
+  ))
+  write_tabwin_text(unrelated, c(
+    "LValid, CODE, 1, VALID.CNV",
+    "XOmitted position, CODE, OMITTED.CNV",
+    "X* section title, TITULO, DOCUMENTATION.CNV"
+  ))
+
+  definitions <- microdatasus:::.tabwin_parse_def(path)
+  unrelated_definitions <- microdatasus:::.tabwin_parse_def(unrelated)
+
+  expect_identical(
+    definitions[["description"]],
+    c("Region and state", "Functional result", "Prison health unit")
+  )
+  expect_identical(
+    definitions[["field"]],
+    c("CODUFMUN", "STRESULTA", "ID_UNIDADE")
+  )
+  expect_identical(definitions[["position"]], rep(1L, 3L))
+  expect_true(all(definitions[["syntax_recovered"]]))
+  expect_identical(unrelated_definitions[["file"]], "VALID.CNV")
+  expect_false(unrelated_definitions[["syntax_recovered"]])
+})
+
 test_that("CNV parser reads labels, aliases, and numeric ranges", {
   path <- tempfile(fileext = ".CNV")
   on.exit(unlink(path), add = TRUE)
