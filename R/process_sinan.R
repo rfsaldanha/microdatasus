@@ -171,6 +171,26 @@
   )
 }
 
+.sinan_source_value_aliases <- function(information_system) {
+  if (!identical(
+    information_system,
+    "SINAN-SURTO-DE-DOENCAS-TRANSMITIDAS-POR-ALIMENTOS"
+  )) {
+    return(list())
+  }
+  # Old and recent SDTA DBCs publish display labels in these fields, while
+  # intermediate files publish the codes declared by the same official CNVs.
+  yes_no <- c("Sim" = "1", "N\u00e3o" = "2", "Ignorado" = "9")
+  list(
+    CS_TRANS = c("Indireta" = "2"),
+    TP_INDIRET = c("Alimento/\u00e1gua" = "1"),
+    ST_IMPRO = yes_no,
+    ST_INAD = yes_no,
+    ST_MANIP = yes_no,
+    ST_F_OUTRO = yes_no
+  )
+}
+
 #' Prepare SINAN notification microdata
 #'
 #' Uses the official DataSUS TabWin definitions to label all SINAN file
@@ -305,7 +325,8 @@ process_sinan <- function(
     dictionary,
     categorical_fields,
     labels = labels,
-    collector = collector
+    collector = collector,
+    value_aliases = .sinan_source_value_aliases(information_system)
   )
   if (length(legacy_chik_rows)) {
     if (length(current_chik_rows)) {

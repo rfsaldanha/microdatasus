@@ -143,6 +143,42 @@ test_that("dictionary substrings never truncate unmatched source values", {
   expect_identical(result$CODE, c("Known", "complete unknown value"))
 })
 
+test_that("dictionary value aliases preserve the source code policy", {
+  dictionary <- list(selected = make_selected_conversion(c("1" = "Known")))
+  source <- data.frame(
+    CODE = c("Already labelled", "9"),
+    stringsAsFactors = FALSE
+  )
+  selected_values <- character()
+  local_mocked_bindings(
+    .tabwin_select_conversion = function(dictionary, field, values, ...) {
+      selected_values <<- values
+      dictionary$selected
+    },
+    .package = "microdatasus"
+  )
+  aliases <- list(CODE = c("Already labelled" = "1"))
+
+  labelled <- microdatasus:::.process_apply_dictionaries(
+    source,
+    list(test = dictionary),
+    "CODE",
+    labels = "character",
+    value_aliases = aliases
+  )
+  codes <- microdatasus:::.process_apply_dictionaries(
+    source,
+    list(test = dictionary),
+    "CODE",
+    labels = "none",
+    value_aliases = aliases
+  )
+
+  expect_identical(selected_values, c("1", "9"))
+  expect_identical(labelled$CODE, c("Known", "9"))
+  expect_identical(codes$CODE, source$CODE)
+})
+
 test_that("batched dictionaries leave data unchanged when none are supplied", {
   source <- data.frame(CODE = c("1", "2"), stringsAsFactors = FALSE)
 

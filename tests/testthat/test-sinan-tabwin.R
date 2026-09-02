@@ -466,6 +466,73 @@ test_that("SINAN meningitis preserves other-vaccine descriptions", {
   expect_length(categorical, 0L)
 })
 
+test_that("SINAN SDTA accepts official textual source labels", {
+  fields <- c(
+    "CS_TRANS", "TP_INDIRET", "ST_IMPRO",
+    "ST_INAD", "ST_MANIP", "ST_F_OUTRO"
+  )
+  maps <- list(
+    CS_TRANS = c("2" = "Indireta"),
+    TP_INDIRET = c("1" = "Alimento"),
+    ST_IMPRO = c("1" = "Sim", "2" = "Não", "9" = "Ign/Branco"),
+    ST_INAD = c("1" = "Sim", "2" = "Não", "9" = "Ign/Branco"),
+    ST_MANIP = c("1" = "Sim", "2" = "Não", "9" = "Ign/Branco"),
+    ST_F_OUTRO = c("1" = "Sim", "2" = "Não", "9" = "Ign/Branco")
+  )
+  dictionary <- list(
+    definitions = data.frame(field = fields, stringsAsFactors = FALSE),
+    definition = "DTANet.def",
+    numeric_fields = character()
+  )
+  local_mocked_bindings(
+    fetch_tabwin_dictionary = function(...) dictionary,
+    .tabwin_select_conversion = function(dictionary, field, values, ...) {
+      map <- maps[[field]]
+      list(
+        definition = data.frame(position = 1L),
+        conversion = list(
+          type = "cnv", code_width = 1L, mode = "", map = map
+        ),
+        source_values = values
+      )
+    },
+    .package = "microdatasus"
+  )
+  source <- data.frame(
+    CS_TRANS = c("Indireta", "2"),
+    TP_INDIRET = c("Alimento/água", "1"),
+    ST_IMPRO = c("Sim", "1"),
+    ST_INAD = c("Não", "2"),
+    ST_MANIP = c("Ignorado", "9"),
+    ST_F_OUTRO = c("SIM", "1"),
+    stringsAsFactors = FALSE
+  )
+
+  labelled <- process_sinan(
+    source,
+    "SINAN-SURTO-DE-DOENCAS-TRANSMITIDAS-POR-ALIMENTOS",
+    municipality_data = FALSE,
+    labels = "character",
+    diagnostics = TRUE
+  )
+  codes <- process_sinan(
+    source,
+    "SINAN-SURTO-DE-DOENCAS-TRANSMITIDAS-POR-ALIMENTOS",
+    municipality_data = FALSE,
+    labels = "none"
+  )
+
+  expect_identical(labelled$CS_TRANS, rep("Indireta", 2L))
+  expect_identical(labelled$TP_INDIRET, rep("Alimento", 2L))
+  expect_identical(labelled$ST_IMPRO, rep("Sim", 2L))
+  expect_identical(labelled$ST_INAD, rep("Não", 2L))
+  expect_identical(labelled$ST_MANIP, rep("Ign/Branco", 2L))
+  expect_identical(labelled$ST_F_OUTRO, rep("Sim", 2L))
+  expect_identical(as.data.frame(codes), source)
+  unknown <- processing_diagnostics(labelled)$unknown_codes$field
+  expect_false(any(unknown %in% fields))
+})
+
 test_that("SINAN recovered official increment names remain numeric", {
   tuberculosis <- tibble::tibble(NU_CONTATO = c("0", "14", "99"))
   diphtheria <- tibble::tibble(MED_QUAN_P = c("0", "2", NA_character_))

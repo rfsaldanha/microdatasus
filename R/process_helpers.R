@@ -168,7 +168,8 @@
   dictionary_rows = NULL,
   aliases = character(),
   labels = "factor",
-  collector = NULL
+  collector = NULL,
+  value_aliases = list()
 ) {
   if (!length(dictionaries)) {
     return(data)
@@ -196,6 +197,12 @@
       dictionary_field <- unname(aliases[[dictionary_field]])
     }
     values <- as.character(data[[field]])
+    alias_index <- match(toupper(field), toupper(names(value_aliases)))
+    field_value_aliases <- if (is.na(alias_index)) {
+      character()
+    } else {
+      value_aliases[[alias_index]]
+    }
     converted <- FALSE
     evaluated <- FALSE
     conversion_levels <- character()
@@ -206,16 +213,27 @@
         next
       }
       evaluated <- TRUE
+      dictionary_values <- values[rows]
+      if (length(field_value_aliases)) {
+        alias_match <- match(
+          tolower(trimws(dictionary_values)),
+          tolower(names(field_value_aliases))
+        )
+        matched_alias <- !is.na(alias_match)
+        dictionary_values[matched_alias] <- unname(
+          field_value_aliases[alias_match[matched_alias]]
+        )
+      }
       selected <- .tabwin_select_conversion(
         dictionaries[[key]],
         dictionary_field,
-        values[rows],
+        dictionary_values,
         data[rows, , drop = FALSE],
         field
       )
       if (!is.null(selected)) {
         source_values <- selected$source_values
-        if (is.null(source_values)) source_values <- values[rows]
+        if (is.null(source_values)) source_values <- dictionary_values
         converted_values <- .tabwin_apply_conversion_values(
           source_values,
           selected,
@@ -264,7 +282,8 @@
   aliases = character(),
   rows = NULL,
   labels = "factor",
-  collector = NULL
+  collector = NULL,
+  value_aliases = list()
 ) {
   dictionaries <- list(single = dictionary)
   dictionary_rows <- if (is.null(rows)) {
@@ -279,7 +298,8 @@
     dictionary_rows,
     aliases,
     labels,
-    collector
+    collector,
+    value_aliases
   )
 }
 
