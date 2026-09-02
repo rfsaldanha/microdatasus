@@ -40,7 +40,6 @@
   "QTDFILMORT" = "99",
   "APGAR1" = "99",
   "APGAR5" = "99",
-  "PESO" = c("0", "9999"),
   "IDADE_MAE" = c("0", "99"),
   "FIL_VIVOS" = "99",
   "FIL_MORTOS" = "99",
@@ -54,6 +53,32 @@
     rows <- rows | (!is.na(value) & nzchar(value))
   }
   which(rows)
+}
+
+.sinasc_as_birth_weight <- function(
+  x,
+  legacy_rows,
+  collector = NULL,
+  field = NA_character_
+) {
+  source <- x
+  values <- trimws(as.character(x))
+  result <- suppressWarnings(as.integer(values))
+  # PESO.CNV explicitly accepts 1--7999 g in 1994--1995 and 1--8999 g
+  # in the current layout; the remaining four-digit codes are ignored.
+  maximum <- rep(8999L, length(result))
+  maximum[legacy_rows] <- 7999L
+  invalid <- !is.na(result) & (result < 1L | result > maximum)
+  result[invalid] <- NA_integer_
+  .process_record_coercion(
+    collector,
+    field,
+    "integer",
+    source,
+    result,
+    missing = c("0", "00", "000", "0000", "9999")
+  )
+  result
 }
 
 #' Prepare SINASC live-birth microdata
@@ -185,11 +210,19 @@ process_sinasc <- function(
   }
 
   for (field in .process_find_fields(result, .sinasc_integer_fields)) {
-    missing <- .sinasc_integer_missing[[toupper(field)]]
-    if (is.null(missing)) {
-      missing <- character()
+    if (identical(toupper(field), "PESO")) {
+      result[[field]] <- .sinasc_as_birth_weight(
+        result[[field]], legacy_rows, collector, field
+      )
+    } else {
+      missing <- .sinasc_integer_missing[[toupper(field)]]
+      if (is.null(missing)) {
+        missing <- character()
+      }
+      result[[field]] <- .process_as_integer(
+        result[[field]], missing, collector, field
+      )
     }
-    result[[field]] <- .process_as_integer(result[[field]], missing, collector, field)
   }
 
   if (length(dictionaries)) {

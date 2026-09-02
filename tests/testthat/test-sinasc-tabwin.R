@@ -247,6 +247,7 @@ test_that("process_sinasc applies period-specific dictionaries by row", {
       LOCNASC = c(NA, "1"),
       SEXO = c("1", "1"),
       GESTACAO = c("4", "4"),
+      PESO = c("8000", "8000"),
       stringsAsFactors = FALSE
     ),
     municipality_data = FALSE
@@ -266,4 +267,27 @@ test_that("process_sinasc applies period-specific dictionaries by row", {
     as.character(result$DTNASC),
     c(NA, "2024-01-01")
   )
+  expect_identical(result$PESO, c(NA_integer_, 8000L))
+})
+
+test_that("process_sinasc enforces the official birth-weight domain", {
+  result <- process_sinasc(
+    data.frame(
+      DTNASC = rep("01012024", 6L),
+      PESO = c("8999", "9000", "9998", "0", "9999", "bad"),
+      stringsAsFactors = FALSE
+    ),
+    municipality_data = FALSE,
+    labels = "none",
+    diagnostics = TRUE
+  )
+
+  expect_identical(
+    result$PESO,
+    c(8999L, NA_integer_, NA_integer_, NA_integer_, NA_integer_, NA_integer_)
+  )
+  report <- processing_diagnostics(result)
+  failures <- report$coercion_failures
+  failures <- failures[failures$field == "PESO", , drop = FALSE]
+  expect_setequal(failures$value, c("9000", "9998", "bad"))
 })
