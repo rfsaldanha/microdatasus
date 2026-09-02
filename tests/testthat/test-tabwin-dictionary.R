@@ -857,7 +857,7 @@ test_that("CNV widths of five or more are implicitly alphanumeric", {
   )
   expect_identical(
     microdatasus:::.tabwin_normalize_code("123456", 5L),
-    "123456"
+    "12345"
   )
 })
 
@@ -885,6 +885,137 @@ test_that("implicit alphanumeric CNVs support open literal ranges", {
   )
 })
 
+test_that("short CNVs infer literal ranges from alphabetic bounds", {
+  cross <- tempfile(fileext = ".CNV")
+  open <- tempfile(fileext = ".CNV")
+  on.exit(unlink(c(cross, open)), add = TRUE)
+  write_tabwin_text(
+    cross,
+    c("1 3", tabwin_cnv_line(1, "Chapters A-B", "A00-B99"))
+  )
+  write_tabwin_text(
+    open,
+    c("1 4", tabwin_cnv_line(1, "Through z", "-zzzz"))
+  )
+
+  cross_conversion <- microdatasus:::.tabwin_parse_cnv(cross)
+  open_conversion <- microdatasus:::.tabwin_parse_cnv(open)
+  cross_selected <- list(
+    definition = data.frame(position = 1L),
+    conversion = cross_conversion
+  )
+  open_selected <- list(
+    definition = data.frame(position = 1L),
+    conversion = open_conversion
+  )
+
+  expect_identical(cross_conversion$ranges$kind, "literal")
+  expect_identical(open_conversion$ranges$kind, "literal")
+  expect_identical(
+    microdatasus:::.tabwin_apply_conversion_values(
+      c("A00", "B99", "C00"), cross_selected
+    ),
+    c("Chapters A-B", "Chapters A-B", "C00")
+  )
+  expect_identical(
+    microdatasus:::.tabwin_apply_conversion_values(
+      c("0000", "A000", "zzzz", "zzzzz"), open_selected
+    ),
+    c("Through z", "Through z", "Through z", "Through z")
+  )
+})
+
+test_that("implicit alphanumeric CNVs support padded closed ranges", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  write_tabwin_text(path, c(
+    "2 6",
+    tabwin_cnv_line(1, "1981", "1981  -198112"),
+    tabwin_cnv_line(2, "January 1981", "198101")
+  ))
+
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+  selected <- list(
+    definition = data.frame(position = 1L),
+    conversion = conversion
+  )
+
+  expect_identical(conversion$ranges$kind, "literal")
+  expect_identical(
+    microdatasus:::.tabwin_apply_conversion_values(
+      c("198100", "198101", "198112", "198113"), selected
+    ),
+    c("1981", "January 1981", "1981", "198113")
+  )
+})
+
+test_that("numeric-mode CNVs normalize padded alphanumeric ranges", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  write_tabwin_text(
+    path,
+    c("1 4", tabwin_cnv_line(1, "Pertussis", "A37 -A379"))
+  )
+
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+
+  expect_identical(
+    unname(conversion$map[c("A370", "A375", "A379")]),
+    rep("Pertussis", 3)
+  )
+  expect_identical(conversion$truncated_code_tokens, 0L)
+  expect_identical(
+    microdatasus:::.tabwin_normalize_code("A37 ", 4L), "A370"
+  )
+})
+
+test_that("CNV parser repairs the official CID lower-bound sentinel", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  sentinel <- intToUtf8(31L)
+  token <- paste0("A00", sentinel, "-A009")
+  write_tabwin_text(
+    path,
+    c("1 4", tabwin_cnv_line(1, "Cholera", token))
+  )
+
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+  selected <- list(
+    definition = data.frame(position = 1L),
+    conversion = conversion
+  )
+
+  expect_identical(conversion$ranges$token, "A000-A009")
+  expect_identical(conversion$ranges$kind, "literal")
+  expect_identical(
+    microdatasus:::.tabwin_apply_conversion_values(
+      c("A000", "A005", "A009", "A010"), selected
+    ),
+    c("Cholera", "Cholera", "Cholera", "A010")
+  )
+  expect_identical(conversion$truncated_code_tokens, 0L)
+})
+
+test_that("CNV parser separates adjacent fixed-width ranges", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  write_tabwin_text(path, c(
+    "2 6",
+    tabwin_cnv_line(
+      1, "AM interior", "130001-130259-130261-139000"
+    ),
+    tabwin_cnv_line(2, "Manaus", "130260")
+  ))
+
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+
+  expect_identical(conversion$recovered_concatenated_ranges, 1L)
+  expect_identical(
+    unname(conversion$map[c("130001", "130259", "130260", "139000")]),
+    c("AM interior", "AM interior", "Manaus", "AM interior")
+  )
+})
+
 test_that("CNV parser discards physical padding beyond code width", {
   path <- tempfile(fileext = ".CNV")
   on.exit(unlink(path), add = TRUE)
@@ -902,6 +1033,7 @@ test_that("CNV parser discards physical padding beyond code width", {
     microdatasus:::.tabwin_normalize_code("0   ", 1L),
     "0"
   )
+  expect_identical(conversion$truncated_code_tokens, 0L)
 })
 
 test_that("CNV parser recovers narrow official layout inconformities", {
@@ -982,27 +1114,43 @@ test_that("CNV parser recovers codes displaced by overflowing descriptions", {
   expect_identical(overflow_conversion$compact_code_rows, 0L)
   expect_identical(overflow_conversion$overflow_code_rows, 1L)
   expect_false("m" %in% names(junk_conversion$map))
+  expect_identical(unname(junk_conversion$map[["120039"]]), "Valid")
   expect_identical(junk_conversion$overflow_code_rows, 0L)
+  expect_identical(junk_conversion$truncated_code_tokens, 0L)
+  expect_identical(junk_conversion$repaired_code_tokens, 1L)
   expect_identical(
-    unname(overlong_conversion$map[["12345678901234"]]), "CNPJ"
+    unname(overlong_conversion$map[["1234567890123"]]), "CNPJ"
   )
+  expect_identical(overlong_conversion$truncated_code_tokens, 1L)
   expect_identical(overlong_conversion$overflow_code_rows, 0L)
+  selected <- list(
+    definition = data.frame(position = 1L),
+    conversion = overlong_conversion
+  )
+  expect_identical(
+    microdatasus:::.tabwin_apply_conversion_values(
+      c("12345678901234", "1234567890123"), selected
+    ),
+    rep("CNPJ", 2)
+  )
 })
 
 test_that("CNV overflow recovery does not reinterpret prose after a code", {
   path <- tempfile(fileext = ".CNV")
   on.exit(unlink(path), add = TRUE)
-  label <- paste(rep("Long category description", 3), collapse = " ")
-  row <- paste0(
-    sprintf("%7d", 1L), "  ", label,
-    "O938,valid values from O930 to O935"
-  )
-  write_tabwin_text(path, c("1 4", row))
+  write_tabwin_text(path, c(
+    "1 4",
+    tabwin_cnv_line(
+      1, "Long category", "O938,valid values from O930 to O935"
+    )
+  ))
 
   conversion <- microdatasus:::.tabwin_parse_cnv(path)
 
   expect_identical(conversion$overflow_code_rows, 0L)
+  expect_identical(unname(conversion$map[["O938"]]), "Long category")
   expect_false("O935" %in% names(conversion$map))
+  expect_identical(conversion$discarded_code_tokens, 1L)
 })
 
 test_that("later duplicate CNV codes take official source precedence", {
@@ -1377,4 +1525,150 @@ test_that("dictionary prefetch returns early when there is no work", {
   expect_null(microdatasus:::.datasus_prefetch_dictionary_relations(
     list(extracted_all = FALSE), data.frame()
   ))
+})
+
+
+test_that("CNV parser recovers one-position literal width conflicts", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  write_tabwin_text(path, c(
+    "4 1 L",
+    tabwin_cnv_line(1, "Unknown", "00-99"),
+    tabwin_cnv_line(2, "Home", "1,01"),
+    tabwin_cnv_line(3, "Transport", "10"),
+    tabwin_cnv_line(4, "Abroad", "11")
+  ))
+
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+  selected <- list(
+    definition = data.frame(position = 1L),
+    conversion = conversion
+  )
+
+  expect_identical(conversion$declared_code_width, 1L)
+  expect_identical(conversion$code_width, 2L)
+  expect_true(conversion$recovered_code_width)
+  expect_identical(
+    microdatasus:::.tabwin_apply_conversion_values(
+      c("1", "01", "10", "11", "99"), selected
+    ),
+    c("Home", "Home", "Transport", "Abroad", "Unknown")
+  )
+})
+
+test_that("CNV parser repairs evidenced malformed interval spellings", {
+  equals <- tempfile(fileext = ".CNV")
+  padded <- tempfile(fileext = ".CNV")
+  transposed <- tempfile(fileext = ".CNV")
+  on.exit(unlink(c(equals, padded, transposed)), add = TRUE)
+
+  write_tabwin_text(
+    equals,
+    c("1 4", tabwin_cnv_line(1, "Processing", "1455=1456"))
+  )
+  write_tabwin_text(
+    padded,
+    c("1 2 L", tabwin_cnv_line(1, "Seven through 48", "7 -48"))
+  )
+  write_tabwin_text(
+    transposed,
+    c("1 4 L", tabwin_cnv_line(1, "Skin", "L985-L959"))
+  )
+
+  equals_conversion <- microdatasus:::.tabwin_parse_cnv(equals)
+  padded_conversion <- microdatasus:::.tabwin_parse_cnv(padded)
+  transposed_conversion <- microdatasus:::.tabwin_parse_cnv(transposed)
+
+  expect_identical(
+    unname(equals_conversion$map[c("1455", "1456")]),
+    rep("Processing", 2)
+  )
+  expect_identical(
+    unname(padded_conversion$map[c("7 ", "8 ", "10", "48")]),
+    rep("Seven through 48", 4)
+  )
+  expect_identical(
+    unname(transposed_conversion$map[c("L985", "L986", "L989")]),
+    rep("Skin", 3)
+  )
+  expect_identical(equals_conversion$repaired_code_tokens, 1L)
+  expect_identical(padded_conversion$repaired_code_tokens, 1L)
+  expect_identical(transposed_conversion$repaired_code_tokens, 1L)
+})
+
+test_that("CNV parser discards prose without losing adjacent valid codes", {
+  prose_path <- tempfile(fileext = ".CNV")
+  prefix_path <- tempfile(fileext = ".CNV")
+  dot_path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(c(prose_path, prefix_path, dot_path)), add = TRUE)
+
+  write_tabwin_text(prose_path, c(
+    "1 4 L",
+    tabwin_cnv_line(1, "Lymphoma", "C884,linfoma MALT ou TLAB]")
+  ))
+  write_tabwin_text(prefix_path, c(
+    "1 6 L",
+    tabwin_cnv_line(
+      1, "Family doctor",
+      paste0("XXXXXX", strrep(" ", 40L), "vascular")
+    )
+  ))
+  write_tabwin_text(dot_path, c(
+    "1 1",
+    tabwin_cnv_line(1, "Blank", ".0")
+  ))
+
+  prose <- microdatasus:::.tabwin_parse_cnv(prose_path)
+  prefix <- microdatasus:::.tabwin_parse_cnv(prefix_path)
+  dot <- microdatasus:::.tabwin_parse_cnv(dot_path)
+
+  expect_identical(names(prose$map), "C884")
+  expect_identical(prose$discarded_code_tokens, 1L)
+  expect_identical(unname(prefix$map[["XXXXXX"]]), "Family doctor")
+  expect_identical(prefix$repaired_code_tokens, 1L)
+  expect_identical(unname(dot$map[["0"]]), "Blank")
+  expect_identical(dot$repaired_code_tokens, 1L)
+})
+
+test_that("CNV parser recovers codes glued after a closing parenthesis", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  label <- paste0(strrep("A", 52L), ")")
+  row <- paste0(sprintf("%7d", 1L), "  ", label, "857")
+  write_tabwin_text(path, c("1 3", row))
+
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+
+  expect_identical(unname(conversion$map[["857"]]), label)
+  expect_identical(conversion$overflow_code_rows, 1L)
+})
+
+
+test_that("CNV parser preserves official placeholders and internal literals", {
+  literal_path <- tempfile(fileext = ".CNV")
+  sentinel_path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(c(literal_path, sentinel_path)), add = TRUE)
+
+  write_tabwin_text(literal_path, c(
+    "2 3 L",
+    tabwin_cnv_line(1, "Combined", "A O"),
+    tabwin_cnv_line(2, "Subtotal placeholder", "---")
+  ))
+  sentinel <- intToUtf8(31L)
+  write_tabwin_text(sentinel_path, c(
+    "1 4 L",
+    tabwin_cnv_line(1, "Category", paste0("C00", sentinel))
+  ))
+
+  literal <- microdatasus:::.tabwin_parse_cnv(literal_path)
+  scalar <- microdatasus:::.tabwin_parse_cnv(sentinel_path)
+
+  expect_identical(unname(literal$map[["A O"]]), "Combined")
+  expect_identical(
+    unname(literal$map[["---"]]), "Subtotal placeholder"
+  )
+  expect_identical(literal$placeholder_code_tokens, 1L)
+  expect_identical(literal$discarded_code_tokens, 0L)
+  expect_identical(unname(scalar$map[["C000"]]), "Category")
+  expect_identical(scalar$repaired_code_tokens, 1L)
 })

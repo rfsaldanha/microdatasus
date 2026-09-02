@@ -512,13 +512,16 @@
   intToUtf8(digits + 65L)
 }
 
-.tabwin_expand_range <- function(token, width, max_codes = 100000L) {
+.tabwin_expand_range <- function(
+  token, width, mode = "", max_codes = 100000L
+) {
   # Short CNV codes may use compact intervals such as 01-09, A-Z, or A01-A05.
   token <- trimws(token)
   bounds <- strsplit(token, "-", fixed = TRUE)[[1L]]
   if (length(bounds) != 2L || any(!nzchar(bounds))) {
     return(token)
   }
+  bounds <- .tabwin_normalize_code(bounds, width, mode)
   if (all(grepl("^[[:alpha:]]+$", bounds)) &&
       length(unique(nchar(bounds))) == 1L) {
     limits <- vapply(bounds, .tabwin_alpha_to_number, numeric(1))
@@ -587,8 +590,10 @@
   # bounds lets every processor handle large analytical TabWin bands safely.
   token <- trimws(token)
   bounds <- strsplit(token, "-", fixed = TRUE)[[1L]]
-  if (.tabwin_codes_are_literal(width, mode) &&
-      (startsWith(token, "-") || endsWith(token, "-"))) {
+  open_range <- startsWith(token, "-") || endsWith(token, "-")
+  alpha_bound <- grepl("[[:alpha:]]", token)
+  if ((.tabwin_codes_are_literal(width, mode) || alpha_bound) &&
+      open_range) {
     separators <- gregexpr("-", token, fixed = TRUE)[[1L]]
     if (length(separators) != 1L || separators[[1L]] < 1L) return(NULL)
     return(data.frame(
@@ -598,6 +603,9 @@
     ))
   }
   if (length(bounds) != 2L || any(!nzchar(bounds))) return(NULL)
+  raw_bounds <- bounds
+  control_bound <- any(grepl(intToUtf8(31L), raw_bounds, fixed = TRUE))
+  bounds <- .tabwin_normalize_code(bounds, width, mode)
   if (all(grepl("^[[:alpha:]]+$", bounds)) &&
       length(unique(nchar(bounds))) == 1L) {
     limits <- vapply(bounds, .tabwin_alpha_to_number, numeric(1))
@@ -621,18 +629,209 @@
   }
   parsed <- regexec("^([[:alpha:]]*)([0-9]+)$", bounds)
   pieces <- regmatches(bounds, parsed)
-  if (length(pieces[[1L]]) != 3L || length(pieces[[2L]]) != 3L ||
-      !identical(toupper(pieces[[1L]][[2L]]),
-                 toupper(pieces[[2L]][[2L]]))) return(NULL)
-  limits <- as.numeric(c(pieces[[1L]][[3L]], pieces[[2L]][[3L]]))
-  if (anyNA(limits) || limits[[1L]] > limits[[2L]]) return(NULL)
-  data.frame(
-    token = token, kind = "alphanumeric",
-    prefix = toupper(pieces[[1L]][[2L]]),
-    lower = limits[[1L]], upper = limits[[2L]],
-    size = limits[[2L]] - limits[[1L]] + 1, width = width,
-    stringsAsFactors = FALSE
+  same_prefix <- length(pieces[[1L]]) == 3L &&
+    length(pieces[[2L]]) == 3L &&
+    identical(
+      toupper(pieces[[1L]][[2L]]), toupper(pieces[[2L]][[2L]])
+    )
+  if (same_prefix) {
+    limits <- as.numeric(c(pieces[[1L]][[3L]], pieces[[2L]][[3L]]))
+    if (!anyNA(limits) && limits[[1L]] <= limits[[2L]]) {
+      return(data.frame(
+        token = token, kind = "alphanumeric",
+        prefix = toupper(pieces[[1L]][[2L]]),
+        lower = limits[[1L]], upper = limits[[2L]],
+        size = limits[[2L]] - limits[[1L]] + 1, width = width,
+        stringsAsFactors = FALSE
+      ))
+    }
+  }
+  inferred_literal <- all(grepl("^[[:alnum:]]+$", bounds)) &&
+    any(grepl("[[:alpha:]]", bounds))
+  if (.tabwin_codes_are_literal(width, mode) || control_bound ||
+      inferred_literal) {
+    literal_bounds <- if (control_bound) {
+      sentinel <- intToUtf8(31L)
+      repaired <- gsub(sentinel, "0", raw_bounds, fixed = TRUE)
+      .tabwin_normalize_code(repaired, width, "L")
+    } else {
+      bounds
+    }
+    literal_token <- if (control_bound) {
+      paste(literal_bounds, collapse = "-")
+    } else {
+      token
+    }
+    fixed_width <- nchar(literal_bounds, type = "chars") == width
+    if (all(fixed_width) && literal_bounds[[1L]] <= literal_bounds[[2L]]) {
+      return(data.frame(
+        token = literal_token, kind = "literal", prefix = "",
+        lower = NA_real_, upper = NA_real_, size = Inf, width = width,
+        stringsAsFactors = FALSE
+      ))
+    }
+  }
+  NULL
+}
+
+.tabwin_split_concatenated_ranges <- function(token, width, mode = "") {
+  candidate <- trimws(token)
+  parts <- strsplit(candidate, "-", fixed = TRUE)[[1L]]
+  if (length(parts) != 4L ||
+      any(!grepl("^[[:alnum:]]+$", parts)) ||
+      any(nchar(parts, type = "chars") != width)) {
+    return(token)
+  }
+  ranges <- c(
+    paste(parts[1:2], collapse = "-"),
+    paste(parts[3:4], collapse = "-")
   )
+  valid <- vapply(
+    ranges,
+    function(value) !is.null(.tabwin_range_rule(value, width, mode)),
+    logical(1)
+  )
+  if (!all(valid)) token else ranges
+}
+
+.tabwin_repair_range_token <- function(token, width, mode = "") {
+  candidate <- trimws(token)
+
+  # Three historical SIH archives use `=` once where every neighbouring
+  # token uses `-`. Accept it only between two complete fixed-width bounds.
+  equals <- strsplit(candidate, "=", fixed = TRUE)[[1L]]
+  if (length(equals) == 2L &&
+      all(grepl("^[[:alnum:]]+$", equals)) &&
+      all(nchar(equals, type = "chars") == width)) {
+    repaired <- paste(equals, collapse = "-")
+    if (!is.null(.tabwin_range_rule(repaired, width, mode))) {
+      return(repaired)
+    }
+  }
+
+  if (!is.null(.tabwin_range_rule(candidate, width, mode))) {
+    return(token)
+  }
+
+  # A few SINAN lists repeat a padded interval alongside its canonical form,
+  # e.g. `2 -5,02-05`. If padding makes the bounds descend but removing only
+  # whitespace adjacent to the separator yields a valid range, use that range.
+  compact <- gsub(
+    "[[:space:]]*-[[:space:]]*", "-", candidate, perl = TRUE
+  )
+  if (!identical(compact, candidate) &&
+      !is.null(.tabwin_range_rule(compact, width, mode))) {
+    return(compact)
+  }
+
+  # The same SIM archive contains the corrected L985-L989 interval in
+  # MalDefCBPU.CNV, while improv.CNV and improv1.CNV contain this transposition.
+  if (width == 4L && identical(toupper(candidate), "L985-L959")) {
+    return("L985-L989")
+  }
+
+  token
+}
+
+.tabwin_infer_literal_width <- function(codes, labels, width, mode = "") {
+  if (!identical(toupper(mode), "L") || !length(codes)) return(width)
+  scalar <- trimws(codes)
+  scalar_lengths <- nchar(scalar, type = "chars")
+  eligible <- grepl("^[[:alnum:]]+$", scalar) &
+    scalar_lengths <= width + 1L
+  if (!any(eligible & scalar_lengths == width + 1L)) return(width)
+  scalar <- scalar[eligible]
+  scalar_labels <- labels[eligible]
+  scalar_lengths <- scalar_lengths[eligible]
+
+  conflicts <- function(candidate_width) {
+    keys <- .tabwin_normalize_code(scalar, candidate_width, "L")
+    groups <- split(seq_along(keys), keys)
+    vapply(groups, function(index) {
+      length(unique(scalar_labels[index])) > 1L &&
+        any(scalar_lengths[index] > candidate_width)
+    }, logical(1))
+  }
+  if (!any(conflicts(width))) return(width)
+
+  maximum <- max(scalar_lengths)
+  for (candidate_width in seq.int(width + 1L, maximum)) {
+    if (!any(conflicts(candidate_width))) return(candidate_width)
+  }
+  width
+}
+
+.tabwin_sanitize_code_token <- function(token, width, mode = "") {
+  candidate <- trimws(token)
+  if (!nzchar(candidate)) return(token)
+
+  sentinel <- intToUtf8(31L)
+  if (grepl(sentinel, candidate, fixed = TRUE) &&
+      !grepl("-", candidate, fixed = TRUE)) {
+    return(gsub(sentinel, "0", candidate, fixed = TRUE))
+  }
+  placeholder <- paste0("^-{", width, "}$")
+  if (grepl(placeholder, candidate)) return(token)
+
+  range_like <- grepl("-", candidate, fixed = TRUE) ||
+    grepl("=", candidate, fixed = TRUE)
+  if (range_like) {
+    repaired <- .tabwin_repair_range_token(token, width, mode)
+    if (!identical(repaired, token)) return(repaired)
+    concatenated <- .tabwin_split_concatenated_ranges(token, width, mode)
+    if (length(concatenated) > 1L) return(token)
+    if (!is.null(.tabwin_range_rule(token, width, mode))) return(token)
+
+    # Some literal SINAN tables repeat a numeric interval with unpadded bounds,
+    # such as 7 -48 beside 07-48. Preserve the unpadded aliases explicitly;
+    # lexical literal comparison cannot represent that mixed-width interval.
+    compact_range <- gsub(
+      "[[:space:]]*-[[:space:]]*", "-", candidate, perl = TRUE
+    )
+    numeric_bounds <- strsplit(compact_range, "-", fixed = TRUE)[[1L]]
+    if (.tabwin_codes_are_literal(width, mode) &&
+        length(numeric_bounds) == 2L &&
+        all(grepl("^[0-9]+$", numeric_bounds))) {
+      limits <- suppressWarnings(as.integer(numeric_bounds))
+      size <- limits[[2L]] - limits[[1L]] + 1L
+      if (!anyNA(limits) && size > 0L && size <= 100000L) {
+        return(as.character(seq.int(limits[[1L]], limits[[2L]])))
+      }
+    }
+  }
+
+  # One official SINAN table spells numeric zero as `.0`. No other numeric
+  # token in the corpus uses a leading dot; retain dotted literal versions.
+  if (!.tabwin_codes_are_literal(width, mode) &&
+      grepl("^\\.[0-9]+$", candidate) &&
+      nchar(candidate, type = "chars") == width + 1L) {
+    return(sub("^\\.", "", candidate))
+  }
+
+  # Preserve a complete code before prose that overflowed the description
+  # field. This occurs in medico02.CNV (`XXXXXX ... vascular`).
+  prefix_pattern <- paste0(
+    "^([[:alnum:]]{", width, "})[[:space:]]{2,}.+$"
+  )
+  prefix_match <- regexec(prefix_pattern, candidate, perl = TRUE)
+  prefix <- regmatches(candidate, prefix_match)[[1L]]
+  if (length(prefix) == 2L) return(prefix[[2L]])
+
+  # Literal tables occasionally use a meaningful internal blank (for example
+  # `A O` in TP_DROGA.cnv). It is safe only inside the declared field width.
+  if (.tabwin_codes_are_literal(width, mode) &&
+      nchar(candidate, type = "chars") <= width &&
+      grepl("^[[:alnum:].[:space:]]+$", candidate)) {
+    return(token)
+  }
+
+  # Codes are fixed-width scalars or intervals. Text fragments overflowing
+  # after a comma must not silently become synthetic keys such as `linf`.
+  if (grepl("[[:space:]]", candidate) ||
+      grepl("[^[:alnum:].]", candidate)) {
+    return(character())
+  }
+  token
 }
 
 .tabwin_empty_ranges <- function() {
@@ -654,22 +853,16 @@
 
 .tabwin_normalize_code <- function(code, width, mode = "") {
   code <- as.character(code)
-  explicit_literal <- identical(toupper(mode), "L")
   literal <- .tabwin_codes_are_literal(width, mode)
   if (literal) {
     # TabWin treats widths of five or more as alphanumeric automatically; L
     # forces the same treatment for shorter fields. Literal fields are
     # right-padded, keeping "1  " distinct from "001".
     code <- sub("^[[:space:]]+", "", code)
-    # Preserve non-padding suffixes in implicit literal mode. Official tables
-    # occasionally declare a width that is shorter than their actual codes;
-    # silently truncating those inconformities would create false matches.
-    if (!explicit_literal) {
-      overlong <- !is.na(code) & nchar(code, type = "chars") > width
-      suffix <- substring(code, width + 1L)
-      physical_padding <- overlong & grepl("^[[:space:]]+$", suffix)
-      code[physical_padding] <- substr(code[physical_padding], 1L, width)
-    }
+    # TabWin code fields have fixed width. Published tables sometimes append
+    # an IBGE check digit, prose, or other bytes beyond that field; TabWin
+    # compares only the declared prefix.
+    code <- substr(code, 1L, width)
     short <- !is.na(code) & nchar(code, type = "chars") < width
     code[short] <- paste0(
       code[short],
@@ -680,21 +873,18 @@
         x = " "
       )
     )
-    if (explicit_literal) return(substr(code, 1L, width))
     return(code)
   }
 
-  # Discard physical line padding beyond the declared code width. Spaces
-  # inside that width remain significant: "1  " still denotes 100 at width 3.
-  overlong <- !is.na(code) & nchar(code, type = "chars") > width
-  suffix <- substring(code, width + 1L)
-  physical_padding <- overlong & grepl("^[[:space:]]+$", suffix)
-  code[physical_padding] <- substr(code[physical_padding], 1L, width)
+  # Numeric fields are fixed-width too. Spaces inside the retained prefix
+  # remain significant: "1  " still denotes 100 at width three.
+  code <- substr(code, 1L, width)
 
   # In numeric mode, right-padding represents zeroes: both "1  " and "10 "
   # denote 100 at width three. Unpadded official tokens remain tolerated by
   # left-padding numeric codes, which also repairs DBF readers that drop zeroes.
-  right_padded <- !is.na(code) & grepl("^[0-9]+[[:space:]]+$", code)
+  right_padded <- !is.na(code) &
+    grepl("^[[:alnum:]]+[[:space:]]+$", code)
   code[right_padded] <- gsub(
     "[[:space:]]", "0", code[right_padded]
   )
@@ -986,6 +1176,8 @@
   full_width <- nchar(candidate_trimmed, type = "chars") == code_width
   overflow_separated <- grepl("[[:space:]]$", candidate_prefix)
   overflow_unambiguous <- !grepl(",", declared_trimmed, fixed = TRUE)
+  overflow_delimited <- candidate_start > code_start + 1L &
+    endsWith(candidate_prefix, ")")
   overflow <- !identical(mode, "L") &
     line_width >= code_start &
     candidate_start > code_start &
@@ -993,7 +1185,7 @@
     !declared_valid &
     candidate_valid &
     full_width &
-    overflow_separated &
+    (overflow_separated | overflow_delimited) &
     overflow_unambiguous
   recover <- compact | overflow
   code_text[recover] <- candidate[recover]
@@ -1129,12 +1321,19 @@
   if (is.null(raw_codes)) raw_codes <- character()
   if (is.null(raw_labels)) raw_labels <- character()
 
+  declared_code_width <- code_width
+  code_width <- .tabwin_infer_literal_width(
+    raw_codes, raw_labels, code_width, mode
+  )
+
   levels <- unique(categories$label[!is.na(categories$label)])
   common <- list(
     type = "cnv",
     dialect = dialect,
     mode = mode,
     code_width = code_width,
+    declared_code_width = declared_code_width,
+    recovered_code_width = code_width != declared_code_width,
     category_count = category_count,
     observed_category_count = nrow(categories),
     category_count_mismatch = category_count != nrow(categories),
@@ -1145,6 +1344,11 @@
     embedded_header = !is.null(header$embedded_row),
     compact_code_rows = compact_code_rows,
     overflow_code_rows = overflow_code_rows,
+    recovered_concatenated_ranges = 0L,
+    repaired_code_tokens = 0L,
+    placeholder_code_tokens = 0L,
+    discarded_code_tokens = 0L,
+    truncated_code_tokens = 0L,
     recovered_sequence = recovered_sequence,
     recovered_leading_sequence = recovered_leading_sequence
   )
@@ -1181,6 +1385,53 @@
     ))
   }
 
+  trimmed_codes <- trimws(raw_codes)
+  placeholder_pattern <- paste0("^-{", code_width, "}$")
+  common$placeholder_code_tokens <- sum(grepl(
+    placeholder_pattern, trimmed_codes
+  ))
+  suspicious_codes <- grepl("-", trimmed_codes, fixed = TRUE) |
+    grepl("=", trimmed_codes, fixed = TRUE) |
+    grepl("^\\.[0-9]+$", trimmed_codes) |
+    grepl("[[:space:]]", trimmed_codes) |
+    grepl("[^[:alnum:].]", trimmed_codes)
+  suspicious_indexes <- which(suspicious_codes)
+  sanitized_codes <- as.list(raw_codes)
+  sanitized_codes[suspicious_indexes] <- lapply(
+    raw_codes[suspicious_indexes],
+    .tabwin_sanitize_code_token, width = code_width, mode = mode
+  )
+  sanitized_lengths <- lengths(sanitized_codes)
+  common$discarded_code_tokens <- sum(sanitized_lengths == 0L)
+  common$repaired_code_tokens <- sum(vapply(
+    suspicious_indexes,
+    function(index) {
+      sanitized_lengths[[index]] > 0L && (
+        sanitized_lengths[[index]] != 1L ||
+          !identical(sanitized_codes[[index]], raw_codes[[index]])
+      )
+    },
+    logical(1)
+  ))
+  kept_codes <- sanitized_lengths > 0L
+  raw_labels <- rep(raw_labels[kept_codes], sanitized_lengths[kept_codes])
+  raw_codes <- unlist(sanitized_codes[kept_codes], use.names = FALSE)
+
+  split_candidates <- which(grepl("-", raw_codes, fixed = TRUE))
+  split_codes <- as.list(raw_codes)
+  split_codes[split_candidates] <- lapply(
+    raw_codes[split_candidates],
+    .tabwin_split_concatenated_ranges,
+    width = code_width,
+    mode = mode
+  )
+  split_lengths <- lengths(split_codes)
+  common$recovered_concatenated_ranges <-
+    sum(split_lengths) - length(raw_codes)
+  raw_labels <- rep(raw_labels, split_lengths)
+  raw_codes <- unlist(split_codes, use.names = FALSE)
+  if (is.null(raw_codes)) raw_codes <- character()
+
   expanded <- as.list(raw_codes)
   range_indexes <- which(grepl("-", trimws(raw_codes), fixed = TRUE))
   parsed_ranges <- lapply(
@@ -1206,11 +1457,21 @@
   expanded[materialized_indexes] <- lapply(
     raw_codes[materialized_indexes],
     .tabwin_expand_range,
-    width = code_width
+    width = code_width,
+    mode = mode
   )
-  map_codes <- .tabwin_normalize_code(
-    unlist(expanded, use.names = FALSE), code_width, mode
-  )
+  map_input <- unlist(expanded, use.names = FALSE)
+  measured_input <- map_input
+  if (.tabwin_codes_are_literal(code_width, mode)) {
+    measured_input <- sub("^[[:space:]]+", "", measured_input)
+  }
+  overlong_input <- !is.na(measured_input) &
+    nchar(measured_input, type = "chars") > code_width
+  suffix <- substring(measured_input, code_width + 1L)
+  nonpadding_suffix <- overlong_input &
+    !grepl("^[[:space:]]+$", suffix)
+  common$truncated_code_tokens <- sum(nonpadding_suffix)
+  map_codes <- .tabwin_normalize_code(map_input, code_width, mode)
   map_labels <- rep(raw_labels, lengths(expanded))
   map_priorities <- rep(seq_along(raw_codes), lengths(expanded))
   normalized_collisions <- sum(duplicated(map_codes))
@@ -1252,7 +1513,7 @@
   )
 }
 
-.tabwin_parser_version <- 11L
+.tabwin_parser_version <- 13L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {
