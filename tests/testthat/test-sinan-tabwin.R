@@ -13,6 +13,7 @@ create_sinan_tabwin_fixtures <- function() {
         file.path(root, definition),
         c(
           "A*.dbc",
+          "IContagem, CONTEXAM",
           "XFlag, FLAG, 1, FLAG.CNV",
           "XSexo, CS_SEXO, 1, SEX.CNV"
         )
@@ -318,6 +319,32 @@ test_that("SINAN date roles use content and accept legacy date syntax", {
   expect_identical(failures$n, 1L)
 })
 
+test_that("SINAN DEF increments take precedence over analytical groupings", {
+  data <- data.frame(
+    NU_LESOES = c("01", "12"),
+    NERVOSAFET = c("0", "4"),
+    FLAG = c("1", "2"),
+    stringsAsFactors = FALSE
+  )
+  dictionary <- list(
+    numeric_fields = c("NU_LESOES", "NERVOSAFET"),
+    definitions = data.frame(
+      field = c("NU_LESOES", "NERVOSAFET", "FLAG"),
+      stringsAsFactors = FALSE
+    ),
+    definition = "HansNET.def"
+  )
+
+  types <- microdatasus:::.sinan_type_fields(data, dictionary)
+  categorical <- microdatasus:::.sinan_dictionary_fields(
+    data, dictionary, types
+  )
+
+  expect_setequal(types[["integer"]], c("NU_LESOES", "NERVOSAFET"))
+  expect_true(all(types[["integer"]] %in% types[["protected"]]))
+  expect_identical(categorical, "FLAG")
+})
+
 test_that("process_sinan standardizes common types and message order", {
   archives <- create_sinan_tabwin_fixtures()
   on.exit(unlink(unlist(archives)), add = TRUE)
@@ -342,6 +369,7 @@ test_that("process_sinan standardizes common types and message order", {
     DEXAME = c("20240202", "2024-02-03"),
     TRATAMENTO = treatment,
     NU_ANO = c("2024", "2024"),
+    CONTEXAM = c("02", "3"),
     NU_IDADE_N = c("4116", "3023"),
     NU_NOTIFIC = c("0000001", "0000002"),
     ID_MN_RESI = c("1200209", "1200308"),
@@ -359,7 +387,8 @@ test_that("process_sinan standardizes common types and message order", {
   expect_s3_class(result$DT_NOTIFIC, "Date")
   expect_s3_class(result$DEXAME, "Date")
   expect_identical(result$TRATAMENTO, treatment)
-  expect_type(result$NU_ANO, "integer")
+  expect_type(result[["NU_ANO"]], "integer")
+  expect_identical(result[["CONTEXAM"]], c(2L, 3L))
   expect_identical(result$NU_IDADE_N, c("4116", "3023"))
   expect_identical(result$IDADEanos, c(116L, NA_integer_))
   expect_identical(result$IDADEmeses, c(NA_integer_, 23L))

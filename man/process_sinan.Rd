@@ -34,7 +34,7 @@ including codes absent from official conversion tables. Retrieve it with
 \code{\link[=processing_diagnostics]{processing_diagnostics()}}.}
 }
 \value{
-A tibble. Dates are returned as \code{Date}, the notification year and
+A tibble. Dates are returned as \code{Date}, DEF increment fields and
 derived age components as integer, labelled categorical fields as factors,
 and identifiers and free text as character.
 }

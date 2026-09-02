@@ -72,9 +72,21 @@
   ]
   free_text <- fields[grepl("^(NM|DS|NO)_", upper)]
 
+  # DEF I commands identify exact counts or measurements. They take priority
+  # over optional analytical groupings of the same source field.
+  declared_numeric <- if (is.null(dictionary[["numeric_fields"]])) {
+    character()
+  } else {
+    dictionary[["numeric_fields"]]
+  }
+  integer_fields <- .process_find_fields(
+    data,
+    unique(c("NU_ANO", declared_numeric))
+  )
+
   list(
     date = unique(date_fields),
-    integer = .process_find_fields(data, "NU_ANO"),
+    integer = setdiff(unique(integer_fields), date_fields),
     identifier = setdiff(
       unique(c(
         identifiers,
@@ -82,15 +94,15 @@
         free_text,
         municipality_fields
       )),
-      date_fields
+      unique(c(date_fields, integer_fields))
     ),
     protected = unique(c(
       date_fields,
+      integer_fields,
       identifiers,
       reference_fields,
       free_text,
-      municipality_fields,
-      "NU_ANO"
+      municipality_fields
     ))
   )
 }
@@ -169,7 +181,7 @@
 #' process_sinan(sinan_dengue_sample, "SINAN-DENGUE")
 #' process_sinan(sinan_chagas_sample, "SINAN-DOENCA-DE-CHAGAS-AGUDA")
 #'
-#' @return A tibble. Dates are returned as `Date`, the notification year and
+#' @return A tibble. Dates are returned as `Date`, DEF increment fields and
 #'   derived age components as integer, labelled categorical fields as factors,
 #'   and identifiers and free text as character.
 #'
