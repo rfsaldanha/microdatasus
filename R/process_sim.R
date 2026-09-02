@@ -77,10 +77,10 @@
   values <- trimws(as.character(x))
   result <- suppressWarnings(as.integer(values))
   if (length(rows)) {
-    # The CID-9 manual and NUMFILH.CNV define XX as none, 00 as
-    # ignored, and only the explicit counts 01 through 15 as valid.
+    # The CID-9 layout uses XX for none. NUMFILH.CNV keeps exact counts
+    # through 20, groups 21--50 as "21 e +", and ignores 00 and 51--99.
     legacy <- values[rows]
-    valid <- legacy %in% c(as.character(1:15), sprintf("%02d", 1:15))
+    valid <- legacy %in% c(as.character(1:50), sprintf("%02d", 1:50))
     result[rows] <- NA_integer_
     result[rows[valid]] <- suppressWarnings(as.integer(legacy[valid]))
     result[rows[which(legacy == "XX")]] <- 0L
@@ -91,7 +91,7 @@
     "integer",
     source,
     result,
-    missing = c("0", "00")
+    missing = c("0", "00", as.character(51:99))
   )
   result
 }
