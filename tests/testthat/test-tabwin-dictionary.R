@@ -2151,6 +2151,23 @@ test_that("ZIP entry matching observes path component boundaries", {
   )
 })
 
+test_that("ZIP entry matching tolerates unrelated legacy filename bytes", {
+  legacy <- rawToChar(c(
+    charToRaw("root/C"), as.raw(0xa2), charToRaw("pia de APGAR.CNV")
+  ))
+  Encoding(legacy) <- "bytes"
+
+  expect_no_warning(
+    matched <- microdatasus:::.tabwin_find_entry(
+      c(legacy, "root/CNV/UF.CNV"), "CNV/UF.CNV"
+    )
+  )
+  expect_identical(matched, "root/CNV/UF.CNV")
+  expect_identical(
+    microdatasus:::.tabwin_find_entry(legacy, legacy), legacy
+  )
+})
+
 test_that("ZIP entry matching recovers only deterministic official path drift", {
   expect_identical(
     microdatasus:::.tabwin_find_entry(

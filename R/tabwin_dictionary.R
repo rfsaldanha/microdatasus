@@ -511,12 +511,24 @@
   unique(fields)
 }
 
+.tabwin_path_key <- function(path) {
+  # ZIP and filesystem listings can contain raw DOS filename bytes that are
+  # invalid in the current locale. Replace undecodable bytes only in the
+  # comparison key so an unrelated legacy name cannot poison every lookup;
+  # return values from .tabwin_find_entry() still preserve the original bytes.
+  converted <- iconv(path, from = "", to = "UTF-8", sub = "?")
+  converted[is.na(converted)] <- ""
+  tolower(chartr(intToUtf8(92L), "/", converted))
+}
+
 .tabwin_find_entry <- function(entries, suffix) {
   # ZIP members and DEF references vary in path separator and letter case.
-  entries_normalized <- gsub("\\\\", "/", entries)
-  suffix <- gsub("\\\\", "/", suffix)
-  entries_lower <- tolower(entries_normalized)
-  suffix_lower <- tolower(sub("^/+", "", sub("^\\./", "", suffix)))
+  entries_lower <- .tabwin_path_key(entries)
+  suffix_lower <- .tabwin_path_key(suffix)
+  suffix_lower <- sub("^/+", "", suffix_lower)
+  if (startsWith(suffix_lower, "./")) {
+    suffix_lower <- substring(suffix_lower, 3L)
+  }
   # Match complete path components. A plain UF.CNV reference must not also
   # match REGUF.CNV, nor may ANO.CNV match MESANO.CNV.
   matches <- which(
@@ -576,13 +588,7 @@
 .tabwin_filename_key <- function(path) {
   # Preserve ASCII basenames while replacing undecodable bytes in unrelated
   # legacy filenames, which prevents locale-dependent matching failures.
-  converted <- iconv(
-    basename(path),
-    from = "",
-    to = "UTF-8",
-    sub = "?"
-  )
-  tolower(converted)
+  basename(.tabwin_path_key(path))
 }
 
 .tabwin_extract_legacy_entry <- function(dictionary, file_name, destination) {
