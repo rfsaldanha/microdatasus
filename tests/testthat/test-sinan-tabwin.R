@@ -440,6 +440,32 @@ test_that("SINAN DEF increments take precedence over analytical groupings", {
   expect_identical(categorical, "FLAG")
 })
 
+test_that("SINAN meningitis preserves other-vaccine descriptions", {
+  data <- data.frame(
+    ANT_OU_DE = c("01", "03 HEPATITE", "HEPATITE B", NA_character_),
+    stringsAsFactors = FALSE
+  )
+  dictionary <- list(
+    numeric_fields = character(),
+    definitions = data.frame(
+      field = "ANT_OU_DE",
+      stringsAsFactors = FALSE
+    ),
+    definition = "MeningeNET.def"
+  )
+
+  types <- microdatasus:::.sinan_type_fields(data, dictionary)
+  categorical <- microdatasus:::.sinan_dictionary_fields(
+    data,
+    dictionary,
+    types
+  )
+
+  expect_identical(types$identifier, "ANT_OU_DE")
+  expect_identical(types$protected, "ANT_OU_DE")
+  expect_length(categorical, 0L)
+})
+
 test_that("SINAN recovered official increment names remain numeric", {
   tuberculosis <- tibble::tibble(NU_CONTATO = c("0", "14", "99"))
   diphtheria <- tibble::tibble(MED_QUAN_P = c("0", "2", NA_character_))

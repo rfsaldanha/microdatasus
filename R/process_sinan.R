@@ -83,7 +83,13 @@
   reference_fields <- fields[
     grepl("^SEM_|^NU_ANO$", upper)
   ]
-  free_text <- fields[grepl("^(NM|DS|NO)_", upper)]
+  # The official meningitis data dictionary defines ANT_OU_DE as the
+  # varchar2(30) description of an "other" vaccine. MeningeNET.def
+  # incorrectly reuses it for year/month analytical relations, which would
+  # turn free text such as "03 HEPATITE" into a month label.
+  free_text <- fields[
+    grepl("^(NM|DS|NO)_", upper) | upper == "ANT_OU_DE"
+  ]
 
   # DEF I commands identify exact counts or measurements. They take priority
   # over optional analytical groupings of the same source field.
