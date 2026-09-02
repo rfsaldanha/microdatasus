@@ -368,7 +368,10 @@ test_that("persistent cache validates its checksum", {
 })
 
 test_that("dictionary schema and audit validate selections and expose failures", {
-  expect_length(microdatasus:::.datasus_validate_system_selection(NULL), 104L)
+  expect_setequal(
+    microdatasus:::.datasus_validate_system_selection(NULL),
+    names(microdatasus:::.tabwin_registry())
+  )
   expect_error(
     microdatasus:::.datasus_validate_system_selection(NA_character_),
     "character vector"

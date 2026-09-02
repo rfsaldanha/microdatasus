@@ -7,6 +7,7 @@ create_tabwin_fixture <- function() {
     "Ado*.db?",
     "XTipo Obito, TIPOBITO, 1, TIPOBITO.CNV",
     "XSexo, SEXO, 1, SEXO.CNV",
+    "XSemanas Gestacao, GESTACAO, 1, SEMANAS.CNV",
     ";XRaca antiga, RACACOR, 1, OLD.CNV",
     "XRaca Cor, RACACOR, 1, RACACOR.CNV",
     "XOcupacao antiga, OCUP, 1, OCUPGRP.CNV",
@@ -32,6 +33,14 @@ create_tabwin_fixture <- function() {
       tabwin_cnv_line(3, "I", "I,0,9"),
       tabwin_cnv_line(1, "M", "M,1"),
       tabwin_cnv_line(2, "F", "F,2")
+    )
+  )
+  write_tabwin_text(
+    file.path(tabdo, "SEMANAS.CNV"),
+    c(
+      "008 1 L",
+      tabwin_cnv_line(1, "Ignorado", "9"),
+      tabwin_cnv_line(5, "32 a 36", "4")
     )
   )
   write_tabwin_text(
@@ -72,6 +81,86 @@ create_tabwin_fixture <- function() {
   archive
 }
 
+create_sim_legacy_tabwin_fixture <- function() {
+  root <- tempfile("sim-cid9-fixture-")
+  directory <- file.path(root, "OBITOS_CID9_TAB")
+  dir.create(directory, recursive = TRUE)
+  definition <- c(
+    "; SIM CID-9 fixture based on the official historical archive",
+    "Ado*.db?",
+    "XEstado Civil, ESTCIVIL, 1, ESTCIV.CNV",
+    "XOcupacao Mae, OCUPMAE, 1, OCUPACAO.CNV",
+    "XInstrucao Mae, INSTRMAE, 1, INSTRUC.CNV",
+    "XSemanas Gestacao, SEMANGEST, 1, SEMANAS.CNV",
+    "XGravidez, TIPOGRAV, 1, GRAVIDEZ.CNV",
+    "XTipo Parto, TIPOPARTO, 1, PARTO.CNV",
+    "XAtestante, ATESTANTE, 1, ATESTANT.CNV",
+    "XTipo Violencia, TIPOVIOL, 1, TIPOVIOL.CNV",
+    "XTipo Acidente, TIPOACID, 1, TIPOACID.CNV",
+    "XLocal Acidente, LOCACID, 1, LOCACID.CNV"
+  )
+  write_tabwin_text(file.path(directory, "OBITO.DEF"), definition)
+  conversions <- list(
+    "ESTCIV.CNV" = c("005 1", tabwin_cnv_line(2, "Casado", "2")),
+    "OCUPACAO.CNV" = c(
+      "002 3",
+      tabwin_cnv_line(8, "Dona-de-casa", "008"),
+      tabwin_cnv_line(178, "Trab agropec poliv", "621")
+    ),
+    "INSTRUC.CNV" = c(
+      "005 1",
+      tabwin_cnv_line(1, "Ignorado", "0-9"),
+      tabwin_cnv_line(2, "Nenhuma", "1"),
+      tabwin_cnv_line(5, "Superior", "4")
+    ),
+    "SEMANAS.CNV" = c(
+      "009 1",
+      tabwin_cnv_line(1, "Ignorado", "0-9"),
+      tabwin_cnv_line(5, "Menos 22", "4"),
+      tabwin_cnv_line(8, "42 e mais", "8")
+    ),
+    "GRAVIDEZ.CNV" = c(
+      "005 1",
+      tabwin_cnv_line(1, "Ignorado", "0-9"),
+      tabwin_cnv_line(5, "Mais de 3", "4")
+    ),
+    "PARTO.CNV" = c(
+      "005 1",
+      tabwin_cnv_line(1, "Ignorado", "0-9"),
+      tabwin_cnv_line(4, "Fórceps", "3"),
+      tabwin_cnv_line(5, "Outro", "4")
+    ),
+    "ATESTANT.CNV" = c(
+      "006 1",
+      tabwin_cnv_line(1, "Ignorado", "0-9"),
+      tabwin_cnv_line(2, "Sim", "1")
+    ),
+    "TIPOVIOL.CNV" = c(
+      "005 1",
+      tabwin_cnv_line(1, "Ignorado", "0-9"),
+      tabwin_cnv_line(2, "Homicídio", "1"),
+      tabwin_cnv_line(4, "Acidente", "3")
+    ),
+    "TIPOACID.CNV" = c(
+      "006 1",
+      tabwin_cnv_line(1, "Ignorado", "0-9"),
+      tabwin_cnv_line(2, "Atropelamento", "1")
+    ),
+    "LOCACID.CNV" = c(
+      "005 1",
+      tabwin_cnv_line(1, "Ignorado", "0-9"),
+      tabwin_cnv_line(5, "Local de Trabalho", "4")
+    )
+  )
+  for (file in names(conversions)) {
+    write_tabwin_text(file.path(directory, file), conversions[[file]])
+  }
+  archive <- tempfile(fileext = ".zip")
+  zip::zipr(archive, files = "OBITOS_CID9_TAB", root = root)
+  unlink(root, recursive = TRUE)
+  archive
+}
+
 test_that("process_sim appends its data type argument compatibly", {
   expect_identical(
     as.pairlist(formals(process_sim)[c("data", "municipality_data", "information_system")]),
@@ -83,14 +172,13 @@ test_that("process_sim appends its data type argument compatibly", {
   )
 })
 
-test_that("TabWin registry covers every SIM type supported by fetch_datasus", {
-  expect_setequal(
-    grep(
-      "^SIM-",
-      names(microdatasus:::.tabwin_registry()),
-      value = TRUE
-    ),
-    c("SIM-DO", "SIM-DOFET", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT")
+test_that("TabWin registry covers current and historical SIM dictionaries", {
+  expected <- c(
+    "SIM-DO", "SIM-DOFET", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT"
+  )
+  expect_setequal(microdatasus:::.sim_information_systems, expected)
+  expect_true(
+    "SIM-DO-CID9" %in% names(microdatasus:::.tabwin_registry())
   )
 })
 
@@ -119,7 +207,7 @@ test_that("DEF parser reads active CNV metadata without commented entries", {
   expect_s3_class(dictionary, "microdatasus_tabwin_dictionary")
   expect_setequal(
     dictionary$definitions$field,
-    c("TIPOBITO", "SEXO", "RACACOR", "OCUP", "CODESTAB")
+    c("TIPOBITO", "SEXO", "GESTACAO", "RACACOR", "OCUP", "CODESTAB")
   )
   expect_false("OLD.CNV" %in% dictionary$definitions$file)
   expect_equal(downloads, 1L)
@@ -658,11 +746,7 @@ test_that("all SIM types share one TabWin archive download", {
   microdatasus:::.tabwin_clear_cache()
   on.exit(restore_empty_tabwin_cache(), add = TRUE)
 
-  sim_types <- grep(
-    "^SIM-",
-    names(microdatasus:::.tabwin_registry()),
-    value = TRUE
-  )
+  sim_types <- microdatasus:::.sim_information_systems
   dictionaries <- lapply(
     sim_types,
     fetch_tabwin_dictionary,
@@ -789,11 +873,7 @@ test_that("process_sim handles every SIM type and legacy numeric names", {
   microdatasus:::.tabwin_clear_cache()
   on.exit(restore_empty_tabwin_cache(), add = TRUE)
 
-  sim_types <- grep(
-    "^SIM-",
-    names(microdatasus:::.tabwin_registry()),
-    value = TRUE
-  )
+  sim_types <- microdatasus:::.sim_information_systems
   for (information_system in sim_types) {
     messages <- capture_messages({
       result <- process_sim(
@@ -801,7 +881,7 @@ test_that("process_sim handles every SIM type and legacy numeric names", {
           contador = "1",
           TIPOBITO = "2",
           DTOBITO = "01012024",
-          SEMANGEST = "38",
+          SEMAGESTAC = "38",
           stringsAsFactors = FALSE
         ),
         municipality_data = FALSE,
@@ -809,7 +889,7 @@ test_that("process_sim handles every SIM type and legacy numeric names", {
       )
     })
     expect_type(result$contador, "integer")
-    expect_type(result$SEMANGEST, "integer")
+    expect_type(result$SEMAGESTAC, "integer")
     expect_s3_class(result$DTOBITO, "Date")
     expect_identical(as.character(result$TIPOBITO), "Não Fetal")
     expect_true(any(grepl(
@@ -826,9 +906,10 @@ test_that("process_sim handles every SIM type and legacy numeric names", {
   expect_equal(downloads, 1L)
 })
 
-test_that("process_sim uses the historical occupation domain for OCUPMAE", {
-  archive <- create_tabwin_fixture()
-  on.exit(unlink(archive), add = TRUE)
+test_that("process_sim uses the official CID-9 domains for legacy rows", {
+  current_archive <- create_tabwin_fixture()
+  legacy_archive <- create_sim_legacy_tabwin_fixture()
+  on.exit(unlink(c(current_archive, legacy_archive)), add = TRUE)
   local_mocked_bindings(
     .datasus_download_file = function(
       url,
@@ -836,6 +917,11 @@ test_that("process_sim uses the historical occupation domain for OCUPMAE", {
       timeout,
       quiet = FALSE
     ) {
+      archive <- if (grepl("CID9", url, fixed = TRUE)) {
+        legacy_archive
+      } else {
+        current_archive
+      }
       file.copy(archive, destination)
       invisible(destination)
     },
@@ -845,16 +931,77 @@ test_that("process_sim uses the historical occupation domain for OCUPMAE", {
   on.exit(restore_empty_tabwin_cache(), add = TRUE)
 
   result <- process_sim(
-    data.frame(OCUPMAE = c("008", "621")),
+    data.frame(
+      UFINFORM = c("12", "12"),
+      ESTCIV = c("2", "2"),
+      OCUPMAE = c("008", "621"),
+      INSTRMAE = c("0", "4"),
+      GESTACAO = c("4", "8"),
+      SEMANGEST = c("4", "8"),
+      TIPOGRAV = c("4", "0"),
+      TIPOPARTO = c("3", "4"),
+      ATESTANTE = c("0", "1"),
+      TIPOVIOL = c("1", "3"),
+      TIPOACID = c("1", "0"),
+      LOCACID = c("4", "0"),
+      stringsAsFactors = FALSE
+    ),
     municipality_data = FALSE,
     information_system = "SIM-DOFET",
     labels = "character"
   )
 
+  expect_identical(result$ESTCIV, rep("Casado", 2L))
   expect_identical(
     result$OCUPMAE,
-    c("Dona de casa", "Trabalhador agropecuario")
+    c("Dona-de-casa", "Trab agropec poliv")
   )
+  expect_identical(result$INSTRMAE, c("Ignorado", "Superior"))
+  expect_identical(result$GESTACAO, c("Menos 22", "42 e mais"))
+  expect_identical(result$SEMANGEST, c("Menos 22", "42 e mais"))
+  expect_identical(result$TIPOGRAV, c("Mais de 3", "Ignorado"))
+  expect_identical(result$TIPOPARTO, c("Fórceps", "Outro"))
+  expect_identical(result$ATESTANTE, c("Ignorado", "Sim"))
+  expect_identical(result$TIPOVIOL, c("Homicídio", "Acidente"))
+  expect_identical(result$TIPOACID, c("Atropelamento", "Ignorado"))
+  expect_identical(result$LOCACID, c("Local de Trabalho", "Ignorado"))
+})
+
+test_that("process_sim separates current and historical domains by row", {
+  current_archive <- create_tabwin_fixture()
+  legacy_archive <- create_sim_legacy_tabwin_fixture()
+  on.exit(unlink(c(current_archive, legacy_archive)), add = TRUE)
+  local_mocked_bindings(
+    .datasus_download_file = function(
+      url,
+      destination,
+      timeout,
+      quiet = FALSE
+    ) {
+      archive <- if (grepl("CID9", url, fixed = TRUE)) {
+        legacy_archive
+      } else {
+        current_archive
+      }
+      file.copy(archive, destination)
+      invisible(destination)
+    },
+    .package = "microdatasus"
+  )
+  microdatasus:::.tabwin_clear_cache()
+  on.exit(restore_empty_tabwin_cache(), add = TRUE)
+
+  result <- process_sim(
+    data.frame(
+      UFINFORM = c("12", NA),
+      GESTACAO = c("4", "4"),
+      stringsAsFactors = FALSE
+    ),
+    municipality_data = FALSE,
+    labels = "character"
+  )
+
+  expect_identical(result$GESTACAO, c("Menos 22", "32 a 36"))
 })
 
 test_that("process_sim rejects unsupported SIM data types", {

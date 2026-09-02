@@ -1,3 +1,7 @@
+.sim_information_systems <- c(
+  "SIM-DO", "SIM-DOFET", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT"
+)
+
 # Fields whose raw codes are replaced by the most appropriate direct
 # conversion declared in the current SIM CID-10 death-certificate DEF.
 .sim_categorical_fields <- c(
@@ -13,32 +17,55 @@
   "TPNIVELINV", "ALTCAUSA",
   # Names used by the oldest national fetal-death files.
   "OCUPACAO", "OCUPPAI", "INSTRUCAO", "INSTRPAI", "INSTRMAE",
-  "TIPOGRAV", "TIPOPARTO", "TIPOVIOL", "FONTINFO"
+  "SEMANGEST", "TIPOGRAV", "TIPOPARTO", "TIPOVIOL", "TIPOACID",
+  "FONTINFO", "LOCACID"
 )
 
 # These fields contain counts or measurements rather than identifiers.
 .sim_integer_fields <- c(
   "CONTADOR", "IDADEMAE", "QTDFILVIVO", "QTDFILMORT", "SEMAGESTAC",
   "PESO", "DIFDATA", "NUDIASOBCO", "NUDIASOBIN", "NUDIASINF",
-  "FILHVIVOS", "FILHMORT", "SEMANGEST", "PESONASC", "QTDGRAVIDA",
+  "FILHVIVOS", "FILHMORT", "PESONASC", "QTDGRAVIDA",
   "QTDPARTNOR", "QTDPARTCES", "QTDABORTO", "QTDPRENAT", "NUIDADEGES",
   "IDADEGESPR", "IDADEGESOB"
 )
 
-# Legacy variable names are looked up in the modern DEF under the equivalent
-# current SIM field. Output column names are deliberately left unchanged.
-.sim_dictionary_aliases <- c(
-  "OCUPACAO" = "OCUP",
-  "OCUPPAI" = "OCUP",
-  "OCUPMAE" = "OCUP",
-  "INSTRUCAO" = "ESC",
-  "INSTRPAI" = "ESC",
-  "INSTRMAE" = "ESCMAE",
-  "TIPOGRAV" = "GRAVIDEZ",
-  "TIPOPARTO" = "PARTO",
-  "TIPOVIOL" = "CIRCOBITO",
-  "FONTINFO" = "FONTE"
+# The reduced fetal-death files for the first CID-10 years retain fields from
+# the previous SIM layout. Their codes must use the official CID-9-era DEF;
+# several domains are not aliases of their modern counterparts.
+.sim_legacy_categorical_fields <- c(
+  "TIPOBITO", "NATURAL", "SEXO", "ESTCIV", "LOCOCOR", "OCUPMAE",
+  "GESTACAO", "ASSISTMED", "ATESTANTE", "EXAME", "CIRURGIA",
+  "NECROPSIA", "ACIDTRAB", "OCUPACAO", "OCUPPAI", "INSTRUCAO",
+  "INSTRPAI", "INSTRMAE", "SEMANGEST", "TIPOGRAV", "TIPOPARTO",
+  "TIPOVIOL", "TIPOACID", "FONTINFO", "LOCACID"
 )
+
+.sim_legacy_dictionary_aliases <- c(
+  "ESTCIV" = "ESTCIVIL",
+  "GESTACAO" = "SEMANGEST"
+)
+
+.sim_legacy_marker_fields <- c(
+  "UFINFORM", "OCUPACAO", "OCUPPAI", "INSTRUCAO", "INSTRPAI",
+  "INSTRMAE", "FILHVIVOS", "FILHMORT", "SEMANGEST", "TIPOGRAV",
+  "TIPOPARTO", "TIPOVIOL", "TIPOACID", "FONTINFO", "LOCACID"
+)
+
+.sim_legacy_rows <- function(data) {
+  legacy <- rep(FALSE, nrow(data))
+  for (field in .process_find_fields(data, .sim_legacy_marker_fields)) {
+    value <- trimws(as.character(data[[field]]))
+    legacy <- legacy | (!is.na(value) & nzchar(value))
+  }
+  # The old CBO field is three characters; current CBO 2002 codes have six.
+  occupation <- .process_find_fields(data, "OCUPMAE")
+  if (length(occupation)) {
+    value <- trimws(as.character(data[[occupation[[1L]]]]))
+    legacy <- legacy | (!is.na(value) & grepl("^[0-9]{1,3}$", value))
+  }
+  which(legacy)
+}
 
 .sim_add_age_fields <- function(data) {
   if (!"IDADE" %in% names(data)) {
@@ -69,15 +96,15 @@
 
 #' Prepare SIM mortality microdata
 #'
-#' Uses the current official DataSUS TabWin CID-10 dictionary to label
-#' supported SIM mortality fields from 1996 onward. The dictionary is
+#' Uses the official DataSUS TabWin CID-10 and historical CID-9 dictionaries
+#' to label supported SIM mortality fields with period-correct domains. The dictionary is
 #' downloaded on first use and cached for the rest of the R session. Dates,
 #' integer quantities, categorical variables, and identifier fields retain
 #' distinct and consistent types.
 #'
-#' Codes not covered by the current TabWin conversion are retained as factor
-#' levels instead of being silently discarded. SIM files and definitions that
-#' use CID-9 are outside the scope of this version.
+#' Codes not covered by the applicable TabWin conversion are retained as
+#' factor levels instead of being silently discarded. Historical fields kept
+#' in early CID-10 fetal-death files use their original CID-9 definitions.
 #'
 #' @param data A data frame returned by [fetch_datasus()] for a supported SIM
 #'   mortality type, or another data frame with a compatible layout.
@@ -119,7 +146,7 @@ process_sim <- function(
   .datasus_assert_flag(municipality_data, "municipality_data")
   options <- .process_validate_options(labels, diagnostics)
   labels <- options$labels
-  sim_types <- grep("^SIM-", names(.tabwin_registry()), value = TRUE)
+  sim_types <- .sim_information_systems
   if (
     !is.character(information_system) ||
       length(information_system) != 1L ||
@@ -137,12 +164,31 @@ process_sim <- function(
   )
   result <- .process_normalize_text(result)
 
+  legacy_rows <- .sim_legacy_rows(result)
+  current_rows <- setdiff(seq_len(nrow(result)), legacy_rows)
   categorical_fields <- .process_find_fields(result, .sim_categorical_fields)
-  if (length(categorical_fields) &&
+  legacy_fields <- .process_find_fields(
+    result, .sim_legacy_categorical_fields
+  )
+  legacy_overlap <- toupper(.sim_legacy_categorical_fields)
+  current_stable_fields <- categorical_fields[
+    !toupper(categorical_fields) %in% legacy_overlap
+  ]
+  current_period_fields <- categorical_fields[
+    toupper(categorical_fields) %in% legacy_overlap
+  ]
+  need_current_dictionary <- length(current_stable_fields) ||
+    (length(current_period_fields) && length(current_rows))
+  need_legacy_dictionary <- length(legacy_fields) && length(legacy_rows)
+  if (need_current_dictionary &&
       (!identical(labels, "none") || diagnostics)) {
     # The first call downloads the archive; later calls retrieve this object
     # and all already-parsed maps from the session cache.
     dictionary <- fetch_tabwin_dictionary(information_system)
+  }
+  if (need_legacy_dictionary &&
+      (!identical(labels, "none") || diagnostics)) {
+    legacy_dictionary <- fetch_tabwin_dictionary("SIM-DO-CID9")
   }
 
   cli::cli_alert_info(
@@ -160,13 +206,35 @@ process_sim <- function(
   }
   result <- .sim_add_age_fields(result)
 
-  if (length(categorical_fields) &&
+  if (length(current_stable_fields) &&
       (!identical(labels, "none") || diagnostics)) {
     result <- .process_apply_dictionary(
       result,
       dictionary,
-      categorical_fields,
-      aliases = .sim_dictionary_aliases,
+      current_stable_fields,
+      labels = labels,
+      collector = collector
+    )
+  }
+  if (length(current_period_fields) && length(current_rows) &&
+      (!identical(labels, "none") || diagnostics)) {
+    result <- .process_apply_dictionary(
+      result,
+      dictionary,
+      current_period_fields,
+      rows = current_rows,
+      labels = labels,
+      collector = collector
+    )
+  }
+  if (need_legacy_dictionary &&
+      (!identical(labels, "none") || diagnostics)) {
+    result <- .process_apply_dictionary(
+      result,
+      legacy_dictionary,
+      legacy_fields,
+      aliases = .sim_legacy_dictionary_aliases,
+      rows = legacy_rows,
       labels = labels,
       collector = collector
     )

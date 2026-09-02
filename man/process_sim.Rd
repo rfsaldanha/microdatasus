@@ -36,16 +36,16 @@ labelled categorical fields as factors, and identifiers and free text as
 character.
 }
 \description{
-Uses the current official DataSUS TabWin CID-10 dictionary to label
-supported SIM mortality fields from 1996 onward. The dictionary is
+Uses the official DataSUS TabWin CID-10 and historical CID-9 dictionaries
+to label supported SIM mortality fields with period-correct domains. The dictionary is
 downloaded on first use and cached for the rest of the R session. Dates,
 integer quantities, categorical variables, and identifier fields retain
 distinct and consistent types.
 }
 \details{
-Codes not covered by the current TabWin conversion are retained as factor
-levels instead of being silently discarded. SIM files and definitions that
-use CID-9 are outside the scope of this version.
+Codes not covered by the applicable TabWin conversion are retained as
+factor levels instead of being silently discarded. Historical fields kept
+in early CID-10 fetal-death files use their original CID-9 definitions.
 }
 \examples{
 \dontshow{if (interactive() && curl::has_internet()) withAutoprint(\{ # examplesIf}

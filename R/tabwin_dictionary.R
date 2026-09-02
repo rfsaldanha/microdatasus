@@ -8,9 +8,7 @@
 # CID-10 database and use the same TabWin archive and DEF. The archive key
 # allows all five dictionaries to share one download during the R session.
 .tabwin_registry <- function() {
-  sim_types <- c(
-    "SIM-DO", "SIM-DOFET", "SIM-DOEXT", "SIM-DOINF", "SIM-DOMAT"
-  )
+  sim_types <- .sim_information_systems
   specs <- lapply(sim_types, function(information_system) {
     list(
       archive_key = "SIM-OBITOS-CID10",
@@ -23,6 +21,15 @@
     )
   })
   names(specs) <- sim_types
+  specs[["SIM-DO-CID9"]] <- list(
+    archive_key = "SIM-OBITOS-CID9",
+    information_system = "SIM-DO-CID9",
+    url = paste0(
+      "ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID9/TAB/",
+      "OBITOS_CID9_TAB.zip"
+    ),
+    definition = "/OBITO.DEF"
+  )
 
   # The transfer portal publishes separate SINASC archives for the original
   # 1994-1995 layout and the layout used from 1996 onward.
