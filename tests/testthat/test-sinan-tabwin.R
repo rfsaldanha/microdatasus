@@ -345,6 +345,29 @@ test_that("SINAN DEF increments take precedence over analytical groupings", {
   expect_identical(categorical, "FLAG")
 })
 
+test_that("SINAN recovered official increment names remain numeric", {
+  tuberculosis <- tibble::tibble(NU_CONTATO = c("0", "14", "99"))
+  diphtheria <- tibble::tibble(MED_QUAN_P = c("0", "2", NA_character_))
+
+  tuberculosis_dictionary <- list(
+    numeric_fields = c("NU_CONTATO", "NU_COMU_EX")
+  )
+  diphtheria_dictionary <- list(numeric_fields = "MED_QUAN_P")
+
+  expect_identical(
+    microdatasus:::.sinan_type_fields(
+      tuberculosis, tuberculosis_dictionary
+    )$integer,
+    "NU_CONTATO"
+  )
+  expect_identical(
+    microdatasus:::.sinan_type_fields(
+      diphtheria, diphtheria_dictionary
+    )$integer,
+    "MED_QUAN_P"
+  )
+})
+
 test_that("process_sinan standardizes common types and message order", {
   archives <- create_sinan_tabwin_fixtures()
   on.exit(unlink(unlist(archives)), add = TRUE)

@@ -221,6 +221,29 @@ test_that("DEF parser reads active CNV metadata without commented entries", {
   expect_equal(downloads, 2L)
 })
 
+test_that("DEF increment parser recovers documented official field drift", {
+  directory <- tempfile("tabwin-increments-")
+  dir.create(directory)
+  tuberculosis <- file.path(directory, "TuberculNET5_0.def")
+  diphtheria <- file.path(directory, "DifteriNET.def")
+  on.exit(unlink(directory, recursive = TRUE), add = TRUE)
+  write_tabwin_text(tuberculosis, c(
+    "IContatos identificados, nu_contato (observação oficial)",
+    "IContatos examinados, NU_COMU_EX",
+    "I* cabeçalho, comentário sem campo"
+  ))
+  write_tabwin_text(diphtheria, "IComunicantes portadores, lMED_QUAN_P")
+
+  expect_identical(
+    microdatasus:::.tabwin_parse_increment_fields(tuberculosis),
+    c("NU_CONTATO", "NU_COMU_EX")
+  )
+  expect_identical(
+    microdatasus:::.tabwin_parse_increment_fields(diphtheria),
+    "MED_QUAN_P"
+  )
+})
+
 test_that("DEF parser recovers documented official relation-field drift", {
   path <- tempfile(fileext = ".DEF")
   on.exit(unlink(path), add = TRUE)

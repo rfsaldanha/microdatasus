@@ -378,12 +378,33 @@
       return(NA_character_)
     }
     field <- toupper(trimws(pieces[[2L]]))
+    # One official tuberculosis DEF appends an explanatory parenthesis to the
+    # physical DBF field. Recover only a complete identifier followed by that
+    # comment shape; headings and arbitrary prose remain invalid.
+    parenthetical <- regexec(
+      "^([A-Z][A-Z0-9_]*)[[:space:]]+\\(.+\\)$", field, perl = TRUE
+    )
+    parenthetical <- regmatches(field, parenthetical)[[1L]]
+    if (length(parenthetical) == 2L) {
+      field <- parenthetical[[2L]]
+    }
     if (!grepl("^[A-Z][A-Z0-9_]*$", field)) {
       return(NA_character_)
     }
     field
   }, character(1))
-  unique(fields[!is.na(fields)])
+  fields <- unique(fields[!is.na(fields)])
+
+  # Exact upstream typo: DifteriNET.def prefixes MED_QUAN_P with an extra L,
+  # while every published DBC layout uses the unprefixed physical field.
+  aliases <- switch(
+    toupper(basename(path)),
+    "DIFTERINET.DEF" = c("LMED_QUAN_P" = "MED_QUAN_P"),
+    stats::setNames(character(), character())
+  )
+  replace <- match(fields, names(aliases), nomatch = 0L)
+  fields[replace > 0L] <- unname(aliases[replace])
+  unique(fields)
 }
 
 .tabwin_find_entry <- function(entries, suffix) {
