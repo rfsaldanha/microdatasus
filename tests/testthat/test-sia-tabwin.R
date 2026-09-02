@@ -197,6 +197,25 @@ test_that("SIA categorical flags are not coerced to integers", {
   expect_true(all(c("PESO", "TABBARR") %in% types$integer))
 })
 
+test_that("SIA dates keep their type when blank or partially malformed", {
+  data <- data.frame(
+    AP_DTOCOR = c("", NA, "20260131", "invalid"),
+    DT_PROCESS = rep("202601", 4L),
+    AM_QTDTRAN = rep("12", 4L),
+    AR_CIDTR1 = rep("C500", 4L)
+  )
+
+  types <- microdatasus:::.sia_type_fields(data)
+
+  expect_identical(types$date, "AP_DTOCOR")
+  converted <- microdatasus:::.process_as_date(data$AP_DTOCOR, "%Y%m%d")
+  expect_s3_class(converted, "Date")
+  expect_identical(
+    converted,
+    as.Date(c(NA, NA, "2026-01-31", NA))
+  )
+})
+
 test_that("SIA DEF increments take precedence over categorical views", {
   archive <- create_sia_tabwin_fixture()
   on.exit(unlink(archive), add = TRUE)

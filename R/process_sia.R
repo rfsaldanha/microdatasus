@@ -91,16 +91,23 @@
     setdiff(declared_numeric_fields, quantitative_double_fields)
   ))
 
-  # Only eight-digit fields are full dates. Six-digit processing/reference
-  # months remain character identifiers of competence.
-  date_fields <- fields[vapply(fields, function(field) {
-    if (!grepl("DT|DATA", toupper(field))) {
-      return(FALSE)
-    }
-    values <- trimws(as.character(data[[field]]))
-    values <- values[!is.na(values) & nzchar(values)]
-    length(values) > 0L && all(grepl("^[0-9]{8}$", values))
-  }, logical(1))]
+  # Full dates are structural fields, including when every value is blank or
+  # one value is malformed. Six-digit processing/reference months remain
+  # character identifiers of competence.
+  physical_types <- attr(data, "dbf_field_types", exact = TRUE)
+  physical_dates <- if (is.null(physical_types)) {
+    character()
+  } else {
+    fields[vapply(fields, function(field) {
+      type <- unname(physical_types[field])
+      length(type) == 1L && !is.na(type) && identical(toupper(type), "D")
+    }, logical(1))]
+  }
+  date_names <- fields[grepl("(^DT|_DT|^DATA|_DATA)", upper)]
+  date_fields <- setdiff(
+    unique(c(date_names, physical_dates)),
+    fields[upper %in% c("DT_PROCESS", "DT_ATEND")]
+  )
 
   double_fields <- setdiff(
     unique(c(value_fields, measurement_fields, source_numeric)),
