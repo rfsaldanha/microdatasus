@@ -74,10 +74,7 @@
   )]
   integer_fields <- .process_find_fields(
     data,
-    setdiff(
-      unique(c(declared_numeric, numeric_fallback)),
-      declared_categorical
-    )
+    unique(c(declared_numeric, numeric_fallback))
   )
 
   identifiers <- unique(c(

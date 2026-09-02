@@ -52,10 +52,11 @@
   stats::setNames(lapply(keys, function(key) which(dictionary == key)), keys)
 }
 
-.sia_type_fields <- function(data) {
+.sia_type_fields <- function(data, dictionaries = list()) {
   fields <- names(data)
   upper <- toupper(fields)
   source_numeric <- fields[vapply(data, is.numeric, logical(1))]
+  source_double <- fields[vapply(data, is.double, logical(1))]
   # These fields are units for a composite age, not categorical values by
   # themselves. PA_FLIDADE is intentionally excluded because it is a status.
   age_unit_fields <- fields[grepl("COIDADE|TPIDADE", upper)]
@@ -77,6 +78,18 @@
     ) &
       !grepl("COIDADE|TPIDADE|FLIDADE", upper)
   ]
+  declared_numeric <- unique(unlist(lapply(
+    dictionaries,
+    function(dictionary) dictionary$numeric_fields
+  )))
+  declared_numeric_fields <- .process_find_fields(data, declared_numeric)
+  quantitative_double_fields <- unique(c(
+    value_fields, measurement_fields, source_double
+  ))
+  integer_fields <- unique(c(
+    integer_fields,
+    setdiff(declared_numeric_fields, quantitative_double_fields)
+  ))
 
   # Only eight-digit fields are full dates. Six-digit processing/reference
   # months remain character identifiers of competence.
@@ -307,18 +320,17 @@ process_sia <- function(
     }
   }
   result <- .process_normalize_text(result)
-  types <- .sia_type_fields(result)
   dictionary_rows <- .sia_dictionary_rows(result, information_system)
 
-  # Resolve every required dictionary before the preprocessing start message.
+  # Increment declarations are type metadata, so dictionaries are required
+  # even when categorical labels are disabled.
   dictionaries <- list()
-  if (!identical(labels, "none") || diagnostics) {
-    for (key in names(dictionary_rows)) {
-      if (length(dictionary_rows[[key]])) {
-        dictionaries[[key]] <- fetch_tabwin_dictionary(key)
-      }
+  for (key in names(dictionary_rows)) {
+    if (length(dictionary_rows[[key]])) {
+      dictionaries[[key]] <- fetch_tabwin_dictionary(key)
     }
   }
+  types <- .sia_type_fields(result, dictionaries)
   aliases <- .sia_dictionary_aliases(result, dictionaries, types)
   categorical_fields <- .sia_dictionary_fields(
     result,

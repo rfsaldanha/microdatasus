@@ -3,7 +3,7 @@
 # applied; analytical groupings such as age bands remain numeric variables.
 .sih_rd_rj_categorical_fields <- c(
   "NATUREZA", "NAT_JUR", "GESTAO", "SEXO", "RACA_COR", "NACIONAL",
-  "ESPEC", "IDENT", "CAR_INT", "MARCA_UTI", "COBRANCA", "MORTE",
+  "ESPEC", "IDENT", "CAR_INT", "MARCA_UTI", "COBRANCA",
   "FINANC", "REGCT", "COMPLEX", "IND_VDRL", "INFEHOSP", "INSTRU",
   "RUBRICA", "NUM_PROC",
   "CONTRACEP1", "CONTRACEP2", "GESTRISCO", "CNES", "PROC_REA",
@@ -28,7 +28,7 @@
   "UTI_MES_IN", "UTI_MES_AN", "UTI_MES_AL", "UTI_MES_TO",
   "UTI_INT_IN", "UTI_INT_AN", "UTI_INT_AL", "UTI_INT_TO",
   "DIAR_ACOM", "QT_DIARIAS", "IDADE", "DIAS_PERM",
-  "TOT_PT_SP", "NUM_FILHOS",
+  "TOT_PT_SP", "NUM_FILHOS", "MORTE",
   "SP_AA", "SP_MM", "SP_QTD_ATO", "SP_PTSP",
   "SP_QT_PROC", "ANO", "MES"
 )

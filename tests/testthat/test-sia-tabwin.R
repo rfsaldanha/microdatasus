@@ -41,6 +41,9 @@ create_sia_tabwin_fixture <- function(period = "current") {
       if (identical(information_system, "SIA-AB")) {
         lines <- c(
           lines,
+          "IAltas, AP_ALTA",
+          "XAltas, AP_ALTA, 1, CNV/FLAG.CNV",
+          "IValor aprovado, AP_VL_AP",
           "XComorbidade, AB_PONTBARR, 1, CNV/P_BAROS.CNV"
         )
       }
@@ -192,6 +195,33 @@ test_that("SIA categorical flags are not coerced to integers", {
   expect_false(any(c("AB_PONTBAR", "AQ_LINFIN", "AR_LINFIN") %in%
     types$integer))
   expect_true(all(c("PESO", "TABBARR") %in% types$integer))
+})
+
+test_that("SIA DEF increments take precedence over categorical views", {
+  archive <- create_sia_tabwin_fixture()
+  on.exit(unlink(archive), add = TRUE)
+  local_mocked_bindings(
+    .datasus_download_file = function(url, destination, timeout, quiet = FALSE) {
+      file.copy(archive, destination)
+      invisible(destination)
+    },
+    .package = "microdatasus"
+  )
+  microdatasus:::.tabwin_clear_cache()
+  on.exit(restore_empty_tabwin_cache(), add = TRUE)
+
+  result <- process_sia(
+    data.frame(
+      AP_ALTA = c("0", "1"),
+      AP_VL_AP = c("12.50", "0.75")
+    ),
+    information_system = "SIA-AB",
+    municipality_data = FALSE,
+    labels = "none"
+  )
+
+  expect_identical(result$AP_ALTA, c(0L, 1L))
+  expect_identical(result$AP_VL_AP, c(12.5, 0.75))
 })
 
 test_that("SIA resolves documented physical DEF field names", {

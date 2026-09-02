@@ -147,6 +147,17 @@ test_that("SIH registry matches all archives published by transfer portal", {
   )
 })
 
+test_that("SIH mortality increment remains summable", {
+  result <- process_sih(
+    data.frame(MORTE = c("0", "1")),
+    information_system = "SIH-RD",
+    municipality_data = FALSE,
+    labels = "none"
+  )
+
+  expect_identical(result$MORTE, c(0L, 1L))
+})
+
 test_that("process_sih labels and types every current SIH file family", {
   archive <- create_sih_tabwin_fixture()
   on.exit(unlink(archive), add = TRUE)

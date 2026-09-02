@@ -127,6 +127,20 @@ test_that("CNES reference months are identifiers, not full dates", {
   )
 })
 
+test_that("CNES DEF increments take precedence over categorical views", {
+  data <- data.frame(COUNT_FLAG = c("0", "1"))
+  dictionary <- list(list(
+    numeric_fields = "COUNT_FLAG",
+    definitions = data.frame(field = "COUNT_FLAG")
+  ))
+
+  types <- microdatasus:::.cnes_type_fields(data, dictionary)
+  fields <- microdatasus:::.cnes_dictionary_fields(data, dictionary, types)
+
+  expect_identical(types$integer, "COUNT_FLAG")
+  expect_length(fields, 0L)
+})
+
 test_that("all CNES layouts share one archive and label from their DEF", {
   archive <- create_cnes_tabwin_fixture()
   on.exit(unlink(archive), add = TRUE)
