@@ -197,6 +197,7 @@
     }
     values <- as.character(data[[field]])
     converted <- FALSE
+    evaluated <- FALSE
     conversion_levels <- character()
 
     for (key in keys) {
@@ -204,6 +205,7 @@
       if (is.null(rows) || !length(rows)) {
         next
       }
+      evaluated <- TRUE
       selected <- .tabwin_select_conversion(
         dictionaries[[key]],
         dictionary_field,
@@ -238,7 +240,7 @@
         converted <- TRUE
       }
     }
-    if (!converted) {
+    if (evaluated && !converted) {
       .process_record_unmapped_field(collector, field)
     }
     if (converted && !identical(labels, "none")) {

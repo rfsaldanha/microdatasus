@@ -130,3 +130,34 @@ test_that("batched dictionaries leave data unchanged when none are supplied", {
     source
   )
 })
+
+test_that("empty tables do not report unevaluated fields as unmapped", {
+  source <- data.frame(CODE = character(), stringsAsFactors = FALSE)
+  dictionary <- list(
+    information_system = "TEST",
+    definitions = data.frame(field = "CODE"),
+    selected = make_selected_conversion(c("1" = "One"))
+  )
+  collector <- microdatasus:::.process_diagnostic_collector(
+    TRUE, "TEST", source
+  )
+  local_mocked_bindings(
+    .tabwin_select_conversion = function(...) {
+      stop("an empty field must not be evaluated")
+    },
+    .package = "microdatasus"
+  )
+
+  result <- microdatasus:::.process_apply_dictionaries(
+    source,
+    list(test = dictionary),
+    "CODE",
+    collector = collector
+  )
+  result <- microdatasus:::.process_finalize(result, collector)
+  report <- processing_diagnostics(result)
+
+  expect_identical(nrow(result), 0L)
+  expect_length(report$mapped_fields, 0L)
+  expect_length(report$unmapped_fields, 0L)
+})
