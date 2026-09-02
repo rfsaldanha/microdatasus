@@ -294,26 +294,55 @@
     if (length(fields) < 4L) {
       return(NULL)
     }
-    file_name <- trimws(fields[[4L]])
-    extension <- toupper(tools::file_ext(file_name))
-    if (!extension %in% c("CNV", "DBF")) {
+    # The fourth field is the relation by specification. One current CNES DEF
+    # accidentally retains a stale value there and appends the real DBF as a
+    # fifth field. Recover only a single, explicit CNV/DBF candidate; multiple
+    # candidates retain the standard first relation instead of guessing.
+    relation_fields <- seq.int(4L, length(fields))
+    relation_extensions <- toupper(tools::file_ext(
+      trimws(fields[relation_fields])
+    ))
+    relation_candidates <- relation_fields[
+      relation_extensions %in% c("CNV", "DBF")
+    ]
+    relation_index <- if (toupper(tools::file_ext(
+      trimws(fields[[4L]]))
+    ) %in% c("CNV", "DBF")) {
+      4L
+    } else if (length(relation_candidates) == 1L) {
+      relation_candidates[[1L]]
+    } else {
       return(NULL)
     }
+    file_name <- trimws(fields[[relation_index]])
+    extension <- toupper(tools::file_ext(file_name))
     # For CNV, field three is the starting position in the source variable.
     # For DBF, the same field names the column that contains the description.
     argument <- trimws(fields[[3L]])
+    position <- if (extension == "CNV") {
+      suppressWarnings(as.integer(argument))
+    } else {
+      NA_integer_
+    }
+    position_recovered <- extension == "CNV" &&
+      is.na(position) &&
+      grepl("^[A-Za-z_][A-Za-z0-9_-]*$", argument)
+    if (position_recovered) {
+      # RD2008/RJ2008 contain twelve CNV relations whose third field was copied
+      # from DBF syntax (DS_TPFIN or IP_DSCR). Both relations address the whole
+      # source value, so TabWin's normal starting position of one is unambiguous.
+      position <- 1L
+    }
     data.frame(
       order = i,
       command = command,
       description = trimws(substring(fields[[1L]], 2L)),
       field = toupper(trimws(fields[[2L]])),
       argument = argument,
-      position = if (extension == "CNV") {
-        suppressWarnings(as.integer(argument))
-      } else {
-        NA_integer_
-      },
+      position = position,
+      position_recovered = position_recovered,
       file = file_name,
+      file_recovered = relation_index != 4L,
       extension = extension,
       stringsAsFactors = FALSE
     )
@@ -362,6 +391,41 @@
     entries_lower == suffix_lower |
       endsWith(entries_lower, paste0("/", suffix_lower))
   )
+  if (!length(matches)) {
+    # Some official ZIPs flatten relation directories without updating their
+    # DEF, duplicate a directory component, or leave whitespace beside a path
+    # separator. An exact, unique basename still identifies the relation.
+    requested_basename <- trimws(basename(suffix_lower))
+    entry_basenames <- trimws(basename(entries_lower))
+    matches <- which(entry_basenames == requested_basename)
+  }
+  if (!length(matches)) {
+    # Punctuation drift is accepted only for spaces and underscores. This
+    # recovers TPAPAC.CNV -> TP_APAC.CNV without fuzzy-matching versioned names.
+    filename_key <- function(value) {
+      gsub("[[:space:]_]", "", trimws(basename(value)))
+    }
+    requested_key <- filename_key(suffix_lower)
+    matches <- which(vapply(
+      entries_lower,
+      function(entry) identical(filename_key(entry), requested_key),
+      logical(1)
+    ))
+  }
+  if (!length(matches)) {
+    # Evidence-backed typographical errors in official DEFs. Keep these exact
+    # aliases explicit so unrelated one-edit filenames are never guessed.
+    aliases <- c(
+      "atjurc.cnv" = "natjurc.cnv",
+      "cobrdets.cnv" = "cobrdet.cnv",
+      "idx20b.cnv" = "cidx20b.cnv"
+    )
+    requested_basename <- trimws(basename(suffix_lower))
+    alias <- unname(aliases[requested_basename])
+    if (length(alias) == 1L && !is.na(alias)) {
+      matches <- which(trimws(basename(entries_lower)) == alias)
+    }
+  }
   if (!length(matches)) {
     .tabwin_abort(
       "The TabWin archive contains no file matching {.file {suffix}}.",

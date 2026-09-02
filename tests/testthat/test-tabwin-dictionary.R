@@ -124,6 +124,46 @@ test_that("DEF parser reads active CNV metadata without commented entries", {
   expect_equal(downloads, 2L)
 })
 
+test_that("DEF parser recovers documented official relation-field drift", {
+  path <- tempfile(fileext = ".DEF")
+  on.exit(unlink(path), add = TRUE)
+  write_tabwin_text(path, c(
+    "LSubtipo FAEC, FAEC_TP, DS_TPFIN, CNV/TP_FINAN.CNV",
+    paste(
+      "SNome Fantasia, CNES, NOMEFANT,",
+      "DBF/HUF_FILIAL.DBFRA, DBF/HUF_FILIAL.DBF"
+    ),
+    paste(
+      "LCID, PA_CIDPRI, CD_DESCR, DBF/S_CID.DBF,",
+      "CD_DESCR, DBF/S_CID.DBF"
+    ),
+    "LInvalid position, CODE, not prose, MAP.CNV",
+    "LZero position, CODE, 0, MAP.CNV"
+  ))
+
+  definitions <- microdatasus:::.tabwin_parse_def(path)
+
+  expect_identical(
+    definitions$position,
+    c(1L, NA_integer_, NA_integer_, NA_integer_, 0L)
+  )
+  expect_identical(
+    definitions$position_recovered,
+    c(TRUE, FALSE, FALSE, FALSE, FALSE)
+  )
+  expect_identical(
+    definitions$file,
+    c(
+      "CNV/TP_FINAN.CNV", "DBF/HUF_FILIAL.DBF",
+      "DBF/S_CID.DBF", "MAP.CNV", "MAP.CNV"
+    )
+  )
+  expect_identical(
+    definitions$file_recovered,
+    c(FALSE, TRUE, FALSE, FALSE, FALSE)
+  )
+})
+
 test_that("CNV parser reads labels, aliases, and numeric ranges", {
   path <- tempfile(fileext = ".CNV")
   on.exit(unlink(path), add = TRUE)
@@ -1389,6 +1429,57 @@ test_that("ZIP entry matching observes path component boundaries", {
       "root/tabdo/Obito.def", "/tabdo/Obito.def"
     ),
     "root/tabdo/Obito.def"
+  )
+})
+
+test_that("ZIP entry matching recovers only deterministic official path drift", {
+  expect_identical(
+    microdatasus:::.tabwin_find_entry(
+      "root/TP_EQUIPAM.dbf", "root/TAB_DBF/TP_EQUIPAM.dbf"
+    ),
+    "root/TP_EQUIPAM.dbf"
+  )
+  expect_identical(
+    microdatasus:::.tabwin_find_entry(
+      "root/CNV/br_frontfaixa.cnv", "root/CNV/ br_frontfaixa.cnv"
+    ),
+    "root/CNV/br_frontfaixa.cnv"
+  )
+  expect_identical(
+    microdatasus:::.tabwin_find_entry(
+      "root/CNV/TP_APAC.CNV", "root/CNV/TPAPAC.CNV"
+    ),
+    "root/CNV/TP_APAC.CNV"
+  )
+  expect_identical(
+    microdatasus:::.tabwin_find_entry(
+      "root/CNV/NATJURC.CNV", "root/CNV/ATJURC.CNV"
+    ),
+    "root/CNV/NATJURC.CNV"
+  )
+  expect_identical(
+    microdatasus:::.tabwin_find_entry(
+      "root/CNV/COBRDET.CNV", "root/CNV/COBRDETS.CNV"
+    ),
+    "root/CNV/COBRDET.CNV"
+  )
+  expect_identical(
+    microdatasus:::.tabwin_find_entry(
+      "root/CNV/CIDX20B.CNV", "root/CNV/IDX20B.CNV"
+    ),
+    "root/CNV/CIDX20B.CNV"
+  )
+  expect_error(
+    microdatasus:::.tabwin_find_entry(
+      "root/CNV/Fxidad9NET.cnv", "root/CNV/FXIDAD5NET.CNV"
+    ),
+    class = "microdatasus_dictionary_missing_error"
+  )
+  expect_error(
+    microdatasus:::.tabwin_find_entry(
+      c("a/TP_APAC.CNV", "b/TP_APAC.CNV"), "root/TPAPAC.CNV"
+    ),
+    class = "microdatasus_dictionary_ambiguous_error"
   )
 })
 
