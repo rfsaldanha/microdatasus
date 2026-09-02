@@ -2094,6 +2094,34 @@ test_that("CNV parser repairs evidenced malformed interval spellings", {
   expect_identical(transposed_conversion$repaired_code_tokens, 1L)
 })
 
+test_that("CNV parser repairs the official CID-9 epilepsy upper bound", {
+  directory <- tempfile("cid9-range-")
+  dir.create(directory)
+  on.exit(unlink(directory, recursive = TRUE), add = TRUE)
+  cid9 <- file.path(directory, "CID9BR2.CNV")
+  unrelated <- file.path(directory, "OTHER.CNV")
+  write_tabwin_text(
+    cid9,
+    c("1 4", tabwin_cnv_line(1, "Epilepsy", "3450-2459"))
+  )
+  write_tabwin_text(
+    unrelated,
+    c("1 4", tabwin_cnv_line(1, "Invalid", "3450-2459"))
+  )
+
+  conversion <- microdatasus:::.tabwin_parse_cnv(cid9)
+
+  expect_identical(
+    unname(conversion$map[sprintf("%04d", 3450:3459)]),
+    rep("Epilepsy", 10)
+  )
+  expect_identical(conversion$repaired_code_tokens, 1L)
+  expect_error(
+    microdatasus:::.tabwin_parse_cnv(unrelated),
+    "contains no code labels"
+  )
+})
+
 test_that("CNV parser discards prose without losing adjacent valid codes", {
   prose_path <- tempfile(fileext = ".CNV")
   prefix_path <- tempfile(fileext = ".CNV")

@@ -786,7 +786,7 @@
   if (!all(valid)) token else ranges
 }
 
-.tabwin_repair_range_token <- function(token, width, mode = "") {
+.tabwin_repair_range_token <- function(token, width, mode = "", path = NULL) {
   candidate <- trimws(token)
 
   # Three historical SIH archives use `=` once where every neighbouring
@@ -822,6 +822,14 @@
     return("L985-L989")
   }
 
+  # CID9BR.CNV in the same official mortality archive confirms that the
+  # descending epilepsy interval in CID9BR2.CNV is a transposed upper bound.
+  cid9br2 <- length(path) == 1L && !is.na(path) &&
+    identical(toupper(basename(path)), "CID9BR2.CNV")
+  if (cid9br2 && width == 4L && identical(candidate, "3450-2459")) {
+    return("3450-3459")
+  }
+
   token
 }
 
@@ -853,7 +861,9 @@
   width
 }
 
-.tabwin_sanitize_code_token <- function(token, width, mode = "") {
+.tabwin_sanitize_code_token <- function(
+  token, width, mode = "", path = NULL
+) {
   candidate <- trimws(token)
   if (!nzchar(candidate)) return(token)
 
@@ -868,7 +878,7 @@
   range_like <- grepl("-", candidate, fixed = TRUE) ||
     grepl("=", candidate, fixed = TRUE)
   if (range_like) {
-    repaired <- .tabwin_repair_range_token(token, width, mode)
+    repaired <- .tabwin_repair_range_token(token, width, mode, path)
     if (!identical(repaired, token)) return(repaired)
     concatenated <- .tabwin_split_concatenated_ranges(token, width, mode)
     if (length(concatenated) > 1L) return(token)
@@ -1544,7 +1554,8 @@
   sanitized_codes <- as.list(raw_codes)
   sanitized_codes[suspicious_indexes] <- lapply(
     raw_codes[suspicious_indexes],
-    .tabwin_sanitize_code_token, width = code_width, mode = mode
+    .tabwin_sanitize_code_token, width = code_width, mode = mode,
+    path = path
   )
   sanitized_lengths <- lengths(sanitized_codes)
   common$discarded_code_tokens <- sum(sanitized_lengths == 0L)
@@ -1701,7 +1712,7 @@
   )
 }
 
-.tabwin_parser_version <- 16L
+.tabwin_parser_version <- 17L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {
