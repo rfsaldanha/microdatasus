@@ -340,7 +340,7 @@
     beside_upper <- is_upper(previous) | is_upper(following)
     between_upper <- is_upper(previous) & is_upper(following)
 
-    any(bytes %in% c(128L, 135L, 198L, 229L) & between_letters) |
+    any(bytes %in% c(128L, 135L, 161L, 198L, 229L) & between_letters) |
       any(bytes %in% c(181L, 182L) & beside_upper) |
       any(bytes == 162L & between_letters) |
       any(bytes %in% c(224L, 233L) & between_upper)

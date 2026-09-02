@@ -1712,7 +1712,7 @@
   )
 }
 
-.tabwin_parser_version <- 18L
+.tabwin_parser_version <- 19L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {

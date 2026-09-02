@@ -1682,7 +1682,10 @@ test_that("DBF relation labels honor mixed legacy byte encodings", {
     as.integer(charToRaw("O"))
   )))
   cp850_value <- vapply(
-    c("CL\u00cdNICA DE OLHOS", "CL\u00cdNICA SANTO ANT\u00d4NIO"),
+    c(
+      "CL\u00cdNICA DE OLHOS", "CL\u00cdNICA SANTO ANT\u00d4NIO",
+      "Ind\u00edgena"
+    ),
     function(item) {
       rawToChar(charToRaw(iconv(item, from = "UTF-8", to = "CP850")))
     },
@@ -1691,7 +1694,7 @@ test_that("DBF relation labels honor mixed legacy byte encodings", {
   value <- c(cp1252_value, cp850_value)
   Encoding(value) <- "unknown"
   foreign::write.dbf(
-    data.frame(CODE = c("1", "2", "3"), FANTASIA = value),
+    data.frame(CODE = c("1", "2", "3", "4"), FANTASIA = value),
     path
   )
   table <- foreign::read.dbf(path, as.is = TRUE)
@@ -1705,10 +1708,13 @@ test_that("DBF relation labels honor mixed legacy byte encodings", {
 
   expect_identical(metadata$language_driver, 88L)
   expect_identical(metadata$encoding, "CP1252")
-  expect_identical(cp850_rows, c(FALSE, TRUE, TRUE))
+  expect_identical(cp850_rows, c(FALSE, TRUE, TRUE, TRUE))
   expect_identical(
     decoded,
-    c("ATENÇÃO", "CLÍNICA DE OLHOS", "CLÍNICA SANTO ANTÔNIO")
+    c(
+      "ATENÇÃO", "CLÍNICA DE OLHOS", "CLÍNICA SANTO ANTÔNIO",
+      "Indígena"
+    )
   )
 })
 
@@ -1766,7 +1772,7 @@ test_that("mixed CP850 recovery leaves ambiguous source bytes lossless", {
 test_that("CP1252 punctuation and names are not mistaken for CP850", {
   expected <- c(
     "M\u00e9dico", "FR\u00d6LICH", "25\u00a0MG",
-    "AV\u00d2", "A \u00b7 B"
+    "AV\u00d2", "A \u00b7 B", "\u00a1Hola!"
   )
   value <- vapply(expected, function(item) {
     rawToChar(charToRaw(iconv(item, from = "UTF-8", to = "CP1252")))
