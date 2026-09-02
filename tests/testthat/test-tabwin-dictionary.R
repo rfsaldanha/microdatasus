@@ -1259,6 +1259,36 @@ test_that("CNV repeated categories use the last non-blank description", {
   expect_true(conversion[["categories"]][["label_conflict"]][[1L]])
 })
 
+test_that("CNV count deficits recover conflicting sequence collisions", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  write_tabwin_text(path, c(
+    "3 1 L",
+    tabwin_cnv_line(1, "North", "A"),
+    tabwin_cnv_line(2, "South", "B"),
+    tabwin_cnv_line(2, "Northeast", "C")
+  ))
+
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+
+  expect_identical(
+    unname(conversion$map[c("A", "B", "C")]),
+    c("North", "South", "Northeast")
+  )
+  expect_identical(conversion$observed_category_count, 3L)
+  expect_false(conversion$category_count_mismatch)
+  expect_identical(conversion$recovered_sequence_collisions, 1L)
+  expect_length(conversion$source_sequence_collision_keys, 1L)
+  expect_identical(
+    conversion$categories[, c("sequence", "label")],
+    data.frame(
+      sequence = c("1", "2", "2"),
+      label = c("North", "South", "Northeast"),
+      stringsAsFactors = FALSE
+    )
+  )
+})
+
 test_that("CNV parser distinguishes literal and numeric padding", {
   literal <- tempfile(fileext = ".CNV")
   numeric <- tempfile(fileext = ".CNV")

@@ -1412,6 +1412,83 @@
   categories[order(numeric_sequence, categories$source_order), , drop = FALSE]
 }
 
+.tabwin_recover_sequence_collisions <- function(
+  sequence, subtotal, labels, categories, category_count
+) {
+  category_keys <- .tabwin_category_key(
+    categories$sequence, categories$subtotal
+  )
+  row_keys <- .tabwin_category_key(sequence, subtotal)
+  label_lookup <- stats::setNames(categories$label, category_keys)
+  unchanged <- list(
+    categories = categories,
+    row_labels = unname(label_lookup[row_keys]),
+    recovered_sequence_collisions = 0L,
+    source_sequence_collision_keys = character()
+  )
+
+  deficit <- category_count - nrow(categories)
+  conflicting_keys <- category_keys[categories$label_conflict]
+  if (deficit <= 0L || !length(conflicting_keys)) return(unchanged)
+
+  # A repeated sequence normally continues or renames one category. A few
+  # published CNVs instead reuse it accidentally for two different categories.
+  # Recover only when the declared category count independently shows a deficit,
+  # and the additional labelled categories fit entirely inside that deficit.
+  effective_labels <- labels
+  for (key in conflicting_keys) {
+    indexes <- which(row_keys == key)
+    present <- nzchar(effective_labels[indexes])
+    if (!any(present)) next
+
+    first_label <- effective_labels[indexes[which(present)[[1L]]]]
+    current <- first_label
+    for (index in indexes) {
+      if (nzchar(effective_labels[[index]])) {
+        current <- effective_labels[[index]]
+      } else {
+        effective_labels[[index]] <- current
+      }
+    }
+  }
+
+  identity_keys <- row_keys
+  split <- row_keys %in% conflicting_keys & nzchar(effective_labels)
+  identity_keys[split] <- paste(
+    row_keys[split], effective_labels[split], sep = "\035"
+  )
+  unique_identity <- unique(identity_keys[nzchar(identity_keys)])
+  recovered <- length(unique_identity) - nrow(categories)
+  if (recovered < 1L || recovered > deficit) return(unchanged)
+
+  source_order <- match(unique_identity, identity_keys)
+  source_keys <- row_keys[source_order]
+  recovered_labels <- unname(label_lookup[source_keys])
+  recovered_rows <- source_keys %in% conflicting_keys
+  recovered_labels[recovered_rows] <-
+    effective_labels[source_order[recovered_rows]]
+  recovered_categories <- data.frame(
+    sequence = sequence[source_order],
+    subtotal = subtotal[source_order],
+    label = recovered_labels,
+    source_order = source_order,
+    label_conflict = source_keys %in% conflicting_keys,
+    stringsAsFactors = FALSE
+  )
+  numeric_sequence <- suppressWarnings(as.integer(recovered_categories$sequence))
+  recovered_categories <- recovered_categories[
+    order(numeric_sequence, recovered_categories$source_order), , drop = FALSE
+  ]
+  recovered_lookup <- stats::setNames(recovered_labels, unique_identity)
+
+  list(
+    categories = recovered_categories,
+    row_labels = unname(recovered_lookup[identity_keys]),
+    recovered_sequence_collisions = as.integer(recovered),
+    source_sequence_collision_keys = unique(conflicting_keys)
+  )
+}
+
 .tabwin_cnv_code_text <- function(rows, code_start, code_width, mode) {
   code_text <- sub(";.*$", "", substring(rows, code_start))
   line_width <- nchar(rows, type = "chars")
@@ -1621,6 +1698,8 @@
       discarded_code_tokens = 0L, truncated_code_tokens = 0L,
       recovered_numeric_collision_codes = 0L, recovered_sequence = 0L,
       recovered_leading_sequence = 0L,
+      recovered_sequence_collisions = 0L,
+      source_sequence_collision_keys = character(),
       trailing_delimiter_padding_rows = 0L,
       map = map, map_priority = map_priority,
       ranges = .tabwin_empty_ranges(),
@@ -1721,12 +1800,11 @@
   }
 
   categories <- .tabwin_category_metadata(sequence, subtotal, row_labels)
-  category_keys <- .tabwin_category_key(
-    categories$sequence, categories$subtotal
+  collision_recovery <- .tabwin_recover_sequence_collisions(
+    sequence, subtotal, row_labels, categories, category_count
   )
-  label_lookup <- stats::setNames(categories$label, category_keys)
-  row_category_keys <- .tabwin_category_key(sequence, subtotal)
-  resolved_labels <- unname(label_lookup[row_category_keys])
+  categories <- collision_recovery$categories
+  resolved_labels <- collision_recovery$row_labels
   # A comma followed only by physical line padding does not declare another
   # code. Literal CNVs also use genuinely blank fixed-width codes, but publish
   # those before a delimiter (`   ,`) or between delimiters (`,   ,`). Removing
@@ -1798,6 +1876,10 @@
     recovered_numeric_collision_codes = 0L,
     recovered_sequence = recovered_sequence,
     recovered_leading_sequence = recovered_leading_sequence,
+    recovered_sequence_collisions =
+      collision_recovery$recovered_sequence_collisions,
+    source_sequence_collision_keys =
+      collision_recovery$source_sequence_collision_keys,
     trailing_delimiter_padding_rows = sum(trailing_delimiter_padding)
   )
 
@@ -2005,7 +2087,7 @@
   )
 }
 
-.tabwin_parser_version <- 25L
+.tabwin_parser_version <- 26L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {
