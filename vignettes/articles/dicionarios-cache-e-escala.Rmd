@@ -8,11 +8,17 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
 ```
 
 O `microdatasus` pode usar diretamente os arquivos DEF, CNV e DBF publicados
 para o TabWin. O suporte atual do SIM considera apenas os arquivos em CID-10.
+As regras sintáticas, de precedência e de recuperação auditável são detalhadas
+em [Formatos DBC, DEF e CNV](formatos-dbc-def-cnv.html).
 
 ## Consultar e comparar dicionários
 
@@ -62,8 +68,9 @@ diferença é inventada: uma tabela vazia significa que os dois conteúdos
 comparados são equivalentes.
 
 Contratos derivados do DEF e auditorias permitem verificar um sistema, um
-grupo ou todas as 104 definições atuais e históricas. Na auditoria completa,
-os 14 ZIP físicos compartilhados são baixados apenas uma vez por cache.
+grupo ou todas as 105 definições atuais e históricas. Na auditoria completa,
+os 15 ZIP físicos compartilhados são baixados apenas uma vez por cache. Esses
+números são derivados do registro interno atual do pacote.
 
 ```{r, eval = FALSE}
 schema <- datasus_schema("SINAN-DENGUE", inspect = TRUE, cache_dir = cache)
@@ -85,6 +92,13 @@ all_dictionaries <- audit_datasus_dictionaries(cache_dir = cache)
 As colunas `status` e `issues` distinguem ausência de arquivo, conteúdo
 inválido, relação não enumerável e falha de leitura; essas situações não são
 convertidas silenciosamente em tabelas vazias.
+
+Duplicidades seguem a precedência do TabWin: a última definição física de um
+código CNV ou de uma chave DBF relacionada é a efetiva. Um conflito em DBF ou
+uma contagem de categorias CNV incompatível com as linhas físicas é mantido
+como `fallback` auditável, não como sucesso indistinguível. Correções de erros
+conhecidos nos arquivos oficiais são exatas e limitadas ao nome do arquivo;
+relações ambíguas continuam inválidas.
 
 ## Rótulos e diagnóstico
 

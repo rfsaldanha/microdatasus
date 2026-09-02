@@ -19,10 +19,11 @@ URL: https://github.com/rfsaldanha/microdatasus, https://rfsaldanha.github.io/mi
 BugReports: https://github.com/rfsaldanha/microdatasus/issues
 Description: Downloads and processes health microdata from Brazilian Unified
     Health System ('DataSUS') information systems. It handles the compressed
-    'DBC' format internally and provides functions to organize variables and
-    add labels to categorical fields from mortality, live births, hospital
-    admissions, outpatient care, health facilities, and notifiable diseases
-    data. For details, see Saldanha et al. (2019)
+    'DBC' format with a direct validated reader and interprets the official
+    'TabWin' 'DEF', 'CNV', and related 'DBF' dictionaries. It provides functions
+    to organize variables and add labels to categorical fields from mortality,
+    live births, hospital admissions, outpatient care, health facilities, and
+    notifiable diseases data. For details, see Saldanha et al. (2019)
     <doi:10.1590/0102-311x00032419>.
 License: MIT + file LICENSE
 Copyright: See file inst/COPYRIGHTS.

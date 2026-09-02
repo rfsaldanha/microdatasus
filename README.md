@@ -19,9 +19,11 @@ interpretação de cada sistema, consulte o livro
 
 - `fetch_datasus()` localiza, baixa e combina microdados publicados pelo
   DataSUS; também pode processar e salvar cada arquivo separadamente.
-- `read_dbc()` lê um arquivo DBC já disponível no computador.
-- As funções `process_*()` usam os dicionários oficiais do TabWin, padronizam
-  tipos e podem relatar códigos ainda não mapeados.
+- `read_dbc()` lê diretamente um arquivo DBC já disponível no computador,
+  validando estrutura e CRC32 sem gravar um DBF intermediário.
+- As funções `process_*()` interpretam os arquivos oficiais DEF, CNV e DBF do
+  TabWin, selecionam definições históricas por registro, padronizam tipos e
+  podem relatar códigos ainda não mapeados.
 - `datasus_variables()` consulta relações oficiais, `datasus_schema()` cria
   contratos por campo, `validate_datasus_schema()` confronta DBC, DEF e tipos
   produzidos, e `audit_datasus_dictionaries()` verifica todas as
@@ -52,9 +54,12 @@ Ou instale a versão de desenvolvimento:
 remotes::install_github("rfsaldanha/microdatasus", ref = "dev")
 ```
 
-A leitura de DBC é interna ao pacote e não depende mais de `read.dbc`. A
-implementação foi adaptada do pacote
+A leitura de DBC é interna ao pacote, não chama `foreign::read.dbf()` e não
+depende mais de `read.dbc`. A implementação foi adaptada do pacote
 [healthbR](https://github.com/SidneyBissoli/healthbR).
+O pacote mantém `foreign` apenas para tabelas DBF auxiliares ou referenciadas
+pelos dicionários TabWin; esses arquivos não fazem parte do caminho de leitura
+de um DBC.
 
 No Windows, a instalação pelo GitHub requer uma versão do
 [Rtools](https://cran.r-project.org/bin/windows/Rtools/) compatível com o R
@@ -177,7 +182,10 @@ registra a consulta, os DBC e os dicionários usados.
 
 O guia [Dicionários, cache e processamento em
 escala](https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.html)
-apresenta o fluxo completo. O suporte do SIM nesta versão é restrito a CID-10.
+apresenta o fluxo completo. O artigo [Formatos DBC, DEF e
+CNV](https://rfsaldanha.github.io/microdatasus/articles/formatos-dbc-def-cnv.html)
+descreve as regras de leitura, precedência e diagnóstico. O suporte do SIM
+nesta versão é restrito a CID-10.
 
 ## Arquivos DBC locais
 
@@ -203,10 +211,16 @@ dados_cp850 <- read_dbc("arquivo_historico.dbc", encoding = "CP850")
 ```
 
 `read_dbc()` descomprime e interpreta os registros diretamente, sem criar um
-DBF intermediário. O texto é convertido para UTF-8; sequências inválidas geram
-um erro explícito em vez de substituição silenciosa. `encoding = "auto"` usa o
-marcador DBF e assume Windows-1252 nos arquivos sem marcador; use o argumento
-explícito para arquivos históricos em CP850 ou outra codificação.
+DBF intermediário. O fluxo completo, o layout DBF, os marcadores de registro e
+o CRC32 são validados mesmo quando `vars` seleciona poucas colunas.
+
+`encoding = "auto"` combina o marcador DBF com evidência de bytes por coluna e
+por linha. Texto reconhecido é convertido para UTF-8; misturas ambíguas e alguns
+identificadores ofuscados são preservados sem perda como strings com codificação
+`"bytes"`, acompanhadas de aviso. Um `encoding` explícito é estrito e interrompe
+a leitura diante de bytes inválidos. Isso inclui, em qualquer sistema
+operacional, os cinco valores indefinidos do Windows-1252 (`81`, `8D`, `8F`,
+`90` e `9D` em hexadecimal).
 
 ## Guias
 
@@ -216,6 +230,8 @@ explícito para arquivos históricos em CP850 ou outra codificação.
   rastreabilidade](https://rfsaldanha.github.io/microdatasus/articles/download-e-rastreabilidade.html)
 - [Dicionários, cache e processamento em
   escala](https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.html)
+- [Formatos DBC, DEF e
+  CNV](https://rfsaldanha.github.io/microdatasus/articles/formatos-dbc-def-cnv.html)
 - [Perguntas
   frequentes](https://rfsaldanha.github.io/microdatasus/articles/FAQ.html)
 - [Livro *Sistemas de Informação em Saúde no

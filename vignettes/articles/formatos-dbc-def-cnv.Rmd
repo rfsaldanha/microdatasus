@@ -1,0 +1,295 @@
+---
+title: "Formatos DBC, DEF e CNV"
+description: >
+  Como o microdatasus lê, valida e combina os arquivos de dados e dicionários
+  do DataSUS, incluindo codificação, precedência e diagnóstico de inconsistências.
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Formatos DBC, DEF e CNV}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+Os arquivos envolvidos no fluxo do `microdatasus` têm papéis diferentes. Um
+DBC contém os registros; um DEF descreve campos e relações usadas pelo TabWin;
+um CNV define categorias, códigos ou intervalos; e alguns DEF apontam para uma
+tabela DBF relacionada em vez de um CNV.
+
+| Formato | Papel no pacote | Leitor usado |
+|---|---|---|
+| DBC | Microdados comprimidos do DataSUS | Leitor direto e validado do `microdatasus` |
+| DEF | Declarações de campos, comandos e relações do TabWin | Parser textual do `microdatasus` |
+| CNV | Relações código-rótulo e intervalos do TabWin | Parser textual/fixo do `microdatasus` |
+| DBF relacionado | Tabelas de códigos e descrições indicadas por um DEF | `foreign::read.dbf()` com validação adicional do pacote |
+
+Essa separação é importante: `read_dbc()` não chama `foreign`, não converte o
+DBC em um arquivo DBF temporário e não depende do pacote `read.dbc`. A
+dependência `foreign` permanece para DBFs auxiliares e para tabelas relacionadas
+pelos dicionários TabWin.
+
+## Leitura direta do DBC
+
+`read_dbc()` entrega os registros diretamente a um tibble:
+
+```{r}
+dados <- read_dbc("arquivo.dbc")
+
+dados_tipados <- read_dbc(
+  "arquivo.dbc",
+  as_character = FALSE
+)
+
+dados_projetados <- read_dbc(
+  "arquivo.dbc",
+  vars = c("CODMUNRES", "DTOBITO", "CAUSABAS")
+)
+```
+
+O padrão `as_character = TRUE` mantém a interface histórica, com todas as
+colunas como texto. Com `FALSE`, os tipos físicos DBF usados pelo DataSUS são
+preservados: `C` como texto, `D` como `Date`, `F` como `double`, `L` como
+lógico e `N` como inteiro ou `double`, conforme largura, casas decimais e valor.
+Inteiros que não podem ser representados exatamente não são arredondados
+silenciosamente.
+
+`vars` evita alocar e interpretar células das colunas não solicitadas. A
+projeção não reduz as verificações estruturais: o fluxo comprimido completo, o
+layout DBF, o tamanho de cada registro, os marcadores e o CRC32 continuam sendo
+validados. Uma sequência textual inválida em uma coluna não selecionada não é
+decodificada e, portanto, não invalida a leitura projetada.
+
+Registros marcados como excluídos no DBF são mantidos. Essa política evita
+descartar implicitamente uma linha publicada pelo DataSUS.
+
+## O que é validado
+
+Antes de retornar dados, o leitor verifica, entre outros contratos:
+
+- existência, legibilidade e tamanho do arquivo;
+- cabeçalho DBC e término exato do fluxo comprimido;
+- CRC32 do conteúdo DBF descomprimido;
+- cabeçalho, descritores, nomes, tipos e larguras dos campos DBF;
+- tamanho do registro, marcador de cada linha e marcador final permitido;
+- sintaxe e finitude de números e validade de datas do calendário;
+- ausência de bytes significativos depois de um NUL de preenchimento;
+- estabilidade do arquivo entre a leitura dos metadados e dos registros.
+
+Contradições estruturais interrompem a leitura com uma condição da família
+`microdatasus_dbc_error`; uma tabela parcial não é retornada. Em um arquivo
+estruturalmente válido, uma célula numérica, lógica ou de data malformada vira
+`NA` com aviso que informa quantidade e primeira posição.
+
+## Codificação de texto
+
+O modo padrão, `encoding = "auto"`, usa o byte de language driver do DBF e
+evidência do conteúdo. O detector reconhece as variantes encontradas no corpus
+do DataSUS, incluindo UTF-8, Windows-1252, CP850 e CP860, e pode resolver linhas
+de codificações diferentes dentro do mesmo campo.
+
+Quando uma sequência não pode ser classificada com segurança, os bytes são
+preservados sem alteração em uma string marcada como `"bytes"`. Isso também se
+aplica às representações ofuscadas encontradas em alguns identificadores
+CPF/CNS. O aviso é deliberado: o valor continua disponível, mas não deve ser
+tratado como texto Unicode antes de se conhecer sua semântica.
+
+```{r}
+dados <- read_dbc("arquivo.dbc", encoding = "auto")
+attr(dados, "dbc_encoding")
+attr(dados, "dbc_column_encodings")
+
+indice_bytes <- Encoding(dados$CAMPO) == "bytes"
+```
+
+Um `encoding` explícito desativa a recuperação automática e exige conversão
+estrita:
+
+```{r}
+historico <- read_dbc("arquivo.dbc", encoding = "CP850")
+```
+
+Bytes incompatíveis geram `microdatasus_dbc_encoding_error`, sem inserir
+caracteres substitutos. Os cinco valores indefinidos do Windows-1252 — `81`,
+`8D`, `8F`, `90` e `9D` em hexadecimal — são inválidos em todos os sistemas
+operacionais. Essa regra neutraliza a diferença entre o `iconv` do Windows e o
+GNU libiconv.
+
+## Como o DEF é interpretado
+
+O DEF fornece metadados para a tabulação e o processamento, mas não é um
+contrato completo do layout físico do DBC. Campos livres que não aparecem no
+DEF continuam sendo descobertos no próprio DBC.
+
+O parser considera somente declarações ativas, preserva a ordem física e lê:
+
+- o comando TabWin e a descrição apresentada;
+- o campo de origem;
+- a posição inicial quando a relação é CNV;
+- o campo de descrição quando a relação é DBF;
+- o arquivo CNV ou DBF relacionado;
+- incrementos numéricos declarados pelo comando `I`.
+
+Um mesmo campo pode ter mais de uma declaração, por exemplo uma relação
+detalhada e outra agregada. Durante o processamento, cada relação utilizável é
+avaliada; cobertura real, posição, especificidade e período determinam a
+seleção. Um arquivo relacionado ausente não impede que uma alternativa válida
+seja usada.
+
+Arquivos oficiais contêm alguns erros tipográficos ou metadados desatualizados.
+O pacote só recupera casos sustentados por evidência inequívoca e com regra
+restrita ao arquivo afetado. Não há correspondência difusa de nomes. Mais de
+uma candidata possível produz uma situação inválida ou ambígua.
+
+## Como o CNV é interpretado
+
+CNVs são relações de largura fixa. O parser cobre os dialetos compactos,
+prefixados e de descrição longa encontrados nos arquivos oficiais, incluindo:
+
+- códigos literais, numéricos e alfanuméricos;
+- aliases e linhas de continuação por sequência de categoria;
+- intervalos fechados, abertos e de limite superior;
+- modo `F`, que classifica números por limites superiores;
+- comentários iniciados por ponto e vírgula e alinhamento com tabulações;
+- códigos em branco que sejam valores físicos, não mero preenchimento.
+
+Intervalos pequenos podem ser materializados como mapa código-rótulo. Faixas
+analíticas muito grandes permanecem em `ranges` como regras simbólicas; não são
+expandidas em milhões de linhas. A aplicação das regras mantém a ordem física:
+uma definição posterior e específica pode substituir uma faixa anterior mais
+ampla.
+
+As regras de repetição são determinísticas:
+
+- um código CNV repetido usa sua última definição física;
+- uma categoria repetida usa a última descrição não vazia;
+- subtotal e número de sequência participam da identidade da categoria quando
+  o formato exige ambos;
+- a ordem final dos níveis segue a sequência efetiva das categorias.
+
+Quando a quantidade de categorias anunciada no cabeçalho não coincide com as
+categorias físicas, todas as categorias recuperáveis são preservadas. A
+relação é marcada como `fallback`, com a divergência exposta para auditoria.
+
+## Tabelas DBF relacionadas
+
+Quando o DEF referencia um DBF, o pacote usa o campo de chave e o campo de
+descrição declarados. O primeiro campo físico só é usado como chave quando essa
+é a convenção aplicável. Se o DEF manteve um nome antigo para a descrição, o
+único campo não chave pode ser usado como fallback inequívoco; DBFs com várias
+alternativas não são adivinhados.
+
+Chaves repetidas seguem a regra confirmada para o TabWin: vence o último
+registro físico. Duplicidades com rótulos conflitantes continuam visíveis em
+`conflicting_key_count`, `status = "fallback"` e
+`issue_class = "upstream_duplicate_keys"`.
+
+Alguns arquivos com extensão `.CNV` contêm de fato um DBF binário. A detecção é
+feita pelo conteúdo e só prossegue quando chave e rótulo podem ser inferidos de
+forma única. Uma estrutura ambígua é rejeitada.
+
+## Definições históricas e tipos processados
+
+Os processadores selecionam o dicionário correspondente ao layout e ao período.
+Uma tabela combinada pode usar definições diferentes por grupo de linhas, como
+nas transições históricas de SIH-RD/RJ, SIA-PA, CNES-SR e SINASC. No SIM
+CID-10, campos físicos herdados pelo primeiro layout de óbitos fetais usam os
+domínios oficiais correspondentes do arquivo CID-9.
+
+```{r}
+sim <- process_sim(
+  sim_do_sample,
+  labels = "factor",
+  diagnostics = TRUE
+)
+```
+
+O padrão `labels = "factor"` aplica rótulos e conserva códigos desconhecidos
+como níveis visíveis. `"character"` devolve as descrições como texto;
+`"none"` conserva os códigos de origem. As demais conversões independem dessa
+escolha: datas são `Date`, contagens e componentes de idade são inteiros,
+valores contínuos podem ser `double`, e identificadores permanecem texto.
+
+## Inspeção e auditoria
+
+Use as APIs públicas para tornar cada decisão observável:
+
+```{r}
+cache <- datasus_cache_dir(create = TRUE)
+
+variaveis <- datasus_variables(
+  "SIM-DO",
+  include_labels = TRUE,
+  include_ranges = TRUE,
+  cache_dir = cache
+)
+
+variaveis[, c(
+  "field", "relation", "status", "issue_class", "message"
+)]
+
+contrato <- validate_datasus_schema(
+  sim_do_sample,
+  "SIM-DO",
+  period = 2020,
+  cache_dir = cache
+)
+
+diagnostico <- processing_diagnostics(sim)
+diagnostico$unknown_codes
+diagnostico$coercion_failures
+diagnostico$dictionaries
+```
+
+Os principais estados de uma relação são:
+
+| `status` | Significado |
+|---|---|
+| `ok` | Relação analisada sem ressalva conhecida |
+| `fallback` | Resultado utilizável com divergência ou recuperação explícita |
+| `non_enumerable` | Faixa analítica preservada simbolicamente |
+| `missing` | Arquivo oficial referenciado não está no arquivo compactado |
+| `invalid` | Conteúdo ou relação não tem interpretação não ambígua |
+| `error` | Falha de leitura ou do parser que não é uma ausência conhecida |
+
+`issue_class` separa a origem do problema de sua severidade. Assim, uma
+divergência de conteúdo publicada pelo DataSUS não é confundida com defeito
+interno, falha de I/O ou intervalo analítico intencional.
+
+Para uma verificação ampla:
+
+```{r}
+auditoria <- audit_datasus_dictionaries(
+  cache_dir = cache,
+  fail_on_error = TRUE
+)
+```
+
+O registro atual contém 105 definições correntes e históricas, distribuídas em
+15 arquivos ZIP físicos. Esses totais vêm do registro interno da versão do
+pacote; não devem ser usados como uma expectativa eterna sobre futuras
+publicações do DataSUS.
+
+## Reprodutibilidade
+
+Com `cache_dir`, ZIPs, manifests e relações analisadas persistem entre sessões.
+A chave do cache inclui o checksum do arquivo oficial e a versão do parser. Uma
+mudança no conteúdo não reutiliza silenciosamente uma relação anterior.
+
+Use `datasus_lockfile()` quando a análise precisar registrar conjuntamente a
+consulta, os DBCs, os dicionários e as tabelas de referência:
+
+```{r}
+datasus_lockfile(dados, "datasus.lock.rds")
+verify_datasus_lockfile("datasus.lock.rds")
+```
+
+Para o uso cotidiano, veja também [Dicionários, cache e processamento em
+escala](dicionarios-cache-e-escala.html). Para problemas recorrentes, consulte
+as [Perguntas frequentes](FAQ.html).

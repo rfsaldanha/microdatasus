@@ -205,8 +205,10 @@
 #'   last physical record is retained, following TabWin precedence. A CNV whose
 #'   declared category count differs from its physical definitions is reported
 #'   as an upstream fallback, while every physical category is retained. Parsed
-#'   relations persist on disk when `cache_dir` is set, and completed result
-#'   tables are reused during the R session.
+#'   CNV codes likewise use the last physical definition; repeated category
+#'   rows use the last non-blank description. Relations persist on disk when
+#'   `cache_dir` is set, and completed result tables are reused during the R
+#'   session.
 #'
 #' @return A tibble with one row per categorical definition or numeric field.
 #'

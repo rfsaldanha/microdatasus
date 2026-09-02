@@ -63,8 +63,10 @@ duplicate keys and conflicting labels are also explicit fallbacks: the
 last physical record is retained, following TabWin precedence. A CNV whose
 declared category count differs from its physical definitions is reported
 as an upstream fallback, while every physical category is retained. Parsed
-relations persist on disk when \code{cache_dir} is set, and completed result
-tables are reused during the R session.
+CNV codes likewise use the last physical definition; repeated category
+rows use the last non-blank description. Relations persist on disk when
+\code{cache_dir} is set, and completed result tables are reused during the R
+session.
 }
 \examples{
 \dontshow{if (interactive() && curl::has_internet()) withAutoprint(\{ # examplesIf}

@@ -34,7 +34,6 @@ sim_raw <- fetch_datasus(
 )
 
 sim <- process_sim(sim_raw)
-sim$DTOBITO <- as.Date(sim$DTOBITO)
 
 sim_2020 <- sim[format(sim$DTOBITO, "%Y") == "2020", ]
 ```
@@ -210,24 +209,28 @@ tbl(con, "sih") |>
 dbDisconnect(con)
 ```
 
-## Por que as colunas processadas são texto?
+## Quais tipos as funções de processamento retornam?
 
-As funções `process_*()` recodificam valores conhecidos e normalizam sequências
-Unicode em todas as colunas. Essa etapa final retorna um tibble de colunas
-`character`.
+As funções `process_*()` mantêm tipos coerentes com o papel de cada campo. Datas
+completas são `Date`; contagens e componentes de idade são inteiros; valores
+contínuos podem ser `double`; identificadores e texto livre permanecem
+`character`; e campos categóricos são fatores por padrão.
 
-Converta somente o que a análise exige:
+Confira os tipos antes de aplicar transformações específicas da análise:
 
 ```{r}
 sim <- process_sim(sim_raw)
 
-sim$DTOBITO <- as.Date(sim$DTOBITO)
-sim$IDADEanos <- as.integer(sim$IDADEanos)
+class(sim$DTOBITO)
+class(sim$IDADEanos)
+class(sim$SEXO)
 ```
 
-Faça a conversão depois de inspecionar códigos especiais, ausências e mudanças
-de layout. O livro de SIS apresenta checklists e seções de estrutura dos dados
-para cada sistema.
+Use `labels = "character"` para devolver descrições categóricas como texto ou
+`labels = "none"` para manter os códigos de origem. Códigos não cobertos pela
+relação oficial continuam visíveis, em vez de serem transformados
+silenciosamente em `NA`. Com `diagnostics = TRUE`, falhas de coerção e códigos
+desconhecidos ficam disponíveis em `processing_diagnostics()`.
 
 ## Posso baixar várias UFs de uma vez?
 
@@ -277,7 +280,42 @@ Por padrão, todas as colunas são texto. Para manter os tipos inferidos do DBF:
 dados <- read_dbc("arquivo.dbc", as_character = FALSE)
 ```
 
-O DBF intermediário é temporário e removido automaticamente.
+O pacote descomprime e interpreta o fluxo diretamente, sem criar um DBF
+intermediário. Layout, registros e CRC32 são validados antes do retorno. Use
+`vars` para ler somente as colunas necessárias sem deixar de verificar a
+estrutura completa do arquivo.
+
+## O que fazer diante de aviso de codificação ou caracteres multibyte?
+
+O padrão `encoding = "auto"` combina o marcador de página de código do DBF com
+evidência dos bytes de cada coluna e linha. Texto identificado com segurança é
+convertido para UTF-8. Sequências ambíguas e identificadores binários são
+preservados sem perda com `Encoding(x) == "bytes"` e produzem um aviso.
+
+Se a origem do arquivo for conhecida, um valor explícito exige uma leitura
+estrita:
+
+```{r}
+dados_cp850 <- read_dbc("arquivo_historico.dbc", encoding = "CP850")
+```
+
+Uma sequência incompatível com o `encoding` informado gera
+`microdatasus_dbc_encoding_error`; nenhum caractere substituto é inserido. Os
+cinco bytes indefinidos do Windows-1252 são tratados da mesma forma no Windows,
+Linux e macOS. Consulte [Formatos DBC, DEF e CNV](formatos-dbc-def-cnv.html)
+antes de forçar uma codificação.
+
+## Como são resolvidos códigos repetidos em CNV ou DBF?
+
+O parser usa a última ocorrência física aplicável, como o TabWin. Em CNV, um
+código posterior substitui o anterior e uma categoria repetida usa sua última
+descrição não vazia. Em tabelas DBF relacionadas, a última linha com a mesma
+chave é usada.
+
+Conflitos de chave DBF e divergências entre a quantidade de categorias
+declarada e observada no CNV não são ocultados: `datasus_variables()` os marca
+como `fallback`, com `issue_class` e mensagem explicativa. Relações ambíguas não
+são escolhidas por aproximação.
 
 ## Por que o DataSUS não está acessível?
 
@@ -290,6 +328,7 @@ momento ou outra rede e evite múltiplas chamadas paralelas.
 
 - [Primeiros passos e exemplos por sistema](exemplos.html)
 - [Download e rastreabilidade](download-e-rastreabilidade.html)
+- [Formatos DBC, DEF e CNV](formatos-dbc-def-cnv.html)
 - [Referência das funções](../reference/index.html)
 - [Livro *Sistemas de Informação em Saúde no
   Brasil*](https://rfsaldanha.github.io/sis/)

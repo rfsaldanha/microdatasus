@@ -250,7 +250,10 @@ dados <- read_dbc("arquivo.dbc")
 dados_tipados <- read_dbc("arquivo.dbc", as_character = FALSE)
 ```
 
-O arquivo DBF intermediário é temporário e removido automaticamente.
+O leitor descomprime e interpreta o DBC diretamente, sem gravar um DBF
+intermediário. Também valida a estrutura e o CRC32 completo. Consulte [Formatos
+DBC, DEF e CNV](formatos-dbc-def-cnv.html) para projeção de colunas,
+codificações históricas e classes de erro.
 
 ## Boas práticas para downloads grandes
 

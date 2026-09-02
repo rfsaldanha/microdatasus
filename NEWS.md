@@ -36,6 +36,10 @@
 * Classifies dictionary issues by origin, adds strict `fail_on_issues` audits,
   rotating coverage of every registered subsystem, and live historical-layout
   transition checks.
+* Expands the package, function, README, FAQ, and article documentation for the
+  direct DBC reader and the DEF/CNV/DBF parser, including encoding behavior,
+  TabWin precedence, auditable fallbacks, stable processed types, and the
+  boundary of the remaining `foreign` dependency.
 
 # microdatasus 3.0.0
 

@@ -119,6 +119,21 @@
 #' share an archive reuse one copy. With `cache_dir`, the ZIP, its checksum, and
 #' manifest persist across sessions; `refresh = TRUE` replaces the cached copy.
 #'
+#' @section DEF, CNV, and related DBF semantics:
+#' Active DEF declarations identify source fields, commands, substring
+#' positions, and CNV or DBF relations. CNV files are parsed as fixed-width
+#' definitions, including compact and long-description dialects, literal and
+#' numeric ranges, continuation rows, and inline comments. Large analytical
+#' ranges remain symbolic instead of being expanded into millions of labels.
+#'
+#' When a CNV code, CNV category description, or related DBF key is repeated,
+#' the last applicable physical definition is used, following TabWin
+#' precedence. Conflicting DBF keys and declared-versus-observed CNV category
+#' counts remain visible as auditable fallbacks through [datasus_variables()]
+#' and [audit_datasus_dictionaries()]. Known defects in official archives are
+#' recovered only by exact, file-scoped rules; ambiguous files or relations
+#' produce explicit statuses or errors rather than guessed labels.
+#'
 #' @examplesIf interactive() && curl::has_internet()
 #' dictionary <- fetch_tabwin_dictionary("SIM-DO")
 #' dictionary$definitions

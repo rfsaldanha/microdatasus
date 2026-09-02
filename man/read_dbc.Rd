@@ -19,7 +19,8 @@ columns to read. Unselected columns are neither allocated nor parsed.}
 \item{encoding}{Character scalar naming the source encoding, or \code{"auto"}
 (the default) to use the DBF language-driver byte together with byte-level
 evidence from each character field. Unmarked DataSUS files start with
-Windows-1252 and switch to UTF-8, CP850, or CP860 only when the data support it.}
+Windows-1252 and switch to UTF-8, CP850, or CP860 only when the data support
+it. Explicit encodings are strict and never replace invalid bytes silently.}
 }
 \value{
 A tibble with one column per DBF field. By default, all columns are
@@ -48,7 +49,16 @@ encoding can be identified safely. Undecodable mixed data and the obfuscated
 byte representation used by some CPF/CNS fields are preserved losslessly as
 strings marked with encoding \code{"bytes"}, with a warning. An explicit
 \code{encoding} requests strict decoding and invalid byte sequences then abort
-with a \code{microdatasus_dbc_encoding_error}.
+with a \code{microdatasus_dbc_encoding_error}. The five undefined Windows-1252
+byte values (\code{81}, \verb{8D}, \verb{8F}, \code{90}, and \verb{9D} in hexadecimal) are treated as
+invalid on every operating system; this avoids platform-dependent results
+from different \code{iconv} implementations.
+
+Column projection affects allocation and cell parsing, not structural
+validation: the complete compressed stream, DBF layout, record markers, and
+CRC32 are still checked when \code{vars} selects only part of the table. Invalid
+text in an unselected field is not decoded and therefore does not make a
+projected read fail.
 
 Header layout, field widths, record markers, compressed-stream termination,
 numeric syntax, finite numeric values, calendar dates, and the complete DBF

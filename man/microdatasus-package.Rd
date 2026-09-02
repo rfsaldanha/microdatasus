@@ -8,8 +8,9 @@
 \description{
 Provides a reproducible workflow for DataSUS microdata: \code{\link[=fetch_datasus]{fetch_datasus()}}
 discovers, downloads, and combines published DBC files; \code{\link[=read_dbc]{read_dbc()}} reads a
-local DBC file; and the \verb{process_*()} functions convert system-specific
-fields into analysis-ready values and labels.
+local DBC file directly, with structural and checksum validation; and the
+\verb{process_*()} functions interpret official TabWin DEF/CNV/DBF dictionaries
+to produce period-correct values, labels, and column types.
 }
 \details{
 Start with \code{\link[=fetch_datasus]{fetch_datasus()}} and then use the processor corresponding to the
@@ -17,6 +18,12 @@ selected system, such as \code{\link[=process_sim]{process_sim()}}, \code{\link[
 \code{\link[=process_sia]{process_sia()}}, \code{\link[=process_cnes]{process_cnes()}}, or \code{\link[=process_sinan]{process_sinan()}}. \code{\link[=fetch_cadger]{fetch_cadger()}}
 and \code{\link[=fetch_sigtab]{fetch_sigtab()}} also retrieve current
 auxiliary tables for standalone use.
+
+Use \code{\link[=datasus_variables]{datasus_variables()}} to inspect parsed dictionary definitions and
+relations, \code{\link[=validate_datasus_schema]{validate_datasus_schema()}} to compare raw DBC fields with the
+selected historical definitions and processed types, and
+\code{\link[=processing_diagnostics]{processing_diagnostics()}} to retrieve unknown codes, coercion failures, and
+dictionary provenance from an individual processing call.
 
 For concepts, coverage, data flows, and caveats of each Brazilian health
 information system, see Saldanha (2026), \href{https://rfsaldanha.github.io/sis/}{\emph{Sistemas de Informação em Saúde no Brasil}}.

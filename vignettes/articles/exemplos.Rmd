@@ -23,7 +23,7 @@ O uso do `microdatasus` normalmente segue três passos:
 
 1. definir o sistema, o período e a abrangência geográfica;
 2. baixar os arquivos com `fetch_datasus()`;
-3. aplicar o processador específico e converter explicitamente os tipos
+3. aplicar o processador específico e conferir os tipos, rótulos e diagnósticos
    necessários à análise.
 
 ```{r}
@@ -37,12 +37,13 @@ sim_raw <- fetch_datasus(
 )
 
 sim <- process_sim(sim_raw)
-sim$DTOBITO <- as.Date(sim$DTOBITO)
 ```
 
 As funções `process_*()` normalizam textos e substituem códigos conhecidos por
-descrições. Ao final, suas colunas são retornadas como texto; datas e números
-usados na análise devem ser convertidos explicitamente.
+descrições. Datas, quantidades, valores, identificadores e categorias mantêm
+tipos distintos: por padrão, datas completas são `Date`, contagens são inteiros
+e rótulos categóricos são fatores. Use `labels = "character"` ou `"none"` para
+alterar somente a política dos campos categóricos.
 
 Os argumentos de período e UF identificam as partições publicadas pelo
 DataSUS. Eles não substituem a escolha da variável temporal ou territorial
@@ -95,7 +96,6 @@ sinasc_raw <- fetch_datasus(
 )
 
 sinasc <- process_sinasc(sinasc_raw)
-sinasc$DTNASC <- as.Date(sinasc$DTNASC)
 ```
 
 ## SIH — internações hospitalares

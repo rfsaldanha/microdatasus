@@ -31,6 +31,7 @@ articles:
   - articles/exemplos
   - articles/download-e-rastreabilidade
   - articles/dicionarios-cache-e-escala
+  - articles/formatos-dbc-def-cnv
 - title: "Ajuda"
   contents:
   - articles/FAQ
