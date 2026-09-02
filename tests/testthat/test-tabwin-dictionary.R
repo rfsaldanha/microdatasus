@@ -1924,14 +1924,14 @@ test_that("official INCENTIVOS labels use exact byte-scoped repairs", {
   )
 })
 
-test_that("CNV header tolerates colon comments but rejects trailing garbage", {
+test_that("CNV ignores comments but rejects unmarked trailing garbage", {
   valid <- tempfile(fileext = ".CNV")
   invalid <- tempfile(fileext = ".CNV")
   on.exit(unlink(c(valid, invalid)), add = TRUE)
   write_tabwin_text(valid, c(
     ": legacy pseudo-comment",
-    "1 1",
-    tabwin_cnv_line(1, "Valid", "1")
+    "1 1 ; header documentation",
+    paste0(tabwin_cnv_line(1, "Valid", "1"), "; row documentation")
   ))
   write_tabwin_text(invalid, c(
     "1 1 trailing garbage",

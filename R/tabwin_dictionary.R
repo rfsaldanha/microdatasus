@@ -1243,8 +1243,8 @@
     )
   }
   header_index <- useful[[1L]]
-  header_line <- lines[[header_index]]
-  header <- toupper(trimmed[[header_index]])
+  header_line <- sub(";.*$", "", lines[[header_index]])
+  header <- toupper(trimws(header_line))
   match <- regexec(
     "^(?:([NS])[[:space:]]+)?([0-9]+)[[:space:]]+([0-9]+)(?:[[:space:]]+([[:alpha:]]+))?[[:space:]]*$",
     header,
@@ -1417,6 +1417,9 @@
   if (!is.null(header$embedded_row)) {
     rows <- c(header$embedded_row, rows)
   }
+  # The CNV specification treats every semicolon and the remainder of its
+  # physical line as documentation, independently of the semicolon's column.
+  rows <- sub(";.*$", "", rows)
   active <- nzchar(trimws(rows)) &
     !startsWith(trimws(rows), ";") &
     !startsWith(trimws(rows), ":")
