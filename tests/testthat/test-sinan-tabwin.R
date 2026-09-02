@@ -7,15 +7,29 @@ create_sinan_tabwin_fixtures <- function() {
   online_root <- tempfile("sinan-online-fixture-")
   dir.create(online_root)
 
-  write_definitions <- function(root, definitions) {
+  write_definitions <- function(root, definitions, archive) {
     for (definition in unique(definitions)) {
+      classification <- if (
+        identical(archive, "online") &&
+          identical(tolower(definition), "chiknon.def")
+      ) {
+        "XClassification, CLASSI_FIN, 1, CLASSCHIK.CNV"
+      } else if (
+        identical(archive, "net") &&
+          identical(tolower(definition), "ftifoidenet.def")
+      ) {
+        "XClassification, CLASSI_FIN, 1, CLASSIFI.CNV"
+      } else {
+        character()
+      }
       write_tabwin_text(
         file.path(root, definition),
         c(
           "A*.dbc",
           "IContagem, CONTEXAM",
           "XFlag, FLAG, 1, FLAG.CNV",
-          "XSexo, CS_SEXO, 1, SEX.CNV"
+          "XSexo, CS_SEXO, 1, SEX.CNV",
+          classification
         )
       )
     }
@@ -27,14 +41,36 @@ create_sinan_tabwin_fixtures <- function() {
       file.path(root, "SEX.CNV"),
       c("2 1", tabwin_cnv_line(1, "Masculino", "M"))
     )
+    if (identical(archive, "online")) {
+      write_tabwin_text(
+        file.path(root, "CLASSCHIK.CNV"),
+        c(
+          "2 2",
+          tabwin_cnv_line(1, "Descartado atual", "5"),
+          tabwin_cnv_line(2, "Chikungunya", "13")
+        )
+      )
+    } else {
+      write_tabwin_text(
+        file.path(root, "CLASSIFI.CNV"),
+        c(
+          "3 1",
+          tabwin_cnv_line(1, "Confirmado historico", "1"),
+          tabwin_cnv_line(2, "Descartado historico", "2"),
+          tabwin_cnv_line(3, "Inconclusivo historico", "8")
+        )
+      )
+    }
   }
   write_definitions(
     net_root,
-    specs$definition[specs$archive == "SINAN-NET"]
+    specs$definition[specs$archive == "SINAN-NET"],
+    "net"
   )
   write_definitions(
     online_root,
-    specs$definition[specs$archive == "SINAN-ONLINE"]
+    specs$definition[specs$archive == "SINAN-ONLINE"],
+    "online"
   )
 
   net_archive <- tempfile(fileext = ".zip")
@@ -283,6 +319,56 @@ test_that("generic SINAN definitions label only verified common fields", {
   fields <- microdatasus:::.sinan_dictionary_fields(data, dictionary, types)
 
   expect_identical(fields, "CS_SEXO")
+})
+
+test_that("process_sinan resolves both chikungunya classification domains", {
+  archives <- create_sinan_tabwin_fixtures()
+  on.exit(unlink(unlist(archives)), add = TRUE)
+  downloads <- 0L
+  local_mocked_bindings(
+    .datasus_download_file = function(
+      url,
+      destination,
+      timeout,
+      quiet = FALSE
+    ) {
+      downloads <<- downloads + 1L
+      source <- if (grepl("ONLINE", url, fixed = TRUE)) {
+        archives[["online"]]
+      } else {
+        archives[["net"]]
+      }
+      file.copy(source, destination)
+      invisible(destination)
+    },
+    .package = "microdatasus"
+  )
+  microdatasus:::.tabwin_clear_cache()
+  on.exit(restore_empty_tabwin_cache(), add = TRUE)
+
+  result <- process_sinan(
+    data.frame(CLASSI_FIN = c("1", "2", "8", "5", "13")),
+    information_system = "SINAN-FEBRE-DE-CHIKUNGUNYA",
+    municipality_data = FALSE,
+    diagnostics = TRUE
+  )
+
+  expect_s3_class(result[["CLASSI_FIN"]], "factor")
+  expect_identical(
+    as.character(result[["CLASSI_FIN"]]),
+    c(
+      "Confirmado historico", "Descartado historico",
+      "Inconclusivo historico", "Descartado atual", "Chikungunya"
+    )
+  )
+  report <- processing_diagnostics(result)
+  expect_false("CLASSI_FIN" %in% report[["unmapped_fields"]])
+  expect_false("CLASSI_FIN" %in% report[["unknown_codes"]][["field"]])
+  expect_setequal(
+    report[["dictionaries"]][["information_system"]],
+    c("SINAN-FEBRE-DE-CHIKUNGUNYA", "SINAN-FEBRE-TIFOIDE")
+  )
+  expect_equal(downloads, 2L)
 })
 
 test_that("SINAN date roles use content and accept legacy date syntax", {

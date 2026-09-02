@@ -173,6 +173,8 @@
 #' use and cached for the rest of the R session. When DataSUS publishes no
 #' disease-specific DEF, the official `NotIndiviNet.def` supplies labels for
 #' common notification fields; unmapped disease-specific codes remain visible.
+#' Historical chikungunya records that use the former generic classification
+#' domain additionally reuse its official relation from `TAB_SINANNET.zip`.
 #'
 #' @param data A data frame returned by [fetch_datasus()] for a supported SINAN
 #'   file family, or another data frame with a compatible layout.
@@ -255,6 +257,29 @@ process_sinan <- function(
     types
   )
 
+  # The 2014 chikungunya DBC mixes the current Classchik domain (5/13) with
+  # the earlier generic SINAN classification domain (1/2/8). Classifi.cnv is
+  # still published in the SINAN Net archive and defines those legacy codes.
+  chik_classification <- character()
+  legacy_chik_rows <- integer()
+  current_chik_rows <- integer()
+  if (identical(information_system, "SINAN-FEBRE-DE-CHIKUNGUNYA")) {
+    chik_classification <- .process_find_fields(result, "CLASSI_FIN")
+    if (length(chik_classification)) {
+      values <- trimws(as.character(result[[chik_classification[[1L]]]]))
+      legacy_chik_rows <- which(values %in% c("1", "2", "8"))
+    }
+  }
+  if (length(legacy_chik_rows)) {
+    current_chik_rows <- setdiff(seq_len(nrow(result)), legacy_chik_rows)
+    categorical_fields <- categorical_fields[
+      toupper(categorical_fields) != "CLASSI_FIN"
+    ]
+    legacy_chik_dictionary <- fetch_tabwin_dictionary(
+      "SINAN-FEBRE-TIFOIDE"
+    )
+  }
+
   cli::cli_alert_info(
     "Starting {.strong {information_system}} data pre-processing..."
   )
@@ -276,6 +301,26 @@ process_sinan <- function(
     labels = labels,
     collector = collector
   )
+  if (length(legacy_chik_rows)) {
+    if (length(current_chik_rows)) {
+      result <- .process_apply_dictionary(
+        result,
+        dictionary,
+        chik_classification,
+        rows = current_chik_rows,
+        labels = labels,
+        collector = collector
+      )
+    }
+    result <- .process_apply_dictionary(
+      result,
+      legacy_chik_dictionary,
+      chik_classification,
+      rows = legacy_chik_rows,
+      labels = labels,
+      collector = collector
+    )
+  }
 
   municipality_fields <- .sinan_municipality_fields(result)
   result <- .process_normalize_code_fields(result, municipality_fields)

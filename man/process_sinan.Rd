@@ -45,6 +45,8 @@ families supported by \code{\link[=fetch_datasus]{fetch_datasus()}}. The corresp
 use and cached for the rest of the R session. When DataSUS publishes no
 disease-specific DEF, the official \code{NotIndiviNet.def} supplies labels for
 common notification fields; unmapped disease-specific codes remain visible.
+Historical chikungunya records that use the former generic classification
+domain additionally reuse its official relation from \code{TAB_SINANNET.zip}.
 }
 \examples{
 \dontshow{if (interactive() && curl::has_internet()) withAutoprint(\{ # examplesIf}
