@@ -340,6 +340,75 @@ test_that("CNV parser reads labels, aliases, and numeric ranges", {
   )
 })
 
+test_that("CNV parser reads an unambiguously structured DBF by content", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  foreign::write.dbf(
+    data.frame(
+      SEQ = c(1, 2, 10),
+      DESCR = c("Micro 1", "Micro 2", "Micro 10"),
+      CMICRO = c(1, 2, 10),
+      stringsAsFactors = FALSE
+    ),
+    path
+  )
+  unlink(path)
+  expect_true(file.rename(paste0(tools::file_path_sans_ext(path), ".dbf"), path))
+
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+
+  expect_identical(conversion$source_format, "dbf")
+  expect_identical(conversion$dbf_key_fields, c("SEQ", "CMICRO"))
+  expect_identical(conversion$dbf_label_fields, "DESCR")
+  expect_identical(conversion$code_width, 2L)
+  expect_identical(
+    unname(conversion$map[c("01", "02", "10")]),
+    c("Micro 1", "Micro 2", "Micro 10")
+  )
+})
+
+test_that("binary CNV inference rejects ambiguous DBF columns", {
+  ambiguous_key <- tempfile(fileext = ".CNV")
+  ambiguous_label <- tempfile(fileext = ".CNV")
+  on.exit(unlink(c(ambiguous_key, ambiguous_label)), add = TRUE)
+  foreign::write.dbf(
+    data.frame(
+      SEQ = 1:3, OTHER = 4:6,
+      DESCR = c("One", "Two", "Three"),
+      stringsAsFactors = FALSE
+    ),
+    ambiguous_key
+  )
+  unlink(ambiguous_key)
+  expect_true(file.rename(
+    paste0(tools::file_path_sans_ext(ambiguous_key), ".dbf"), ambiguous_key
+  ))
+  foreign::write.dbf(
+    data.frame(
+      SEQ = 1:3,
+      DESCR = c("One", "Two", "Three"),
+      OTHER = c("First", "Second", "Third"),
+      stringsAsFactors = FALSE
+    ),
+    ambiguous_label
+  )
+  unlink(ambiguous_label)
+  expect_true(file.rename(
+    paste0(tools::file_path_sans_ext(ambiguous_label), ".dbf"), ambiguous_label
+  ))
+
+  expect_error(
+    microdatasus:::.tabwin_parse_cnv(ambiguous_key),
+    "no unique, unambiguous numeric code field",
+    class = "microdatasus_dictionary_invalid_error"
+  )
+  expect_error(
+    microdatasus:::.tabwin_parse_cnv(ambiguous_label),
+    "no unique, unambiguous label field",
+    class = "microdatasus_dictionary_invalid_error"
+  )
+})
+
 test_that("literal CNV codes can span adjacent physical DBF fields", {
   path <- tempfile(fileext = ".CNV")
   on.exit(unlink(path), add = TRUE)

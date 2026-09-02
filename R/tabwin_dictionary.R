@@ -1467,7 +1467,176 @@
   )
 }
 
+.tabwin_is_dbf_content <- function(path) {
+  size <- file.info(path)$size
+  if (is.na(size) || size < 33L) return(FALSE)
+  header <- readBin(path, what = "raw", n = 32L)
+  if (length(header) != 32L) return(FALSE)
+
+  version <- as.integer(header[[1L]])
+  supported_versions <- c(
+    0x02L, 0x03L, 0x04L, 0x05L, 0x30L, 0x31L, 0x32L,
+    0x43L, 0x63L, 0x83L, 0x8bL, 0xcbL, 0xf5L, 0xfbL
+  )
+  if (!version %in% supported_versions) return(FALSE)
+
+  little_endian <- function(bytes) {
+    sum(as.integer(bytes) * 256^(seq_along(bytes) - 1L))
+  }
+  records <- little_endian(header[5:8])
+  header_length <- little_endian(header[9:10])
+  record_length <- little_endian(header[11:12])
+  is.finite(records) && records >= 0L &&
+    header_length >= 33L && header_length <= size &&
+    (header_length - 1L) %% 32L == 0L &&
+    record_length >= 1L &&
+    header_length + records * record_length <= size
+}
+
+.tabwin_unique_vectors <- function(values) {
+  unique_values <- list()
+  for (value in values) {
+    seen <- length(unique_values) && any(vapply(
+      unique_values, identical, logical(1), y = value
+    ))
+    if (!seen) unique_values[[length(unique_values) + 1L]] <- value
+  }
+  unique_values
+}
+
+.tabwin_parse_dbf_cnv <- function(path) {
+  table <- tryCatch(
+    suppressMessages(foreign::read.dbf(path, as.is = TRUE)),
+    error = function(error) {
+      .tabwin_abort(c(
+        "Binary TabWin conversion {.file {basename(path)}} is not a valid DBF.",
+        "i" = conditionMessage(error)
+      ), "microdatasus_dictionary_invalid_error")
+    }
+  )
+  if (!nrow(table) || ncol(table) < 2L) {
+    .tabwin_abort(
+      "Binary TabWin conversion {.file {basename(path)}} has no usable code-label rows.",
+      "microdatasus_dictionary_invalid_error"
+    )
+  }
+
+  numeric_candidates <- which(vapply(table, function(value) {
+    is.numeric(value) && !anyNA(value) && all(is.finite(value)) &&
+      all(value >= 0) && all(value == floor(value)) &&
+      !anyDuplicated(value)
+  }, logical(1)))
+  numeric_values <- lapply(numeric_candidates, function(index) {
+    format(table[[index]], scientific = FALSE, trim = TRUE)
+  })
+  distinct_numeric <- .tabwin_unique_vectors(numeric_values)
+  if (length(distinct_numeric) != 1L) {
+    .tabwin_abort(
+      "Binary TabWin conversion {.file {basename(path)}} has no unique, unambiguous numeric code field.",
+      "microdatasus_dictionary_invalid_error"
+    )
+  }
+  key_matches <- vapply(
+    numeric_values, identical, logical(1), y = distinct_numeric[[1L]]
+  )
+  key_indices <- numeric_candidates[key_matches]
+
+  label_candidates <- which(vapply(table, function(value) {
+    if (!is.character(value)) return(FALSE)
+    value <- trimws(value)
+    all(!is.na(value) & nzchar(value)) && !anyDuplicated(value) &&
+      any(grepl("[^0-9]", value))
+  }, logical(1)))
+  label_values <- lapply(label_candidates, function(index) {
+    trimws(table[[index]])
+  })
+  distinct_labels <- .tabwin_unique_vectors(label_values)
+  if (length(distinct_labels) != 1L) {
+    .tabwin_abort(
+      "Binary TabWin conversion {.file {basename(path)}} has no unique, unambiguous label field.",
+      "microdatasus_dictionary_invalid_error"
+    )
+  }
+  label_matches <- vapply(
+    label_values, identical, logical(1), y = distinct_labels[[1L]]
+  )
+  label_indices <- label_candidates[label_matches]
+  label_index <- label_indices[[1L]]
+
+  metadata <- .tabwin_dbf_encoding(path)
+  cp850_rows <- .tabwin_dbf_cp850_rows(table, metadata, path)
+  labels <- trimws(.tabwin_decode_dbf_values(
+    table[[label_index]], metadata,
+    sprintf("TabWin DBF label field %s", sQuote(names(table)[[label_index]])),
+    path, cp850_rows
+  ))
+  if (anyNA(labels) || any(!nzchar(labels)) || anyDuplicated(labels)) {
+    .tabwin_abort(
+      "Binary TabWin conversion {.file {basename(path)}} has invalid or ambiguous labels after decoding.",
+      "microdatasus_dictionary_invalid_error"
+    )
+  }
+
+  raw_codes <- distinct_numeric[[1L]]
+  code_width <- max(nchar(raw_codes, type = "chars"))
+  if (!is.finite(code_width) || code_width < 1L || code_width > 15L) {
+    .tabwin_abort(
+      "Binary TabWin conversion {.file {basename(path)}} has an unsupported code width.",
+      "microdatasus_dictionary_invalid_error"
+    )
+  }
+  codes <- sprintf(paste0("%0", code_width, "s"), raw_codes)
+  codes <- chartr(" ", "0", codes)
+  if (anyDuplicated(codes)) {
+    .tabwin_abort(
+      "Binary TabWin conversion {.file {basename(path)}} has duplicate normalized codes.",
+      "microdatasus_dictionary_invalid_error"
+    )
+  }
+
+  source_order <- seq_along(codes)
+  categories <- data.frame(
+    sequence = as.character(source_order),
+    subtotal = rep("", length(codes)),
+    label = labels,
+    source_order = source_order,
+    label_conflict = rep(FALSE, length(codes)),
+    stringsAsFactors = FALSE
+  )
+  map <- stats::setNames(labels, codes)
+  map_priority <- stats::setNames(source_order, codes)
+  structure(
+    list(
+      type = "cnv", dialect = "", mode = "",
+      code_width = code_width, declared_code_width = code_width,
+      recovered_code_width = FALSE,
+      category_count = length(codes),
+      observed_category_count = length(codes),
+      category_count_mismatch = FALSE,
+      categories = categories, levels = labels,
+      source_encoding = metadata$encoding, tabs_recovered = 0L,
+      embedded_header = FALSE, compact_code_rows = 0L,
+      overflow_code_rows = 0L, recovered_concatenated_ranges = 0L,
+      repaired_code_tokens = 0L, placeholder_code_tokens = 0L,
+      discarded_code_tokens = 0L, truncated_code_tokens = 0L,
+      recovered_numeric_collision_codes = 0L, recovered_sequence = 0L,
+      recovered_leading_sequence = 0L,
+      trailing_delimiter_padding_rows = 0L,
+      map = map, map_priority = map_priority,
+      ranges = .tabwin_empty_ranges(),
+      thresholds = .tabwin_empty_thresholds(),
+      normalized_collisions = 0L, source_format = "dbf",
+      dbf_key_fields = names(table)[key_indices],
+      dbf_label_fields = names(table)[label_indices]
+    ),
+    class = "microdatasus_tabwin_conversion"
+  )
+}
+
 .tabwin_parse_cnv <- function(path) {
+  if (.tabwin_is_dbf_content(path)) {
+    return(.tabwin_parse_dbf_cnv(path))
+  }
   lines <- .tabwin_read_text(path)
   source_encoding <- attr(lines, "encoding")
   tabs_recovered <- attr(lines, "tabs_recovered")
@@ -1836,7 +2005,7 @@
   )
 }
 
-.tabwin_parser_version <- 24L
+.tabwin_parser_version <- 25L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {
