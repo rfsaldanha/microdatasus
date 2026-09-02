@@ -48,3 +48,43 @@ jobs:
         with:
           upload-snapshots: true
           build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
+
+      # Artifact downloads require authentication. Publish only sanitized
+      # failure identifiers (never arbitrary log contents) so platform-only
+      # failures can still be diagnosed through public check annotations.
+      - name: Surface sanitized Windows check diagnostics
+        if: failure() && runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $patterns = @(
+            '^\* checking .* (ERROR|WARNING|NOTE)$',
+            '^Status: ',
+            '^── (Failure|Error)',
+            '^══ Failed',
+            '^\[ FAIL ',
+            '^ERROR:',
+            '(?i)fatal error',
+            '(?i)error C[0-9]+',
+            '(?i)undefined reference',
+            '(?i)ld\.exe:',
+            '(?i)make(\.exe)?: \*\*\*'
+          )
+          $diagnostics = Get-ChildItem -Path check -Recurse -File `
+            -ErrorAction SilentlyContinue | Where-Object {
+              $_.Name -in @('00check.log', '00install.out', 'testthat.Rout') -or
+                $_.Name -like '*.Rout.fail'
+            }
+          $matches = foreach ($diagnostic in $diagnostics) {
+            Select-String -Path $diagnostic.FullName -Pattern $patterns |
+              ForEach-Object { "$(Split-Path $_.Path -Leaf):$($_.LineNumber): $($_.Line)" }
+          }
+          $matches = @($matches | Select-Object -Last 80)
+          if (-not $matches) {
+            $matches = @('R CMD check failed, but no sanitized diagnostic pattern matched.')
+          }
+          $message = ($matches -join "`n")
+          $message = $message.Replace($env:GITHUB_WORKSPACE, '<workspace>')
+          $message = $message -replace '(?i)(token|password|secret|authorization)[=: ]+\S+', '$1=<redacted>'
+          $message = $message -replace 'https?://\S+', '<url>'
+          $message = $message.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+          Write-Output "::error title=Sanitized Windows R CMD check diagnostic::$message"
