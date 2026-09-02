@@ -30,6 +30,7 @@
 .sim_dictionary_aliases <- c(
   "OCUPACAO" = "OCUP",
   "OCUPPAI" = "OCUP",
+  "OCUPMAE" = "OCUP",
   "INSTRUCAO" = "ESC",
   "INSTRPAI" = "ESC",
   "INSTRMAE" = "ESCMAE",

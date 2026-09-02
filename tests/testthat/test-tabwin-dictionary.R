@@ -9,6 +9,7 @@ create_tabwin_fixture <- function() {
     "XSexo, SEXO, 1, SEXO.CNV",
     ";XRaca antiga, RACACOR, 1, OLD.CNV",
     "XRaca Cor, RACACOR, 1, RACACOR.CNV",
+    "XOcupacao antiga, OCUP, 1, OCUPGRP.CNV",
     "XEstabelecimento, CODESTAB, DESCESTAB, CNES26.DBF"
   )
   write_tabwin_text(
@@ -43,6 +44,14 @@ create_tabwin_fixture <- function() {
       tabwin_cnv_line(4, "Amar", "3"),
       tabwin_cnv_line(5, "Parda", "4"),
       tabwin_cnv_line(6, "Indig", "5")
+    )
+  )
+  write_tabwin_text(
+    file.path(tabdo, "OCUPGRP.CNV"),
+    c(
+      "2 3",
+      tabwin_cnv_line(1, "Dona de casa", "008"),
+      tabwin_cnv_line(2, "Trabalhador agropecuario", "621")
     )
   )
   foreign::write.dbf(
@@ -110,7 +119,7 @@ test_that("DEF parser reads active CNV metadata without commented entries", {
   expect_s3_class(dictionary, "microdatasus_tabwin_dictionary")
   expect_setequal(
     dictionary$definitions$field,
-    c("TIPOBITO", "SEXO", "RACACOR", "CODESTAB")
+    c("TIPOBITO", "SEXO", "RACACOR", "OCUP", "CODESTAB")
   )
   expect_false("OLD.CNV" %in% dictionary$definitions$file)
   expect_equal(downloads, 1L)
@@ -815,6 +824,37 @@ test_that("process_sim handles every SIM type and legacy numeric names", {
     )))
   }
   expect_equal(downloads, 1L)
+})
+
+test_that("process_sim uses the historical occupation domain for OCUPMAE", {
+  archive <- create_tabwin_fixture()
+  on.exit(unlink(archive), add = TRUE)
+  local_mocked_bindings(
+    .datasus_download_file = function(
+      url,
+      destination,
+      timeout,
+      quiet = FALSE
+    ) {
+      file.copy(archive, destination)
+      invisible(destination)
+    },
+    .package = "microdatasus"
+  )
+  microdatasus:::.tabwin_clear_cache()
+  on.exit(restore_empty_tabwin_cache(), add = TRUE)
+
+  result <- process_sim(
+    data.frame(OCUPMAE = c("008", "621")),
+    municipality_data = FALSE,
+    information_system = "SIM-DOFET",
+    labels = "character"
+  )
+
+  expect_identical(
+    result$OCUPMAE,
+    c("Dona de casa", "Trabalhador agropecuario")
+  )
 })
 
 test_that("process_sim rejects unsupported SIM data types", {
