@@ -290,14 +290,23 @@ test_that("SINAN date roles use content and accept legacy date syntax", {
   data <- data.frame(
     TRATAMENTO = c("1", "4"),
     DTRATA = c("20240101", "20240102"),
+    ANT_DT_ACI = c("2024-01-03", "2024-01-04"),
+    COLETAMARC = c("2024-01-05", "2024-01-06"),
+    SEM_PRI = c("012024", "022024"),
     EXISTING = existing_date,
     stringsAsFactors = FALSE
+  )
+  attr(data, "dbf_field_types") <- c(
+    TRATAMENTO = "C", DTRATA = "C", ANT_DT_ACI = "D",
+    COLETAMARC = "D", SEM_PRI = "D", EXISTING = "C"
   )
 
   types <- microdatasus:::.sinan_type_fields(data, list())
 
-  expect_false("TRATAMENTO" %in% types$date)
-  expect_true(all(c("DTRATA", "EXISTING") %in% types$date))
+  expect_false(any(c("TRATAMENTO", "SEM_PRI") %in% types$date))
+  expect_true(all(c(
+    "DTRATA", "ANT_DT_ACI", "COLETAMARC", "EXISTING"
+  ) %in% types$date))
 
   collector <- microdatasus:::.process_diagnostic_collector(
     TRUE, "SINAN-TEST", data.frame(DATE = character())

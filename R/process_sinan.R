@@ -37,6 +37,18 @@
   # authoritative and must never be passed to a categorical CNV conversion.
   date_aliases <- c("PARASITO", "RESUL_HIS", "TRATAMENTO", "DEXAME", "DTRATA")
   existing_dates <- vapply(data, inherits, logical(1), "Date")
+  physical_types <- attr(data, "dbf_field_types", exact = TRUE)
+  physical_dates <- if (is.null(physical_types)) {
+    character()
+  } else {
+    physical_field_types <- toupper(unname(physical_types[fields]))
+    # SEM_PRI is a WWYYYY epidemiological-week key. Two official SDTA
+    # layouts declare it as DBF D, while the newer layout declares it as N.
+    fields[
+      !is.na(physical_field_types) & physical_field_types == "D" &
+        upper != "SEM_PRI"
+    ]
+  }
   alias_dates <- vapply(seq_along(fields), function(index) {
     if (!upper[[index]] %in% date_aliases || existing_dates[[index]]) {
       return(FALSE)
@@ -55,7 +67,8 @@
     ))
   }, logical(1))
   date_fields <- fields[
-    grepl("^DT(_|[A-Z])", upper) |
+    grepl("DT|DATA", upper) |
+      fields %in% physical_dates |
       alias_dates |
       existing_dates
   ]
