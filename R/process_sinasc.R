@@ -14,6 +14,14 @@
   "TIPO_PARTO", "PRE_NATAL", "INSTR_MAE"
 )
 
+.sinasc_modern_marker_fields <- c(
+  "DTNASC", "LOCNASC", "CODMUNRES", "GRAVIDEZ", "ESCMAE"
+)
+
+.sinasc_legacy_marker_fields <- c(
+  "DATA_NASC", "LOCAL_OCOR", "MUNI_MAE", "TIPO_GRAV", "INSTR_MAE"
+)
+
 # Counts and measurements are standardized as integer rather than categorical
 # labels, even when the DEF also offers analytical groupings for TabWin.
 .sinasc_integer_fields <- c(
@@ -38,6 +46,15 @@
   "FIL_MORTOS" = "99",
   "FIL_ABORT" = "99"
 )
+
+.sinasc_rows_with_values <- function(data, fields) {
+  rows <- rep(FALSE, nrow(data))
+  for (field in .process_find_fields(data, fields)) {
+    value <- trimws(as.character(data[[field]]))
+    rows <- rows | (!is.na(value) & nzchar(value))
+  }
+  which(rows)
+}
 
 #' Prepare SINASC live-birth microdata
 #'
@@ -92,43 +109,58 @@ process_sinasc <- function(
   collector <- .process_diagnostic_collector(diagnostics, "SINASC", result)
   result <- .process_normalize_text(result)
 
-  # Shared names such as SEXO exist in both layouts, so use layout-exclusive
-  # markers to decide which official dictionary is required.
-  modern_layout <- length(.process_find_fields(
-    result,
-    c("DTNASC", "LOCNASC", "CODMUNRES", "GRAVIDEZ", "ESCMAE")
-  )) > 0L
-  legacy_layout <- length(.process_find_fields(
-    result,
-    c("DATA_NASC", "LOCAL_OCOR", "MUNI_MAE", "TIPO_GRAV", "INSTR_MAE")
-  )) > 0L
-  modern_fields <- if (modern_layout) {
+  # Shared names such as SEXO and GESTACAO have period-specific domains.
+  # Layout-exclusive columns identify the applicable dictionary per row in
+  # data sets assembled across periods.
+  modern_markers <- .process_find_fields(
+    result, .sinasc_modern_marker_fields
+  )
+  legacy_markers <- .process_find_fields(
+    result, .sinasc_legacy_marker_fields
+  )
+  modern_layout <- length(modern_markers) > 0L
+  legacy_layout <- length(legacy_markers) > 0L
+  if (modern_layout && !legacy_layout) {
+    modern_rows <- seq_len(nrow(result))
+    legacy_rows <- integer()
+  } else if (legacy_layout && !modern_layout) {
+    modern_rows <- integer()
+    legacy_rows <- seq_len(nrow(result))
+  } else {
+    legacy_rows <- .sinasc_rows_with_values(
+      result, .sinasc_legacy_marker_fields
+    )
+    modern_rows <- setdiff(
+      .sinasc_rows_with_values(result, .sinasc_modern_marker_fields),
+      legacy_rows
+    )
+  }
+  modern_fields <- if (length(modern_rows)) {
     .process_find_fields(result, .sinasc_categorical_fields)
   } else {
     character()
   }
-  legacy_fields <- if (legacy_layout) {
+  legacy_fields <- if (length(legacy_rows)) {
     .process_find_fields(result, .sinasc_legacy_categorical_fields)
   } else {
     character()
   }
-  if (modern_layout && legacy_layout) {
-    # In a row-bound cross-period data set, use the current dictionary for
-    # shared columns and the historical dictionary for legacy-only columns.
-    legacy_fields <- legacy_fields[
-      !toupper(legacy_fields) %in% .sinasc_categorical_fields
-    ]
-  }
 
   # Download dictionaries before announcing preprocessing so the lifecycle
   # messages follow any "Cached..." messages shown to the user.
+  dictionaries <- list()
+  dictionary_rows <- list()
   if (length(modern_fields) &&
       (!identical(labels, "none") || diagnostics)) {
-    modern_dictionary <- fetch_tabwin_dictionary("SINASC")
+    dictionaries[["SINASC"]] <- fetch_tabwin_dictionary("SINASC")
+    dictionary_rows[["SINASC"]] <- modern_rows
   }
   if (length(legacy_fields) &&
       (!identical(labels, "none") || diagnostics)) {
-    legacy_dictionary <- fetch_tabwin_dictionary("SINASC-1994-1995")
+    dictionaries[["SINASC-1994-1995"]] <- fetch_tabwin_dictionary(
+      "SINASC-1994-1995"
+    )
+    dictionary_rows[["SINASC-1994-1995"]] <- legacy_rows
   }
 
   cli::cli_alert_info(
@@ -160,22 +192,12 @@ process_sinasc <- function(
     result[[field]] <- .process_as_integer(result[[field]], missing, collector, field)
   }
 
-  if (length(modern_fields) &&
-      (!identical(labels, "none") || diagnostics)) {
-    result <- .process_apply_dictionary(
+  if (length(dictionaries)) {
+    result <- .process_apply_dictionaries(
       result,
-      modern_dictionary,
-      modern_fields,
-      labels = labels,
-      collector = collector
-    )
-  }
-  if (length(legacy_fields) &&
-      (!identical(labels, "none") || diagnostics)) {
-    result <- .process_apply_dictionary(
-      result,
-      legacy_dictionary,
-      legacy_fields,
+      dictionaries,
+      unique(c(modern_fields, legacy_fields)),
+      dictionary_rows = dictionary_rows,
       labels = labels,
       collector = collector
     )

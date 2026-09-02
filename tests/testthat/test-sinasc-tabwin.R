@@ -8,6 +8,7 @@ create_sinasc_tabwin_fixture <- function(legacy = FALSE) {
       "Anasc*.db?",
       "XLocal nascimento, LOCAL_OCOR, 1, LOCAL.CNV",
       "XSexo, SEXO, 1, SEXO.CNV",
+      "XGestacao, GESTACAO, 1, GESTACAO.CNV",
       "XTipo gravidez, TIPO_GRAV, 1, GRAVIDEZ.CNV"
     )
     definition_name <- "NASC.DEF"
@@ -16,7 +17,8 @@ create_sinasc_tabwin_fixture <- function(legacy = FALSE) {
       "Adn*.db?",
       "XOrigem, ORIGEM, 1, ORIGEM.CNV",
       "XLocal nascimento, LOCNASC, 1, LOCAL.CNV",
-      "XSexo, SEXO, 1, SEXO.CNV"
+      "XSexo, SEXO, 1, SEXO.CNV",
+      "XGestacao, GESTACAO, 1, GESTACAO.CNV"
     )
     definition_name <- "NASCIDO.def"
   }
@@ -46,6 +48,23 @@ create_sinasc_tabwin_fixture <- function(legacy = FALSE) {
       tabwin_cnv_line(1, "Masculino", "1"),
       tabwin_cnv_line(2, "Feminino", "2")
     )
+  )
+  gestation <- if (legacy) {
+    c(
+      "6 1",
+      tabwin_cnv_line(6, "Ignorado", "0-9"),
+      tabwin_cnv_line(4, "37-41 semanas", "4")
+    )
+  } else {
+    c(
+      "11 1 L",
+      tabwin_cnv_line(4, "32-36 semanas", "4"),
+      tabwin_cnv_line(9, "Ignorado", "0,9")
+    )
+  }
+  write_tabwin_text(
+    file.path(tabwin, "GESTACAO.CNV"),
+    gestation
   )
   write_tabwin_text(
     file.path(tabwin, "GRAVIDEZ.CNV"),
@@ -192,4 +211,59 @@ test_that("process_sinasc labels and types the 1994-1995 layout", {
   )
   expect_identical(as.character(result$SEXO), c("Masculino", "Feminino"))
   expect_identical(as.character(result$TIPO_GRAV), c("Unica", "Multipla"))
+})
+
+test_that("process_sinasc applies period-specific dictionaries by row", {
+  modern_archive <- create_sinasc_tabwin_fixture()
+  legacy_archive <- create_sinasc_tabwin_fixture(legacy = TRUE)
+  on.exit(unlink(c(modern_archive, legacy_archive)), add = TRUE)
+  downloads <- 0L
+  local_mocked_bindings(
+    .datasus_download_file = function(
+      url,
+      destination,
+      timeout,
+      quiet = FALSE
+    ) {
+      downloads <<- downloads + 1L
+      archive <- if (grepl("Ate_1995", url, fixed = TRUE)) {
+        legacy_archive
+      } else {
+        modern_archive
+      }
+      file.copy(archive, destination)
+      invisible(destination)
+    },
+    .package = "microdatasus"
+  )
+  microdatasus:::.tabwin_clear_cache()
+  on.exit(restore_empty_tabwin_cache(), add = TRUE)
+
+  result <- process_sinasc(
+    data.frame(
+      DATA_NASC = c("19940101", NA),
+      DTNASC = c(NA, "01012024"),
+      LOCAL_OCOR = c("1", NA),
+      LOCNASC = c(NA, "1"),
+      SEXO = c("1", "1"),
+      GESTACAO = c("4", "4"),
+      stringsAsFactors = FALSE
+    ),
+    municipality_data = FALSE
+  )
+
+  expect_equal(downloads, 2L)
+  expect_true(is.factor(result$GESTACAO))
+  expect_identical(
+    as.character(result$GESTACAO),
+    c("37-41 semanas", "32-36 semanas")
+  )
+  expect_identical(
+    as.character(result$DATA_NASC),
+    c("1994-01-01", NA)
+  )
+  expect_identical(
+    as.character(result$DTNASC),
+    c(NA, "2024-01-01")
+  )
 })
