@@ -293,6 +293,40 @@ test_that("physical DEF reconstruction is chosen only when coverage improves", {
   expect_identical(equipment_values, "0221")
 })
 
+test_that("physical DEF reconstruction preserves numeric right padding", {
+  definition <- data.frame(position = 1L)
+  conversion <- list(
+    type = "cnv", mode = "", code_width = 3L,
+    map = c("100" = "One hundred")
+  )
+  data <- data.frame(CODE = "1", stringsAsFactors = FALSE)
+  attr(data, "dbf_field_types") <- c(CODE = "C")
+  attr(data, "dbf_field_widths") <- c(CODE = 3L)
+
+  values <- microdatasus:::.tabwin_definition_values(
+    data, "CODE", definition, conversion, data$CODE
+  )
+
+  expect_identical(values, "1  ")
+})
+
+test_that("physical DEF reconstruction does not truncate complete DBF keys", {
+  definition <- data.frame(position = NA_integer_)
+  conversion <- list(
+    type = "dbf", mode = "", code_width = 4L,
+    map = c("3200" = "Regional")
+  )
+  data <- data.frame(ID_RG_RESI = "32002", stringsAsFactors = FALSE)
+  attr(data, "dbf_field_types") <- c(ID_RG_RESI = "C")
+  attr(data, "dbf_field_widths") <- c(ID_RG_RESI = 5L)
+
+  values <- microdatasus:::.tabwin_definition_values(
+    data, "ID_RG_RESI", definition, conversion, data$ID_RG_RESI
+  )
+
+  expect_identical(values, "32002")
+})
+
 test_that("specific CNV categories override earlier catch-all ranges", {
   path <- tempfile(fileext = ".CNV")
   on.exit(unlink(path), add = TRUE)

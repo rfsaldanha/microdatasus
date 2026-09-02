@@ -1029,8 +1029,9 @@
     1L
   }
   required <- position + conversion$code_width - 1L
-  if (widths[[start]] >= required) return(values)
-
+  if (identical(conversion$type, "dbf") && widths[[start]] >= required) {
+    return(values)
+  }
   cumulative <- cumsum(widths[seq.int(start, length(widths))])
   finish_offsets <- which(cumulative >= required)
   if (!length(finish_offsets)) return(values)
