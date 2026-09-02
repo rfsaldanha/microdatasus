@@ -117,13 +117,17 @@
   types,
   nome_proced,
   nome_ocupacao,
-  nome_equipe
+  nome_equipe,
+  aliases = character()
 ) {
   declared <- unique(unlist(lapply(
     dictionaries,
     function(dictionary) dictionary$definitions$field
   )))
-  fields <- .process_find_fields(data, setdiff(declared, toupper(types$protected)))
+  fields <- .process_find_fields(
+    data,
+    c(setdiff(declared, toupper(types$protected)), names(aliases))
+  )
   upper <- toupper(fields)
   if (!nome_proced) {
     fields <- fields[!grepl(
@@ -140,6 +144,37 @@
     fields <- fields[!grepl("(^|_)INE$|EQUI", upper)]
   }
   fields
+}
+
+.sia_dictionary_aliases <- function(data, dictionaries, types) {
+  if (!length(dictionaries)) return(character())
+  declared <- unique(unlist(lapply(
+    dictionaries,
+    function(dictionary) dictionary$definitions$field
+  )))
+  available <- toupper(names(data))
+  candidates <- setdiff(available, toupper(types$protected))
+  candidates <- setdiff(candidates, declared)
+  explicit <- c(
+    "AP_TPATEN" = "AP_TPATEND",
+    "AP_TPATEND" = "AP_TPATEN",
+    "AP_NATJUR" = "AP_NAT_JUR",
+    "AP_TPPRE" = "AP_TIPPRE",
+    "ATD_SEPERI" = "ATD_SEPERIA"
+  )
+  aliases <- character()
+
+  for (field in candidates) {
+    truncated <- declared[
+      nchar(declared, type = "bytes") > 10L &
+        substr(declared, 1L, 10L) == field
+    ]
+    documented <- unname(explicit[field])
+    documented <- documented[!is.na(documented)]
+    targets <- unique(intersect(c(truncated, documented), declared))
+    if (length(targets) == 1L) aliases[[field]] <- targets[[1L]]
+  }
+  aliases
 }
 
 .sia_add_age_fields <- function(data, information_system) {
@@ -284,13 +319,15 @@ process_sia <- function(
       }
     }
   }
+  aliases <- .sia_dictionary_aliases(result, dictionaries, types)
   categorical_fields <- .sia_dictionary_fields(
     result,
     dictionaries,
     types,
     nome_proced,
     nome_ocupacao,
-    nome_equipe
+    nome_equipe,
+    aliases
   )
 
   cli::cli_alert_info(
@@ -313,6 +350,7 @@ process_sia <- function(
     dictionaries,
     categorical_fields,
     dictionary_rows,
+    aliases = aliases,
     labels = labels,
     collector = collector
   )

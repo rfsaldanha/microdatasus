@@ -38,6 +38,12 @@ create_sia_tabwin_fixture <- function(period = "current") {
           "XDuplex previo, ACF_DUPLEX, 1, CNV/SIMNAO2.CNV"
         )
       }
+      if (identical(information_system, "SIA-AB")) {
+        lines <- c(
+          lines,
+          "XComorbidade, AB_PONTBARR, 1, CNV/P_BAROS.CNV"
+        )
+      }
       if (identical(information_system, "SIA-PA")) {
         lines <- c(
           lines,
@@ -105,6 +111,14 @@ create_sia_tabwin_fixture <- function(period = "current") {
         "2 1",
         tabwin_cnv_line(1, "Sim", "1"),
         tabwin_cnv_line(2, "Nao", "0")
+      )
+    )
+    write_tabwin_text(
+      file.path(root, "CNV", "P_BAROS.CNV"),
+      c(
+        "2 1 L",
+        tabwin_cnv_line(1, "Com comorbidade", "0"),
+        tabwin_cnv_line(2, "Sem comorbidade", "1")
       )
     )
   }
@@ -178,6 +192,68 @@ test_that("SIA categorical flags are not coerced to integers", {
   expect_false(any(c("AB_PONTBAR", "AQ_LINFIN", "AR_LINFIN") %in%
     types$integer))
   expect_true(all(c("PESO", "TABBARR") %in% types$integer))
+})
+
+test_that("SIA resolves documented physical DEF field names", {
+  dictionaries <- list(list(definitions = data.frame(
+    field = c(
+      "AB_PONTBARR", "AP_TPATEND", "AP_NAT_JUR",
+      "AP_TIPPRE", "ATD_SEPERIA"
+    ),
+    stringsAsFactors = FALSE
+  )))
+  data <- data.frame(
+    AB_PONTBAR = "0", AP_TPATEN = "1", AP_NATJUR = "1000",
+    AP_TPPRE = "40", ATD_SEPERI = "1", AP_DTOCOR = "20260101"
+  )
+  types <- microdatasus:::.sia_type_fields(data)
+
+  aliases <- microdatasus:::.sia_dictionary_aliases(
+    data, dictionaries, types
+  )
+
+  expect_identical(
+    aliases,
+    c(
+      "AB_PONTBAR" = "AB_PONTBARR",
+      "AP_TPATEN" = "AP_TPATEND",
+      "AP_NATJUR" = "AP_NAT_JUR",
+      "AP_TPPRE" = "AP_TIPPRE",
+      "ATD_SEPERI" = "ATD_SEPERIA"
+    )
+  )
+  expect_false("AP_DTOCOR" %in% names(aliases))
+})
+
+test_that("process_sia applies labels through physical DBF names", {
+  archive <- create_sia_tabwin_fixture()
+  on.exit(unlink(archive), add = TRUE)
+  local_mocked_bindings(
+    .datasus_download_file = function(url, destination, timeout, quiet = FALSE) {
+      file.copy(archive, destination)
+      invisible(destination)
+    },
+    .package = "microdatasus"
+  )
+  microdatasus:::.tabwin_clear_cache()
+  on.exit(restore_empty_tabwin_cache(), add = TRUE)
+
+  result <- process_sia(
+    data.frame(AB_PONTBAR = c("0", "1", "E")),
+    information_system = "SIA-AB",
+    municipality_data = FALSE,
+    diagnostics = TRUE
+  )
+
+  expect_s3_class(result$AB_PONTBAR, "factor")
+  expect_identical(
+    as.character(result$AB_PONTBAR),
+    c("Com comorbidade", "Sem comorbidade", "E")
+  )
+  expect_identical(
+    processing_diagnostics(result)$unknown_codes$code,
+    "E"
+  )
 })
 
 test_that("SIA nephrology measurements remain quantitative", {
