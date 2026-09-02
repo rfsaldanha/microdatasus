@@ -1387,8 +1387,13 @@
   label_present <- nzchar(key) & nzchar(labels)
   label_key <- key[label_present]
   label_value <- labels[label_present]
-  label_index <- match(unique_key, label_key)
-  first_label <- label_value[label_index]
+  # Repeated category rows update the category description in TabWin. Blank
+  # continuations retain it, while the last non-blank description wins. This
+  # is used by official tables that list members first and finish with the
+  # aggregate label (for example, individual procedures then "Partos normais").
+  reversed_index <- match(unique_key, rev(label_key))
+  label_index <- length(label_key) - reversed_index + 1L
+  last_label <- label_value[label_index]
 
   distinct_pair <- !duplicated(paste(label_key, label_value, sep = "\035"))
   distinct_count <- tabulate(
@@ -1398,7 +1403,7 @@
   categories <- data.frame(
     sequence = sequence[source_order],
     subtotal = subtotal[source_order],
-    label = first_label,
+    label = last_label,
     source_order = source_order,
     label_conflict = distinct_count > 1L,
     stringsAsFactors = FALSE
@@ -1831,7 +1836,7 @@
   )
 }
 
-.tabwin_parser_version <- 23L
+.tabwin_parser_version <- 24L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {

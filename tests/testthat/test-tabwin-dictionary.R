@@ -1166,6 +1166,30 @@ test_that("CNV continuations resolve labels by category sequence", {
                    c("Norte", "Sul", "Norte"))
 })
 
+test_that("CNV repeated categories use the last non-blank description", {
+  path <- tempfile(fileext = ".CNV")
+  on.exit(unlink(path), add = TRUE)
+  write_tabwin_text(path, c(
+    "2 1 L",
+    tabwin_cnv_line(1, "First member", "A"),
+    tabwin_cnv_line(2, "Other category", "B"),
+    tabwin_cnv_line(1, "Aggregate label", "C"),
+    tabwin_cnv_line(1, "", "D")
+  ))
+
+  conversion <- microdatasus:::.tabwin_parse_cnv(path)
+
+  expect_identical(
+    unname(conversion[["map"]][c("A", "B", "C", "D")]),
+    c("Aggregate label", "Other category", rep("Aggregate label", 2L))
+  )
+  expect_identical(
+    conversion[["categories"]][["label"]],
+    c("Aggregate label", "Other category")
+  )
+  expect_true(conversion[["categories"]][["label_conflict"]][[1L]])
+})
+
 test_that("CNV parser distinguishes literal and numeric padding", {
   literal <- tempfile(fileext = ".CNV")
   numeric <- tempfile(fileext = ".CNV")
