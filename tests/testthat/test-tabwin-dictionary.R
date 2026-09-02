@@ -1455,6 +1455,33 @@ test_that("CNV parser recovers narrow official layout inconformities", {
   expect_identical(embedded_conversion$recovered_leading_sequence, 1L)
 })
 
+test_that("CNV parser distinguishes blank codes from delimiter padding", {
+  blank <- tempfile(fileext = ".CNV")
+  padding <- tempfile(fileext = ".CNV")
+  on.exit(unlink(c(blank, padding)), add = TRUE)
+
+  write_tabwin_text(blank, c(
+    "1 4 L",
+    tabwin_cnv_line(1, "Blank literal", "    ,")
+  ))
+  write_tabwin_text(padding, c(
+    "1 4 L",
+    tabwin_cnv_line(1, "Heading", "----, ")
+  ))
+
+  blank_conversion <- microdatasus:::.tabwin_parse_cnv(blank)
+  padding_conversion <- microdatasus:::.tabwin_parse_cnv(padding)
+
+  expect_identical(
+    unname(blank_conversion$map[[strrep(" ", 4L)]]),
+    "Blank literal"
+  )
+  expect_false(strrep(" ", 4L) %in% names(padding_conversion$map))
+  expect_identical(unname(padding_conversion$map[["----"]]), "Heading")
+  expect_identical(blank_conversion$trailing_delimiter_padding_rows, 0L)
+  expect_identical(padding_conversion$trailing_delimiter_padding_rows, 1L)
+})
+
 test_that("CNV parser recovers codes displaced by overflowing descriptions", {
   overflow <- tempfile(fileext = ".CNV")
   trailing_junk <- tempfile(fileext = ".CNV")

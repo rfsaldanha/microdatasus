@@ -1446,6 +1446,17 @@
   label_lookup <- stats::setNames(categories$label, category_keys)
   row_category_keys <- .tabwin_category_key(sequence, subtotal)
   resolved_labels <- unname(label_lookup[row_category_keys])
+  # A comma followed only by physical line padding does not declare another
+  # code. Literal CNVs also use genuinely blank fixed-width codes, but publish
+  # those before a delimiter (`   ,`) or between delimiters (`,   ,`). Removing
+  # only padding after the final comma preserves that distinction.
+  trailing_delimiter_padding <- grepl(
+    ",[[:space:]]+$", code_text, perl = TRUE
+  )
+  code_text[trailing_delimiter_padding] <- sub(
+    ",[[:space:]]+$", ",", code_text[trailing_delimiter_padding],
+    perl = TRUE
+  )
   tokens <- strsplit(code_text, ",", fixed = TRUE)
   tokens <- lapply(tokens, function(values) {
     if (.tabwin_codes_are_literal(code_width, mode)) {
@@ -1505,7 +1516,8 @@
     truncated_code_tokens = 0L,
     recovered_numeric_collision_codes = 0L,
     recovered_sequence = recovered_sequence,
-    recovered_leading_sequence = recovered_leading_sequence
+    recovered_leading_sequence = recovered_leading_sequence,
+    trailing_delimiter_padding_rows = sum(trailing_delimiter_padding)
   )
 
   if (identical(mode, "F")) {
@@ -1712,7 +1724,7 @@
   )
 }
 
-.tabwin_parser_version <- 20L
+.tabwin_parser_version <- 21L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {
