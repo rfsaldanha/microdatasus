@@ -2106,7 +2106,7 @@
   )
 }
 
-.tabwin_parser_version <- 29L
+.tabwin_parser_version <- 30L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {
@@ -2481,7 +2481,10 @@
       function(value) length(unique(value[!is.na(value)])) > 1L,
       logical(1)
     ))
-    keep <- valid_codes & !duplicated(codes)
+    # TabWin resolves repeated related-table keys with the last physical
+    # record. This rule was confirmed by the author of the DEF/CNV formats and
+    # matches the precedence already used for repeated CNV codes.
+    keep <- valid_codes & !duplicated(codes, fromLast = TRUE)
     map <- labels[keep]
     names(map) <- codes[keep]
     conversion <- structure(
@@ -2499,7 +2502,7 @@
         recovered_label = recovered_label,
         duplicate_key_rows = duplicate_key_rows,
         conflicting_key_count = conflicting_key_count,
-        duplicate_key_policy = "first_physical_record",
+        duplicate_key_policy = "last_physical_record",
         fallback_key = fallback_key,
         recovered_key = recovered_key,
         requested_key_field = definition$field,

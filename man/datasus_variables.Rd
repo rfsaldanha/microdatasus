@@ -60,7 +60,8 @@ fallback, so severity is not confused with origin.
 Fallback is reported when an official two-column DBF renamed its sole
 description field while the DEF retained the previous name. DBFs with
 duplicate keys and conflicting labels are also explicit fallbacks: the
-first physical record is retained deterministically. Parsed relations
+last physical record is retained, following TabWin precedence. Parsed
+relations
 persist on disk when \code{cache_dir} is set, and completed result tables are
 reused during the R session.
 }

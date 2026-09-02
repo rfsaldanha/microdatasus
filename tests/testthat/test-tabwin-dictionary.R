@@ -2470,12 +2470,12 @@ test_that("duplicate DBF keys remain deterministic and auditable", {
   expect_identical(result$conversion$conflicting_key_count, 1L)
   expect_identical(
     result$conversion$duplicate_key_policy,
-    "first_physical_record"
+    "last_physical_record"
   )
   expect_identical(
-    result$conversion$map, c(`1` = "First", `2` = "Same")
+    result$conversion$map, c(`1` = "Second", `2` = "Same")
   )
-  expect_match(result$message, "first physical record")
+  expect_match(result$message, "last physical record")
 })
 
 test_that("dictionary inspection classifies structured relation failures", {
