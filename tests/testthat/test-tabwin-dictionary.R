@@ -1037,6 +1037,34 @@ test_that("process_sim decodes official legacy child-count sentinels", {
   expect_equal(sum(report$coercion_failures$n), 4L)
 })
 
+test_that("process_sim enforces the official birth-weight domain", {
+  result <- process_sim(
+    data.frame(
+      PESO = c("0000", "0001", "8000", "8001", "9999", "0 00", NA),
+      PESONASC = c("0000", "0001", "8000", "8001", "9999", "0 00", NA),
+      stringsAsFactors = FALSE
+    ),
+    municipality_data = FALSE,
+    labels = "none",
+    diagnostics = TRUE
+  )
+
+  expected <- c(NA_integer_, 1L, 8000L, NA_integer_, NA_integer_,
+                NA_integer_, NA_integer_)
+  expect_identical(result$PESO, expected)
+  expect_identical(result$PESONASC, expected)
+  report <- processing_diagnostics(result)
+  expect_setequal(
+    unique(report$coercion_failures$field),
+    c("PESO", "PESONASC")
+  )
+  expect_setequal(
+    unique(report$coercion_failures$value),
+    c("8001", "0 00")
+  )
+  expect_equal(sum(report$coercion_failures$n), 4L)
+})
+
 test_that("process_sim rejects unsupported SIM data types", {
   expect_error(
     process_sim(

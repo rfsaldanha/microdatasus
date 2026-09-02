@@ -96,6 +96,26 @@
   result
 }
 
+.sim_weight_fields <- c("PESO", "PESONASC")
+
+.sim_as_weight <- function(x, collector = NULL, field = NA_character_) {
+  source <- x
+  values <- trimws(as.character(x))
+  result <- suppressWarnings(as.integer(values))
+  # PESO.CNV defines 1--8000 g; zero and all larger codes are ignored.
+  invalid <- !is.na(result) & (result < 1L | result > 8000L)
+  result[invalid] <- NA_integer_
+  .process_record_coercion(
+    collector,
+    field,
+    "integer",
+    source,
+    result,
+    missing = c("0", "00", "000", "0000", "9999")
+  )
+  result
+}
+
 .sim_add_age_fields <- function(data) {
   if (!"IDADE" %in% names(data)) {
     return(data)
@@ -134,6 +154,8 @@
 #' Codes not covered by the applicable TabWin conversion are retained as
 #' factor levels instead of being silently discarded. Historical fields kept
 #' in early CID-10 fetal-death files use their original CID-9 definitions.
+#' Official numeric missing sentinels and out-of-domain measurements are
+#' returned as `NA`; malformed values are included in diagnostics.
 #'
 #' @param data A data frame returned by [fetch_datasus()] for a supported SIM
 #'   mortality type, or another data frame with a compatible layout.
@@ -236,6 +258,10 @@ process_sim <- function(
     ) {
       .sim_as_legacy_count(
         result[[field]], legacy_rows, collector = collector, field = field
+      )
+    } else if (toupper(field) %in% .sim_weight_fields) {
+      .sim_as_weight(
+        result[[field]], collector = collector, field = field
       )
     } else {
       .process_as_integer(

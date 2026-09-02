@@ -46,6 +46,8 @@ distinct and consistent types.
 Codes not covered by the applicable TabWin conversion are retained as
 factor levels instead of being silently discarded. Historical fields kept
 in early CID-10 fetal-death files use their original CID-9 definitions.
+Official numeric missing sentinels and out-of-domain measurements are
+returned as \code{NA}; malformed values are included in diagnostics.
 }
 \examples{
 \dontshow{if (interactive() && curl::has_internet()) withAutoprint(\{ # examplesIf}
