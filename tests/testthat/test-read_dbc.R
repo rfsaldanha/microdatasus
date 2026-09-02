@@ -252,6 +252,28 @@ test_that("read_dbc decodes CP1252 and skips invalid unselected text", {
   )
 })
 
+test_that("undefined CP1252 bytes are invalid on every iconv implementation", {
+  undefined <- c(0x81L, 0x8dL, 0x8fL, 0x90L, 0x9dL)
+  value <- vapply(undefined, function(byte) {
+    item <- rawToChar(as.raw(c(65L, byte, 66L)))
+    Encoding(item) <- "unknown"
+    item
+  }, character(1))
+
+  expect_true(all(microdatasus:::.dbc_undefined_source_rows(
+    value, "CP1252"
+  )))
+  expect_true(all(microdatasus:::.dbc_undefined_source_rows(
+    value, "windows-1252"
+  )))
+  expect_false(any(microdatasus:::.dbc_undefined_source_rows(
+    value, "latin1"
+  )))
+  expect_true(all(is.na(microdatasus:::.dbc_iconv_to_utf8(
+    value, "CP1252"
+  ))))
+})
+
 test_that("read_dbc detects CP850 and accepts an encoding override", {
   cp850 <- literal_dbc_fixture(
     fields = list(

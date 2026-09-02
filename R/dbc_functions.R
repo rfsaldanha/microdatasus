@@ -263,9 +263,37 @@
   resolved
 }
 
+.dbc_undefined_source_rows <- function(value, encoding) {
+  normalized <- if (length(encoding) == 1L && !is.na(encoding)) {
+    gsub("[^A-Z0-9]", "", toupper(encoding))
+  } else {
+    ""
+  }
+  undefined <- if (normalized %in% c("CP1252", "WINDOWS1252")) {
+    c(0x81L, 0x8dL, 0x8fL, 0x90L, 0x9dL)
+  } else {
+    integer()
+  }
+  if (!length(undefined)) return(rep(FALSE, length(value)))
+  vapply(value, function(item) {
+    !is.na(item) && any(as.integer(charToRaw(item)) %in% undefined)
+  }, logical(1))
+}
+
+.dbc_iconv_to_utf8 <- function(value, encoding) {
+  converted <- suppressWarnings(iconv(
+    value, from = encoding, to = "UTF-8", sub = NA
+  ))
+  # Windows iconv maps the five undefined CP1252 bytes to C1 controls, while
+  # GNU libiconv rejects them. Treat them as invalid source bytes everywhere so
+  # strict decoding and lossless automatic fallback are platform-independent.
+  converted[.dbc_undefined_source_rows(value, encoding)] <- NA_character_
+  converted
+}
+
 .dbc_decode_text <- function(value, encoding, context, file) {
   converted <- tryCatch(
-    suppressWarnings(iconv(value, from = encoding, to = "UTF-8", sub = NA)),
+    .dbc_iconv_to_utf8(value, encoding),
     error = function(error) rep(NA_character_, length(value))
   )
   invalid <- !is.na(value) & is.na(converted)
@@ -312,12 +340,7 @@
 }
 
 .dbc_candidate_score <- function(value, encoding) {
-  converted <- suppressWarnings(iconv(
-    value,
-    from = encoding,
-    to = "UTF-8",
-    sub = NA
-  ))
+  converted <- .dbc_iconv_to_utf8(value, encoding)
   invalid <- is.na(converted) & !is.na(value)
   valid <- converted[!invalid]
   if (!length(valid)) return(Inf)
@@ -552,12 +575,7 @@
 }
 
 .dbc_recover_mixed_cp1252 <- function(value, primary) {
-  candidate <- suppressWarnings(iconv(
-    value,
-    from = "CP1252",
-    to = "UTF-8",
-    sub = NA
-  ))
+  candidate <- .dbc_iconv_to_utf8(value, "CP1252")
   recover <- !is.na(candidate) & !is.na(primary) &
     grepl("[^ -~]", primary)
   indices <- which(recover)
@@ -655,12 +673,7 @@
   }
 
   if (any(remaining)) {
-    converted <- suppressWarnings(iconv(
-      value[remaining],
-      from = legacy_encoding,
-      to = "UTF-8",
-      sub = NA
-    ))
+    converted <- .dbc_iconv_to_utf8(value[remaining], legacy_encoding)
     recovered_rows <- rep(FALSE, length(converted))
     normalized_legacy <- toupper(legacy_encoding)
     if (identical(normalized_legacy, "CP1252")) {

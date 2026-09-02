@@ -10,6 +10,9 @@
   warning. `vars` avoids allocating or parsing unselected fields, and
   `fetch_datasus()` uses this projection before reading whenever processing and
   row filtering do not require the full row.
+* Makes CP1252 decoding platform-independent by rejecting its five undefined
+  byte values explicitly. Automatic decoding preserves those bytes losslessly,
+  while an explicit CP1252 override continues to fail strictly on every OS.
 * Hardens native DBC parsing with strict field-layout, record-marker, end-code,
   trailing-data, I/O, CRC32, embedded-NUL padding, numeric syntax and precision,
   and calendar-date checks. The reader recognizes the DBF language-driver
