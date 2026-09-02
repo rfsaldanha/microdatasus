@@ -29,7 +29,7 @@
   "DIAR_ACOM", "QT_DIARIAS", "RUBRICA", "IDADE", "DIAS_PERM",
   "NUM_PROC", "TOT_PT_SP", "NUM_FILHOS",
   "SP_AA", "SP_MM", "SP_QTD_ATO", "SP_PTSP",
-  "SP_DES_HOS", "SP_DES_PAC", "SP_QT_PROC", "ANO", "MES"
+  "SP_QT_PROC", "ANO", "MES"
 )
 
 .sih_competence_year <- function(x) {
