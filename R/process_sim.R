@@ -67,6 +67,35 @@
   which(legacy)
 }
 
+.sim_legacy_count_fields <- c(
+  "FILHVIVOS", "FILHMORT", "QTDFILVIVO", "QTDFILMORT"
+)
+
+.sim_as_legacy_count <- function(x, rows, collector = NULL,
+                                 field = NA_character_) {
+  source <- x
+  values <- trimws(as.character(x))
+  result <- suppressWarnings(as.integer(values))
+  if (length(rows)) {
+    # The CID-9 manual and NUMFILH.CNV define XX as none, 00 as
+    # ignored, and only the explicit counts 01 through 15 as valid.
+    legacy <- values[rows]
+    valid <- legacy %in% c(as.character(1:15), sprintf("%02d", 1:15))
+    result[rows] <- NA_integer_
+    result[rows[valid]] <- suppressWarnings(as.integer(legacy[valid]))
+    result[rows[which(legacy == "XX")]] <- 0L
+  }
+  .process_record_coercion(
+    collector,
+    field,
+    "integer",
+    source,
+    result,
+    missing = c("0", "00")
+  )
+  result
+}
+
 .sim_add_age_fields <- function(data) {
   if (!"IDADE" %in% names(data)) {
     return(data)
@@ -202,7 +231,17 @@ process_sim <- function(
   }
   integer_fields <- .process_find_fields(result, .sim_integer_fields)
   for (field in integer_fields) {
-    result[[field]] <- .process_as_integer(result[[field]], collector = collector, field = field)
+    result[[field]] <- if (
+      toupper(field) %in% .sim_legacy_count_fields && length(legacy_rows)
+    ) {
+      .sim_as_legacy_count(
+        result[[field]], legacy_rows, collector = collector, field = field
+      )
+    } else {
+      .process_as_integer(
+        result[[field]], collector = collector, field = field
+      )
+    }
   }
   result <- .sim_add_age_fields(result)
 

@@ -1004,6 +1004,39 @@ test_that("process_sim separates current and historical domains by row", {
   expect_identical(result$GESTACAO, c("Menos 22", "32 a 36"))
 })
 
+test_that("process_sim decodes official legacy child-count sentinels", {
+  result <- process_sim(
+    data.frame(
+      UFINFORM = c(rep("12", 7L), NA),
+      FILHVIVOS = c("XX", "00", "01", "15", "16", "99", NA, NA),
+      QTDFILMORT = c("XX", "00", "01", "15", "16", "99", NA, "00"),
+      stringsAsFactors = FALSE
+    ),
+    municipality_data = FALSE,
+    labels = "none",
+    diagnostics = TRUE
+  )
+
+  legacy_expected <- c(
+    0L, NA_integer_, 1L, 15L, NA_integer_, NA_integer_, NA_integer_,
+    NA_integer_
+  )
+  mixed_expected <- legacy_expected
+  mixed_expected[[8L]] <- 0L
+  expect_identical(result$FILHVIVOS, legacy_expected)
+  expect_identical(result$QTDFILMORT, mixed_expected)
+  report <- processing_diagnostics(result)
+  expect_setequal(
+    unique(report$coercion_failures$field),
+    c("FILHVIVOS", "QTDFILMORT")
+  )
+  expect_setequal(
+    unique(report$coercion_failures$value),
+    c("16", "99")
+  )
+  expect_equal(sum(report$coercion_failures$n), 4L)
+})
+
 test_that("process_sim rejects unsupported SIM data types", {
   expect_error(
     process_sim(
