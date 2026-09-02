@@ -80,12 +80,25 @@ create_sih_tabwin_fixture <- function(period = "current") {
     for (definition in c("RD.DEF", "RJ.DEF")) {
       write_tabwin_text(
         file.path(root, definition),
-        c("A*.db?", "XSexo, SEXO, 1, CNV/HIST.CNV")
+        c(
+          "A*.db?",
+          "XSexo, SEXO, 1, CNV/HIST.CNV",
+          "XRubrica, RUBRICA, 1, CNV/RUBRICA.CNV",
+          "XNumero processamento, NUM_PROC, 1, CNV/NUMPROC.CNV"
+        )
       )
     }
     write_tabwin_text(
       file.path(cnv, "HIST.CNV"),
       c("1 1", tabwin_cnv_line(1, label, "1"))
+    )
+    write_tabwin_text(
+      file.path(cnv, "RUBRICA.CNV"),
+      c("1 5", tabwin_cnv_line(1, paste("Rubrica", label), "11001"))
+    )
+    write_tabwin_text(
+      file.path(cnv, "NUMPROC.CNV"),
+      c("1 4", tabwin_cnv_line(1, paste("Processamento", label), "0001"))
     )
   }
 
@@ -325,6 +338,8 @@ test_that("process_sih chooses historical dictionaries row by row", {
       ANO_CMPT = c("1996", "2000", "2003", "2003", "2007", "2008"),
       MES_CMPT = c("1", "1", "7", "8", "12", "1"),
       SEXO = rep("1", 6L),
+      RUBRICA = c(rep("11001", 5L), "0"),
+      NUM_PROC = c(rep("0001", 5L), ""),
       stringsAsFactors = FALSE
     ),
     municipality_data = FALSE
@@ -336,6 +351,22 @@ test_that("process_sih chooses historical dictionaries row by row", {
     c(
       "Historico 1992", "Historico 1998", "Historico 1998",
       "Historico 2003", "Historico 2003", "Masculino"
+    )
+  )
+  expect_identical(
+    as.character(result$RUBRICA),
+    c(
+      "Rubrica Historico 1992", "Rubrica Historico 1998",
+      "Rubrica Historico 1998", "Rubrica Historico 2003",
+      "Rubrica Historico 2003", "0"
+    )
+  )
+  expect_identical(
+    as.character(result$NUM_PROC),
+    c(
+      "Processamento Historico 1992", "Processamento Historico 1998",
+      "Processamento Historico 1998", "Processamento Historico 2003",
+      "Processamento Historico 2003", ""
     )
   )
 })
