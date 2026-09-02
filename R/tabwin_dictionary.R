@@ -1575,6 +1575,7 @@
       "3 " = "G3", "03" = "G3",
       "4 " = "G4", "04" = "G4"
     ),
+    "SIMNAO2.CNV" = c("S" = "1", "N" = "0"),
     stats::setNames(character(), character())
   )
   conversion$source_aliases <- stats::setNames(character(), character())
@@ -1613,7 +1614,7 @@
   )
 }
 
-.tabwin_parser_version <- 14L
+.tabwin_parser_version <- 15L
 
 .tabwin_conversion_cache_path <- function(dictionary, key) {
   if (!isTRUE(dictionary$persistent) || is.null(dictionary$archive_checksum)) {

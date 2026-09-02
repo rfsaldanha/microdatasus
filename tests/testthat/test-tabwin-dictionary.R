@@ -1728,6 +1728,35 @@ test_that("official source aliases are exact, auditable, and filename-scoped", {
   )
 })
 
+test_that("official yes-no source aliases preserve both code dialects", {
+  directory <- tempfile("yes-no-aliases-")
+  dir.create(directory)
+  on.exit(unlink(directory, recursive = TRUE), add = TRUE)
+  path <- file.path(directory, "SIMNAO2.CNV")
+  write_tabwin_text(path, c(
+    "2 1",
+    tabwin_cnv_line(1, "Yes", "1"),
+    tabwin_cnv_line(2, "No", "0")
+  ))
+
+  conversion <- microdatasus:::.tabwin_recover_official_source_aliases(
+    microdatasus:::.tabwin_parse_cnv(path), path
+  )
+  selected <- list(
+    definition = data.frame(position = 1L),
+    conversion = conversion
+  )
+
+  expect_identical(conversion$recovered_source_aliases, 2L)
+  expect_identical(conversion$source_aliases, c("S" = "1", "N" = "0"))
+  expect_identical(
+    microdatasus:::.tabwin_apply_conversion_values(
+      c("S", "N", "1", "0", "X"), selected
+    ),
+    c("Yes", "No", "Yes", "No", "X")
+  )
+})
+
 test_that("CNV parser repairs evidenced malformed interval spellings", {
   equals <- tempfile(fileext = ".CNV")
   padded <- tempfile(fileext = ".CNV")

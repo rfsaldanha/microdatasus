@@ -32,6 +32,12 @@ create_sia_tabwin_fixture <- function(period = "current") {
           paste0("XGrau histologico, ", field, ", 1, CNV/GRAU_HIS.CNV")
         )
       }
+      if (identical(information_system, "SIA-ACF")) {
+        lines <- c(
+          lines,
+          "XDuplex previo, ACF_DUPLEX, 1, CNV/SIMNAO2.CNV"
+        )
+      }
       if (identical(information_system, "SIA-PA")) {
         lines <- c(
           lines,
@@ -91,6 +97,14 @@ create_sia_tabwin_fixture <- function(period = "current") {
         tabwin_cnv_line(3, "Moderadamente diferenciado", "G2"),
         tabwin_cnv_line(4, "Pouco diferenciado", "G3"),
         tabwin_cnv_line(5, "Indiferenciado", "G4")
+      )
+    )
+    write_tabwin_text(
+      file.path(root, "CNV", "SIMNAO2.CNV"),
+      c(
+        "2 1",
+        tabwin_cnv_line(1, "Sim", "1"),
+        tabwin_cnv_line(2, "Nao", "0")
       )
     )
   }
@@ -365,6 +379,42 @@ test_that("process_sia recovers only audited histological-grade aliases", {
     expect_setequal(unknown$code, c("0", "00", "99"))
     expect_true(all(unknown$n == 1L))
   }
+})
+
+test_that("process_sia accepts both official yes-no source dialects", {
+  archive <- create_sia_tabwin_fixture()
+  on.exit(unlink(archive), add = TRUE)
+  local_mocked_bindings(
+    .datasus_download_file = function(
+      url,
+      destination,
+      timeout,
+      quiet = FALSE
+    ) {
+      file.copy(archive, destination)
+      invisible(destination)
+    },
+    .package = "microdatasus"
+  )
+  microdatasus:::.tabwin_clear_cache()
+  on.exit(restore_empty_tabwin_cache(), add = TRUE)
+
+  result <- process_sia(
+    data.frame(ACF_DUPLEX = c("S", "N", "1", "0", "X")),
+    information_system = "SIA-ACF",
+    nome_proced = FALSE,
+    nome_ocupacao = FALSE,
+    nome_equipe = FALSE,
+    municipality_data = FALSE,
+    labels = "character",
+    diagnostics = TRUE
+  )
+
+  expect_identical(result$ACF_DUPLEX, c("Sim", "Nao", "Sim", "Nao", "X"))
+  unknown <- processing_diagnostics(result)$unknown_codes
+  expect_identical(unknown$field, "ACF_DUPLEX")
+  expect_identical(unknown$code, "X")
+  expect_identical(unknown$n, 1L)
 })
 
 test_that("process_sia selects historical PA definitions row by row", {
