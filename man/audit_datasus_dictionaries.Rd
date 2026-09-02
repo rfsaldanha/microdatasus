@@ -44,5 +44,5 @@ A tibble with one row per dictionary and an \code{issues} list-column.
 \description{
 Downloads each physical archive only once per cache and inspects every
 selected DEF/CNV/DBF relation. With a NULL selection, all current and
-historical keys are audited (104 keys over 14 physical archives).
+historical keys are audited (105 keys over 15 physical archives).
 }

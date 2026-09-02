@@ -75,7 +75,7 @@ datasus_schema <- function(
 #'
 #' Downloads each physical archive only once per cache and inspects every
 #' selected DEF/CNV/DBF relation. With a NULL selection, all current and
-#' historical keys are audited (104 keys over 14 physical archives).
+#' historical keys are audited (105 keys over 15 physical archives).
 #'
 #' @param information_system NULL for every dictionary, or selected keys.
 #' @param fail_on_error Logical scalar. If `TRUE`, abort after the audit when a
