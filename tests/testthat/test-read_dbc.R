@@ -311,6 +311,93 @@ test_that("read_dbc auto-detects unmarked CP850, UTF-8, and binary IDs", {
   expect_identical(Encoding(binary_result$CNS[[1L]]), "bytes")
 })
 
+test_that("read_dbc recovers rows that contradict a marked LDID", {
+  cp1252_text <- charToRaw(iconv(
+    "N\u00daMERO DA AIH", from = "UTF-8", to = "CP1252"
+  ))
+  cp850_text <- charToRaw(iconv(
+    "N\u00c3O", from = "UTF-8", to = "CP850"
+  ))
+  path <- literal_dbc_fixture(
+    fields = list(list(
+      name = "TEXT", type = "C",
+      width = max(length(cp1252_text), length(cp850_text)),
+      decimals = 0L
+    )),
+    rows = list(list(cp1252_text), list(cp850_text)),
+    language_driver = 2L
+  )
+  on.exit(unlink(path), add = TRUE)
+
+  expect_identical(
+    read_dbc(path)$TEXT,
+    c("N\u00daMERO DA AIH", "N\u00c3O")
+  )
+  expect_identical(
+    read_dbc(path, encoding = "CP850")$TEXT,
+    c("N\u250cMERO DA AIH", "N\u00c3O")
+  )
+})
+
+test_that("automatic decoding handles mixed UTF-8 and legacy rows", {
+  as_unknown <- function(value, encoding) {
+    result <- rawToChar(charToRaw(iconv(
+      value, from = "UTF-8", to = encoding
+    )))
+    Encoding(result) <- "unknown"
+    result
+  }
+  value <- c(
+    as_unknown("M\u00e9dico", "CP1252"),
+    as_unknown("Com\u00e9rcio", "UTF-8"),
+    rawToChar(as.raw(c(charToRaw("PROCESSAMENTO 1000 CM"), 0xc7, 0xab)))
+  )
+  Encoding(value) <- "unknown"
+
+  decoded <- microdatasus:::.dbc_decode_text_auto(
+    value, "CP1252", 3L, "test field", "test.dbf"
+  )
+
+  actual <- decoded
+  attr(actual, "dbc_encoding_used") <- NULL
+  expect_identical(
+    unname(actual),
+    c("M\u00e9dico", "Com\u00e9rcio", "PROCESSAMENTO 1000 CM\u00c7\u00ab")
+  )
+  expect_identical(
+    attr(decoded, "dbc_encoding_used"),
+    "mixed:UTF-8+CP1252"
+  )
+})
+
+test_that("automatic decoding recovers exact CP850 UTF-8 ordinals", {
+  value <- vapply(c(166L, 167L, 248L), function(second) {
+    item <- rawToChar(as.raw(c(49L, 182L, second)))
+    Encoding(item) <- "unknown"
+    item
+  }, character(1))
+
+  decoded <- microdatasus:::.dbc_decode_text_auto(
+    value, "CP1252", 3L, "test field", "test.dbf"
+  )
+  attr(decoded, "dbc_encoding_used") <- NULL
+
+  expect_identical(unname(decoded), c("1\u00aa", "1\u00ba", "1\u00b0"))
+})
+
+test_that("UTF-8 mojibake recovery is signature scoped", {
+  recovered <- microdatasus:::.dbc_recover_utf8_mojibake(c(
+    "M\u00c2\u00aa", "Com\u00c3\u00a9rcio", "M\u00c2\u00b0",
+    "\u00c2ngela", "S\u00c3\u00bfO"
+  ))
+
+  expect_identical(recovered$recover, c(TRUE, TRUE, TRUE, FALSE, FALSE))
+  expect_identical(
+    recovered$value[recovered$recover],
+    c("M\u00aa", "Com\u00e9rcio", "M\u00b0")
+  )
+})
+
 test_that("read_dbc preserves low-confidence unmarked text losslessly", {
   path <- literal_dbc_fixture(
     fields = list(

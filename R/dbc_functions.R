@@ -324,6 +324,83 @@
   .dbc_text_penalty(valid) + 0.25 * mean(invalid)
 }
 
+.dbc_select_legacy_encoding <- function(value, encoding, language_driver) {
+  normalized <- toupper(encoding)
+  supported <- c("CP1252", "CP850")
+  if (language_driver != 0L || !normalized %in% supported) {
+    return(list(encoding = encoding, low_confidence = FALSE))
+  }
+
+  present <- !is.na(value)
+  non_ascii <- present & grepl("[^ -~]", value, useBytes = TRUE)
+  if (!any(non_ascii)) {
+    return(list(encoding = encoding, low_confidence = FALSE))
+  }
+
+  utf8_valid <- rep(FALSE, length(value))
+  utf8_valid[present] <- stringi::stri_enc_isutf8(value[present])
+  evidence <- non_ascii & !utf8_valid
+  if (!any(evidence)) evidence <- non_ascii
+  sample <- utils::head(value[evidence], 5000L)
+  candidates <- c(normalized, setdiff(supported, normalized))
+  scores <- vapply(
+    candidates,
+    function(candidate) .dbc_candidate_score(sample, candidate),
+    numeric(1)
+  )
+  best <- which.min(scores)
+  materially_better <- best != 1L && scores[[best]] + 0.05 < scores[[1L]]
+  if (!materially_better) {
+    return(list(encoding = encoding, low_confidence = FALSE))
+  }
+  if (scores[[best]] <= 0.0125) {
+    return(list(encoding = candidates[[best]], low_confidence = FALSE))
+  }
+
+  # An unmarked file supplies no independent support for either code page.
+  # Preserve uncertain bytes instead of choosing the merely less-bad codec.
+  list(encoding = encoding, low_confidence = TRUE)
+}
+
+.dbc_recover_utf8_mojibake <- function(value) {
+  signature <- paste0(
+    "[", intToUtf8(c(194L, 195L)), "]",
+    "[", intToUtf8(128L), "-", intToUtf8(191L), "]"
+  )
+  recover <- !is.na(value) & grepl(signature, value, perl = TRUE)
+  candidate <- rep(NA_character_, length(value))
+  if (!any(recover)) {
+    return(list(value = candidate, recover = recover))
+  }
+
+  indices <- which(recover)
+  bytes <- suppressWarnings(iconv(
+    value[indices],
+    from = "UTF-8",
+    to = "CP1252",
+    sub = NA
+  ))
+  candidate[indices] <- suppressWarnings(iconv(
+    bytes,
+    from = "UTF-8",
+    to = "UTF-8",
+    sub = NA
+  ))
+  recover[indices] <- !is.na(candidate[indices]) & vapply(
+    indices,
+    function(index) {
+      (
+        grepl("\u00c2\u00b0", value[[index]], fixed = TRUE) &&
+          grepl("\u00b0", candidate[[index]], fixed = TRUE)
+      ) ||
+        .dbc_text_penalty(candidate[[index]]) <=
+          .dbc_text_penalty(value[[index]])
+    },
+    logical(1)
+  )
+  list(value = candidate, recover = recover)
+}
+
 .dbc_cp850_byte_evidence <- function(value) {
   vapply(value, function(item) {
     bytes <- as.integer(charToRaw(item))
@@ -340,7 +417,12 @@
     beside_upper <- is_upper(previous) | is_upper(following)
     between_upper <- is_upper(previous) & is_upper(following)
 
-    any(bytes %in% c(128L, 135L, 161L, 198L, 229L) & between_letters) |
+    cp850_utf8_ordinal <- any(
+      utils::head(bytes, -1L) == 182L &
+        utils::tail(bytes, -1L) %in% c(166L, 167L, 248L)
+    )
+    cp850_utf8_ordinal |
+      any(bytes %in% c(128L, 135L, 161L, 198L, 229L) & between_letters) |
       any(bytes %in% c(181L, 182L) & beside_upper) |
       any(bytes == 162L & between_letters) |
       any(bytes %in% c(224L, 233L) & between_upper)
@@ -362,12 +444,13 @@
   }
 
   # Some official DataSUS fields declare CP1252 but contain isolated CP850
-  # rows. Require diagnostic CP850 bytes in alphabetic context, and accept only
-  # candidates made of printable ASCII and common Portuguese accents. Ambiguous
+  # rows. Require diagnostic CP850 bytes in alphabetic context or an
+  # exact double-encoded ordinal sequence, and accept only candidates made of
+  # printable ASCII and common Portuguese accents. Ambiguous
   # bytes such as 0xA0, 0xB7, 0xC7 and 0xD2 never establish evidence alone.
   portuguese_text <- paste0(
     "\u00c0\u00c1\u00c2\u00c3\u00c9\u00ca\u00cd\u00d3\u00d4\u00d5",
-    "\u00da\u00c7\u00e0\u00e1\u00e2\u00e3\u00e9\u00ea\u00ed\u00f3\u00f4\u00f5\u00fa\u00e7"
+    "\u00da\u00c7\u00e0\u00e1\u00e2\u00e3\u00e9\u00ea\u00ed\u00f3\u00f4\u00f5\u00fa\u00e7\u00aa\u00ba\u00b0"
   )
   portuguese <- utf8ToInt(portuguese_text)
   indices <- which(recover)
@@ -381,6 +464,26 @@
   }, logical(1))
   evidence <- .dbc_cp850_byte_evidence(value[indices])
   recover[indices] <- clean & (evidence | force[indices])
+  list(value = candidate, recover = recover)
+}
+
+.dbc_recover_mixed_cp1252 <- function(value, primary) {
+  candidate <- suppressWarnings(iconv(
+    value,
+    from = "CP1252",
+    to = "UTF-8",
+    sub = NA
+  ))
+  recover <- !is.na(candidate) & !is.na(primary) &
+    grepl("[^ -~]", primary)
+  indices <- which(recover)
+  if (length(indices)) {
+    recover[indices] <- vapply(indices, function(index) {
+      candidate_score <- .dbc_text_penalty(candidate[[index]])
+      candidate_score <= 0.0125 &&
+        candidate_score + 0.02 < .dbc_text_penalty(primary[[index]])
+    }, logical(1))
+  }
   list(value = candidate, recover = recover)
 }
 
@@ -455,27 +558,15 @@
   legacy_encoding <- encoding
   legacy_non_ascii <- remaining & non_ascii
   low_confidence_non_ascii <- rep(FALSE, length(value))
-  if (language_driver == 0L && any(legacy_non_ascii)) {
-    sample <- utils::head(value[legacy_non_ascii], 5000L)
-    candidates <- unique(c(encoding, "CP850"))
-    scores <- vapply(
-      candidates,
-      function(candidate) .dbc_candidate_score(sample, candidate),
-      numeric(1)
+  if (any(legacy_non_ascii)) {
+    selected <- .dbc_select_legacy_encoding(
+      value[remaining],
+      encoding,
+      language_driver
     )
-    best <- which.min(scores)
-    source_score <- scores[[match(encoding, candidates)]]
-    # Change an unmarked file away from the conservative CP1252 default only
-    # when the relative and absolute evidence are strong. Otherwise, retain
-    # ambiguous source bytes instead of selecting the less-bad codec.
-    if (scores[[best]] + 0.05 < source_score) {
-      if (scores[[best]] <= 0.0125) {
-        legacy_encoding <- candidates[[best]]
-      } else {
-        # The alternative is less implausible but still not clean text. Keep
-        # ambiguous values losslessly instead of selecting the less-bad codec.
-        low_confidence_non_ascii <- legacy_non_ascii
-      }
+    legacy_encoding <- selected$encoding
+    if (selected$low_confidence) {
+      low_confidence_non_ascii <- legacy_non_ascii
     }
   }
 
@@ -498,7 +589,48 @@
         converted[recovered_rows] <- recovered$value[recovered_rows]
         used <- c(used, "CP850")
       }
+    } else if (identical(toupper(legacy_encoding), "CP850")) {
+      recovered <- .dbc_recover_mixed_cp1252(
+        value[remaining],
+        converted
+      )
+      recovered_rows <- recovered$recover
+      if (any(recovered_rows)) {
+        converted[recovered_rows] <- recovered$value[recovered_rows]
+        used <- c(used, "CP1252")
+      }
     }
+    utf8_rows <- rep(FALSE, length(converted))
+    valid_utf8_rows <- utf8_valid[remaining] &
+      non_ascii[remaining] &
+      !recovered_rows
+    if (any(valid_utf8_rows)) {
+      utf8_candidate <- suppressWarnings(iconv(
+        value[remaining][valid_utf8_rows],
+        from = "UTF-8",
+        to = "UTF-8",
+        sub = NA
+      ))
+      candidate_indices <- which(valid_utf8_rows)
+      improves <- vapply(seq_along(candidate_indices), function(index) {
+        row <- candidate_indices[[index]]
+        !is.na(utf8_candidate[[index]]) &&
+          .dbc_text_penalty(utf8_candidate[[index]]) + 0.02 <
+            .dbc_text_penalty(converted[[row]])
+      }, logical(1))
+      utf8_rows[candidate_indices[improves]] <- TRUE
+      if (any(utf8_rows)) {
+        converted[utf8_rows] <- utf8_candidate[improves]
+        used <- c(used, "UTF-8")
+      }
+    }
+
+    mojibake <- .dbc_recover_utf8_mojibake(converted)
+    if (any(mojibake$recover)) {
+      converted[mojibake$recover] <- mojibake$value[mojibake$recover]
+      used <- c(used, "UTF-8")
+    }
+    recovered_rows <- recovered_rows | utf8_rows | mojibake$recover
     uncertain <- low_confidence_non_ascii[remaining] & !recovered_rows
     converted[uncertain] <- NA_character_
     valid <- !is.na(converted)
