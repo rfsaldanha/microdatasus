@@ -1091,12 +1091,7 @@
     short <- !is.na(code) & nchar(code, type = "chars") < width
     code[short] <- paste0(
       code[short],
-      vapply(
-        width - nchar(code[short], type = "chars"),
-        strrep,
-        character(1),
-        x = " "
-      )
+      strrep(" ", width - nchar(code[short], type = "chars"))
     )
     return(code)
   }
@@ -1115,10 +1110,9 @@
   )
   code <- trimws(code)
   numeric <- !is.na(code) & grepl("^[0-9]+$", code) & nchar(code) < width
-  code[numeric] <- vapply(
-    code[numeric],
-    function(value) paste0(strrep("0", width - nchar(value)), value),
-    character(1)
+  code[numeric] <- paste0(
+    strrep("0", width - nchar(code[numeric])),
+    code[numeric]
   )
   code
 }
@@ -1178,11 +1172,8 @@
   value <- as.character(value)
   missing <- is.na(value)
   value[missing] <- ""
-  padding <- vapply(
-    pmax.int(0L, width - nchar(value, type = "chars")),
-    strrep,
-    character(1),
-    x = " "
+  padding <- strrep(
+    " ", pmax.int(0L, width - nchar(value, type = "chars"))
   )
   if (identical(type, "C")) {
     value <- paste0(substr(value, 1L, width), padding)
@@ -1221,7 +1212,8 @@
   field,
   definition,
   conversion,
-  values
+  values,
+  rows = NULL
 ) {
   if (is.null(data) || !conversion$type %in% c("cnv", "dbf")) {
     return(values)
@@ -1253,8 +1245,12 @@
   if (anyNA(actual)) return(values)
 
   pieces <- lapply(seq_along(actual), function(index) {
+    value <- data[[actual[[index]]]]
+    if (!is.null(rows)) {
+      value <- value[rows]
+    }
     .tabwin_dbf_field_text(
-      data[[actual[[index]]]],
+      value,
       types[[physical_names[[index]]]],
       widths[[physical_names[[index]]]]
     )
@@ -1272,6 +1268,9 @@
       if (anyNA(prefix_actual)) next
       prefix <- lapply(prefix_actual, function(index) {
         value <- as.character(data[[index]])
+        if (!is.null(rows)) {
+          value <- value[rows]
+        }
         value[is.na(value)] <- ""
         trimws(value)
       })
@@ -2560,9 +2559,19 @@
   number <- suppressWarnings(as.numeric(trimws(lookup)))
   labels <- rep(NA_character_, length(number))
   valid <- which(!is.na(number))
-  for (index in valid) {
-    category <- which(number[[index]] <= thresholds$upper)[1L]
-    if (!is.na(category)) labels[[index]] <- thresholds$label[[category]]
+  if (!length(valid)) {
+    return(labels)
+  }
+
+  # F-mode limits are sorted and unique when the CNV is parsed. findInterval
+  # locates the first inclusive upper bound for every row in one vectorized
+  # pass, avoiding an R loop over potentially millions of records.
+  category <- findInterval(
+    number[valid], thresholds$upper, left.open = TRUE
+  ) + 1L
+  matched <- category <= nrow(thresholds)
+  if (any(matched)) {
+    labels[valid[matched]] <- thresholds$label[category[matched]]
   }
   labels
 }
@@ -2643,7 +2652,8 @@
   definition,
   values,
   data = NULL,
-  source_field = definition$field[[1L]]
+  source_field = definition$field[[1L]],
+  rows = NULL
 ) {
   # A source field can have direct labels and several analytical groupings.
   # Score each usable definition against the codes actually present in data.
@@ -2655,7 +2665,7 @@
     return(NULL)
   }
   values <- .tabwin_definition_values(
-    data, source_field, definition, conversion, values
+    data, source_field, definition, conversion, values, rows
   )
   observed <- unique(as.character(values))
   observed <- observed[!is.na(observed) & nzchar(trimws(observed))]
@@ -2700,7 +2710,8 @@
   field,
   values,
   data = NULL,
-  source_field = field
+  source_field = field,
+  rows = NULL
 ) {
   definitions <- dictionary$definitions
   candidates <- definitions[
@@ -2722,7 +2733,8 @@
       candidates[i, , drop = FALSE],
       values,
       data,
-      source_field
+      source_field,
+      rows
     )
   })
   scores <- Filter(Negate(is.null), scores)
@@ -2758,7 +2770,8 @@
     source_field,
     selected$definition,
     selected$conversion,
-    values
+    values,
+    rows
   )
   selected
 }

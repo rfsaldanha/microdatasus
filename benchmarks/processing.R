@@ -42,6 +42,50 @@ selected <- list(definition = data.frame(position = 1L), conversion = conversion
 cases$LABEL_CHARACTER <- list(data = codes, run = function(data) microdatasus:::.tabwin_apply_conversion_values(data, selected))
 cases$LABEL_FACTOR <- list(data = codes, run = function(data) factor(microdatasus:::.tabwin_apply_conversion_values(data, selected)))
 
+# Guard the optimized low-cardinality paths that dominate large processors.
+thresholds <- data.frame(
+  upper = c(0, 7, 9999),
+  label = c("Zero", "One to seven", "Eight or more"),
+  priority = 1:3,
+  stringsAsFactors = FALSE
+)
+threshold_conversion <- structure(list(
+  type = "cnv", mode = "F", code_width = 5L, category_count = 3L,
+  map = stats::setNames(character(), character()),
+  map_priority = stats::setNames(integer(), character()),
+  ranges = microdatasus:::.tabwin_empty_ranges(), thresholds = thresholds
+), class = "microdatasus_tabwin_conversion")
+threshold_selected <- list(
+  definition = data.frame(position = 1L),
+  conversion = threshold_conversion
+)
+threshold_codes <- rep(
+  c("0", "1", "7", "8", "9999", "10000"),
+  length.out = 1000000L
+)
+cases$LABEL_THRESHOLD <- list(
+  data = threshold_codes,
+  run = function(data) microdatasus:::.tabwin_apply_conversion_values(
+    data, threshold_selected
+  )
+)
+date_values <- rep(
+  c("01012020", "29022020", "31122020", "00000000", "invalid"),
+  length.out = 1000000L
+)
+cases$DATE_DMY <- list(
+  data = date_values,
+  run = function(data) microdatasus:::.process_as_date(data)
+)
+text_values <- rep(
+  c("São Paulo", "texto simples", "\\u00e1rvore", NA_character_),
+  length.out = 1000000L
+)
+cases$TEXT_NORMALIZE <- list(
+  data = text_values,
+  run = function(data) microdatasus:::.process_normalize_character(data)
+)
+
 results <- do.call(rbind, lapply(names(cases), function(name) {
   case <- cases[[name]]
   gc()

@@ -47,6 +47,26 @@
   result
 }
 
+.process_parse_date_values <- function(
+  values,
+  format,
+  valid = !is.na(values)
+) {
+  result <- rep(as.Date(NA), length(values))
+  valid <- !is.na(values) & !is.na(valid) & valid
+  if (!any(valid)) {
+    return(result)
+  }
+
+  # Calendar dates have low cardinality even in very large microdata files.
+  # Parse each physical representation once and map it back to the rows instead
+  # of invoking strptime for every repeated value.
+  distinct <- unique(values[valid])
+  parsed <- as.Date(distinct, format = format)
+  result[valid] <- parsed[match(values[valid], distinct)]
+  result
+}
+
 .process_as_date <- function(x, format = "%d%m%Y", collector = NULL,
                              field = NA_character_,
                              missing = c("00000000", "000000")) {
@@ -62,8 +82,7 @@
   )
   valid <- !is.na(values)
   if (!is.null(pattern)) valid <- valid & grepl(pattern, values)
-  result <- rep(as.Date(NA), length(values))
-  result[valid] <- as.Date(values[valid], format = format)
+  result <- .process_parse_date_values(values, format, valid)
   .process_record_coercion(
     collector, field, "Date", source, result, missing
   )
@@ -80,7 +99,11 @@
   result <- rep(as.Date(NA), length(values))
 
   modern <- !is.na(values) & grepl("^[0-9]{8}$", values)
-  result[modern] <- as.Date(values[modern], format = "%Y%m%d")
+  if (any(modern)) {
+    result[modern] <- .process_parse_date_values(
+      values[modern], "%Y%m%d"
+    )
+  }
 
   historical <- !is.na(values) & grepl("^[0-9]{6}$", values)
   reference_year <- suppressWarnings(as.integer(as.character(reference_year)))
@@ -95,7 +118,9 @@
       sprintf("%04d", full_year[resolvable]),
       substring(values[resolvable], 3L)
     )
-    result[resolvable] <- as.Date(expanded, format = "%Y%m%d")
+    result[resolvable] <- .process_parse_date_values(
+      expanded, "%Y%m%d"
+    )
   }
   .process_record_coercion(
     collector, field, "Date", source, result, missing
@@ -137,9 +162,14 @@
   bytes <- !is.na(x) & Encoding(x) == "bytes"
   result <- x
   text <- !bytes
-  result[text] <- stringi::stri_unescape_unicode(
-    stringi::stri_enc_toutf8(x[text])
-  )
+  converted <- stringi::stri_enc_toutf8(x[text])
+  escaped <- !is.na(converted) & grepl("\\", converted, fixed = TRUE)
+  if (any(escaped)) {
+    # stri_unescape_unicode is comparatively expensive. Ordinary DataSUS text
+    # contains no backslash, so restrict it to values it can actually change.
+    converted[escaped] <- stringi::stri_unescape_unicode(converted[escaped])
+  }
+  result[text] <- converted
   result
 }
 
@@ -228,8 +258,9 @@
         dictionaries[[key]],
         dictionary_field,
         dictionary_values,
-        data[rows, , drop = FALSE],
-        field
+        data,
+        field,
+        rows
       )
       if (!is.null(selected)) {
         source_values <- selected$source_values

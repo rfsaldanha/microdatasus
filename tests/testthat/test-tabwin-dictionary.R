@@ -477,6 +477,20 @@ test_that("literal CNV codes can span adjacent physical DBF fields", {
     ),
     c("Primeiro", "Segundo")
   )
+
+  repeated <- data[c(1L, 2L, 1L, 2L), , drop = FALSE]
+  attr(repeated, "dbf_field_types") <- attr(data, "dbf_field_types")
+  attr(repeated, "dbf_field_widths") <- attr(data, "dbf_field_widths")
+  rows <- c(2L, 4L)
+  selected_rows <- microdatasus:::.tabwin_select_conversion(
+    dictionary,
+    "FLAG1",
+    repeated$FLAG1[rows],
+    repeated,
+    "FLAG1",
+    rows
+  )
+  expect_identical(selected_rows$source_values, c("0101", "0101"))
 })
 
 test_that("physical DEF reconstruction is chosen only when coverage improves", {
@@ -1791,6 +1805,12 @@ test_that("F mode categorizes numeric values by upper limits", {
     ),
     c("Zero", "One to seven", "One to seven", "Eight or more",
       "Eight or more", "10000")
+  )
+  expect_identical(
+    microdatasus:::.tabwin_apply_conversion_values(
+      c("-1", "", "invalid", NA_character_, "Inf"), selected
+    ),
+    c("Zero", "", "invalid", NA_character_, "Inf")
   )
 })
 

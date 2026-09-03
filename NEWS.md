@@ -40,6 +40,10 @@
   direct DBC reader and the DEF/CNV/DBF parser, including encoding behavior,
   TabWin precedence, auditable fallbacks, stable processed types, and the
   boundary of the remaining `foreign` dependency.
+* Speeds up `process_*()` on large inputs by parsing repeated dates once,
+  restricting Unicode unescaping to text that contains escapes, vectorizing
+  fixed-width code padding and TabWin `F`-mode thresholds, and avoiding
+  full-table row copies while scoring historical dictionary relations.
 
 # microdatasus 3.0.0
 

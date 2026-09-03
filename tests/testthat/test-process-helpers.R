@@ -56,6 +56,36 @@ test_that("text normalization preserves byte identifiers losslessly", {
   expect_true(is.na(result$VALUE[[3L]]))
 })
 
+test_that("text normalization changes only values containing escapes", {
+  source <- c(
+    "texto simples",
+    "\\u00e1rvore",
+    "linha\\nseguinte",
+    "barra\\\\final",
+    NA_character_
+  )
+  expected <- stringi::stri_unescape_unicode(
+    stringi::stri_enc_toutf8(source)
+  )
+
+  expect_identical(
+    microdatasus:::.process_normalize_character(source),
+    expected
+  )
+})
+
+test_that("date conversion preserves duplicates and invalid values", {
+  source <- c(
+    "01012020", "01012020", "29022020", "31022020",
+    "00000000", NA_character_
+  )
+
+  expect_identical(
+    microdatasus:::.process_as_date(source),
+    as.Date(c("2020-01-01", "2020-01-01", "2020-02-29", NA, NA, NA))
+  )
+})
+
 test_that("historical SIH dates resolve centuries from competence", {
   result <- microdatasus:::.process_as_sih_date(
     c("231102", "920101", "000000", "invalid", "20000102"),

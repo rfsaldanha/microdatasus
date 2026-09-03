@@ -29,11 +29,15 @@
 .cnes_as_date <- function(x, collector = NULL, field = NA_character_) {
   values <- trimws(as.character(x))
   values[!nzchar(values)] <- NA_character_
-  result <- as.Date(rep(NA_character_, length(values)))
+  result <- rep(as.Date(NA), length(values))
   ymd <- !is.na(values) & grepl("^[0-9]{8}$", values)
   dmy <- !is.na(values) & grepl("^[0-9]{2}/[0-9]{2}/[0-9]{4}$", values)
-  result[ymd] <- as.Date(values[ymd], format = "%Y%m%d")
-  result[dmy] <- as.Date(values[dmy], format = "%d/%m/%Y")
+  if (any(ymd)) {
+    result[ymd] <- .process_parse_date_values(values[ymd], "%Y%m%d")
+  }
+  if (any(dmy)) {
+    result[dmy] <- .process_parse_date_values(values[dmy], "%d/%m/%Y")
+  }
   .process_record_coercion(collector, field, "Date", x, result)
   result
 }

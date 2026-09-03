@@ -5,17 +5,27 @@
   values <- trimws(as.character(x))
   missing <- c("0", "000000", "00000000", "********")
   values[!nzchar(values) | values %in% missing] <- NA_character_
-  result <- as.Date(rep(NA_character_, length(values)))
+  result <- rep(as.Date(NA), length(values))
   iso <- !is.na(values) & grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", values)
   ymd <- !is.na(values) & grepl("^[0-9]{8}$", values)
   dmy <- !is.na(values) & grepl("^[0-9]{2}/[0-9]{2}/[0-9]{4}$", values)
   dmy_short <- !is.na(values) & grepl(
     "^[0-9]{2}/[0-9]{2}/[0-9]{2}$", values
   )
-  result[iso] <- as.Date(values[iso])
-  result[ymd] <- as.Date(values[ymd], format = "%Y%m%d")
-  result[dmy] <- as.Date(values[dmy], format = "%d/%m/%Y")
-  result[dmy_short] <- as.Date(values[dmy_short], format = "%d/%m/%y")
+  if (any(iso)) {
+    result[iso] <- .process_parse_date_values(values[iso], "%Y-%m-%d")
+  }
+  if (any(ymd)) {
+    result[ymd] <- .process_parse_date_values(values[ymd], "%Y%m%d")
+  }
+  if (any(dmy)) {
+    result[dmy] <- .process_parse_date_values(values[dmy], "%d/%m/%Y")
+  }
+  if (any(dmy_short)) {
+    result[dmy_short] <- .process_parse_date_values(
+      values[dmy_short], "%d/%m/%y"
+    )
+  }
   .process_record_coercion(collector, field, "Date", x, result, missing)
   result
 }
