@@ -2,6 +2,10 @@
 
 ## Development
 
+* Adds an offline, checksum-pinned corpus of eight official historical DBC
+  excerpts with original DEF/CNV/DBF members and independently transcribed
+  expected results. Checks four layout transitions, all label modes, mixed
+  periods, values, types, category counts, and processing diagnostics.
 * Makes CI coverage gates reject missing critical files, invalid percentages,
   and malformed coverage reports instead of silently ignoring missing entries.
 * Fixes weekly live-test rotation to continue across year boundaries, so every
