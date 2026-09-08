@@ -28,6 +28,7 @@ jobs:
 
       - name: Measure test coverage
         run: |
+          source("tests/support/ci-helpers.R")
           coverage <- covr::package_coverage(quiet = FALSE)
           print(coverage)
           total <- covr::percent_coverage(coverage)
@@ -40,10 +41,7 @@ jobs:
             "R/lockfile.R", "R/processing_diagnostics.R",
             "R/reference_tables.R", "R/schema_validation.R"
           )
-          if (total < 92.25) stop("Total test coverage fell below 92.25%.")
-          if (any(by_file[critical] < 80, na.rm = TRUE)) {
-            stop("Coverage of a critical cache/download/parser file fell below 80%.")
-          }
+          .ci_check_coverage(total, by_file, critical)
           covr::to_cobertura(coverage, filename = "coverage.xml")
         shell: Rscript {0}
 
