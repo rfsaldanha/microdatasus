@@ -70,3 +70,7 @@ Changing expected results requires a separate review of source records and
 dictionary rules. The builder never rewrites `expected.csv`. Sources are the
 Brazilian Ministry of Health/DataSUS public dissemination archives, individually
 attributed by URL and checksum in the manifest.
+
+The corpus CSV files use LF line endings, enforced by `.gitattributes`, so a
+Windows checkout does not change their pinned checksums. Integrity checks always
+hash the exact bytes; they do not normalize a changed file before comparison.
