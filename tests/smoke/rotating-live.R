@@ -1,12 +1,13 @@
 # Rotating live smoke coverage for every registered system without changing
 # the registry. One member of each family is selected weekly.
 library(microdatasus)
+source("tests/support/ci-helpers.R")
 
 metadata <- datasus_information_systems()
 registry <- microdatasus:::.datasus_registry()
 metadata$family <- sub("-.*$", "", metadata$information_system)
 families <- unique(metadata$family)
-week <- as.integer(format(Sys.Date(), "%V"))
+run_date <- Sys.Date()
 cache <- Sys.getenv("MICRODATASUS_SMOKE_CACHE", unset = "")
 if (!nzchar(cache)) cache <- tempfile("microdatasus-rotating-cache-")
 dir.create(cache, recursive = TRUE, showWarnings = FALSE)
@@ -15,7 +16,7 @@ results <- list()
 
 for (family in families) {
   candidates <- metadata$information_system[metadata$family == family]
-  information_system <- candidates[((week - 1L) %% length(candidates)) + 1L]
+  information_system <- .ci_rotating_system(candidates, run_date)
   spec <- registry[[information_system]]
   minimum_year <- as.integer(format(spec$minimum, "%Y"))
   years <- seq.int(minimum_year, as.integer(format(Sys.Date(), "%Y")))

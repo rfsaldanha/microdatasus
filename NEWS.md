@@ -2,6 +2,8 @@
 
 ## Development
 
+* Fixes weekly live-test rotation to continue across year boundaries, so every
+  registered SINAN system is selected even when a family has more than 53 members.
 * Replaces the DBC-to-temporary-DBF path in `read_dbc()` with a streaming
   native reader that parses decompressed records directly into R columns.
   Character data are converted explicitly to UTF-8 using DBF language-driver
