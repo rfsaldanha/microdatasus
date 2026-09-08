@@ -20,3 +20,10 @@ Records the exact request, source-file SHA-256 checksums, selected TabWin
 dictionaries, parser version, and packaged reference tables associated with
 an object returned by \code{\link[=fetch_datasus]{fetch_datasus()}}.
 }
+\details{
+Dictionary and reference-table entries are extracted from processing
+diagnostics. To record them, use \code{process = TRUE} and
+\code{process_args = list(diagnostics = TRUE)} in \code{\link[=fetch_datasus]{fetch_datasus()}}.
+Download provenance alone records the source files; a table returned only
+by \code{\link[=read_dbc]{read_dbc()}} has no download provenance for this function.
+}

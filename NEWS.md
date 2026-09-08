@@ -44,6 +44,10 @@
   restricting Unicode unescaping to text that contains escapes, vectorizing
   fixed-width code padding and TabWin `F`-mode thresholds, and avoiding
   full-table row copies while scoring historical dictionary relations.
+* Documents automatic processing optimizations, persistent cache configuration,
+  the scope of column projection, and the limits of synthetic benchmarks.
+  Updates download examples and enables processing diagnostics where lockfiles
+  need dictionary and reference-table provenance.
 
 # microdatasus 3.0.0
 

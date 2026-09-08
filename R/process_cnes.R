@@ -242,6 +242,8 @@
 #' Saldanha, R. F. (2026). [CNES -- Cadastro Nacional de Estabelecimentos de
 #' Saúde](https://rfsaldanha.github.io/sis/cnes.html).
 #'
+#' @inheritSection process_sim Performance and cache
+#'
 #' @seealso [fetch_tabwin_dictionary()], [fetch_datasus()], [fetch_cadger()]
 #'
 #' @export

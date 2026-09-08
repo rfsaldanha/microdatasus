@@ -17,7 +17,10 @@
 #' @param vars `NULL`, or a character vector of column names to retain. When
 #'   neither `process` nor `row_filter` needs a complete row, selection is
 #'   pushed into the DBC reader so unselected fields are not allocated or
-#'   parsed. Selection is always applied before files are combined.
+#'   parsed. With `process = TRUE` or `row_filter`, the full row is read;
+#'   `vars` selects output columns after filtering and processing. It can
+#'   therefore include derived fields when `process = TRUE`. Selection is
+#'   always applied before files are combined.
 #' @param stop_on_error Logical scalar. If `TRUE`, abort after any listing,
 #'   download, or read failure. If `FALSE`, warn and return the files that could
 #'   be read successfully.
@@ -79,6 +82,12 @@
 #' across R sessions. Cache entries include a manifest and SHA-256 checksum (while still accepting legacy MD5 manifests).
 #' [datasus_cache_info()] inspects them and [clear_datasus_cache()] removes only
 #' files managed by microdatasus.
+#'
+#' For processed downloads, `cache_dir` also supplies the dictionary cache to
+#' the processor for that call. `row_filter` sees raw codes and must handle
+#' missing values explicitly. Use `process_args = list(diagnostics = TRUE)`
+#' alongside `provenance = TRUE` when a [datasus_lockfile()] should also record
+#' the dictionaries and reference tables actually used in processing.
 #'
 #' Years and state abbreviations refer to DataSUS processing periods and places
 #' of processing, which may differ from dates or places of occurrence and

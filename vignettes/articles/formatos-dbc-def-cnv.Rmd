@@ -69,6 +69,11 @@ decodificada e, portanto, não invalida a leitura projetada.
 Registros marcados como excluídos no DBF são mantidos. Essa política evita
 descartar implicitamente uma linha publicada pelo DataSUS.
 
+Para aplicar `process_*()` a layouts históricos ou relações entre campos,
+conserve as colunas de competência e os campos físicos necessários à relação.
+Em `fetch_datasus(process = TRUE)`, a projeção de `vars` é feita depois do
+processamento, usando o layout completo como entrada.
+
 ## O que é validado
 
 Antes de retornar dados, o leitor verifica, entre outros contratos:
@@ -177,6 +182,13 @@ Quando a quantidade de categorias anunciada no cabeçalho não coincide com as
 categorias físicas, todas as categorias recuperáveis são preservadas. A
 relação é marcada como `fallback`, com a divergência exposta para auditoria.
 
+No modo `F`, os limites são ordenados, e cada valor recebe a categoria do
+primeiro limite superior que o inclui. Um valor exatamente igual ao limite
+pertence àquela categoria; valores acima do maior limite ficam sem rótulo e
+preservam o código de origem. Limites inválidos ou duplicados são rejeitados.
+A busca vetorizada e o preenchimento vetorizado dos códigos conservam essas
+regras e as larguras declaradas.
+
 ## Tabelas DBF relacionadas
 
 Quando o DEF referencia um DBF, o pacote usa o campo de chave e o campo de
@@ -215,6 +227,14 @@ como níveis visíveis. `"character"` devolve as descrições como texto;
 `"none"` conserva os códigos de origem. As demais conversões independem dessa
 escolha: datas são `Date`, contagens e componentes de idade são inteiros,
 valores contínuos podem ser `double`, e identificadores permanecem texto.
+
+Datas repetidas são convertidas uma vez por campo e formato, depois remapeadas
+para cada linha. A normalização textual continua convertendo para UTF-8, mas
+só aplica desescape a valores com barras invertidas e preserva strings
+`"bytes"`. A seleção histórica usa índices de linhas e lê as colunas exigidas
+pela relação. Veja [Dicionários, cache e processamento em
+escala](dicionarios-cache-e-escala.html) para o efeito dessas otimizações nas
+opções públicas e nos benchmarks.
 
 ## Inspeção e auditoria
 
@@ -282,13 +302,28 @@ Com `cache_dir`, ZIPs, manifests e relações analisadas persistem entre sessõe
 A chave do cache inclui o checksum do arquivo oficial e a versão do parser. Uma
 mudança no conteúdo não reutiliza silenciosamente uma relação anterior.
 
-Use `datasus_lockfile()` quando a análise precisar registrar conjuntamente a
-consulta, os DBCs, os dicionários e as tabelas de referência:
+Use `datasus_lockfile()` sobre o resultado de `fetch_datasus()` com proveniência
+quando a análise precisar registrar a consulta e os DBCs. Para incluir os
+dicionários e as tabelas de referência usados, habilite também os diagnósticos
+do processamento:
 
 ```{r}
+dados <- fetch_datasus(
+  year_start = 2022,
+  year_end = 2022,
+  uf = "AC",
+  information_system = "SIM-DO",
+  cache_dir = cache,
+  process = TRUE,
+  process_args = list(diagnostics = TRUE),
+  provenance = TRUE
+)
 datasus_lockfile(dados, "datasus.lock.rds")
 verify_datasus_lockfile("datasus.lock.rds")
 ```
+
+Uma tabela obtida apenas por `read_dbc()` não possui a proveniência de download
+necessária para criar esse lockfile.
 
 Para o uso cotidiano, veja também [Dicionários, cache e processamento em
 escala](dicionarios-cache-e-escala.html). Para problemas recorrentes, consulte

@@ -71,6 +71,12 @@
 #' dictionaries, parser version, and packaged reference tables associated with
 #' an object returned by [fetch_datasus()].
 #'
+#' Dictionary and reference-table entries are extracted from processing
+#' diagnostics. To record them, use `process = TRUE` and
+#' `process_args = list(diagnostics = TRUE)` in [fetch_datasus()].
+#' Download provenance alone records the source files; a table returned only
+#' by [read_dbc()] has no download provenance for this function.
+#'
 #' @param x An object returned with `provenance = TRUE`, or with
 #'   `collect = FALSE`, by [fetch_datasus()].
 #' @param file Optional path where the RDS lockfile is written atomically.

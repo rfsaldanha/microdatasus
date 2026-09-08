@@ -240,6 +240,8 @@
 #' Saldanha, R. F. (2026). [SINAN -- Sistema de Informação de Agravos de
 #' Notificação](https://rfsaldanha.github.io/sis/sinan.html).
 #'
+#' @inheritSection process_sim Performance and cache
+#'
 #' @seealso [datasus_information_systems()], [fetch_tabwin_dictionary()],
 #'   [fetch_datasus()]
 #'

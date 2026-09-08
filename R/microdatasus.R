@@ -18,6 +18,13 @@
 #' [processing_diagnostics()] to retrieve unknown codes, coercion failures, and
 #' dictionary provenance from an individual processing call.
 #'
+#' Processing automatically reuses repeated date values and vectorizes code
+#' padding and CNV threshold lookup. For large requests, [fetch_datasus()] can
+#' process and save one file at a time with `process = TRUE`,
+#' `collect = FALSE`, and `destination`. Configure `microdatasus.cache_dir`
+#' for persistent dictionary reuse by processors called directly; see
+#' [datasus_cache_dir()] and the performance section of [process_sim()].
+#'
 #' For concepts, coverage, data flows, and caveats of each Brazilian health
 #' information system, see Saldanha (2026), [*Sistemas de Informação em Saúde
 #' no Brasil*](https://rfsaldanha.github.io/sis/).

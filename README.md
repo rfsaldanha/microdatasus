@@ -41,6 +41,9 @@ parte da solicitação falhe.
 
 ## Instalação
 
+Este README acompanha a versão de desenvolvimento `3.0.0.9000`; a versão
+publicada no CRAN pode oferecer um conjunto diferente de recursos.
+
 Instale a versão estável publicada no CRAN:
 
 ```r
@@ -136,7 +139,8 @@ A lista completa dos identificadores está na
 
 Algumas opções úteis de `fetch_datasus()`:
 
-- `vars` limita as colunas lidas e reduz o uso de memória.
+- `vars` limita as colunas retornadas. Sem processamento ou filtro de linhas,
+  também evita alocar as demais colunas durante a leitura do DBC.
 - `track_source = TRUE` acrescenta o nome do DBC de origem de cada registro.
 - `timeout` controla o limite de cada operação de rede, sem alterar opções
   globais do R.
@@ -154,10 +158,13 @@ para exemplos de todas essas opções.
 
 ## Dicionários, cache e tabelas grandes
 
-Um diretório explícito reutiliza DBC e ZIP do TabWin entre sessões:
+Um diretório explícito reutiliza DBC e ZIP do TabWin entre sessões. Configure
+também a opção do pacote para que chamadas diretas a `process_*()` usem esse
+mesmo cache:
 
 ```r
 cache <- datasus_cache_dir(create = TRUE)
+options(microdatasus.cache_dir = cache)
 variables <- datasus_variables("SIM-DO", cache_dir = cache)
 schema <- datasus_schema("SIM-DO", cache_dir = cache)
 contract <- validate_datasus_schema(sim_do_sample, "SIM-DO", period = 2020, cache_dir = cache)
@@ -170,6 +177,20 @@ Com `diagnostics = TRUE`, `processing_diagnostics()` informa códigos ausentes
 das conversões, campos esperados ou não mapeados, falhas de coerção e a
 proveniência — fonte, definição e checksum — de cada dicionário usado.
 
+As otimizações de processamento são automáticas: datas repetidas são
+convertidas uma vez por campo e formato; o desescape só é aplicado a textos
+com barras invertidas; preenchimentos de códigos e faixas CNV `F` são
+vetorizados; e a seleção de relações históricas acessa as colunas necessárias.
+A conversão textual para UTF-8 permanece ativa, preservando identificadores
+marcados como `"bytes"` na etapa de normalização.
+
+Use `labels = "none"` se precisar dos códigos, `municipality_data = FALSE` se
+não precisar dos atributos territoriais e `diagnostics = FALSE` (padrão) se
+não precisar do relatório. `labels = "none"` não garante execução sem rede:
+SIA, CNES e SINAN ainda consultam os dicionários para determinar a semântica
+dos campos. Uma primeira chamada pode incluir download e análise desses
+arquivos; chamadas seguintes podem reutilizar o cache.
+
 Para solicitações grandes, combine `destination`, `collect = FALSE` e
 `process = TRUE`: cada DBC é processado e gravado antes da leitura do próximo.
 O retorno é um manifesto com caminhos, número de linhas, origem e checksum.
@@ -177,12 +198,20 @@ O retorno é um manifesto com caminhos, número de linhas, origem e checksum.
 Use `row_filter` para descartar linhas de cada DBC antes do processamento e
 reduzir memória e tempo. Novos manifests usam SHA-256; espelhos HTTP/FTP podem
 ser informados por `options(microdatasus.mirrors = c("https://..."))`.
+Com `process = TRUE` ou `row_filter`, a leitura usa o layout completo, e `vars`
+é aplicado depois dessas etapas. Isso preserva os campos necessários para
+datas históricas, idades e relações entre colunas.
+
 Com `provenance = TRUE`, `datasus_lockfile(dados, "datasus.lock.rds")`
-registra a consulta, os DBC e os dicionários usados.
+registra a consulta e os DBC. Acrescente `process = TRUE` e
+`process_args = list(diagnostics = TRUE)` para registrar também os dicionários
+e as tabelas de referência usados no processamento.
 
 O guia [Dicionários, cache e processamento em
 escala](https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.html)
-apresenta o fluxo completo. O artigo [Formatos DBC, DEF e
+apresenta o fluxo completo e um exemplo para medir o processamento dos seus
+dados. A [documentação dos benchmarks](https://github.com/rfsaldanha/microdatasus/blob/dev/benchmarks/README.md) explica o escopo
+dos testes de desempenho do repositório. O artigo [Formatos DBC, DEF e
 CNV](https://rfsaldanha.github.io/microdatasus/articles/formatos-dbc-def-cnv.html)
 descreve as regras de leitura, precedência e diagnóstico. O suporte do SIM
 nesta versão é restrito a CID-10.

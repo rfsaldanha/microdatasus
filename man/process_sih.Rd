@@ -51,6 +51,29 @@ archives according to each row's competence. This supports data sets
 concatenated across the 1997, July 2003, and 2007 layout boundaries. Codes
 absent from a conversion table remain visible as factor levels.
 }
+\section{Performance and cache}{
+
+Processing uses vectorized code padding and CNV thresholds, parses repeated
+dates once per field and format, and unescapes only text containing
+backslashes. UTF-8 conversion is still performed for text; values marked as
+\code{"bytes"} bypass text normalization. Historical relation selection subsets
+only the source columns it needs. These optimizations are automatic.
+
+Dictionaries are reused within the R session. For reuse across sessions,
+set \code{options(microdatasus.cache_dir = datasus_cache_dir(create = TRUE))};
+calling \code{\link[=datasus_cache_dir]{datasus_cache_dir()}} alone does not enable persistent caching.
+The first processing call can include dictionary downloads and parsing.
+\code{labels = "none"} controls categorical output, not network access: some
+processors still need DEF metadata or relations for field semantics.
+
+\code{diagnostics = FALSE} avoids collecting the optional report, and
+\code{municipality_data = FALSE} omits territorial enrichment when it is not
+needed. For requests spanning many files, use \code{\link[=fetch_datasus]{fetch_datasus()}} with
+\code{process = TRUE}, \code{collect = FALSE}, and \code{destination} to save each file
+separately. A processor called directly still holds its input and output
+in memory. See the \href{https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.html}{processing guide}.
+}
+
 \examples{
 \dontshow{if (interactive() && curl::has_internet()) withAutoprint(\{ # examplesIf}
 process_sih(sih_rd_sample)

@@ -25,6 +25,13 @@ selected historical definitions and processed types, and
 \code{\link[=processing_diagnostics]{processing_diagnostics()}} to retrieve unknown codes, coercion failures, and
 dictionary provenance from an individual processing call.
 
+Processing automatically reuses repeated date values and vectorizes code
+padding and CNV threshold lookup. For large requests, \code{\link[=fetch_datasus]{fetch_datasus()}} can
+process and save one file at a time with \code{process = TRUE},
+\code{collect = FALSE}, and \code{destination}. Configure \code{microdatasus.cache_dir}
+for persistent dictionary reuse by processors called directly; see
+\code{\link[=datasus_cache_dir]{datasus_cache_dir()}} and the performance section of \code{\link[=process_sim]{process_sim()}}.
+
 For concepts, coverage, data flows, and caveats of each Brazilian health
 information system, see Saldanha (2026), \href{https://rfsaldanha.github.io/sis/}{\emph{Sistemas de Informação em Saúde no Brasil}}.
 }

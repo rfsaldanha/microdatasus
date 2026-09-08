@@ -149,6 +149,8 @@
 #' Saldanha, R. F. (2026). [SINASC -- Sistema de Informação sobre Nascidos
 #' Vivos](https://rfsaldanha.github.io/sis/sinasc.html).
 #'
+#' @inheritSection process_sim Performance and cache
+#'
 #' @seealso [fetch_tabwin_dictionary()], [fetch_datasus()]
 #'
 #' @export

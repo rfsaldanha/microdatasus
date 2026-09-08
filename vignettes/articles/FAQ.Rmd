@@ -35,7 +35,7 @@ sim_raw <- fetch_datasus(
 
 sim <- process_sim(sim_raw)
 
-sim_2020 <- sim[format(sim$DTOBITO, "%Y") == "2020", ]
+sim_2020 <- sim[!is.na(sim$DTOBITO) & format(sim$DTOBITO, "%Y") == "2020", ]
 ```
 
 Os capítulos do livro sobre
@@ -149,7 +149,13 @@ dados <- fetch_datasus(
 ```
 
 Para muitos anos, meses ou UFs, baixe lotes menores e grave cada lote em um
-banco de dados. O exemplo abaixo usa SQLite:
+banco de dados. Outra opção é `fetch_datasus(process = TRUE, collect = FALSE,
+destination = "dados")`, que grava um RDS por arquivo e retorna um manifesto.
+O maior DBC descomprimido, os dicionários e os objetos temporários ainda devem
+caber em memória.
+
+O exemplo abaixo usa SQLite e processa o layout completo antes de selecionar
+as colunas de saída:
 
 ```{r}
 library(DBI)
@@ -173,6 +179,8 @@ for (i in seq_len(nrow(grade))) {
     uf = grade$uf[i],
     information_system = "SIH-RD",
     vars = c("MUNIC_RES", "DT_INTER", "DIAG_PRINC", "SEXO"),
+    process = TRUE,
+    process_args = list(municipality_data = FALSE, labels = "character"),
     track_source = TRUE,
     timeout = 600,
     stop_on_error = FALSE
@@ -182,7 +190,6 @@ for (i in seq_len(nrow(grade))) {
     next
   }
 
-  lote <- process_sih(lote)
   dbWriteTable(
     con,
     "sih",
@@ -208,6 +215,37 @@ tbl(con, "sih") |>
 
 dbDisconnect(con)
 ```
+
+## Como acelerar o processamento?
+
+As funções já convertem datas repetidas uma vez por campo e formato, restringem
+o desescape de texto e usam operações vetorizadas em códigos e limites CNV.
+Essas otimizações não exigem um argumento adicional.
+
+Ative o cache persistente para reutilizar dicionários:
+
+```{r}
+options(microdatasus.cache_dir = datasus_cache_dir(create = TRUE))
+```
+
+Desative apenas o que sua análise não precisa: `municipality_data = FALSE`
+omite atributos territoriais, e `diagnostics = FALSE` (padrão) evita construir
+o relatório. Use `labels = "none"` se quiser os códigos categóricos. Essa opção
+não garante execução sem rede: SIA, CNES e SINAN ainda consultam os DEFs e podem
+avaliar suas relações.
+
+Ao medir desempenho, separe a leitura do DBC da primeira chamada do processador
+e das chamadas com dicionários já em cache. Sempre reutilize a entrada bruta.
+Consulte o exemplo de medição em [Dicionários, cache e processamento em
+escala](dicionarios-cache-e-escala.html).
+
+## `vars` sempre reduz a memória de leitura?
+
+Sem `process` e sem `row_filter`, as colunas solicitadas são selecionadas pelo
+leitor de DBC. Com processamento ou filtro, o layout completo é lido e `vars`
+seleciona a saída depois dessas etapas. Isso permite usar campos derivados e
+conservar as colunas necessárias às relações históricas. Selecionar poucas
+colunas de saída não torna a leitura inicial menor nesse segundo caso.
 
 ## Quais tipos as funções de processamento retornam?
 

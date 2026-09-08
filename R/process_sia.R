@@ -282,6 +282,8 @@
 #' Saldanha, R. F. (2026). [SIA -- Sistema de Informações Ambulatoriais do
 #' SUS](https://rfsaldanha.github.io/sis/sia.html).
 #'
+#' @inheritSection process_sim Performance and cache
+#'
 #' @seealso [fetch_tabwin_dictionary()], [fetch_datasus()]
 #'
 #' @export

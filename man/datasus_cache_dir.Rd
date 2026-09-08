@@ -7,12 +7,20 @@
 datasus_cache_dir(create = FALSE)
 }
 \arguments{
-\item{create}{Logical scalar. If TRUE, create the directory.}
+\item{create}{Logical scalar. If \code{TRUE}, create the directory.}
 }
 \value{
 A normalized directory path.
 }
 \description{
-Returns a platform-appropriate directory that users may pass to cache_dir or
-set in options(microdatasus.cache_dir = ...).
+Returns a platform-appropriate directory that users may pass to \code{cache_dir}
+or set in \code{options(microdatasus.cache_dir = ...)}. Calling this function,
+even with \code{create = TRUE}, does not change that option or enable persistent
+caching for subsequent downloads or processing calls.
+}
+\examples{
+cache <- datasus_cache_dir()
+# To enable persistent caching for subsequent calls:
+# options(microdatasus.cache_dir = cache)
+
 }

@@ -170,6 +170,27 @@
 #'   including codes absent from official conversion tables. Retrieve it with
 #'   [processing_diagnostics()].
 #'
+#' @section Performance and cache:
+#' Processing uses vectorized code padding and CNV thresholds, parses repeated
+#' dates once per field and format, and unescapes only text containing
+#' backslashes. UTF-8 conversion is still performed for text; values marked as
+#' `"bytes"` bypass text normalization. Historical relation selection subsets
+#' only the source columns it needs. These optimizations are automatic.
+#'
+#' Dictionaries are reused within the R session. For reuse across sessions,
+#' set `options(microdatasus.cache_dir = datasus_cache_dir(create = TRUE))`;
+#' calling [datasus_cache_dir()] alone does not enable persistent caching.
+#' The first processing call can include dictionary downloads and parsing.
+#' `labels = "none"` controls categorical output, not network access: some
+#' processors still need DEF metadata or relations for field semantics.
+#'
+#' `diagnostics = FALSE` avoids collecting the optional report, and
+#' `municipality_data = FALSE` omits territorial enrichment when it is not
+#' needed. For requests spanning many files, use [fetch_datasus()] with
+#' `process = TRUE`, `collect = FALSE`, and `destination` to save each file
+#' separately. A processor called directly still holds its input and output
+#' in memory. See the [processing guide](https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.html).
+#'
 #' @examplesIf interactive() && curl::has_internet()
 #' process_sim(sim_do_sample)
 #'

@@ -46,7 +46,10 @@ systems published only as national files.}
 \item{vars}{\code{NULL}, or a character vector of column names to retain. When
 neither \code{process} nor \code{row_filter} needs a complete row, selection is
 pushed into the DBC reader so unselected fields are not allocated or
-parsed. Selection is always applied before files are combined.}
+parsed. With \code{process = TRUE} or \code{row_filter}, the full row is read;
+\code{vars} selects output columns after filtering and processing. It can
+therefore include derived fields when \code{process = TRUE}. Selection is
+always applied before files are combined.}
 
 \item{stop_on_error}{Logical scalar. If \code{TRUE}, abort after any listing,
 download, or read failure. If \code{FALSE}, warn and return the files that could
@@ -126,6 +129,12 @@ When \code{cache_dir} is supplied, complete DBC files and dictionaries persist
 across R sessions. Cache entries include a manifest and SHA-256 checksum (while still accepting legacy MD5 manifests).
 \code{\link[=datasus_cache_info]{datasus_cache_info()}} inspects them and \code{\link[=clear_datasus_cache]{clear_datasus_cache()}} removes only
 files managed by microdatasus.
+
+For processed downloads, \code{cache_dir} also supplies the dictionary cache to
+the processor for that call. \code{row_filter} sees raw codes and must handle
+missing values explicitly. Use \code{process_args = list(diagnostics = TRUE)}
+alongside \code{provenance = TRUE} when a \code{\link[=datasus_lockfile]{datasus_lockfile()}} should also record
+the dictionaries and reference tables actually used in processing.
 
 Years and state abbreviations refer to DataSUS processing periods and places
 of processing, which may differ from dates or places of occurrence and

@@ -45,6 +45,14 @@ tipos distintos: por padrão, datas completas são `Date`, contagens são inteir
 e rótulos categóricos são fatores. Use `labels = "character"` ou `"none"` para
 alterar somente a política dos campos categóricos.
 
+As otimizações de datas, textos e relações CNV são automáticas. Para reutilizar
+dicionários entre sessões em chamadas diretas aos processadores, configure
+`options(microdatasus.cache_dir = datasus_cache_dir(create = TRUE))`.
+`labels = "none"` mantém os códigos, mas SIA, CNES e SINAN ainda podem acessar
+dicionários para determinar tipos e relações. Veja [Dicionários, cache e
+processamento em escala](dicionarios-cache-e-escala.html) para escolher opções
+e medir o custo com seus dados.
+
 Os argumentos de período e UF identificam as partições publicadas pelo
 DataSUS. Eles não substituem a escolha da variável temporal ou territorial
 adequada à pergunta de pesquisa. O livro
