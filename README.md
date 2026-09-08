@@ -207,6 +207,14 @@ registra a consulta e os DBC. Acrescente `process = TRUE` e
 `process_args = list(diagnostics = TRUE)` para registrar também os dicionários
 e as tabelas de referência usados no processamento.
 
+O enriquecimento municipal usa uma referência fixa, identificada por
+`datasus_reference_tables()` como `datasus-territorio-2023-txt-20220516`.
+Ela foi reconstruída sem alterar os valores de `tabMun`, usando os TXT oficiais
+congelados no pacote. Não representa automaticamente os limites territoriais
+vigentes no ano de cada registro. Use `municipality_data = FALSE` para aplicar
+outra referência; consulte [`tabMun`](https://rfsaldanha.github.io/microdatasus/reference/tabMun.html)
+para a origem e as transformações de compatibilidade.
+
 O guia [Dicionários, cache e processamento em
 escala](https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.html)
 apresenta o fluxo completo e um exemplo para medir o processamento dos seus

@@ -69,6 +69,10 @@ needed. For requests spanning many files, use \code{\link[=fetch_datasus]{fetch_
 \code{process = TRUE}, \code{collect = FALSE}, and \code{destination} to save each file
 separately. A processor called directly still holds its input and output
 in memory. See the \href{https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.html}{processing guide}.
+
+Territorial enrichment uses the fixed \link{tabMun} snapshot identified by
+\code{\link[=datasus_reference_tables]{datasus_reference_tables()}}, not an automatically selected edition for each
+observation year. Enable diagnostics to record that version in the report.
 }
 
 \examples{

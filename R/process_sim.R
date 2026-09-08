@@ -191,6 +191,10 @@
 #' separately. A processor called directly still holds its input and output
 #' in memory. See the [processing guide](https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.html).
 #'
+#' Territorial enrichment uses the fixed [tabMun] snapshot identified by
+#' [datasus_reference_tables()], not an automatically selected edition for each
+#' observation year. Enable diagnostics to record that version in the report.
+#'
 #' @examplesIf interactive() && curl::has_internet()
 #' process_sim(sim_do_sample)
 #'

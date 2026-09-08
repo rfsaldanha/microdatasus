@@ -325,6 +325,32 @@ verify_datasus_lockfile("datasus.lock.rds")
 Uma tabela obtida apenas por `read_dbc()` não possui a proveniência de download
 necessária para criar esse lockfile.
 
+### Referência territorial
+
+Com `municipality_data = TRUE`, os processadores usam a mesma edição fixa de
+`tabMun` para todos os períodos. A versão
+`datasus-territorio-2023-txt-20220516` é reconstruída dos TXT `TB_MUNICIP` e
+`TB_UF` do arquivo oficial de 2023, com checksums verificados. Os quatro arquivos
+TXT/layout originais estão incluídos no pacote para reconstrução offline.
+
+```{r}
+datasus_reference_tables()
+system.file("extdata", "territory", "tabmun-source.zip", package = "microdatasus")
+```
+
+`source_date` registra a data dos membros TXT dentro do ZIP (16/05/2022), não
+a vigência de todos os atributos nem a data original de extração do pacote,
+que continua desconhecida. Os valores, tipos e ordem da tabela anterior foram
+preservados. As 5.659 linhas incluem códigos extintos, transferidos e ignorados;
+não são uma contagem de municípios ativos.
+
+A transformação `legacy-compatible-v1` mantém as convenções anteriores de
+valores ausentes e de apresentação de UF, detalhadas em [`tabMun`](../reference/tabMun.html).
+Diagnósticos e lockfiles registram a versão e o checksum dessa referência.
+O pacote não harmoniza limites municipais históricos automaticamente. Para
+usar outra edição territorial, desative esse enriquecimento com
+`municipality_data = FALSE` e faça a associação externamente.
+
 Para o uso cotidiano, veja também [Dicionários, cache e processamento em
 escala](dicionarios-cache-e-escala.html). Para problemas recorrentes, consulte
 as [Perguntas frequentes](FAQ.html).

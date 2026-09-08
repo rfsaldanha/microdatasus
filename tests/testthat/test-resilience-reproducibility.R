@@ -127,6 +127,10 @@ test_that("lockfiles pin requests, dictionaries and retained source files", {
   expect_identical(restored$request$information_system, "SIM-DO")
   expect_identical(restored$files$checksum_algorithm, "sha256")
   expect_identical(restored$dictionaries$information_system, "SIM-DO")
+  expect_identical(restored$reference_tables$source_version,
+                   "datasus-territorio-2023-txt-20220516")
+  expect_identical(restored$reference_tables$source_archive_sha256,
+                   datasus_reference_tables()$source_archive_sha256[1L])
   expect_setequal(verified$component, c("dbc", "dictionary", "reference"))
   expect_true(all(verified$status == "ok"))
 

@@ -2,6 +2,12 @@
 
 ## Development
 
+* Reconstructs the packaged municipal reference exactly from checksum-pinned
+  official DataSUS TXT files, without changing its values. Ships the source
+  members for offline rebuilding and reports an explicit snapshot version,
+  source timestamp basis, archive checksum, and compatibility transformations.
+  Documents that territorial enrichment uses a fixed reference, not boundaries
+  selected from observation dates.
 * Adds an offline, checksum-pinned corpus of eight official historical DBC
   excerpts with original DEF/CNV/DBF members and independently transcribed
   expected results. Checks four layout transitions, all label modes, mixed

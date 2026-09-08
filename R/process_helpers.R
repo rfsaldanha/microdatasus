@@ -348,9 +348,9 @@
   }
   actual <- actual[[1L]]
   municipality <- get("tabMun", envir = asNamespace("microdatasus"))
-  # The packaged spatial snapshot is retained for backward compatibility.
-  # Normalize it at use time and record it in diagnostics so it is never a
-  # silent substitute for a current official dictionary.
+  # The pinned TXT-derived snapshot preserves the established output. Its exact
+  # source version and compatibility policy are recorded in diagnostics; it is
+  # not an automatic reconstruction of boundaries at each observation date.
   municipality <- .process_normalize_text(municipality)
   .process_record_reference(collector, "tabMun")
   names(municipality)[[1L]] <- actual
