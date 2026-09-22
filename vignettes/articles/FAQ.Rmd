@@ -113,6 +113,23 @@ if (is.null(dados)) {
 Com `stop_on_error = TRUE`, uma falha de listagem, download ou leitura
 interrompe a chamada.
 
+## E quando o computador está sem internet ou o DataSUS está indisponível?
+
+Com `stop_on_error = FALSE`, `fetch_datasus()` informa as falhas de conexão
+com avisos e retorna `NULL` quando não consegue obter nenhum arquivo. Verifique
+esse retorno antes de chamar uma função `process_*()`. Ter acesso à internet
+não garante acesso ao FTP do DataSUS: o servidor também pode estar indisponível
+ou bloquear conexões de determinadas redes ou países.
+
+Os exemplos de download da ajuda só executam em sessões interativas com acesso
+à internet. Os testes automáticos usam arquivos locais e conexões simuladas;
+os testes que acessam o DataSUS precisam ser ativados explicitamente e não
+executam no CRAN. Assim, os checks não dependem da disponibilidade do servidor.
+
+As tabelas de referência incluídas no pacote, como `tabMun`, podem ser usadas
+sem conexão. O pacote também inclui os arquivos de origem necessários para
+reconstruir essa referência municipal.
+
 ## Como saber de qual arquivo veio cada linha?
 
 Use `track_source = TRUE`:

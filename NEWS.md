@@ -2,6 +2,12 @@
 
 ## Development
 
+* Publishes the development documentation on pushes to `dev`, including the
+  processing guide linked from the help pages. Cites the official DataSUS HTTPS
+  transfer portal for the fixed municipal reference, retaining the original
+  FTP address as provenance and documenting its access limitations and the
+  bundled offline sources. Clarifies connection-failure handling and the
+  separation between offline package checks and opt-in live tests.
 * Documents and adds regression coverage for discovering every published file
   part across all supported systems, including more than 26 parts, arbitrary
   suffix lengths, and different part sets for each state and period.

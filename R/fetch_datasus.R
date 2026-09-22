@@ -122,6 +122,12 @@
 #' when supported. Alternative base URLs can be configured with the
 #' `microdatasus.mirrors` option; the official DataSUS URL is always tried
 #' first.
+#' General Internet connectivity does not guarantee access to the DataSUS
+#' server. With `stop_on_error = FALSE`, failed listings or downloads are
+#' reported as warnings and successful files are retained; the result is
+#' `NULL` if no file can be read. Check for `NULL` before processing the result.
+#' Set `stop_on_error = TRUE` when an incomplete download must interrupt an
+#' analysis.
 #'
 #' @references
 #' Saldanha, R. F. (2026). [*Sistemas de Informação em Saúde no

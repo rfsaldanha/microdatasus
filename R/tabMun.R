@@ -19,9 +19,14 @@
 #' available in the shipped source TXT. Genuine zero values elsewhere remain.
 #' [datasus_reference_tables()] reports the version and source checksum.
 #'
-#' @source DataSUS, [territorial base 2023](ftp://ftp.datasus.gov.br/territorio/tabelas/2023/base_territorial_2023.zip).
+#' @source DataSUS, territorial base 2023. See the official
+#' [file-transfer portal](https://datasus.saude.gov.br/transferencia-de-arquivos/).
+#' The original archive location is recorded for provenance:
+#' \samp{ftp://ftp.datasus.gov.br/territorio/tabelas/2023/base_territorial_2023.zip}.
+#' Access to this FTP server can be unavailable from some networks or countries.
 #' The four unmodified TXT/layout members and reconstruction notes are supplied
-#' under `system.file("extdata", "territory", package = "microdatasus")`.
+#' under `system.file("extdata", "territory", package = "microdatasus")`, so
+#' using this reference and rebuilding it from those members require no download.
 #'
 #' @format A data frame with 5659 rows and 9 variables:
 #' \describe{

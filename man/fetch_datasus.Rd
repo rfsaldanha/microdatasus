@@ -174,6 +174,12 @@ restrict FTP access from some countries. Interrupted transfers are resumed
 when supported. Alternative base URLs can be configured with the
 \code{microdatasus.mirrors} option; the official DataSUS URL is always tried
 first.
+General Internet connectivity does not guarantee access to the DataSUS
+server. With \code{stop_on_error = FALSE}, failed listings or downloads are
+reported as warnings and successful files are retained; the result is
+\code{NULL} if no file can be read. Check for \code{NULL} before processing the result.
+Set \code{stop_on_error = TRUE} when an incomplete download must interrupt an
+analysis.
 }
 
 \examples{
