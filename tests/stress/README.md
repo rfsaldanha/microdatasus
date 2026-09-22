@@ -24,6 +24,9 @@ run sequentially. Network operations explicitly performed by the harness
 use 60-second timeouts and the package's existing retry policy. Processors
 use their normal defaults; required dictionaries are prefetched with the
 60-second timeout. A supervisor also bounds calls with internal defaults.
+Keep the host awake and connected during a run: operating-system sleep also
+suspends the supervisor, so it can enforce expired deadlines only after wake.
+Recorded wall-clock durations can include that suspension.
 
 Artifacts are retained under `.cache/intensive/<UTC timestamp>/`. Set
 `MICRODATASUS_INTENSIVE_ROOT` to choose another new run directory. The main
@@ -57,6 +60,20 @@ To continue an interrupted run with the remaining cases and its original
 deadline, run `Rscript --vanilla tests/stress/live-intensive.R --resume <run>`.
 Completed cases are preserved; interrupted evidence is moved under
 `interrupted/` before retrying the affected case.
+
+Saved plans can also include `supplemental` cases with `download_only = TRUE`
+and an explicit column selection. They compare all rows, aggregation, cache
+reuse, and source integrity, but do not count as full processing passes.
+Their independent reads use the same column selection. A projected case is
+skipped when its corresponding complete case already failed during transport
+at the same timeout: selecting fewer columns cannot change that transfer.
+
+An optional `dictionary_failures_before_skip` value in the saved run
+configuration bounds duplicate attempts for a shared dictionary archive after
+that many completed timeout failures. Dependent cases still test their source
+files and record processing as blocked; the original errors remain available.
+A valid cached dictionary allows processing to continue. This safeguard is
+disabled unless configured for the run, and `--replay` retries the dependency.
 
 The separate `multipart-systems.R <run>` script exercises controlled multipart
 downloads for every registered identifier using local DBC fixtures at the
