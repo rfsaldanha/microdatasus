@@ -14,7 +14,18 @@ audit_save <- function(value, path) {
   stopifnot(file.rename(temporary, path))
 }
 
+audit_text <- function(value) {
+  # Archive member names can contain bytes invalid in the current locale.
+  # Escape them in reports; the untouched conditions remain in state.rds.
+  iconv(enc2utf8(value), from = "UTF-8", to = "UTF-8", sub = "byte")
+}
+
 audit_csv <- function(value, path) {
+  for (field in names(value)) {
+    if (is.character(value[[field]]) || is.factor(value[[field]])) {
+      value[[field]] <- audit_text(as.character(value[[field]]))
+    }
+  }
   utils::write.csv(value, path, row.names = FALSE, na = "")
 }
 
@@ -319,7 +330,53 @@ audit_cached_path <- function(row, config) {
   file.path(config$cache, "dbc", component(row$information_system), component(row$file), "data.dbc")
 }
 
+audit_download_guard <- function(config, cached) {
+  if (Sys.time() >= config$download_deadline && !cached) {
+    stop(structure(list(message = "download_deadline: new download skipped after the three-hour window",
+      call = NULL), class = c("audit_resource_limit", "error", "condition")))
+  }
+  invisible(TRUE)
+}
+
+audit_dictionary <- function(key, config) {
+  # A live run may bound repeated attempts at the same unavailable archive.
+  # This never marks processing as passed: dependent cases retain an explicit
+  # failure and the original transport errors remain available for replay.
+  limit <- config$dictionary_failures_before_skip
+  if (!is.null(limit) || Sys.time() >= config$download_deadline) {
+    spec <- microdatasus:::.tabwin_registry()[[key]]
+    directory <- file.path(config$cache, "tabwin", spec$archive_key)
+    cached <- microdatasus:::.datasus_cache_valid(
+      file.path(directory, "dictionary.zip"), file.path(directory, "manifest.rds"))
+    audit_download_guard(config, cached)
+    if (!cached && !is.null(limit)) {
+      paths <- list.files(file.path(config$root, "cases"), pattern = "^state[.]rds$",
+                          recursive = TRUE, full.names = TRUE)
+      failed <- Filter(function(path) {
+        state <- readRDS(path)
+        any(vapply(state$events, function(event) {
+          event$stage == "dictionary_download" && event$status == "fail" &&
+            grepl("microdatasus_transport_error", event$error_class, fixed = TRUE) &&
+            grepl(spec$url, event$message, fixed = TRUE) &&
+            grepl("timeout|timed out", event$message, ignore.case = TRUE)
+        }, logical(1)))
+      }, paths)
+      if (length(failed) >= limit) stop(structure(list(message = paste0(
+        "Dictionary dependency unavailable after ", length(failed),
+        " completed transport failures at the same timeout: ", spec$url,
+        ". Duplicate transfer skipped; processing was not executed. Evidence: ",
+        paste(basename(dirname(failed)), collapse = ", ")), call = NULL),
+        class = c("audit_upstream_dependency", "error", "condition")))
+    }
+  }
+  microdatasus::fetch_tabwin_dictionary(key, timeout = 60, quiet = TRUE, cache_dir = config$cache)
+}
+
 audit_case <- function(config, case) {
+  if (grepl("-replay-", case$id, fixed = TRUE)) {
+    config$dictionary_failures_before_skip <- NULL
+    config$download_deadline <- Sys.time() + 600
+  }
   case_dir <- file.path(config$root, "cases", case$id)
   dir.create(case_dir, recursive = TRUE, showWarnings = FALSE)
   options(microdatasus.cache_dir = config$cache, timeout = 60)
@@ -353,12 +410,33 @@ audit_case <- function(config, case) {
   }
   finish <- function() {
     state$finished_at <<- Sys.time()
-    state$status <<- if (any(vapply(state$events, function(x) x$status == "fail", logical(1)))) "fail" else "ok"
+    limited <- any(vapply(state$events, function(x) grepl("audit_resource_limit", x$error_class, fixed = TRUE), logical(1)))
+    failed <- any(vapply(state$events, function(x) x$status == "fail", logical(1)))
+    state$status <<- if (limited) "resource_limit" else if (failed) "fail" else "ok"
     audit_csv(audit_rows(state$warnings), file.path(case_dir, "warnings.csv"))
     checkpoint()
     invisible(state)
   }
   checkpoint()
+  if (isTRUE(case$download_only) && case$args$timeout <= 60) {
+    previous <- file.path(config$root, "cases", sub("^projected-", "multipart-", case$id), "state.rds")
+    if (file.exists(previous)) {
+      previous <- readRDS(previous)
+      transport_failed <- any(vapply(previous$events, function(event) {
+        event$status == "fail" && grepl("All configured DataSUS transports failed", event$message, fixed = TRUE)
+      }, logical(1)))
+      if (transport_failed) {
+        active_stage <- "source_transport_dependency"
+        state$events[[1L]] <- data.frame(case_id = case$id, stage = active_stage,
+          status = "not_run", seconds = 0, error_class = "",
+          message = "Full-column request already failed in transport at this timeout; column projection cannot change that result")
+        state$status <- "not_run"
+        state$finished_at <- Sys.time()
+        checkpoint()
+        return(invisible(state))
+      }
+    }
+  }
   ready <- check("discovery_preflight", {
     spec <- microdatasus:::.datasus_registry()[[case$args$information_system]]
     found <- microdatasus:::.datasus_build_manifest(spec, unique(case$expected$period),
@@ -374,7 +452,16 @@ audit_case <- function(config, case) {
     TRUE
   })
   if (is.null(ready)) return(finish())
-  raw <- check("download_read_raw", do.call(microdatasus::fetch_datasus, case$args))
+  raw <- check("download_read_raw", {
+    if (Sys.time() >= config$download_deadline) {
+      cached <- vapply(seq_len(nrow(case$expected)), function(i) {
+        path <- audit_cached_path(case$expected[i, ], config)
+        microdatasus:::.datasus_cache_valid(path, file.path(dirname(path), "manifest.rds"))
+      }, logical(1))
+      audit_download_guard(config, all(cached))
+    }
+    do.call(microdatasus::fetch_datasus, case$args)
+  })
   if (is.null(raw)) {
     if (tail(state$events, 1L)[[1L]]$status == "ok") check("raw_nonnull", stop("fetch_datasus returned NULL", call. = FALSE))
     return(finish())
@@ -394,7 +481,7 @@ audit_case <- function(config, case) {
   })
   independent <- check("independent_read", {
     lapply(seq_len(nrow(provenance)), function(i) {
-      data <- microdatasus::read_dbc(provenance$dbc_path[[i]])
+      data <- microdatasus::read_dbc(provenance$dbc_path[[i]], vars = case$args$vars)
       data$source <- provenance$file[[i]]
       audit_assert(nrow(data) == provenance$source_rows[[i]], "Individual row count differs from provenance")
       data
@@ -407,12 +494,34 @@ audit_case <- function(config, case) {
     audit_assert(identical(as.integer(counts), as.integer(provenance$source_rows)), "Per-source row counts differ")
     TRUE
   })
+  # A separate projected case can isolate discovery/aggregation failures from
+  # the memory needed to collect a complete multi-million-row table. It never
+  # replaces or counts as successful full-column processing of the file case.
+  if (isTRUE(case$download_only)) {
+    repeated <- check("projected_cache_repeat", do.call(microdatasus::fetch_datasus, case$args))
+    if (!is.null(repeated)) {
+      check("projected_repeat_equal", audit_equal(repeated, raw))
+      check("projected_cache_reuse", {
+        audit_assert(all(microdatasus::datasus_provenance(repeated)$cached), "Projected repeat redownloaded source files")
+        TRUE
+      })
+      check("projected_lockfile_integrity", {
+        lock <- microdatasus::datasus_lockfile(repeated)
+        audit_save(lock, file.path(case_dir, "lockfile-projected.rds"))
+        verified <- microdatasus::verify_datasus_lockfile(lock)
+        audit_csv(verified, file.path(case_dir, "integrity-projected.csv"))
+        audit_assert(all(verified$status == "ok"), "Projected source integrity mismatch")
+        TRUE
+      })
+    }
+    return(finish())
+  }
   dictionaries_ready <- check("dictionary_download", {
     keys <- unique(unlist(lapply(independent, function(x) microdatasus:::.datasus_contract_dictionary_keys(x, case$args$information_system))))
     if (case$family == "SIM") keys <- unique(c(keys, "SIM-DO-CID9"))
     if (case$family == "CNES") keys <- unique(c(keys, "CNES-ST"))
     if (case$args$information_system == "SINAN-CHIKUNGUNYA") keys <- unique(c(keys, "SINAN-FEBRE-TIFOIDE"))
-    for (key in keys) microdatasus::fetch_tabwin_dictionary(key, timeout = 60, quiet = TRUE, cache_dir = config$cache)
+    for (key in keys) audit_dictionary(key, config)
     TRUE
   })
   if (is.null(dictionaries_ready)) return(finish())
@@ -593,13 +702,14 @@ audit_report <- function(config, plan) {
     }
   }
   results <- audit_rows(rows); checks <- audit_rows(events); file_results <- audit_rows(files)
+  if (nrow(checks)) checks$message <- audit_text(checks$message)
   audit_csv(results, file.path(config$root, "results.csv"))
   audit_csv(checks, file.path(config$root, "checks.csv"))
   audit_csv(file_results, file.path(config$root, "file-results.csv"))
   audit_csv(audit_rows(anomalies), file.path(config$root, "data-anomalies.csv"))
   if (nrow(checks)) {
     failures <- checks[checks$status == "fail", ]
-    failures$category <- ifelse(grepl("Group requires", failures$message), "upstream_dependency",
+    failures$category <- ifelse(grepl("Group requires|Dictionary dependency unavailable", failures$message), "upstream_dependency",
       ifelse(grepl("timeout|memory_limit|disk_limit|deadline", failures$message), "resources",
       ifelse(grepl("resolve|connect|FTP|transfer|download|listing|listed|curl", paste(failures$message, failures$error_class), ignore.case = TRUE), "transport",
       ifelse(grepl("dbc|decompress|CRC|checksum", paste(failures$message, failures$error_class), ignore.case = TRUE), "dbc_or_integrity",
@@ -617,6 +727,9 @@ audit_report <- function(config, plan) {
     sprintf("Grupos de agregação: %d planejados; %d aprovados; %d com falhas/limites; %d não executados.", length(plan$groups),
       sum(results$kind == "group" & results$status == "ok"), sum(results$kind == "group" & results$status %in% c("fail", "resource_limit")),
       sum(results$kind == "group" & results$status == "not_run")),
+    sprintf("Casos complementares com seleção de colunas: %d planejados; %d aprovados; %d com falhas/limites. Não substituem o processamento completo.",
+      sum(results$kind == "supplemental"), sum(results$kind == "supplemental" & results$status == "ok"),
+      sum(results$kind == "supplemental" & results$status %in% c("fail", "resource_limit"))),
     sprintf("Armazenamento: %.3f GB. Tempo decorrido: %.1f minutos.", audit_size(config$root) / 1e9,
       as.numeric(difftime(Sys.time(), config$started, units = "mins"))), "",
     "## Cobertura por família", "", "| Família | Selecionados | Baixados | Processados | Aprovados | Identificadores | Anos | UFs |", "|---|---:|---:|---:|---:|---:|---:|---:|")
@@ -632,7 +745,8 @@ audit_report <- function(config, plan) {
              gsub("\n", " ", failures$message[[i]])))
   } else lines <- c(lines, "Nenhuma falha registrada até o momento.")
   lines <- c(lines, "", "## Reprodução e interpretação", "",
-    "Os downloads são reais, completos e sem filtros de linhas ou colunas. As opções padrão de enriquecimento foram mantidas.",
+    "Os casos principais usam downloads reais, completos e sem filtros de linhas ou colunas. As opções padrão de enriquecimento foram mantidas.",
+    "Casos complementares, identificados como supplemental, selecionam colunas mas preservam todas as linhas para isolar descoberta e agregação do custo de memória. Eles não contam como processamento completo aprovado.",
     "Os códigos desconhecidos e falhas de conversão estão em data-anomalies.csv; não são automaticamente classificados como defeitos do pacote.",
     "A igualdade é exata por coluna, incluindo classes e níveis de fatores. Atributos da tabela relacionados à execução não entram na comparação.",
     "sample.csv contém a seleção, os motivos e os dicionários esperados nas transições históricas. file-results.csv registra a cobertura efetivamente executada.",
@@ -672,6 +786,11 @@ audit_setup <- function(root) {
 
 audit_main <- function(args = commandArgs(TRUE)) {
   if (length(args) && args[[1L]] == "--self-test") {
+    invalid_name <- rawToChar(as.raw(c(0x43, 0xa2, 0x70, 0x69, 0x61)))
+    stopifnot(identical(audit_text(invalid_name), "C<a2>pia"))
+    expired <- list(download_deadline = Sys.time() - 1)
+    audit_download_guard(expired, cached = TRUE)
+    stopifnot(inherits(tryCatch(audit_download_guard(expired, cached = FALSE), error = identity), "audit_resource_limit"))
     x <- data.frame(a = 1:2, f = factor(c("x", "y")), d = as.Date(c("2000-01-01", "2000-01-02")))
     y <- x; attr(y, "microdatasus_provenance") <- list(time = Sys.time())
     audit_equal(x, y)
@@ -746,4 +865,9 @@ audit_main <- function(args = commandArgs(TRUE)) {
   message("FINISHED: ", file.path(config$root, "report.md"))
 }
 
-if (sys.nframe() == 0L) audit_main()
+if (sys.nframe() == 0L) {
+  audit_main()
+  # Rscript reads top-level expressions incrementally. Stop after dispatch so
+  # edits to this opt-in script during a long run cannot execute a shifted tail.
+  quit(save = "no", status = 0L, runLast = FALSE)
+}
