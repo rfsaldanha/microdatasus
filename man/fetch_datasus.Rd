@@ -112,7 +112,13 @@ and combines the records in deterministic period, state, and file-part order.
 }
 \details{
 The function first lists the relevant DataSUS directories and downloads only
-files present in those listings. When more than one publication represents
+files present in those listings. If a state-period or national period is
+published in multiple parts, every listed part is downloaded and combined;
+there is no fixed limit on their number or suffix length. Part names are
+taken from the listing, including their original case, rather than generated
+from a sequence of letters. Parts are discovered independently for each
+state and period, so different states need not have the same number of files.
+When more than one publication represents
 the same system, period, state, and file part, definitive/current data take
 precedence over preliminary data, and current data take precedence over
 historical copies.

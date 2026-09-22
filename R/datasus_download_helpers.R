@@ -429,6 +429,9 @@
   }
 
   prefix <- repository$prefix
+  # Capture the complete suffix from each published name. Do not enumerate
+  # letters, truncate suffixes, or share a state's parts with another state:
+  # a period can contain any number of independently named files.
   if (identical(spec$geography, "state")) {
     digits <- if (identical(spec$granularity, "month")) 4L else 4L
     pattern <- paste0(

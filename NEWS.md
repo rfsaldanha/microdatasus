@@ -2,6 +2,9 @@
 
 ## Development
 
+* Documents and adds regression coverage for discovering every published file
+  part across all supported systems, including more than 26 parts, arbitrary
+  suffix lengths, and different part sets for each state and period.
 * Reconstructs the packaged municipal reference exactly from checksum-pinned
   official DataSUS TXT files, without changing its values. Ships the source
   members for offline rebuilding and reports an explicit snapshot version,
