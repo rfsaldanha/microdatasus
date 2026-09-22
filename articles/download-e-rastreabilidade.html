@@ -359,14 +359,19 @@ diagnóstico:</p>
 <span>  information_system <span class="op">=</span> <span class="st">"SIH-RD"</span>,</span>
 <span>  stop_on_error <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>O retorno é <code>NULL</code> quando nenhum arquivo pode ser obtido.
-Sempre verifique antes de processar ou persistir:</p>
+<p>No modo padrão, <code>collect = TRUE</code>, o retorno é
+<code>NULL</code> quando não há registros a retornar. Sempre verifique
+antes de processar ou persistir:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">dados</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">dados</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_sih.html">process_sih</a></span><span class="op">(</span><span class="va">dados</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<p>Use <code>stop_on_error = TRUE</code> quando o conjunto só for válido
-se todos os arquivos forem obtidos:</p>
+<p>Com <code>collect = FALSE</code>, a função retorna um manifesto dos
+arquivos gravados, que pode ter zero linhas se todos os arquivos
+descobertos falharem. Quando nenhum arquivo é descoberto, ambos os modos
+retornam <code>NULL</code>.</p>
+<p>Use <code>stop_on_error = TRUE</code> para interromper a chamada em
+falhas de listagem, download, leitura ou processamento:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dados</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_datasus.html">fetch_datasus</a></span><span class="op">(</span></span>
 <span>  year_start <span class="op">=</span> <span class="fl">2023</span>,</span>
@@ -377,6 +382,26 @@ se todos os arquivos forem obtidos:</p>
 <span>  information_system <span class="op">=</span> <span class="st">"SIH-RD"</span>,</span>
 <span>  stop_on_error <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<p>Esse argumento não garante a cobertura de todas as combinações de UF
+e período: ausências na listagem do servidor geram avisos em ambos os
+modos. Confira a proveniência dos arquivos obtidos e a cobertura
+necessária à sua análise.</p>
+</div>
+<div class="section level2">
+<h2 id="indisponibilidade-do-servidor-e-trabalho-sem-conexão">Indisponibilidade do servidor e trabalho sem conexão<a class="anchor" aria-label="anchor" href="#indisponibilidade-do-servidor-e-trabalho-sem-conex%C3%A3o"></a>
+</h2>
+<p>Uma conexão à internet funcionando não garante que o FTP do DataSUS
+esteja acessível. Falhas de DNS, timeouts, bloqueios da rede e
+indisponibilidade do servidor podem impedir a consulta.
+<code>quiet = TRUE</code> oculta progresso e mensagens de status, mas
+mantém os avisos e erros que descrevem essas falhas.</p>
+<p>O cache de DBC evita repetir transferências, mas a descoberta dos
+arquivos em <code><a href="../reference/fetch_datasus.html">fetch_datasus()</a></code> continua dependendo da listagem
+remota. Para trabalhar sem internet, abra DBCs já disponíveis com
+<code><a href="../reference/read_dbc.html">read_dbc()</a></code> ou resultados já salvos com
+<code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS()</a></code>. O processamento pode precisar de dicionários
+previamente armazenados; consulte <a href="dicionarios-cache-e-escala.html">Dicionários, cache e
+processamento em escala</a>.</p>
 </div>
 <div class="section level2">
 <h2 id="dados-atuais-históricos-e-preliminares">Dados atuais, históricos e preliminares<a class="anchor" aria-label="anchor" href="#dados-atuais-hist%C3%B3ricos-e-preliminares"></a>

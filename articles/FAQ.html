@@ -83,6 +83,19 @@
     
     
 <div class="section level2">
+<h2 id="como-instalar-a-versão-dev-no-windows-sem-rtools">Como instalar a versão DEV no Windows sem Rtools?<a class="anchor" aria-label="anchor" href="#como-instalar-a-vers%C3%A3o-dev-no-windows-sem-rtools"></a>
+</h2>
+<p>Use um binário <code>.zip</code> para Windows fornecido pelo
+mantenedor, compatível com a versão e a arquitetura do seu R. Instale
+primeiro as dependências e depois o arquivo com
+<code>install.packages(file.choose(), repos = NULL, type = "win.binary")</code>,
+sem descompactá-lo. A instalação de um arquivo local não instala
+dependências automaticamente. Consulte os comandos completos na <a href="../index.html#windows">seção Windows da página inicial</a>.</p>
+<p>A instalação pelo GitHub usa o código-fonte e requer Rtools. Para
+informar seu ambiente ao solicitar um binário, execute
+<code>R.version.string</code> e <code>R.version$arch</code>.</p>
+</div>
+<div class="section level2">
 <h2 id="o-período-e-a-uf-do-download-são-necessariamente-os-do-evento">O período e a UF do download são necessariamente os do evento?<a class="anchor" aria-label="anchor" href="#o-per%C3%ADodo-e-a-uf-do-download-s%C3%A3o-necessariamente-os-do-evento"></a>
 </h2>
 <p>Não. Os argumentos de <code><a href="../reference/fetch_datasus.html">fetch_datasus()</a></code> selecionam as
@@ -150,8 +163,9 @@ um arquivo ausente ou inválido.</p>
 <h2 id="o-que-acontece-quando-apenas-parte-do-download-falha">O que acontece quando apenas parte do download falha?<a class="anchor" aria-label="anchor" href="#o-que-acontece-quando-apenas-parte-do-download-falha"></a>
 </h2>
 <p>Com <code>stop_on_error = FALSE</code>, que é o padrão, os arquivos
-válidos são retornados e as falhas são resumidas ao final. Se nenhum
-arquivo for lido, o retorno é <code>NULL</code>.</p>
+válidos são retornados e as falhas são resumidas ao final. No modo
+padrão, <code>collect = TRUE</code>, o retorno é <code>NULL</code>
+quando não há registros a retornar.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dados</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_datasus.html">fetch_datasus</a></span><span class="op">(</span></span>
 <span>  year_start <span class="op">=</span> <span class="fl">2023</span>,</span>
@@ -167,23 +181,34 @@ arquivo for lido, o retorno é <code>NULL</code>.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"Nenhum arquivo foi obtido."</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>Com <code>stop_on_error = TRUE</code>, uma falha de listagem,
-download ou leitura interrompe a chamada.</p>
+download, leitura ou processamento interrompe a chamada. Combinações de
+UF e período que não constam da listagem geram avisos em ambos os modos;
+confira a cobertura dos resultados.</p>
 </div>
 <div class="section level2">
 <h2 id="e-quando-o-computador-está-sem-internet-ou-o-datasus-está-indisponível">E quando o computador está sem internet ou o DataSUS está
 indisponível?<a class="anchor" aria-label="anchor" href="#e-quando-o-computador-est%C3%A1-sem-internet-ou-o-datasus-est%C3%A1-indispon%C3%ADvel"></a>
 </h2>
-<p>Com <code>stop_on_error = FALSE</code>, <code><a href="../reference/fetch_datasus.html">fetch_datasus()</a></code>
-informa as falhas de conexão com avisos e retorna <code>NULL</code>
-quando não consegue obter nenhum arquivo. Verifique esse retorno antes
-de chamar uma função <code>process_*()</code>. Ter acesso à internet não
-garante acesso ao FTP do DataSUS: o servidor também pode estar
-indisponível ou bloquear conexões de determinadas redes ou países.</p>
+<p>Com <code>stop_on_error = FALSE</code> e <code>collect = TRUE</code>,
+<code><a href="../reference/fetch_datasus.html">fetch_datasus()</a></code> informa as falhas de conexão com avisos e
+retorna <code>NULL</code> quando não há registros a retornar. Verifique
+esse retorno antes de chamar uma função <code>process_*()</code>. Ter
+acesso à internet não garante acesso ao FTP do DataSUS: o servidor
+também pode estar indisponível ou bloquear conexões de determinadas
+redes ou países.</p>
 <p>Os exemplos de download da ajuda só executam em sessões interativas
 com acesso à internet. Os testes automáticos usam arquivos locais e
 conexões simuladas; os testes que acessam o DataSUS precisam ser
-ativados explicitamente e não executam no CRAN. Assim, os checks não
-dependem da disponibilidade do servidor.</p>
+ativados explicitamente e não executam no CRAN. Assim, os exemplos e
+testes do pacote não dependem da disponibilidade do servidor. A
+verificação de links da documentação é separada e ainda pode apontar
+endereços indisponíveis.</p>
+<p>Ter arquivos DBC no cache não torna <code><a href="../reference/fetch_datasus.html">fetch_datasus()</a></code>
+offline: ela continua consultando as listagens remotas. Use
+<code><a href="../reference/read_dbc.html">read_dbc()</a></code> para arquivos locais ou <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS()</a></code>
+para resultados salvos. Os processadores podem precisar de dicionários
+ainda não armazenados; nesse caso, uma chamada direta pode falhar. Veja
+<a href="dicionarios-cache-e-escala.html">como preparar o cache</a>.</p>
 <p>As tabelas de referência incluídas no pacote, como
 <code>tabMun</code>, podem ser usadas sem conexão. O pacote também
 inclui os arquivos de origem necessários para reconstruir essa

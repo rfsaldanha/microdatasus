@@ -100,6 +100,27 @@ indistinguível. Correções de erros conhecidos nos arquivos oficiais são
 exatas e limitadas ao nome do arquivo; relações ambíguas continuam
 inválidas.
 
+## O que o cache permite fazer sem internet
+
+Um ZIP de dicionário com checksum válido pode ser reutilizado entre
+sessões sem download, desde que a chamada use o mesmo `cache_dir` e
+`refresh = FALSE`. Prepare o cache para todos os sistemas e todas as
+definições históricas de que a análise precisa antes de ficar sem
+conexão. `refresh = TRUE` solicita uma nova transferência. Se não houver
+uma cópia válida, consultas de dicionários e chamadas diretas a
+`process_*()` podem falhar quando o DataSUS estiver indisponível; elas
+não têm o argumento `stop_on_error` de
+[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md).
+
+O cache de DBC tem outra limitação:
+[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+ainda consulta os diretórios remotos para descobrir os arquivos
+publicados. Para uma análise offline, leia DBCs locais com
+[`read_dbc()`](https://rfsaldanha.github.io/microdatasus/reference/read_dbc.md)
+ou reabra resultados com
+[`readRDS()`](https://rdrr.io/r/base/readRDS.html). As tabelas incluídas
+no pacote, como `tabMun`, não precisam de download.
+
 ## Rótulos e diagnóstico
 
 Todas as funções `process_*()` aceitam a mesma política de rótulos:

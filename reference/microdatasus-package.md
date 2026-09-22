@@ -46,6 +46,28 @@ for persistent dictionary reuse by processors called directly; see
 and the performance section of
 [`process_sim()`](https://rfsaldanha.github.io/microdatasus/reference/process_sim.md).
 
+## Network access and local data
+
+[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+needs access to DataSUS directory listings even when DBC files are
+cached. By default it warns about connection failures and retains
+successful downloads; with `collect = TRUE`, check for `NULL` before
+passing the result to a processor. Use `stop_on_error = TRUE` to abort
+on failures. A direct call to a processor or dictionary helper can fail
+if a required dictionary cannot be downloaded and no valid cached copy
+is available.
+
+[`read_dbc()`](https://rfsaldanha.github.io/microdatasus/reference/read_dbc.md)
+reads local files without Internet access. Packaged reference tables,
+including
+[tabMun](https://rfsaldanha.github.io/microdatasus/reference/tabMun.md),
+are also available offline. Saved processing results can be reopened
+with [`readRDS()`](https://rdrr.io/r/base/readRDS.html). Persistent
+dictionaries are reused when valid and `refresh = FALSE`; see
+[`fetch_tabwin_dictionary()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_tabwin_dictionary.md).
+
+## References
+
 For concepts, coverage, data flows, and caveats of each Brazilian health
 information system, see Saldanha (2026), [*Sistemas de Informação em
 Saúde no Brasil*](https://rfsaldanha.github.io/sis/).

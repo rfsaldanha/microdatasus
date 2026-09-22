@@ -138,9 +138,14 @@ file.</p>
     <h2 id="network-access">Network access<a class="anchor" aria-label="anchor" href="#network-access"></a></h2>
 
 
-<p>The first call downloads the relevant TabWin ZIP from DataSUS. Systems that
-share an archive reuse one copy. With <code>cache_dir</code>, the ZIP, its checksum, and
-manifest persist across sessions; <code>refresh = TRUE</code> replaces the cached copy.</p>
+<p>A call without a valid cached archive downloads the relevant TabWin ZIP from
+DataSUS. Systems that share an archive reuse one copy. With <code>cache_dir</code>, the
+ZIP, its checksum, and manifest persist across sessions. A valid cached copy
+can be used without downloading again when <code>refresh = FALSE</code>.
+<code>refresh = TRUE</code> requests a new download. If a download is required and all
+configured transports fail, the function raises an informative error.
+The <code>stop_on_error</code> argument belongs to <code><a href="fetch_datasus.html">fetch_datasus()</a></code> and does not apply
+to a direct call to this function or to a processor.</p>
     </div>
     <div class="section level2">
     <h2 id="def-cnv-and-related-dbf-semantics">DEF, CNV, and related DBF semantics<a class="anchor" aria-label="anchor" href="#def-cnv-and-related-dbf-semantics"></a></h2>

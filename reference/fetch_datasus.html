@@ -123,8 +123,9 @@ always applied before files are combined.</p></dd>
 
 <dt id="arg-stop-on-error">stop_on_error<a class="anchor" aria-label="anchor" href="#arg-stop-on-error"></a></dt>
 <dd><p>Logical scalar. If <code>TRUE</code>, abort after any listing,
-download, or read failure. If <code>FALSE</code>, warn and return the files that could
-be read successfully.</p></dd>
+download, read, or processing failure. If <code>FALSE</code>, warn and retain successful
+files. Unpublished state-period combinations are reported as warnings in
+either mode; this argument does not establish completeness of coverage.</p></dd>
 
 
 <dt id="arg-timeout">timeout<a class="anchor" aria-label="anchor" href="#arg-timeout"></a></dt>
@@ -200,8 +201,10 @@ output without changing which source files are downloaded.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>With <code>collect = TRUE</code>, a tibble containing all successfully read
-records, or <code>NULL</code> if no requested file could be read. With
-<code>collect = FALSE</code>, a provenance tibble with one row per output file.</p>
+records, or <code>NULL</code> if there are no records to return. With
+<code>collect = FALSE</code>, a provenance tibble with one row per output file; it is
+empty if all discovered files fail. Either mode returns <code>NULL</code> if no files
+are discovered.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -226,7 +229,10 @@ the function returns or aborts.</p>
 <p>When <code>cache_dir</code> is supplied, complete DBC files and dictionaries persist
 across R sessions. Cache entries include a manifest and SHA-256 checksum (while still accepting legacy MD5 manifests).
 <code><a href="datasus_cache_info.html">datasus_cache_info()</a></code> inspects them and <code><a href="clear_datasus_cache.html">clear_datasus_cache()</a></code> removes only
-files managed by microdatasus.</p>
+files managed by microdatasus.
+File discovery still requires access to the remote directory listings.
+To work offline, use <code><a href="read_dbc.html">read_dbc()</a></code> on local DBC files or <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS()</a></code> on saved
+results. Processing may also require previously cached dictionaries.</p>
 <p>For processed downloads, <code>cache_dir</code> also supplies the dictionary cache to
 the processor for that call. <code>row_filter</code> sees raw codes and must handle
 missing values explicitly. Use <code>process_args = list(diagnostics = TRUE)</code>
@@ -267,8 +273,9 @@ when supported. Alternative base URLs can be configured with the
 first.
 General Internet connectivity does not guarantee access to the DataSUS
 server. With <code>stop_on_error = FALSE</code>, failed listings or downloads are
-reported as warnings and successful files are retained; the result is
-<code>NULL</code> if no file can be read. Check for <code>NULL</code> before processing the result.
+reported as warnings and successful files are retained. In the default
+<code>collect = TRUE</code> mode, the result is <code>NULL</code> if there are no records to return.
+Check for <code>NULL</code> before processing the result.
 Set <code>stop_on_error = TRUE</code> when an incomplete download must interrupt an
 analysis.</p>
     </div>

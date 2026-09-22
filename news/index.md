@@ -4,6 +4,11 @@
 
 ### Development
 
+- Updates Windows binary-installation instructions, including
+  dependencies and R compatibility. Aligns the README, help and articles
+  on connection failures, empty results, the limits of `stop_on_error`,
+  and the difference between local data, cached dictionaries and remote
+  DBC discovery.
 - Publishes the development documentation on pushes to `dev`, including
   the processing guide linked from the help pages. Cites the official
   DataSUS HTTPS transfer portal for the fixed municipal reference,

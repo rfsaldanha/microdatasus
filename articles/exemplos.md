@@ -26,8 +26,20 @@ sim_raw <- fetch_datasus(
   track_source = TRUE
 )
 
-sim <- process_sim(sim_raw)
+if (!is.null(sim_raw)) {
+  sim <- process_sim(sim_raw)
+} else {
+  message("Nenhum registro foi obtido; confira os avisos do download.")
+}
 ```
+
+Os exemplos de download deste artigo precisam de acesso ao DataSUS.
+Antes de aplicar os demais processadores, faça a mesma verificação de
+`NULL` mostrada acima. Um resultado parcial também pode vir acompanhado
+de avisos. As chamadas diretas a `process_*()` podem baixar dicionários
+e falhar se eles estiverem indisponíveis e não houver uma cópia válida
+no cache. Para instalação por binário no Windows, consulte a [página
+inicial](https://rfsaldanha.github.io/microdatasus/index.html#windows).
 
 As funções `process_*()` normalizam textos e substituem códigos
 conhecidos por descrições. Datas, quantidades, valores, identificadores

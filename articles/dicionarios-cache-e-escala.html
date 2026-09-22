@@ -171,6 +171,25 @@ oficiais são exatas e limitadas ao nome do arquivo; relações ambíguas
 continuam inválidas.</p>
 </div>
 <div class="section level2">
+<h2 id="o-que-o-cache-permite-fazer-sem-internet">O que o cache permite fazer sem internet<a class="anchor" aria-label="anchor" href="#o-que-o-cache-permite-fazer-sem-internet"></a>
+</h2>
+<p>Um ZIP de dicionário com checksum válido pode ser reutilizado entre
+sessões sem download, desde que a chamada use o mesmo
+<code>cache_dir</code> e <code>refresh = FALSE</code>. Prepare o cache
+para todos os sistemas e todas as definições históricas de que a análise
+precisa antes de ficar sem conexão. <code>refresh = TRUE</code> solicita
+uma nova transferência. Se não houver uma cópia válida, consultas de
+dicionários e chamadas diretas a <code>process_*()</code> podem falhar
+quando o DataSUS estiver indisponível; elas não têm o argumento
+<code>stop_on_error</code> de <code><a href="../reference/fetch_datasus.html">fetch_datasus()</a></code>.</p>
+<p>O cache de DBC tem outra limitação: <code><a href="../reference/fetch_datasus.html">fetch_datasus()</a></code>
+ainda consulta os diretórios remotos para descobrir os arquivos
+publicados. Para uma análise offline, leia DBCs locais com
+<code><a href="../reference/read_dbc.html">read_dbc()</a></code> ou reabra resultados com <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS()</a></code>.
+As tabelas incluídas no pacote, como <code>tabMun</code>, não precisam
+de download.</p>
+</div>
+<div class="section level2">
 <h2 id="rótulos-e-diagnóstico">Rótulos e diagnóstico<a class="anchor" aria-label="anchor" href="#r%C3%B3tulos-e-diagn%C3%B3stico"></a>
 </h2>
 <p>Todas as funções <code>process_*()</code> aceitam a mesma política de

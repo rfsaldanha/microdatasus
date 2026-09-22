@@ -67,10 +67,15 @@ element describes the conversions found in the official DEF file.
 
 ## Network access
 
-The first call downloads the relevant TabWin ZIP from DataSUS. Systems
-that share an archive reuse one copy. With `cache_dir`, the ZIP, its
-checksum, and manifest persist across sessions; `refresh = TRUE`
-replaces the cached copy.
+A call without a valid cached archive downloads the relevant TabWin ZIP
+from DataSUS. Systems that share an archive reuse one copy. With
+`cache_dir`, the ZIP, its checksum, and manifest persist across
+sessions. A valid cached copy can be used without downloading again when
+`refresh = FALSE`. `refresh = TRUE` requests a new download. If a
+download is required and all configured transports fail, the function
+raises an informative error. The `stop_on_error` argument belongs to
+[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+and does not apply to a direct call to this function or to a processor.
 
 ## DEF, CNV, and related DBF semantics
 

@@ -247,8 +247,8 @@ dados <- fetch_datasus(
 )
 ```
 
-O retorno é `NULL` quando nenhum arquivo pode ser obtido. Sempre
-verifique antes de processar ou persistir:
+No modo padrão, `collect = TRUE`, o retorno é `NULL` quando não há
+registros a retornar. Sempre verifique antes de processar ou persistir:
 
 ``` r
 
@@ -257,8 +257,13 @@ if (!is.null(dados)) {
 }
 ```
 
-Use `stop_on_error = TRUE` quando o conjunto só for válido se todos os
-arquivos forem obtidos:
+Com `collect = FALSE`, a função retorna um manifesto dos arquivos
+gravados, que pode ter zero linhas se todos os arquivos descobertos
+falharem. Quando nenhum arquivo é descoberto, ambos os modos retornam
+`NULL`.
+
+Use `stop_on_error = TRUE` para interromper a chamada em falhas de
+listagem, download, leitura ou processamento:
 
 ``` r
 
@@ -272,6 +277,31 @@ dados <- fetch_datasus(
   stop_on_error = TRUE
 )
 ```
+
+Esse argumento não garante a cobertura de todas as combinações de UF e
+período: ausências na listagem do servidor geram avisos em ambos os
+modos. Confira a proveniência dos arquivos obtidos e a cobertura
+necessária à sua análise.
+
+## Indisponibilidade do servidor e trabalho sem conexão
+
+Uma conexão à internet funcionando não garante que o FTP do DataSUS
+esteja acessível. Falhas de DNS, timeouts, bloqueios da rede e
+indisponibilidade do servidor podem impedir a consulta. `quiet = TRUE`
+oculta progresso e mensagens de status, mas mantém os avisos e erros que
+descrevem essas falhas.
+
+O cache de DBC evita repetir transferências, mas a descoberta dos
+arquivos em
+[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+continua dependendo da listagem remota. Para trabalhar sem internet,
+abra DBCs já disponíveis com
+[`read_dbc()`](https://rfsaldanha.github.io/microdatasus/reference/read_dbc.md)
+ou resultados já salvos com
+[`readRDS()`](https://rdrr.io/r/base/readRDS.html). O processamento pode
+precisar de dicionários previamente armazenados; consulte [Dicionários,
+cache e processamento em
+escala](https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.md).
 
 ## Dados atuais, históricos e preliminares
 

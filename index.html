@@ -106,13 +106,32 @@
 <code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"rfsaldanha/microdatasus"</span>, ref <span class="op">=</span> <span class="st">"dev"</span><span class="op">)</span></span></code></pre></div>
 <p>A leitura de DBC é interna ao pacote, não chama <code><a href="https://rdrr.io/pkg/foreign/man/read.dbf.html" class="external-link">foreign::read.dbf()</a></code> e não depende mais de <code>read.dbc</code>. A implementação foi adaptada do pacote <a href="https://github.com/SidneyBissoli/healthbR" class="external-link">healthbR</a>. O pacote mantém <code>foreign</code> apenas para tabelas DBF auxiliares ou referenciadas pelos dicionários TabWin; esses arquivos não fazem parte do caminho de leitura de um DBC.</p>
-<p>No Windows, a instalação pelo GitHub requer uma versão do <a href="https://cran.r-project.org/bin/windows/Rtools/" class="external-link">Rtools</a> compatível com o R instalado. A versão binária distribuída pelo CRAN não requer ferramentas de compilação.</p>
+<div class="section level3">
+<h3 id="windows">Windows<a class="anchor" aria-label="anchor" href="#windows"></a>
+</h3>
+<p>No Windows, a instalação pelo GitHub compila o código C do pacote e requer o <a href="https://cran.r-project.org/bin/windows/Rtools/" class="external-link">Rtools</a> compatível com o R instalado. A versão binária distribuída pelo CRAN não requer ferramentas de compilação.</p>
+<p>Se você recebeu do mantenedor um <strong>binário DEV <code>.zip</code> para Windows</strong>, instale-o sem descompactar. Confirme que ele é compatível com a versão e a arquitetura do seu R, consultáveis com <code>R.version.string</code> e <code>R.version$arch</code>. Esse binário também dispensa Rtools, mas a instalação de um arquivo local não resolve as dependências automaticamente. Em uma sessão nova do R:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Instala ou atualiza as dependências usando binários do CRAN</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cli"</span>, <span class="st">"curl"</span>, <span class="st">"data.table"</span>, <span class="st">"digest"</span>, <span class="st">"dplyr"</span>, <span class="st">"foreign"</span>,</span>
+<span>    <span class="st">"magrittr"</span>, <span class="st">"stringi"</span>, <span class="st">"tibble"</span>, <span class="st">"zip"</span><span class="op">)</span>,</span>
+<span>  repos <span class="op">=</span> <span class="st">"https://cloud.r-project.org"</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"win.binary"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Selecione o .zip binário fornecido pelo mantenedor</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.choose.html" class="external-link">file.choose</a></span><span class="op">(</span><span class="op">)</span>, repos <span class="op">=</span> <span class="cn">NULL</span>, type <span class="op">=</span> <span class="st">"win.binary"</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rfsaldanha/microdatasus" class="external-link">microdatasus</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/packageDescription.html" class="external-link">packageVersion</a></span><span class="op">(</span><span class="st">"microdatasus"</span><span class="op">)</span></span></code></pre></div>
+<p>A versão DEV requer <code>dplyr &gt;= 1.2.0</code>. O primeiro comando precisa de internet; a instalação do <code>.zip</code> pode ser feita sem conexão se todas as dependências já estiverem instaladas. O mantenedor pode gerar esses binários com o <a href="https://win-builder.r-project.org/" class="external-link">Win-builder</a>.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="primeiro-download">Primeiro download<a class="anchor" aria-label="anchor" href="#primeiro-download"></a>
 </h2>
 <p>O fluxo mais comum tem duas etapas: baixar os arquivos e aplicar o processador do sistema.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rfsaldanha/microdatasus" class="external-link">microdatasus</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">sim_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fetch_datasus.html">fetch_datasus</a></span><span class="op">(</span></span>
@@ -124,11 +143,15 @@
 <span>  track_source <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/process_sim.html">process_sim</a></span><span class="op">(</span><span class="va">sim_raw</span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">sim_raw</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/process_sim.html">process_sim</a></span><span class="op">(</span><span class="va">sim_raw</span><span class="op">)</span></span>
+<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"Nenhum registro foi obtido; confira os avisos do download."</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
 <p><code><a href="reference/process_sim.html">process_sim()</a></code> usa <code>SIM-DO</code> por padrão. Para os subconjuntos nacionais, informe o mesmo tipo usado no download, por exemplo <code>process_sim(sim_fetal_raw, information_system = "SIM-DOFET")</code>. O resultado padroniza datas como <code>Date</code>, quantidades como inteiros e variáveis rotuladas como fatores.</p>
 <p>Os anos, meses e UFs solicitados identificam as partições publicadas pelo DataSUS. A data e o local analíticos devem ser escolhidos nas variáveis do registro. O <a href="https://rfsaldanha.github.io/sis/sim.html" class="external-link">capítulo sobre o SIM</a>, por exemplo, distingue residência, ocorrência e outras dimensões territoriais e temporais do óbito.</p>
 <p>Sistemas mensais, como SIH, SIA e CNES, exigem os meses inicial e final:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sih_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fetch_datasus.html">fetch_datasus</a></span><span class="op">(</span></span>
 <span>  year_start <span class="op">=</span> <span class="fl">2023</span>,</span>
 <span>  month_start <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -139,7 +162,9 @@
 <span>  timeout <span class="op">=</span> <span class="fl">600</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">sih</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/process_sih.html">process_sih</a></span><span class="op">(</span><span class="va">sih_raw</span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">sih_raw</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">sih</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/process_sih.html">process_sih</a></span><span class="op">(</span><span class="va">sih_raw</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="sistemas-suportados">Sistemas suportados<a class="anchor" aria-label="anchor" href="#sistemas-suportados"></a>
@@ -227,19 +252,25 @@
 <code>track_source = TRUE</code> acrescenta o nome do DBC de origem de cada registro.</li>
 <li>
 <code>timeout</code> controla o limite de cada operação de rede, sem alterar opções globais do R.</li>
-<li>o nome do arquivo, o progresso da transferência, a leitura e o resumo final são exibidos; use <code>quiet = TRUE</code> para ocultar o progresso e todas as mensagens de status.</li>
+<li>o nome do arquivo, o progresso da transferência, a leitura e o resumo final são exibidos; use <code>quiet = TRUE</code> para ocultar o progresso e todas as mensagens de status. Avisos e erros continuam visíveis.</li>
 <li>
-<code>stop_on_error = FALSE</code> preserva sucessos parciais; <code>TRUE</code> interrompe a solicitação na primeira falha.</li>
+<code>stop_on_error = FALSE</code> preserva sucessos parciais e informa as falhas com avisos; <code>TRUE</code> interrompe a solicitação em falhas de listagem, download, leitura ou processamento.</li>
 <li>
 <code>uf</code> aceita uma UF, várias UFs ou <code>"all"</code>. Arquivos nacionais, como os do SINAN, ignoram esse argumento com um alerta.</li>
 </ul>
 <p>Consulte o artigo <a href="https://rfsaldanha.github.io/microdatasus/articles/download-e-rastreabilidade.html">Download e rastreabilidade</a> para exemplos de todas essas opções.</p>
+<div class="section level3">
+<h3 id="falhas-de-conexão-e-uso-sem-internet">Falhas de conexão e uso sem internet<a class="anchor" aria-label="anchor" href="#falhas-de-conex%C3%A3o-e-uso-sem-internet"></a>
+</h3>
+<p>Ter internet não garante acesso ao FTP do DataSUS. O servidor pode estar indisponível ou bloquear determinada rede. No modo padrão (<code>collect = TRUE</code>, <code>stop_on_error = FALSE</code>), <code><a href="reference/fetch_datasus.html">fetch_datasus()</a></code> retorna os registros aproveitados ou <code>NULL</code> quando não há registros a retornar. Verifique esse resultado antes de chamar <code>process_*()</code>, como nos exemplos acima. Avisos de falha também podem acompanhar um resultado parcial.</p>
+<p>O cache reaproveita arquivos, mas <code><a href="reference/fetch_datasus.html">fetch_datasus()</a></code> ainda consulta a listagem remota. Para trabalhar sem conexão, use <code><a href="reference/read_dbc.html">read_dbc()</a></code> em DBCs locais ou <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS()</a></code> nos resultados já salvos. Processadores e consultas de dicionários podem exigir downloads se os arquivos necessários ainda não estiverem em um cache válido. As tabelas incluídas no pacote, como <code>tabMun</code>, são locais. Consulte as <a href="https://rfsaldanha.github.io/microdatasus/articles/FAQ.html">perguntas frequentes</a> para os detalhes desses comportamentos.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="dicionários-cache-e-tabelas-grandes">Dicionários, cache e tabelas grandes<a class="anchor" aria-label="anchor" href="#dicion%C3%A1rios-cache-e-tabelas-grandes"></a>
 </h2>
 <p>Um diretório explícito reutiliza DBC e ZIP do TabWin entre sessões. Configure também a opção do pacote para que chamadas diretas a <code>process_*()</code> usem esse mesmo cache:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cache</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/datasus_cache_dir.html">datasus_cache_dir</a></span><span class="op">(</span>create <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>microdatasus.cache_dir <span class="op">=</span> <span class="va">cache</span><span class="op">)</span></span>
 <span><span class="va">variables</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/datasus_variables.html">datasus_variables</a></span><span class="op">(</span><span class="st">"SIM-DO"</span>, cache_dir <span class="op">=</span> <span class="va">cache</span><span class="op">)</span></span>
@@ -260,7 +291,7 @@
 <h2 id="arquivos-dbc-locais">Arquivos DBC locais<a class="anchor" aria-label="anchor" href="#arquivos-dbc-locais"></a>
 </h2>
 <p>Use <code><a href="reference/read_dbc.html">read_dbc()</a></code> quando o arquivo já estiver no computador:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dados</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_dbc.html">read_dbc</a></span><span class="op">(</span><span class="st">"arquivo.dbc"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Preserva os tipos inferidos dos metadados DBF</span></span>

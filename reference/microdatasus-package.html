@@ -86,7 +86,25 @@ process and save one file at a time with <code>process = TRUE</code>,
 <code>collect = FALSE</code>, and <code>destination</code>. Configure <code>microdatasus.cache_dir</code>
 for persistent dictionary reuse by processors called directly; see
 <code><a href="datasus_cache_dir.html">datasus_cache_dir()</a></code> and the performance section of <code><a href="process_sim.html">process_sim()</a></code>.</p>
-<p>For concepts, coverage, data flows, and caveats of each Brazilian health
+    </div>
+    <div class="section level2">
+    <h2 id="network-access-and-local-data">Network access and local data<a class="anchor" aria-label="anchor" href="#network-access-and-local-data"></a></h2>
+
+
+<p><code><a href="fetch_datasus.html">fetch_datasus()</a></code> needs access to DataSUS directory listings even when DBC
+files are cached. By default it warns about connection failures and retains
+successful downloads; with <code>collect = TRUE</code>, check for <code>NULL</code> before passing
+the result to a processor. Use <code>stop_on_error = TRUE</code> to abort on failures.
+A direct call to a processor or dictionary helper can fail if a required
+dictionary cannot be downloaded and no valid cached copy is available.</p>
+<p><code><a href="read_dbc.html">read_dbc()</a></code> reads local files without Internet access. Packaged reference
+tables, including <a href="tabMun.html">tabMun</a>, are also available offline. Saved processing
+results can be reopened with <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS()</a></code>. Persistent dictionaries are reused
+when valid and <code>refresh = FALSE</code>; see <code><a href="fetch_tabwin_dictionary.html">fetch_tabwin_dictionary()</a></code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
+    <p>For concepts, coverage, data flows, and caveats of each Brazilian health
 information system, see Saldanha (2026), <a href="https://rfsaldanha.github.io/sis/" class="external-link"><em>Sistemas de Informação em Saúde no Brasil</em></a>.</p>
     </div>
     <div class="section level2">

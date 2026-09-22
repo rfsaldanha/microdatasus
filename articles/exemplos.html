@@ -104,7 +104,19 @@ diagnósticos necessários à análise.</li>
 <span>  track_source <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_sim.html">process_sim</a></span><span class="op">(</span><span class="va">sim_raw</span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">sim_raw</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_sim.html">process_sim</a></span><span class="op">(</span><span class="va">sim_raw</span><span class="op">)</span></span>
+<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"Nenhum registro foi obtido; confira os avisos do download."</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p>Os exemplos de download deste artigo precisam de acesso ao DataSUS.
+Antes de aplicar os demais processadores, faça a mesma verificação de
+<code>NULL</code> mostrada acima. Um resultado parcial também pode vir
+acompanhado de avisos. As chamadas diretas a <code>process_*()</code>
+podem baixar dicionários e falhar se eles estiverem indisponíveis e não
+houver uma cópia válida no cache. Para instalação por binário no
+Windows, consulte a <a href="../index.html#windows">página
+inicial</a>.</p>
 <p>As funções <code>process_*()</code> normalizam textos e substituem
 códigos conhecidos por descrições. Datas, quantidades, valores,
 identificadores e categorias mantêm tipos distintos: por padrão, datas

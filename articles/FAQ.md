@@ -1,5 +1,20 @@
 # Perguntas frequentes
 
+## Como instalar a versão DEV no Windows sem Rtools?
+
+Use um binário `.zip` para Windows fornecido pelo mantenedor, compatível
+com a versão e a arquitetura do seu R. Instale primeiro as dependências
+e depois o arquivo com
+`install.packages(file.choose(), repos = NULL, type = "win.binary")`,
+sem descompactá-lo. A instalação de um arquivo local não instala
+dependências automaticamente. Consulte os comandos completos na [seção
+Windows da página
+inicial](https://rfsaldanha.github.io/microdatasus/index.html#windows).
+
+A instalação pelo GitHub usa o código-fonte e requer Rtools. Para
+informar seu ambiente ao solicitar um binário, execute
+`R.version.string` e `R.version$arch`.
+
 ## O período e a UF do download são necessariamente os do evento?
 
 Não. Os argumentos de
@@ -87,8 +102,8 @@ um arquivo ausente ou inválido.
 ## O que acontece quando apenas parte do download falha?
 
 Com `stop_on_error = FALSE`, que é o padrão, os arquivos válidos são
-retornados e as falhas são resumidas ao final. Se nenhum arquivo for
-lido, o retorno é `NULL`.
+retornados e as falhas são resumidas ao final. No modo padrão,
+`collect = TRUE`, o retorno é `NULL` quando não há registros a retornar.
 
 ``` r
 
@@ -107,24 +122,39 @@ if (is.null(dados)) {
 }
 ```
 
-Com `stop_on_error = TRUE`, uma falha de listagem, download ou leitura
-interrompe a chamada.
+Com `stop_on_error = TRUE`, uma falha de listagem, download, leitura ou
+processamento interrompe a chamada. Combinações de UF e período que não
+constam da listagem geram avisos em ambos os modos; confira a cobertura
+dos resultados.
 
 ## E quando o computador está sem internet ou o DataSUS está indisponível?
 
-Com `stop_on_error = FALSE`,
+Com `stop_on_error = FALSE` e `collect = TRUE`,
 [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
-informa as falhas de conexão com avisos e retorna `NULL` quando não
-consegue obter nenhum arquivo. Verifique esse retorno antes de chamar
-uma função `process_*()`. Ter acesso à internet não garante acesso ao
-FTP do DataSUS: o servidor também pode estar indisponível ou bloquear
-conexões de determinadas redes ou países.
+informa as falhas de conexão com avisos e retorna `NULL` quando não há
+registros a retornar. Verifique esse retorno antes de chamar uma função
+`process_*()`. Ter acesso à internet não garante acesso ao FTP do
+DataSUS: o servidor também pode estar indisponível ou bloquear conexões
+de determinadas redes ou países.
 
 Os exemplos de download da ajuda só executam em sessões interativas com
 acesso à internet. Os testes automáticos usam arquivos locais e conexões
 simuladas; os testes que acessam o DataSUS precisam ser ativados
-explicitamente e não executam no CRAN. Assim, os checks não dependem da
-disponibilidade do servidor.
+explicitamente e não executam no CRAN. Assim, os exemplos e testes do
+pacote não dependem da disponibilidade do servidor. A verificação de
+links da documentação é separada e ainda pode apontar endereços
+indisponíveis.
+
+Ter arquivos DBC no cache não torna
+[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+offline: ela continua consultando as listagens remotas. Use
+[`read_dbc()`](https://rfsaldanha.github.io/microdatasus/reference/read_dbc.md)
+para arquivos locais ou
+[`readRDS()`](https://rdrr.io/r/base/readRDS.html) para resultados
+salvos. Os processadores podem precisar de dicionários ainda não
+armazenados; nesse caso, uma chamada direta pode falhar. Veja [como
+preparar o
+cache](https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.md).
 
 As tabelas de referência incluídas no pacote, como `tabMun`, podem ser
 usadas sem conexão. O pacote também inclui os arquivos de origem
