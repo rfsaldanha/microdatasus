@@ -52,8 +52,9 @@ therefore include derived fields when \code{process = TRUE}. Selection is
 always applied before files are combined.}
 
 \item{stop_on_error}{Logical scalar. If \code{TRUE}, abort after any listing,
-download, or read failure. If \code{FALSE}, warn and return the files that could
-be read successfully.}
+download, read, or processing failure. If \code{FALSE}, warn and retain successful
+files. Unpublished state-period combinations are reported as warnings in
+either mode; this argument does not establish completeness of coverage.}
 
 \item{timeout}{A positive numeric scalar giving the connection and transfer
 timeout, in seconds, for each network attempt.}
@@ -103,8 +104,10 @@ output without changing which source files are downloaded.}
 }
 \value{
 With \code{collect = TRUE}, a tibble containing all successfully read
-records, or \code{NULL} if no requested file could be read. With
-\code{collect = FALSE}, a provenance tibble with one row per output file.
+records, or \code{NULL} if there are no records to return. With
+\code{collect = FALSE}, a provenance tibble with one row per output file; it is
+empty if all discovered files fail. Either mode returns \code{NULL} if no files
+are discovered.
 }
 \description{
 Downloads published DBC files from DataSUS, reads them with \code{\link[=read_dbc]{read_dbc()}},
@@ -135,6 +138,9 @@ When \code{cache_dir} is supplied, complete DBC files and dictionaries persist
 across R sessions. Cache entries include a manifest and SHA-256 checksum (while still accepting legacy MD5 manifests).
 \code{\link[=datasus_cache_info]{datasus_cache_info()}} inspects them and \code{\link[=clear_datasus_cache]{clear_datasus_cache()}} removes only
 files managed by microdatasus.
+File discovery still requires access to the remote directory listings.
+To work offline, use \code{\link[=read_dbc]{read_dbc()}} on local DBC files or \code{\link[=readRDS]{readRDS()}} on saved
+results. Processing may also require previously cached dictionaries.
 
 For processed downloads, \code{cache_dir} also supplies the dictionary cache to
 the processor for that call. \code{row_filter} sees raw codes and must handle
@@ -176,8 +182,9 @@ when supported. Alternative base URLs can be configured with the
 first.
 General Internet connectivity does not guarantee access to the DataSUS
 server. With \code{stop_on_error = FALSE}, failed listings or downloads are
-reported as warnings and successful files are retained; the result is
-\code{NULL} if no file can be read. Check for \code{NULL} before processing the result.
+reported as warnings and successful files are retained. In the default
+\code{collect = TRUE} mode, the result is \code{NULL} if there are no records to return.
+Check for \code{NULL} before processing the result.
 Set \code{stop_on_error = TRUE} when an incomplete download must interrupt an
 analysis.
 }

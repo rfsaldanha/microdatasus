@@ -31,7 +31,23 @@ process and save one file at a time with \code{process = TRUE},
 \code{collect = FALSE}, and \code{destination}. Configure \code{microdatasus.cache_dir}
 for persistent dictionary reuse by processors called directly; see
 \code{\link[=datasus_cache_dir]{datasus_cache_dir()}} and the performance section of \code{\link[=process_sim]{process_sim()}}.
+}
+\section{Network access and local data}{
 
+\code{\link[=fetch_datasus]{fetch_datasus()}} needs access to DataSUS directory listings even when DBC
+files are cached. By default it warns about connection failures and retains
+successful downloads; with \code{collect = TRUE}, check for \code{NULL} before passing
+the result to a processor. Use \code{stop_on_error = TRUE} to abort on failures.
+A direct call to a processor or dictionary helper can fail if a required
+dictionary cannot be downloaded and no valid cached copy is available.
+
+\code{\link[=read_dbc]{read_dbc()}} reads local files without Internet access. Packaged reference
+tables, including \link{tabMun}, are also available offline. Saved processing
+results can be reopened with \code{\link[=readRDS]{readRDS()}}. Persistent dictionaries are reused
+when valid and \code{refresh = FALSE}; see \code{\link[=fetch_tabwin_dictionary]{fetch_tabwin_dictionary()}}.
+}
+
+\references{
 For concepts, coverage, data flows, and caveats of each Brazilian health
 information system, see Saldanha (2026), \href{https://rfsaldanha.github.io/sis/}{\emph{Sistemas de Informação em Saúde no Brasil}}.
 }

@@ -5,6 +5,12 @@ Version: `datasus-territorio-2023-txt-20220516`, policy `legacy-compatible-v1`.
 Original archive:
 `ftp://ftp.datasus.gov.br/territorio/tabelas/2023/base_territorial_2023.zip`
 
+This address records the source of the fixed snapshot. FTP access may be
+unavailable from some networks or countries; the official
+[DataSUS file-transfer portal](https://datasus.saude.gov.br/transferencia-de-arquivos/)
+is the public entry point for downloads. The bundled TXT/layout members are
+sufficient to rebuild this reference without contacting that server.
+
 Original archive SHA-256:
 `798be2f62a53dd1af8e335a44a1916154f36ee3a3051a7375864a74ef47c3bc4`
 

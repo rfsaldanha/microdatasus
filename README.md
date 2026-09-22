@@ -64,10 +64,38 @@ O pacote mantém `foreign` apenas para tabelas DBF auxiliares ou referenciadas
 pelos dicionários TabWin; esses arquivos não fazem parte do caminho de leitura
 de um DBC.
 
-No Windows, a instalação pelo GitHub requer uma versão do
+### Windows
+
+No Windows, a instalação pelo GitHub compila o código C do pacote e requer o
 [Rtools](https://cran.r-project.org/bin/windows/Rtools/) compatível com o R
 instalado. A versão binária distribuída pelo CRAN não requer ferramentas de
 compilação.
+
+Se você recebeu do mantenedor um **binário DEV `.zip` para Windows**, instale-o
+sem descompactar. Confirme que ele é compatível com a versão e a arquitetura do
+seu R, consultáveis com `R.version.string` e `R.version$arch`. Esse binário também
+dispensa Rtools, mas a instalação de um arquivo local não resolve as dependências
+automaticamente. Em uma sessão nova do R:
+
+```r
+# Instala ou atualiza as dependências usando binários do CRAN
+install.packages(
+  c("cli", "curl", "data.table", "digest", "dplyr", "foreign",
+    "magrittr", "stringi", "tibble", "zip"),
+  repos = "https://cloud.r-project.org",
+  type = "win.binary"
+)
+
+# Selecione o .zip binário fornecido pelo mantenedor
+install.packages(file.choose(), repos = NULL, type = "win.binary")
+library(microdatasus)
+packageVersion("microdatasus")
+```
+
+A versão DEV requer `dplyr >= 1.2.0`. O primeiro comando precisa de internet;
+a instalação do `.zip` pode ser feita sem conexão se todas as dependências já
+estiverem instaladas. O mantenedor pode gerar esses binários com o
+[Win-builder](https://win-builder.r-project.org/).
 
 ## Primeiro download
 
@@ -86,7 +114,11 @@ sim_raw <- fetch_datasus(
   track_source = TRUE
 )
 
-sim <- process_sim(sim_raw)
+if (!is.null(sim_raw)) {
+  sim <- process_sim(sim_raw)
+} else {
+  message("Nenhum registro foi obtido; confira os avisos do download.")
+}
 ```
 
 `process_sim()` usa `SIM-DO` por padrão. Para os subconjuntos nacionais,
@@ -114,7 +146,9 @@ sih_raw <- fetch_datasus(
   timeout = 600
 )
 
-sih <- process_sih(sih_raw)
+if (!is.null(sih_raw)) {
+  sih <- process_sih(sih_raw)
+}
 ```
 
 ## Sistemas suportados
@@ -146,15 +180,33 @@ Algumas opções úteis de `fetch_datasus()`:
   globais do R.
 - o nome do arquivo, o progresso da transferência, a leitura e o resumo final
   são exibidos; use `quiet = TRUE` para ocultar o progresso e todas as mensagens
-  de status.
-- `stop_on_error = FALSE` preserva sucessos parciais; `TRUE` interrompe a
-  solicitação na primeira falha.
+  de status. Avisos e erros continuam visíveis.
+- `stop_on_error = FALSE` preserva sucessos parciais e informa as falhas com
+  avisos; `TRUE` interrompe a solicitação em falhas de listagem, download,
+  leitura ou processamento.
 - `uf` aceita uma UF, várias UFs ou `"all"`. Arquivos nacionais, como os do
   SINAN, ignoram esse argumento com um alerta.
 
 Consulte o artigo [Download e
 rastreabilidade](https://rfsaldanha.github.io/microdatasus/articles/download-e-rastreabilidade.html)
 para exemplos de todas essas opções.
+
+### Falhas de conexão e uso sem internet
+
+Ter internet não garante acesso ao FTP do DataSUS. O servidor pode estar
+indisponível ou bloquear determinada rede. No modo padrão (`collect = TRUE`,
+`stop_on_error = FALSE`), `fetch_datasus()` retorna os registros aproveitados ou
+`NULL` quando não há registros a retornar. Verifique esse resultado antes de
+chamar `process_*()`, como nos exemplos acima. Avisos de falha também podem
+acompanhar um resultado parcial.
+
+O cache reaproveita arquivos, mas `fetch_datasus()` ainda consulta a listagem
+remota. Para trabalhar sem conexão, use `read_dbc()` em DBCs locais ou `readRDS()`
+nos resultados já salvos. Processadores e consultas de dicionários podem exigir
+downloads se os arquivos necessários ainda não estiverem em um cache válido.
+As tabelas incluídas no pacote, como `tabMun`, são locais. Consulte as
+[perguntas frequentes](https://rfsaldanha.github.io/microdatasus/articles/FAQ.html)
+para os detalhes desses comportamentos.
 
 ## Dicionários, cache e tabelas grandes
 

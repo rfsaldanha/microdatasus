@@ -22,8 +22,9 @@
 #'   therefore include derived fields when `process = TRUE`. Selection is
 #'   always applied before files are combined.
 #' @param stop_on_error Logical scalar. If `TRUE`, abort after any listing,
-#'   download, or read failure. If `FALSE`, warn and return the files that could
-#'   be read successfully.
+#'   download, read, or processing failure. If `FALSE`, warn and retain successful
+#'   files. Unpublished state-period combinations are reported as warnings in
+#'   either mode; this argument does not establish completeness of coverage.
 #' @param timeout A positive numeric scalar giving the connection and transfer
 #'   timeout, in seconds, for each network attempt.
 #' @param track_source Logical scalar. If `TRUE`, append a `source` column with
@@ -60,8 +61,10 @@
 #'   output without changing which source files are downloaded.
 #'
 #' @return With `collect = TRUE`, a tibble containing all successfully read
-#'   records, or `NULL` if no requested file could be read. With
-#'   `collect = FALSE`, a provenance tibble with one row per output file.
+#'   records, or `NULL` if there are no records to return. With
+#'   `collect = FALSE`, a provenance tibble with one row per output file; it is
+#'   empty if all discovered files fail. Either mode returns `NULL` if no files
+#'   are discovered.
 #'
 #' @details
 #' The function first lists the relevant DataSUS directories and downloads only
@@ -88,6 +91,9 @@
 #' across R sessions. Cache entries include a manifest and SHA-256 checksum (while still accepting legacy MD5 manifests).
 #' [datasus_cache_info()] inspects them and [clear_datasus_cache()] removes only
 #' files managed by microdatasus.
+#' File discovery still requires access to the remote directory listings.
+#' To work offline, use [read_dbc()] on local DBC files or [readRDS()] on saved
+#' results. Processing may also require previously cached dictionaries.
 #'
 #' For processed downloads, `cache_dir` also supplies the dictionary cache to
 #' the processor for that call. `row_filter` sees raw codes and must handle
@@ -124,8 +130,9 @@
 #' first.
 #' General Internet connectivity does not guarantee access to the DataSUS
 #' server. With `stop_on_error = FALSE`, failed listings or downloads are
-#' reported as warnings and successful files are retained; the result is
-#' `NULL` if no file can be read. Check for `NULL` before processing the result.
+#' reported as warnings and successful files are retained. In the default
+#' `collect = TRUE` mode, the result is `NULL` if there are no records to return.
+#' Check for `NULL` before processing the result.
 #' Set `stop_on_error = TRUE` when an incomplete download must interrupt an
 #' analysis.
 #'
