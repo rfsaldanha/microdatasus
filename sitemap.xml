@@ -3,18 +3,32 @@
 <url><loc>https://rfsaldanha.github.io/microdatasus/LICENSE-text.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/LICENSE.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/articles/FAQ.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/articles/download-e-rastreabilidade.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/articles/exemplos.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/articles/formatos-dbc-def-cnv.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/articles/index.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/authors.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/index.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/news/index.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/audit_datasus_dictionaries.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/clear_datasus_cache.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/cnes_pf_sample.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/cnes_st_sample.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/compare_datasus_dictionary.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/datasus_cache_dir.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/datasus_cache_info.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/datasus_information_systems.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/datasus_lockfile.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/datasus_provenance.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/datasus_reference_tables.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/datasus_schema.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/datasus_variables.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/equipe.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/fetch_cadger.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/fetch_sigtab.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/fetch_tabwin_dictionary.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/index.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/microdatasus-package.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/paisnet.html</loc></url>
@@ -23,6 +37,7 @@
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sia.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sih.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sim.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinan.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinan_chagas.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinan_chikungunya.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinan_dengue.html</loc></url>
@@ -31,6 +46,8 @@
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinan_malaria.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinan_zika.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/process_sinasc.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/processing_diagnostics.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/read_datasus_lockfile.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/read_dbc.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/sia_pa_sample.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/sigtab.html</loc></url>
@@ -48,5 +65,7 @@
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/tabMun.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/tabNaturalidade.html</loc></url>
 <url><loc>https://rfsaldanha.github.io/microdatasus/reference/tabOcupacao.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/validate_datasus_schema.html</loc></url>
+<url><loc>https://rfsaldanha.github.io/microdatasus/reference/verify_datasus_lockfile.html</loc></url>
 </urlset>
 

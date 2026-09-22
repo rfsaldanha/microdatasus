@@ -1,7 +1,7 @@
 # Ocupations table
 
-Ocupations table, based on OCUPACAO.CNV file from SIM TabWIN definitions
-file.
+Legacy packaged snapshot retained for compatibility; its exact source
+archive and date are unavailable.
 
 ## Usage
 

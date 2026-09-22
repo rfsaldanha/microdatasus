@@ -1,8 +1,117 @@
 # Changelog
 
+## microdatasus 3.0.0.9000
+
+### Development
+
+- Publishes the development documentation on pushes to `dev`, including
+  the processing guide linked from the help pages. Cites the official
+  DataSUS HTTPS transfer portal for the fixed municipal reference,
+  retaining the original FTP address as provenance and documenting its
+  access limitations and the bundled offline sources. Clarifies
+  connection-failure handling and the separation between offline package
+  checks and opt-in live tests.
+- Documents and adds regression coverage for discovering every published
+  file part across all supported systems, including more than 26 parts,
+  arbitrary suffix lengths, and different part sets for each state and
+  period.
+- Reconstructs the packaged municipal reference exactly from
+  checksum-pinned official DataSUS TXT files, without changing its
+  values. Ships the source members for offline rebuilding and reports an
+  explicit snapshot version, source timestamp basis, archive checksum,
+  and compatibility transformations. Documents that territorial
+  enrichment uses a fixed reference, not boundaries selected from
+  observation dates.
+- Adds an offline, checksum-pinned corpus of eight official historical
+  DBC excerpts with original DEF/CNV/DBF members and independently
+  transcribed expected results. Checks four layout transitions, all
+  label modes, mixed periods, values, types, category counts, and
+  processing diagnostics.
+- Makes CI coverage gates reject missing critical files, invalid
+  percentages, and malformed coverage reports instead of silently
+  ignoring missing entries.
+- Fixes weekly live-test rotation to continue across year boundaries, so
+  every registered SINAN system is selected even when a family has more
+  than 53 members.
+- Replaces the DBC-to-temporary-DBF path in
+  [`read_dbc()`](https://rfsaldanha.github.io/microdatasus/reference/read_dbc.md)
+  with a streaming native reader that parses decompressed records
+  directly into R columns. Character data are converted explicitly to
+  UTF-8 using DBF language-driver metadata plus per-field byte evidence
+  (with a strict `encoding` override). Mixed and obfuscated identifier
+  bytes are preserved losslessly with a warning. `vars` avoids
+  allocating or parsing unselected fields, and
+  [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+  uses this projection before reading whenever processing and row
+  filtering do not require the full row.
+- Makes CP1252 decoding platform-independent by rejecting its five
+  undefined byte values explicitly. Automatic decoding preserves those
+  bytes losslessly, while an explicit CP1252 override continues to fail
+  strictly on every OS.
+- Hardens native DBC parsing with strict field-layout, record-marker,
+  end-code, trailing-data, I/O, CRC32, embedded-NUL padding, numeric
+  syntax and precision, and calendar-date checks. The reader recognizes
+  the DBF language-driver variants found in official DataSUS files and
+  detects a file changed between metadata and record reads. Malformed
+  numeric and date cells in structurally valid official files become
+  `NA` with diagnostics. Fixes undefined pointer arithmetic in the
+  vendored blast sliding window found by UBSan, and adds deterministic
+  mutation, truncation, full historical-system matrix, real-corpus,
+  gctorture, sanitizer, and performance validation workflows.
+- Adds per-file `row_filter` execution before processing, deterministic
+  schema sampling across historical layouts, and richer
+  coercion/unknown-code counts.
+- Uses SHA-256 for new cache manifests while reading legacy MD5
+  manifests, supports resumable transfers and optional
+  `microdatasus.mirrors`, and brings CADGER/SIGTAB downloads into the
+  persistent cache and provenance model.
+- Adds reproducibility lockfiles with request, source, dictionary,
+  parser, and packaged-reference checksums through
+  [`datasus_lockfile()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_lockfile.md)
+  and verification helpers.
+- Makes packaged lookup-table provenance explicit with
+  [`datasus_reference_tables()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_reference_tables.md),
+  normalizes escaped UTF-8 values, and reports legacy reference use in
+  processing diagnostics.
+- Classifies dictionary issues by origin, adds strict `fail_on_issues`
+  audits, rotating coverage of every registered subsystem, and live
+  historical-layout transition checks.
+- Expands the package, function, README, FAQ, and article documentation
+  for the direct DBC reader and the DEF/CNV/DBF parser, including
+  encoding behavior, TabWin precedence, auditable fallbacks, stable
+  processed types, and the boundary of the remaining `foreign`
+  dependency.
+- Speeds up `process_*()` on large inputs by parsing repeated dates
+  once, restricting Unicode unescaping to text that contains escapes,
+  vectorizing fixed-width code padding and TabWin `F`-mode thresholds,
+  and avoiding full-table row copies while scoring historical dictionary
+  relations.
+- Documents automatic processing optimizations, persistent cache
+  configuration, the scope of column projection, and the limits of
+  synthetic benchmarks. Updates download examples and enables processing
+  diagnostics where lockfiles need dictionary and reference-table
+  provenance.
+
 ## microdatasus 3.0.0
 
+CRAN release: 2026-07-29
+
 ### Downloads
+
+- Adds an optional persistent cache for DBC and TabWin ZIP files, with
+  manifests, MD5 integrity checks, inspection through
+  [`datasus_cache_info()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_cache_info.md),
+  and targeted cleanup through
+  [`clear_datasus_cache()`](https://rfsaldanha.github.io/microdatasus/reference/clear_datasus_cache.md).
+
+- Extends
+  [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+  with per-file processing and RDS output. Setting `collect = FALSE`
+  bounds memory use to roughly one source file and returns a provenance
+  manifest; existing calls retain their combined-tibble behavior.
+
+- Adds opt-in download provenance with source URL, size, checksum,
+  timestamp, cache status, and local/output paths.
 
 - Reworks
   [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
@@ -10,40 +119,50 @@
   from the files actually published by DataSUS. Each relevant FTP
   directory is listed only once per call, avoiding redundant connections
   and URLs for files that do not exist.
+
 - Selects a single file for each system, period, state, and file part.
   Definitive/current data take precedence over preliminary data, and
   current data take precedence over historical copies. Results retain
   deterministic period, state, and file-part order.
+
 - Uses `curl` directly for directory listings and downloads, with
   per-operation timeouts and up to two retries for transient network
   failures. Downloads remain sequential, display transfer progress by
   default, and no longer modify the global `options("timeout")`.
+
 - Downloads through temporary partial files, validates file size and DBC
   contents, and reliably removes temporary files. With
   `stop_on_error = FALSE`, successfully read files are returned after a
   consolidated warning; with `stop_on_error = TRUE`, any failure aborts
   the operation.
+
 - Applies `vars` before accumulating results and combines files only
   once, reducing repeated copies. When `track_source = TRUE`, the
   `source` column is retained even when `vars` is supplied, and an
   existing `source` column now produces a clear error.
+
 - Strengthens validation of years, months, states, logical arguments,
   `vars`, and fractional `timeout` values. Monthly systems require
   months, annual systems ignore them with one warning, and `"all"` can
   no longer be combined with individual states.
+
 - Replaces the former global 1996 lower-year restriction with historical
   limits specific to each information system. Existing public arguments,
   their order, and their defaults remain unchanged.
+
 - Adds `quiet` at the end of the
   [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
   signature. Transfer progress and status messages, including each file
   name, are displayed by default; set `quiet = TRUE` to hide them.
   Warnings and errors remain visible.
+
 - Uses immediate `cli` warning alerts when month arguments or state
   selections are ignored, including when `quiet = TRUE`.
+
 - Standardizes download messages across microdata and auxiliary tables,
   with consistent status verbs, semantic `cli` formatting, indexed file
   progress, and one diagnostic item per failed directory or file.
+
 - Hardens
   [`fetch_cadger()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_cadger.md)
   and
@@ -73,15 +192,121 @@
 
 ### Processing, documentation, and testing
 
+- Adds
+  [`datasus_variables()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_variables.md)
+  to inspect official DEF/CNV/DBF metadata and
+  [`compare_datasus_dictionary()`](https://rfsaldanha.github.io/microdatasus/reference/compare_datasus_dictionary.md)
+  to report added, removed, or changed fields and labels between
+  dictionary versions.
+
+- Supports the compact, `s`, and long-description `N` CNV dialects found
+  in current official archives, legacy-encoded ZIP member names, codes
+  wider than 32-bit integers, and audited two-column DBF description
+  fallbacks.
+
+- Adds
+  [`validate_datasus_schema()`](https://rfsaldanha.github.io/microdatasus/reference/validate_datasus_schema.md)
+  to join observed DBC fields, selected current/historical DEF
+  declarations, and the types produced by the matching processor for all
+  93 downloadable families.
+
+- Preserves very large CNV intervals as symbolic rules instead of
+  expanding them in memory, reports missing, invalid, non-enumerable,
+  and failed relations explicitly, and compares relation states and
+  interval changes.
+
+- Adds
+  [`datasus_schema()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_schema.md)
+  for dictionary-derived field contracts and
+  [`audit_datasus_dictionaries()`](https://rfsaldanha.github.io/microdatasus/reference/audit_datasus_dictionaries.md)
+  for all 104 current and historical TabWin definitions, while
+  downloading each of the 14 physical archives only once.
+
+- Persists parsed CNV/DBF relations by archive checksum and parser
+  version, caches assembled variable tables in the R session, and
+  serializes competing cache writes with atomic locks and uniquely named
+  partial files.
+
+- Expands processing diagnostics with dictionary provenance, missing
+  expected fields, unmapped input fields, and numeric/date coercion
+  failures.
+
+- Gives every unified `process_*()` function the same `labels` policy
+  (`"factor"`, `"character"`, or `"none"`) and optional diagnostics for
+  unmapped codes, while appending all new arguments to preserve
+  established calls.
+
+- Expands coverage gates, processing benchmarks and scheduled live
+  DataSUS smoke tests across SIM, SINASC, SIH, SIA, CNES, and SINAN;
+  adds a monthly all-dictionary audit plus deterministic malformed-DBC,
+  Valgrind, and UBSan safety workflows.
+
+- Replaces short SINAN acronym identifiers with readable canonical
+  names, while retaining every previous value as a silent
+  backward-compatible alias. The new
+  [`datasus_information_systems()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_information_systems.md)
+  lookup table lists all 93 supported file families and keeps names, DBC
+  acronyms, periodicity, geography, and aliases synchronized with
+  download and TabWin registries.
+
+- Adds the unified
+  [`process_sinan()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan.md)
+  based on the official `TAB_SINANNET.zip` and `TAB_SINANONLINE.zip`
+  definitions and expands
+  [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+  from eight to all 58 SINAN families listed by the transfer portal. The
+  seven former processors retain their original signatures as deprecated
+  wrappers. Dates, encoded ages, municipality codes, labels, and
+  identifiers now follow one tested type policy.
+
+- Rebuilds
+  [`process_cnes()`](https://rfsaldanha.github.io/microdatasus/reference/process_cnes.md)
+  from the official DataSUS TabWin definitions. It now covers all
+  thirteen downloadable CNES layouts, selects the historical or current
+  service-classification definition row by row, shares the large
+  `TAB_CNES.zip` download for the R session, reads numeric increment
+  metadata from DEF, and preserves identifiers and all existing
+  arguments.
+
+- Rebuilds
+  [`process_sia()`](https://rfsaldanha.github.io/microdatasus/reference/process_sia.md)
+  from the official DataSUS TabWin definitions. It now covers all twelve
+  downloadable SIA layouts, selects three historical PA definitions by
+  record competence, shares archives in the session cache, and preserves
+  all existing arguments while making their procedure, occupation, and
+  team switches effective.
+
+- Rebuilds
+  [`process_sih()`](https://rfsaldanha.github.io/microdatasus/reference/process_sih.md)
+  from the official DataSUS TabWin definitions. The function now
+  processes `SIH-RD`, `SIH-RJ`, `SIH-SP`, and `SIH-ER`, selects the
+  three historical RD/RJ archives by record competence, caches shared
+  downloads for the R session, and standardizes dates, quantities,
+  values, labels, and identifiers while preserving its existing
+  arguments.
+
+- Standardizes patient age across processors without changing the source
+  fields. SIH-RD/RJ and every applicable SIA layout now add integer
+  `IDADEdias`, `IDADEmeses`, or `IDADEanos` columns from the official
+  TabWin unit conventions; SIM and SINAN use the same shared internal
+  decoder.
+
+- Speeds processing of large tables by applying row-specific historical
+  dictionaries in one pass per field, factorizing only once, avoiding a
+  second full-table UTF-8 normalization, and using direct numeric
+  coercion when no special missing-value codes need preprocessing.
+
 - Adopts
   [`dplyr::recode_values()`](https://dplyr.tidyverse.org/reference/recode-and-replace-values.html)
   because
   [`dplyr::case_match()`](https://dplyr.tidyverse.org/reference/case_match.html)
   is deprecated.
+
 - Expands and corrects the documentation for all public functions,
   including network behavior, actual return types, compatibility
   arguments, and links to the corresponding chapters of the book
   *Sistemas de Informação em Saúde no Brasil*.
+
 - Replaces skipped download tests with deterministic simulated listings
   and transfers. The suite now covers supported systems, historical,
   current, and preliminary files, multipart data, complete argument
@@ -90,9 +315,11 @@
   multiple states, and auxiliary-table schema validation. Local
   `file://` fixtures exercise `curl` without network access; live
   DataSUS smoke tests remain opt-in and are always skipped on CRAN.
+
 - Runs the active GitHub Actions R CMD check workflow for pushes and
   pull requests involving the `dev` branch as well as `main` and
   `master`.
+
 - Requires R 4.1.0 or later.
 
 ## microdatasus 2.5.0

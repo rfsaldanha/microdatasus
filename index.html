@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="index.html">microdatasus</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.0.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,6 +48,8 @@
     <li><h6 class="dropdown-header" data-toc-skip>Guias</h6></li>
     <li><a class="dropdown-item" href="articles/exemplos.html">Primeiros passos e exemplos por sistema</a></li>
     <li><a class="dropdown-item" href="articles/download-e-rastreabilidade.html">Download e rastreabilidade</a></li>
+    <li><a class="dropdown-item" href="articles/dicionarios-cache-e-escala.html">Dicionários, cache e processamento em escala</a></li>
+    <li><a class="dropdown-item" href="articles/formatos-dbc-def-cnv.html">Formatos DBC, DEF e CNV</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="articles/index.html">More articles...</a></li>
   </ul>
@@ -79,18 +81,23 @@
 </h2>
 <ul>
 <li>
-<code><a href="reference/fetch_datasus.html">fetch_datasus()</a></code> localiza, baixa e combina microdados publicados pelo DataSUS.</li>
+<code><a href="reference/fetch_datasus.html">fetch_datasus()</a></code> localiza, baixa e combina microdados publicados pelo DataSUS; também pode processar e salvar cada arquivo separadamente.</li>
 <li>
-<code><a href="reference/read_dbc.html">read_dbc()</a></code> lê um arquivo DBC já disponível no computador.</li>
-<li>As funções <code>process_*()</code> recodificam campos conhecidos, normalizam textos e, quando implementado, acrescentam informações municipais ou tabelas auxiliares.</li>
+<code><a href="reference/read_dbc.html">read_dbc()</a></code> lê diretamente um arquivo DBC já disponível no computador, validando estrutura e CRC32 sem gravar um DBF intermediário.</li>
+<li>As funções <code>process_*()</code> interpretam os arquivos oficiais DEF, CNV e DBF do TabWin, selecionam definições históricas por registro, padronizam tipos e podem relatar códigos ainda não mapeados.</li>
+<li>
+<code><a href="reference/datasus_variables.html">datasus_variables()</a></code> consulta relações oficiais, <code><a href="reference/datasus_schema.html">datasus_schema()</a></code> cria contratos por campo, <code><a href="reference/validate_datasus_schema.html">validate_datasus_schema()</a></code> confronta DBC, DEF e tipos produzidos, e <code><a href="reference/audit_datasus_dictionaries.html">audit_datasus_dictionaries()</a></code> verifica todas as definições e <code><a href="reference/compare_datasus_dictionary.html">compare_datasus_dictionary()</a></code> identifica mudanças entre versões.</li>
 <li>
 <code><a href="reference/fetch_cadger.html">fetch_cadger()</a></code> e <code><a href="reference/fetch_sigtab.html">fetch_sigtab()</a></code> obtêm tabelas auxiliares atuais de CNES e SIA.</li>
+<li>
+<code><a href="reference/datasus_reference_tables.html">datasus_reference_tables()</a></code> torna explícita a origem das tabelas legadas; <code><a href="reference/datasus_lockfile.html">datasus_lockfile()</a></code> registra e <code><a href="reference/verify_datasus_lockfile.html">verify_datasus_lockfile()</a></code> confere os arquivos usados em uma análise.</li>
 </ul>
-<p>Os downloads são sequenciais, usam arquivos temporários e fazem novas tentativas em falhas transitórias. Quando <code>stop_on_error = FALSE</code>, os arquivos válidos podem ser retornados mesmo que parte da solicitação falhe.</p>
+<p>Os downloads fazem novas tentativas em falhas transitórias e podem usar um cache persistente, com checksum e proveniência. Quando <code>stop_on_error = FALSE</code>, os arquivos válidos podem ser retornados mesmo que parte da solicitação falhe.</p>
 </div>
 <div class="section level2">
 <h2 id="instalação">Instalação<a class="anchor" aria-label="anchor" href="#instala%C3%A7%C3%A3o"></a>
 </h2>
+<p>Este README acompanha a versão de desenvolvimento <code>3.0.0.9000</code>; a versão publicada no CRAN pode oferecer um conjunto diferente de recursos.</p>
 <p>Instale a versão estável publicada no CRAN:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"microdatasus"</span><span class="op">)</span></span></code></pre></div>
@@ -98,7 +105,7 @@
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"rfsaldanha/microdatasus"</span>, ref <span class="op">=</span> <span class="st">"dev"</span><span class="op">)</span></span></code></pre></div>
-<p>A leitura de DBC é interna ao pacote e não depende mais de <code>read.dbc</code>. A implementação foi adaptada do pacote <a href="https://github.com/SidneyBissoli/healthbR" class="external-link">healthbR</a>.</p>
+<p>A leitura de DBC é interna ao pacote, não chama <code><a href="https://rdrr.io/pkg/foreign/man/read.dbf.html" class="external-link">foreign::read.dbf()</a></code> e não depende mais de <code>read.dbc</code>. A implementação foi adaptada do pacote <a href="https://github.com/SidneyBissoli/healthbR" class="external-link">healthbR</a>. O pacote mantém <code>foreign</code> apenas para tabelas DBF auxiliares ou referenciadas pelos dicionários TabWin; esses arquivos não fazem parte do caminho de leitura de um DBC.</p>
 <p>No Windows, a instalação pelo GitHub requer uma versão do <a href="https://cran.r-project.org/bin/windows/Rtools/" class="external-link">Rtools</a> compatível com o R instalado. A versão binária distribuída pelo CRAN não requer ferramentas de compilação.</p>
 </div>
 <div class="section level2">
@@ -118,12 +125,10 @@
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/process_sim.html">process_sim</a></span><span class="op">(</span><span class="va">sim_raw</span><span class="op">)</span></span></code></pre></div>
-<p>Os processadores retornam um tibble com colunas de texto após a normalização Unicode. Converta explicitamente os campos necessários à análise:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sim</span><span class="op">$</span><span class="va">DTOBITO</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">DTOBITO</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="reference/process_sim.html">process_sim()</a></code> usa <code>SIM-DO</code> por padrão. Para os subconjuntos nacionais, informe o mesmo tipo usado no download, por exemplo <code>process_sim(sim_fetal_raw, information_system = "SIM-DOFET")</code>. O resultado padroniza datas como <code>Date</code>, quantidades como inteiros e variáveis rotuladas como fatores.</p>
 <p>Os anos, meses e UFs solicitados identificam as partições publicadas pelo DataSUS. A data e o local analíticos devem ser escolhidos nas variáveis do registro. O <a href="https://rfsaldanha.github.io/sis/sim.html" class="external-link">capítulo sobre o SIM</a>, por exemplo, distingue residência, ocorrência e outras dimensões territoriais e temporais do óbito.</p>
 <p>Sistemas mensais, como SIH, SIA e CNES, exigem os meses inicial e final:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sih_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fetch_datasus.html">fetch_datasus</a></span><span class="op">(</span></span>
 <span>  year_start <span class="op">=</span> <span class="fl">2023</span>,</span>
 <span>  month_start <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -177,9 +182,7 @@
 <td>
 <code>SIH-RD</code>, <code>SIH-RJ</code>, <code>SIH-SP</code>, <code>SIH-ER</code>
 </td>
-<td>
-<code><a href="reference/process_sih.html">process_sih()</a></code> para <code>SIH-RD</code>
-</td>
+<td><code><a href="reference/process_sih.html">process_sih()</a></code></td>
 <td><a href="https://rfsaldanha.github.io/sis/sih.html" class="external-link">SIH</a></td>
 </tr>
 <tr>
@@ -187,9 +190,7 @@
 <td>Mensal</td>
 <td>Doze layouts <code>SIA-*</code>
 </td>
-<td>
-<code><a href="reference/process_sia.html">process_sia()</a></code> para <code>SIA-PA</code>
-</td>
+<td><code><a href="reference/process_sia.html">process_sia()</a></code></td>
 <td><a href="https://rfsaldanha.github.io/sis/sia.html" class="external-link">SIA</a></td>
 </tr>
 <tr>
@@ -198,19 +199,21 @@
 <td>Treze layouts <code>CNES-*</code>
 </td>
 <td>
-<code><a href="reference/process_cnes.html">process_cnes()</a></code> para <code>CNES-ST</code> e <code>CNES-PF</code>
-</td>
+<code><a href="reference/process_cnes.html">process_cnes()</a></code> para os treze layouts</td>
 <td><a href="https://rfsaldanha.github.io/sis/cnes.html" class="external-link">CNES</a></td>
 </tr>
 <tr>
 <td>SINAN</td>
 <td>Anual e nacional</td>
-<td>Dengue, chikungunya, Zika, malária, Chagas, leishmanioses e leptospirose</td>
-<td>Processadores específicos, exceto leptospirose</td>
+<td>58 famílias oficiais <code>SINAN-*</code>
+</td>
+<td>
+<code><a href="reference/process_sinan.html">process_sinan()</a></code> para as 58 famílias</td>
 <td><a href="https://rfsaldanha.github.io/sis/sinan.html" class="external-link">SINAN</a></td>
 </tr>
 </tbody>
 </table>
+<p>Use <code><a href="reference/datasus_information_systems.html">datasus_information_systems()</a></code> para consultar todos os 93 valores aceitos em <code>information_system</code>, seus nomes, periodicidade, abrangência, siglas usadas nos arquivos DBC e aliases.</p>
 <p>A lista completa dos identificadores está na <a href="https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.html">referência de <code>fetch_datasus()</code></a>.</p>
 </div>
 <div class="section level2">
@@ -219,7 +222,7 @@
 <p>Algumas opções úteis de <code><a href="reference/fetch_datasus.html">fetch_datasus()</a></code>:</p>
 <ul>
 <li>
-<code>vars</code> limita as colunas lidas e reduz o uso de memória.</li>
+<code>vars</code> limita as colunas retornadas. Sem processamento ou filtro de linhas, também evita alocar as demais colunas durante a leitura do DBC.</li>
 <li>
 <code>track_source = TRUE</code> acrescenta o nome do DBC de origem de cada registro.</li>
 <li>
@@ -233,6 +236,27 @@
 <p>Consulte o artigo <a href="https://rfsaldanha.github.io/microdatasus/articles/download-e-rastreabilidade.html">Download e rastreabilidade</a> para exemplos de todas essas opções.</p>
 </div>
 <div class="section level2">
+<h2 id="dicionários-cache-e-tabelas-grandes">Dicionários, cache e tabelas grandes<a class="anchor" aria-label="anchor" href="#dicion%C3%A1rios-cache-e-tabelas-grandes"></a>
+</h2>
+<p>Um diretório explícito reutiliza DBC e ZIP do TabWin entre sessões. Configure também a opção do pacote para que chamadas diretas a <code>process_*()</code> usem esse mesmo cache:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cache</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/datasus_cache_dir.html">datasus_cache_dir</a></span><span class="op">(</span>create <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>microdatasus.cache_dir <span class="op">=</span> <span class="va">cache</span><span class="op">)</span></span>
+<span><span class="va">variables</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/datasus_variables.html">datasus_variables</a></span><span class="op">(</span><span class="st">"SIM-DO"</span>, cache_dir <span class="op">=</span> <span class="va">cache</span><span class="op">)</span></span>
+<span><span class="va">schema</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/datasus_schema.html">datasus_schema</a></span><span class="op">(</span><span class="st">"SIM-DO"</span>, cache_dir <span class="op">=</span> <span class="va">cache</span><span class="op">)</span></span>
+<span><span class="va">contract</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/validate_datasus_schema.html">validate_datasus_schema</a></span><span class="op">(</span><span class="va">sim_do_sample</span>, <span class="st">"SIM-DO"</span>, period <span class="op">=</span> <span class="fl">2020</span>, cache_dir <span class="op">=</span> <span class="va">cache</span><span class="op">)</span></span>
+<span><span class="va">audit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/audit_datasus_dictionaries.html">audit_datasus_dictionaries</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SIM-DO"</span>, <span class="st">"SINASC"</span><span class="op">)</span>, cache_dir <span class="op">=</span> <span class="va">cache</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/datasus_cache_info.html">datasus_cache_info</a></span><span class="op">(</span><span class="va">cache</span><span class="op">)</span></span></code></pre></div>
+<p>Os processadores aceitam <code>labels = "factor"</code>, <code>"character"</code> ou <code>"none"</code>. Com <code>diagnostics = TRUE</code>, <code><a href="reference/processing_diagnostics.html">processing_diagnostics()</a></code> informa códigos ausentes das conversões, campos esperados ou não mapeados, falhas de coerção e a proveniência — fonte, definição e checksum — de cada dicionário usado.</p>
+<p>As otimizações de processamento são automáticas: datas repetidas são convertidas uma vez por campo e formato; o desescape só é aplicado a textos com barras invertidas; preenchimentos de códigos e faixas CNV <code>F</code> são vetorizados; e a seleção de relações históricas acessa as colunas necessárias. A conversão textual para UTF-8 permanece ativa, preservando identificadores marcados como <code>"bytes"</code> na etapa de normalização.</p>
+<p>Use <code>labels = "none"</code> se precisar dos códigos, <code>municipality_data = FALSE</code> se não precisar dos atributos territoriais e <code>diagnostics = FALSE</code> (padrão) se não precisar do relatório. <code>labels = "none"</code> não garante execução sem rede: SIA, CNES e SINAN ainda consultam os dicionários para determinar a semântica dos campos. Uma primeira chamada pode incluir download e análise desses arquivos; chamadas seguintes podem reutilizar o cache.</p>
+<p>Para solicitações grandes, combine <code>destination</code>, <code>collect = FALSE</code> e <code>process = TRUE</code>: cada DBC é processado e gravado antes da leitura do próximo. O retorno é um manifesto com caminhos, número de linhas, origem e checksum.</p>
+<p>Use <code>row_filter</code> para descartar linhas de cada DBC antes do processamento e reduzir memória e tempo. Novos manifests usam SHA-256; espelhos HTTP/FTP podem ser informados por <code>options(microdatasus.mirrors = c("https://..."))</code>. Com <code>process = TRUE</code> ou <code>row_filter</code>, a leitura usa o layout completo, e <code>vars</code> é aplicado depois dessas etapas. Isso preserva os campos necessários para datas históricas, idades e relações entre colunas.</p>
+<p>Com <code>provenance = TRUE</code>, <code>datasus_lockfile(dados, "datasus.lock.rds")</code> registra a consulta e os DBC. Acrescente <code>process = TRUE</code> e <code>process_args = list(diagnostics = TRUE)</code> para registrar também os dicionários e as tabelas de referência usados no processamento.</p>
+<p>O enriquecimento municipal usa uma referência fixa, identificada por <code><a href="reference/datasus_reference_tables.html">datasus_reference_tables()</a></code> como <code>datasus-territorio-2023-txt-20220516</code>. Ela foi reconstruída sem alterar os valores de <code>tabMun</code>, usando os TXT oficiais congelados no pacote. Não representa automaticamente os limites territoriais vigentes no ano de cada registro. Use <code>municipality_data = FALSE</code> para aplicar outra referência; consulte <a href="https://rfsaldanha.github.io/microdatasus/reference/tabMun.html"><code>tabMun</code></a> para a origem e as transformações de compatibilidade.</p>
+<p>O guia <a href="https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.html">Dicionários, cache e processamento em escala</a> apresenta o fluxo completo e um exemplo para medir o processamento dos seus dados. A <a href="https://github.com/rfsaldanha/microdatasus/blob/dev/benchmarks/README.md" class="external-link">documentação dos benchmarks</a> explica o escopo dos testes de desempenho do repositório. O artigo <a href="https://rfsaldanha.github.io/microdatasus/articles/formatos-dbc-def-cnv.html">Formatos DBC, DEF e CNV</a> descreve as regras de leitura, precedência e diagnóstico. O suporte do SIM nesta versão é restrito a CID-10.</p>
+</div>
+<div class="section level2">
 <h2 id="arquivos-dbc-locais">Arquivos DBC locais<a class="anchor" aria-label="anchor" href="#arquivos-dbc-locais"></a>
 </h2>
 <p>Use <code><a href="reference/read_dbc.html">read_dbc()</a></code> quando o arquivo já estiver no computador:</p>
@@ -240,7 +264,21 @@
 <code class="sourceCode R"><span><span class="va">dados</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_dbc.html">read_dbc</a></span><span class="op">(</span><span class="st">"arquivo.dbc"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Preserva os tipos inferidos dos metadados DBF</span></span>
-<span><span class="va">dados_tipados</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_dbc.html">read_dbc</a></span><span class="op">(</span><span class="st">"arquivo.dbc"</span>, as_character <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">dados_tipados</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_dbc.html">read_dbc</a></span><span class="op">(</span><span class="st">"arquivo.dbc"</span>, as_character <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Lê somente as colunas necessárias, sem alocar as demais</span></span>
+<span><span class="va">dados_selecionados</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_dbc.html">read_dbc</a></span><span class="op">(</span></span>
+<span>  <span class="st">"arquivo.dbc"</span>,</span>
+<span>  vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CODMUNRES"</span>, <span class="st">"DTOBITO"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Para arquivos cujo marcador de code page esteja ausente ou incorreto</span></span>
+<span><span class="va">dados_latin1</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_dbc.html">read_dbc</a></span><span class="op">(</span><span class="st">"arquivo.dbc"</span>, encoding <span class="op">=</span> <span class="st">"latin1"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Alguns arquivos históricos usam a página de código DOS CP850</span></span>
+<span><span class="va">dados_cp850</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_dbc.html">read_dbc</a></span><span class="op">(</span><span class="st">"arquivo_historico.dbc"</span>, encoding <span class="op">=</span> <span class="st">"CP850"</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="reference/read_dbc.html">read_dbc()</a></code> descomprime e interpreta os registros diretamente, sem criar um DBF intermediário. O fluxo completo, o layout DBF, os marcadores de registro e o CRC32 são validados mesmo quando <code>vars</code> seleciona poucas colunas.</p>
+<p><code>encoding = "auto"</code> combina o marcador DBF com evidência de bytes por coluna e por linha. Texto reconhecido é convertido para UTF-8; misturas ambíguas e alguns identificadores ofuscados são preservados sem perda como strings com codificação <code>"bytes"</code>, acompanhadas de aviso. Um <code>encoding</code> explícito é estrito e interrompe a leitura diante de bytes inválidos. Isso inclui, em qualquer sistema operacional, os cinco valores indefinidos do Windows-1252 (<code>81</code>, <code>8D</code>, <code>8F</code>, <code>90</code> e <code>9D</code> em hexadecimal).</p>
 </div>
 <div class="section level2">
 <h2 id="guias">Guias<a class="anchor" aria-label="anchor" href="#guias"></a>
@@ -248,6 +286,8 @@
 <ul>
 <li><a href="https://rfsaldanha.github.io/microdatasus/articles/exemplos.html">Primeiros passos e exemplos por sistema</a></li>
 <li><a href="https://rfsaldanha.github.io/microdatasus/articles/download-e-rastreabilidade.html">Download e rastreabilidade</a></li>
+<li><a href="https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.html">Dicionários, cache e processamento em escala</a></li>
+<li><a href="https://rfsaldanha.github.io/microdatasus/articles/formatos-dbc-def-cnv.html">Formatos DBC, DEF e CNV</a></li>
 <li><a href="https://rfsaldanha.github.io/microdatasus/articles/FAQ.html">Perguntas frequentes</a></li>
 <li><a href="https://rfsaldanha.github.io/sis/" class="external-link">Livro <em>Sistemas de Informação em Saúde no Brasil</em></a></li>
 </ul>

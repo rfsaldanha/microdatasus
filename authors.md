@@ -14,7 +14,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/rfsaldanha/microdatasus/blob/master/inst/CITATION)
+[`inst/CITATION`](https://github.com/rfsaldanha/microdatasus/blob/dev/inst/CITATION)
 
 Saldanha, Raphael, Bastos, Ronaldo, Barcellos, Christovam (2019).
 “Microdatasus: pacote para download e pré-processamento de microdados do

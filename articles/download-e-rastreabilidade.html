@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">microdatasus</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.0.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,6 +46,8 @@
     <li><h6 class="dropdown-header" data-toc-skip>Guias</h6></li>
     <li><a class="dropdown-item" href="../articles/exemplos.html">Primeiros passos e exemplos por sistema</a></li>
     <li><a class="dropdown-item" href="../articles/download-e-rastreabilidade.html">Download e rastreabilidade</a></li>
+    <li><a class="dropdown-item" href="../articles/dicionarios-cache-e-escala.html">Dicionários, cache e processamento em escala</a></li>
+    <li><a class="dropdown-item" href="../articles/formatos-dbc-def-cnv.html">Formatos DBC, DEF e CNV</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/index.html">More articles...</a></li>
   </ul>
@@ -74,7 +76,7 @@
       <h1>Download e rastreabilidade</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/rfsaldanha/microdatasus/blob/master/vignettes/articles/download-e-rastreabilidade.Rmd" class="external-link"><code>vignettes/articles/download-e-rastreabilidade.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/rfsaldanha/microdatasus/blob/dev/vignettes/articles/download-e-rastreabilidade.Rmd" class="external-link"><code>vignettes/articles/download-e-rastreabilidade.Rmd</code></a></small>
       <div class="d-none name"><code>download-e-rastreabilidade.Rmd</code></div>
     </div>
 
@@ -98,8 +100,10 @@ do DBC e apresenta um resumo final do lote. Use
 <code>quiet = TRUE</code> quando quiser ocultar o progresso e todas as
 mensagens de status; avisos e erros permanecem visíveis. Arquivos
 temporários são removidos depois da leitura, inclusive quando ocorre uma
-falha. Não há cache persistente: uma nova chamada consulta novamente o
-DataSUS.</p>
+falha. Com <code>cache_dir</code>, arquivos válidos e seus manifests
+persistem para reutilização entre sessões. Uma nova chamada ainda
+consulta a listagem do DataSUS, mas pode reutilizar o DBC em cache;
+<code>refresh = TRUE</code> solicita um novo download.</p>
 </div>
 <div class="section level2">
 <h2 id="argumentos-principais">Argumentos principais<a class="anchor" aria-label="anchor" href="#argumentos-principais"></a>
@@ -157,8 +161,45 @@ anuais</td>
 <td><code>stop_on_error</code></td>
 <td>Define se uma falha interrompe toda a solicitação</td>
 </tr>
+<tr class="even">
+<td>
+<code>cache_dir</code>, <code>refresh</code>
+</td>
+<td>Reutiliza arquivos persistidos ou solicita novo download</td>
+</tr>
+<tr class="odd">
+<td>
+<code>process</code>, <code>process_args</code>
+</td>
+<td>Processa cada arquivo e configura rótulos, diagnósticos e outras
+opções</td>
+</tr>
+<tr class="even">
+<td><code>row_filter</code></td>
+<td>Filtra linhas brutas antes do processamento e da seleção de
+colunas</td>
+</tr>
+<tr class="odd">
+<td>
+<code>destination</code>, <code>collect</code>
+</td>
+<td>Grava RDS por arquivo; <code>collect = FALSE</code> retorna o
+manifesto</td>
+</tr>
+<tr class="even">
+<td>
+<code>provenance</code>, <code>keep_files</code>
+</td>
+<td>Registra metadados da execução e permite reter os DBCs em
+<code>destination</code>
+</td>
+</tr>
 </tbody>
 </table>
+<p>Use <code><a href="../reference/datasus_information_systems.html">datasus_information_systems()</a></code> para consultar os 93
+identificadores preferenciais, seus sistemas, nomes completos,
+periodicidade, abrangência, siglas de arquivo e aliases
+retrocompatíveis.</p>
 <p>A referência de <a href="../reference/fetch_datasus.html"><code>fetch_datasus()</code></a>
 contém a lista completa dos identificadores aceitos e seus limites
 históricos.</p>
@@ -223,8 +264,9 @@ campos territoriais.</p>
 <h2 id="selecionar-variáveis">Selecionar variáveis<a class="anchor" aria-label="anchor" href="#selecionar-vari%C3%A1veis"></a>
 </h2>
 <p><code>vars</code> é aplicado a cada arquivo antes da combinação
-final. Isso reduz a memória necessária quando apenas parte do layout é
-relevante:</p>
+final. Sem <code>process</code> ou <code>row_filter</code>, a seleção é
+encaminhada ao leitor, evitando alocar as demais colunas. A validação
+estrutural e o CRC32 continuam cobrindo o arquivo completo:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sim_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_datasus.html">fetch_datasus</a></span><span class="op">(</span></span>
 <span>  year_start <span class="op">=</span> <span class="fl">2022</span>,</span>
@@ -237,13 +279,35 @@ relevante:</p>
 silenciosamente incompleta. Se o estudo usa causas ou diagnósticos,
 consulte também o <a href="https://rfsaldanha.github.io/sis/cid.html" class="external-link">apêndice sobre a
 CID</a>.</p>
+<p>Com <code>process = TRUE</code> ou <code>row_filter</code>, o leitor
+carrega o layout completo. O filtro recebe os códigos brutos e deve
+retornar um lógico por linha sem <code>NA</code>; depois ocorrem o
+processamento, se solicitado, e a seleção de <code>vars</code>. Assim, é
+possível selecionar campos derivados na saída:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_datasus.html">fetch_datasus</a></span><span class="op">(</span></span>
+<span>  year_start <span class="op">=</span> <span class="fl">2022</span>,</span>
+<span>  year_end <span class="op">=</span> <span class="fl">2022</span>,</span>
+<span>  uf <span class="op">=</span> <span class="st">"AC"</span>,</span>
+<span>  information_system <span class="op">=</span> <span class="st">"SIM-DO"</span>,</span>
+<span>  process <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  process_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>municipality_data <span class="op">=</span> <span class="cn">FALSE</span>, diagnostics <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  row_filter <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">SEXO</span><span class="op">)</span> <span class="op">&amp;</span> <span class="va">x</span><span class="op">$</span><span class="va">SEXO</span> <span class="op">==</span> <span class="st">"1"</span>,</span>
+<span>  vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DTOBITO"</span>, <span class="st">"CODMUNRES"</span>, <span class="st">"IDADEanos"</span><span class="op">)</span>,</span>
+<span>  cache_dir <span class="op">=</span> <span class="fu"><a href="../reference/datasus_cache_dir.html">datasus_cache_dir</a></span><span class="op">(</span>create <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  provenance <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Esse fluxo conserva durante o processamento as colunas de competência
+e os campos usados em relações DEF que atravessam colunas físicas. A
+seleção final reduz o resultado, mas não a memória necessária à leitura
+inicial.</p>
 </div>
 <div class="section level2">
 <h2 id="rastrear-o-arquivo-de-origem">Rastrear o arquivo de origem<a class="anchor" aria-label="anchor" href="#rastrear-o-arquivo-de-origem"></a>
 </h2>
 <p>Com <code>track_source = TRUE</code>, cada registro recebe uma coluna
 <code>source</code> com o nome do DBC:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sih_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_datasus.html">fetch_datasus</a></span><span class="op">(</span></span>
 <span>  year_start <span class="op">=</span> <span class="fl">2023</span>,</span>
 <span>  month_start <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -265,7 +329,7 @@ nome, a função interrompe a operação para não sobrescrever dados.</p>
 </h2>
 <p>Use o argumento <code>timeout</code> da própria função. Não é
 necessário alterar <code>options(timeout)</code>:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sia_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_datasus.html">fetch_datasus</a></span><span class="op">(</span></span>
 <span>  year_start <span class="op">=</span> <span class="fl">2023</span>,</span>
 <span>  month_start <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -285,7 +349,7 @@ repetidamente.</p>
 <p>O padrão <code>stop_on_error = FALSE</code> tenta aproveitar os
 arquivos válidos. Ao final, as falhas são reunidas em um único
 diagnóstico:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dados</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_datasus.html">fetch_datasus</a></span><span class="op">(</span></span>
 <span>  year_start <span class="op">=</span> <span class="fl">2023</span>,</span>
 <span>  month_start <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -297,13 +361,13 @@ diagnóstico:</p>
 <span><span class="op">)</span></span></code></pre></div>
 <p>O retorno é <code>NULL</code> quando nenhum arquivo pode ser obtido.
 Sempre verifique antes de processar ou persistir:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">dados</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">dados</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_sih.html">process_sih</a></span><span class="op">(</span><span class="va">dados</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>Use <code>stop_on_error = TRUE</code> quando o conjunto só for válido
 se todos os arquivos forem obtidos:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dados</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_datasus.html">fetch_datasus</a></span><span class="op">(</span></span>
 <span>  year_start <span class="op">=</span> <span class="fl">2023</span>,</span>
 <span>  month_start <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -331,11 +395,13 @@ seção de estrutura de dados do capítulo correspondente no <a href="https://rf
 </h2>
 <p>Se o arquivo já foi obtido por outro meio, use
 <code><a href="../reference/read_dbc.html">read_dbc()</a></code>:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dados</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_dbc.html">read_dbc</a></span><span class="op">(</span><span class="st">"arquivo.dbc"</span><span class="op">)</span></span>
 <span><span class="va">dados_tipados</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_dbc.html">read_dbc</a></span><span class="op">(</span><span class="st">"arquivo.dbc"</span>, as_character <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p>O arquivo DBF intermediário é temporário e removido
-automaticamente.</p>
+<p>O leitor descomprime e interpreta o DBC diretamente, sem gravar um
+DBF intermediário. Também valida a estrutura e o CRC32 completo.
+Consulte <a href="formatos-dbc-def-cnv.html">Formatos DBC, DEF e CNV</a>
+para projeção de colunas, codificações históricas e classes de erro.</p>
 </div>
 <div class="section level2">
 <h2 id="boas-práticas-para-downloads-grandes">Boas práticas para downloads grandes<a class="anchor" aria-label="anchor" href="#boas-pr%C3%A1ticas-para-downloads-grandes"></a>
@@ -346,6 +412,11 @@ automaticamente.</p>
 completo.</li>
 <li>Divida consultas nacionais ou de muitos anos em lotes
 recuperáveis.</li>
+<li>Use <code>process = TRUE</code>, <code>collect = FALSE</code> e
+<code>destination</code> para processar e salvar cada DBC sem acumular
+todos os resultados em memória.</li>
+<li>Ative <code>cache_dir</code> para reutilizar DBCs e dicionários
+entre sessões.</li>
 <li>Registre os argumentos, a data de extração e, quando necessário,
 <code>track_source</code>.</li>
 <li>Confira avisos de períodos, UFs e arquivos ausentes antes da
@@ -353,7 +424,8 @@ análise.</li>
 <li>Não dispare chamadas paralelas contra o FTP do DataSUS.</li>
 </ul>
 <p>Veja as <a href="FAQ.html">Perguntas frequentes</a> para um exemplo
-de persistência incremental em SQLite.</p>
+de persistência incremental em SQLite e <a href="dicionarios-cache-e-escala.html">Dicionários, cache e
+processamento em escala</a> para medir tempo e planejar memória.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

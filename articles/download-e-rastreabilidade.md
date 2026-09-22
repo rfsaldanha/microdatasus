@@ -20,8 +20,10 @@ progresso informado pelo `curl`; depois, anuncia a leitura do DBC e
 apresenta um resumo final do lote. Use `quiet = TRUE` quando quiser
 ocultar o progresso e todas as mensagens de status; avisos e erros
 permanecem visíveis. Arquivos temporários são removidos depois da
-leitura, inclusive quando ocorre uma falha. Não há cache persistente:
-uma nova chamada consulta novamente o DataSUS.
+leitura, inclusive quando ocorre uma falha. Com `cache_dir`, arquivos
+válidos e seus manifests persistem para reutilização entre sessões. Uma
+nova chamada ainda consulta a listagem do DataSUS, mas pode reutilizar o
+DBC em cache; `refresh = TRUE` solicita um novo download.
 
 ## Argumentos principais
 
@@ -36,6 +38,17 @@ uma nova chamada consulta novamente o DataSUS.
 | `timeout` | Limite, em segundos, de cada operação de rede |
 | `quiet` | Oculta mensagens de status e progresso quando `TRUE` |
 | `stop_on_error` | Define se uma falha interrompe toda a solicitação |
+| `cache_dir`, `refresh` | Reutiliza arquivos persistidos ou solicita novo download |
+| `process`, `process_args` | Processa cada arquivo e configura rótulos, diagnósticos e outras opções |
+| `row_filter` | Filtra linhas brutas antes do processamento e da seleção de colunas |
+| `destination`, `collect` | Grava RDS por arquivo; `collect = FALSE` retorna o manifesto |
+| `provenance`, `keep_files` | Registra metadados da execução e permite reter os DBCs em `destination` |
+
+Use
+[`datasus_information_systems()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_information_systems.md)
+para consultar os 93 identificadores preferenciais, seus sistemas, nomes
+completos, periodicidade, abrangência, siglas de arquivo e aliases
+retrocompatíveis.
 
 A referência de
 [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
@@ -123,8 +136,10 @@ interpretar e compatibilizar campos territoriais.
 
 ## Selecionar variáveis
 
-`vars` é aplicado a cada arquivo antes da combinação final. Isso reduz a
-memória necessária quando apenas parte do layout é relevante:
+`vars` é aplicado a cada arquivo antes da combinação final. Sem
+`process` ou `row_filter`, a seleção é encaminhada ao leitor, evitando
+alocar as demais colunas. A validação estrutural e o CRC32 continuam
+cobrindo o arquivo completo:
 
 ``` r
 
@@ -140,6 +155,33 @@ sim_raw <- fetch_datasus(
 Nomes inexistentes produzem erro para evitar uma seleção silenciosamente
 incompleta. Se o estudo usa causas ou diagnósticos, consulte também o
 [apêndice sobre a CID](https://rfsaldanha.github.io/sis/cid.html).
+
+Com `process = TRUE` ou `row_filter`, o leitor carrega o layout
+completo. O filtro recebe os códigos brutos e deve retornar um lógico
+por linha sem `NA`; depois ocorrem o processamento, se solicitado, e a
+seleção de `vars`. Assim, é possível selecionar campos derivados na
+saída:
+
+``` r
+
+sim <- fetch_datasus(
+  year_start = 2022,
+  year_end = 2022,
+  uf = "AC",
+  information_system = "SIM-DO",
+  process = TRUE,
+  process_args = list(municipality_data = FALSE, diagnostics = TRUE),
+  row_filter = function(x) !is.na(x$SEXO) & x$SEXO == "1",
+  vars = c("DTOBITO", "CODMUNRES", "IDADEanos"),
+  cache_dir = datasus_cache_dir(create = TRUE),
+  provenance = TRUE
+)
+```
+
+Esse fluxo conserva durante o processamento as colunas de competência e
+os campos usados em relações DEF que atravessam colunas físicas. A
+seleção final reduz o resultado, mas não a memória necessária à leitura
+inicial.
 
 ## Rastrear o arquivo de origem
 
@@ -255,13 +297,20 @@ dados <- read_dbc("arquivo.dbc")
 dados_tipados <- read_dbc("arquivo.dbc", as_character = FALSE)
 ```
 
-O arquivo DBF intermediário é temporário e removido automaticamente.
+O leitor descomprime e interpreta o DBC diretamente, sem gravar um DBF
+intermediário. Também valida a estrutura e o CRC32 completo. Consulte
+[Formatos DBC, DEF e
+CNV](https://rfsaldanha.github.io/microdatasus/articles/formatos-dbc-def-cnv.md)
+para projeção de colunas, codificações históricas e classes de erro.
 
 ## Boas práticas para downloads grandes
 
 - Solicite somente os períodos e layouts necessários.
 - Use `vars` sempre que a análise não precisar do layout completo.
 - Divida consultas nacionais ou de muitos anos em lotes recuperáveis.
+- Use `process = TRUE`, `collect = FALSE` e `destination` para processar
+  e salvar cada DBC sem acumular todos os resultados em memória.
+- Ative `cache_dir` para reutilizar DBCs e dicionários entre sessões.
 - Registre os argumentos, a data de extração e, quando necessário,
   `track_source`.
 - Confira avisos de períodos, UFs e arquivos ausentes antes da análise.
@@ -269,4 +318,7 @@ O arquivo DBF intermediário é temporário e removido automaticamente.
 
 Veja as [Perguntas
 frequentes](https://rfsaldanha.github.io/microdatasus/articles/FAQ.md)
-para um exemplo de persistência incremental em SQLite.
+para um exemplo de persistência incremental em SQLite e [Dicionários,
+cache e processamento em
+escala](https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.md)
+para medir tempo e planejar memória.

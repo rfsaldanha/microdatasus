@@ -12,8 +12,8 @@ O uso do `microdatasus` normalmente segue três passos:
 1.  definir o sistema, o período e a abrangência geográfica;
 2.  baixar os arquivos com
     [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md);
-3.  aplicar o processador específico e converter explicitamente os tipos
-    necessários à análise.
+3.  aplicar o processador específico e conferir os tipos, rótulos e
+    diagnósticos necessários à análise.
 
 ``` r
 
@@ -27,13 +27,24 @@ sim_raw <- fetch_datasus(
 )
 
 sim <- process_sim(sim_raw)
-sim$DTOBITO <- as.Date(sim$DTOBITO)
 ```
 
 As funções `process_*()` normalizam textos e substituem códigos
-conhecidos por descrições. Ao final, suas colunas são retornadas como
-texto; datas e números usados na análise devem ser convertidos
-explicitamente.
+conhecidos por descrições. Datas, quantidades, valores, identificadores
+e categorias mantêm tipos distintos: por padrão, datas completas são
+`Date`, contagens são inteiros e rótulos categóricos são fatores. Use
+`labels = "character"` ou `"none"` para alterar somente a política dos
+campos categóricos.
+
+As otimizações de datas, textos e relações CNV são automáticas. Para
+reutilizar dicionários entre sessões em chamadas diretas aos
+processadores, configure
+`options(microdatasus.cache_dir = datasus_cache_dir(create = TRUE))`.
+`labels = "none"` mantém os códigos, mas SIA, CNES e SINAN ainda podem
+acessar dicionários para determinar tipos e relações. Veja [Dicionários,
+cache e processamento em
+escala](https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.md)
+para escolher opções e medir o custo com seus dados.
 
 Os argumentos de período e UF identificam as partições publicadas pelo
 DataSUS. Eles não substituem a escolha da variável temporal ou
@@ -65,10 +76,11 @@ sim <- process_sim(sim_raw)
 ```
 
 Também podem ser baixados os subconjuntos nacionais `SIM-DOFET`,
-`SIM-DOEXT`, `SIM-DOINF` e `SIM-DOMAT`. A função
-[`process_sim()`](https://rfsaldanha.github.io/microdatasus/reference/process_sim.md)
-deve ser usada apenas quando o layout for compatível com as variáveis
-que ela conhece.
+`SIM-DOEXT`, `SIM-DOINF` e `SIM-DOMAT`. Passe o mesmo tipo a
+[`process_sim()`](https://rfsaldanha.github.io/microdatasus/reference/process_sim.md);
+por exemplo,
+`process_sim(sim_fetal_raw, information_system = "SIM-DOFET")`. O padrão
+continua sendo `SIM-DO`.
 
 ## SINASC — nascidos vivos
 
@@ -89,7 +101,6 @@ sinasc_raw <- fetch_datasus(
 )
 
 sinasc <- process_sinasc(sinasc_raw)
-sinasc$DTNASC <- as.Date(sinasc$DTNASC)
 ```
 
 ## SIH — internações hospitalares
@@ -116,9 +127,11 @@ sih <- process_sih(sih_raw)
 ```
 
 [`process_sih()`](https://rfsaldanha.github.io/microdatasus/reference/process_sih.md)
-processa atualmente o layout reduzido `SIH-RD`. Os layouts `SIH-RJ`,
-`SIH-SP` e `SIH-ER` podem ser baixados, mas não têm processadores
-específicos.
+processa os quatro layouts disponíveis. `SIH-RD` é o padrão; para os
+demais, informe o mesmo tipo usado no download, por exemplo
+`process_sih(sih_rj_raw, information_system = "SIH-RJ")`. Nos layouts RD
+e RJ, a função seleciona automaticamente a definição histórica
+correspondente à competência de cada registro.
 
 ## SIA — produção ambulatorial
 
@@ -142,16 +155,18 @@ sia_raw <- fetch_datasus(
   information_system = "SIA-PA"
 )
 
-# FALSE evita um segundo download da tabela SIGTAB neste exemplo
+# FALSE mantém o código do procedimento sem acrescentar seu rótulo
 sia <- process_sia(sia_raw, nome_proced = FALSE)
 ```
 
 [`process_sia()`](https://rfsaldanha.github.io/microdatasus/reference/process_sia.md)
-processa atualmente apenas `SIA-PA`. Quando `nome_proced = TRUE`, seu
-valor padrão, a função baixa a SIGTAB atual e acrescenta os nomes dos
-procedimentos.
+processa os doze layouts disponíveis. Informe em `information_system` o
+mesmo tipo usado no download; `SIA-PA` permanece como padrão. Quando
+`nome_proced = TRUE`, a função usa a tabela de procedimentos declarada
+no DEF correspondente. Para PA anterior a 2008, a definição correta é
+selecionada automaticamente pela competência de cada registro.
 
-## CNES — estabelecimentos e profissionais
+## CNES — treze layouts cadastrais
 
 O CNES é um cadastro atualizado continuamente. Cada arquivo mensal
 representa uma posição do cadastro, não um conjunto de eventos ocorridos
@@ -159,6 +174,11 @@ durante o mês. O [capítulo sobre o
 CNES](https://rfsaldanha.github.io/sis/cnes.html) discute
 estabelecimentos, profissionais, leitos, equipamentos e mudanças
 cadastrais.
+[`process_cnes()`](https://rfsaldanha.github.io/microdatasus/reference/process_cnes.md)
+aceita os treze tipos disponíveis em
+[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md):
+`LT`, `ST`, `DC`, `EQ`, `SR`, `HB`, `PF`, `EP`, `RC`, `IN`, `EE`, `EF` e
+`GM`, todos com o prefixo `CNES-`.
 
 Estabelecimentos:
 
@@ -199,8 +219,11 @@ cnes_pf <- process_cnes(
 )
 ```
 
-Em `CNES-ST`, `nomes = TRUE` baixa a tabela CADGER atual para
-acrescentar o nome fantasia do estabelecimento.
+Com `nomes = TRUE`, a função acrescenta o nome fantasia do
+estabelecimento usando a tabela CADGER declarada no DEF. O ZIP do TabWin
+e as conversões usadas ficam em cache durante a sessão. Para `CNES-SR`,
+a definição anterior ou posterior a março de 2008 é escolhida pela
+competência de cada registro.
 
 ## SINAN — agravos de notificação
 
@@ -220,12 +243,29 @@ sinan_raw <- fetch_datasus(
   information_system = "SINAN-DENGUE"
 )
 
-sinan_dengue <- process_sinan_dengue(sinan_raw)
+sinan_dengue <- process_sinan(
+  sinan_raw,
+  information_system = "SINAN-DENGUE"
+)
 ```
 
-Há download e processamento para dengue, chikungunya, Zika, malária,
-Chagas e leishmanioses tegumentar e visceral. Leptospirose pode ser
-baixada, mas ainda não possui uma função de processamento específica.
+[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+e
+[`process_sinan()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan.md)
+cobrem as 58 famílias apresentadas pela página oficial de transferência.
+Os valores preferenciais são legíveis, como
+`SINAN-ACIDENTE-POR-ANIMAIS-PECONHENTOS`, `SINAN-HANSENIASE` e
+`SINAN-TUBERCULOSE`. Consulte nomes, siglas dos arquivos e aliases com:
+
+``` r
+
+subset(datasus_information_systems(), system == "SINAN")
+```
+
+Os antigos identificadores baseados em siglas, como `SINAN-ANIM` e
+`SINAN-TUBE`, continuam aceitos para retrocompatibilidade. As antigas
+funções `process_sinan_*()` também continuam disponíveis com aviso de
+depreciação.
 
 ## Próximos passos
 

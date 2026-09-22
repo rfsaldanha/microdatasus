@@ -1,6 +1,7 @@
 # CBO table
 
-CBO table, based on CBO2002.CNV file from SIM TabWIN definitions file.
+Legacy packaged snapshot retained for compatibility; its exact source
+archive and date are unavailable.
 
 ## Usage
 
@@ -10,7 +11,7 @@ tabCBO
 
 ## Format
 
-A data frame with 2428 rows and 2 variables:
+A data frame with 2812 rows and 2 variables:
 
 - cod:
 

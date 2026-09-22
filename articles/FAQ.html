@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">microdatasus</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.0.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,6 +46,8 @@
     <li><h6 class="dropdown-header" data-toc-skip>Guias</h6></li>
     <li><a class="dropdown-item" href="../articles/exemplos.html">Primeiros passos e exemplos por sistema</a></li>
     <li><a class="dropdown-item" href="../articles/download-e-rastreabilidade.html">Download e rastreabilidade</a></li>
+    <li><a class="dropdown-item" href="../articles/dicionarios-cache-e-escala.html">Dicionários, cache e processamento em escala</a></li>
+    <li><a class="dropdown-item" href="../articles/formatos-dbc-def-cnv.html">Formatos DBC, DEF e CNV</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/index.html">More articles...</a></li>
   </ul>
@@ -74,7 +76,7 @@
       <h1>Perguntas frequentes</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/rfsaldanha/microdatasus/blob/master/vignettes/articles/FAQ.Rmd" class="external-link"><code>vignettes/articles/FAQ.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/rfsaldanha/microdatasus/blob/dev/vignettes/articles/FAQ.Rmd" class="external-link"><code>vignettes/articles/FAQ.Rmd</code></a></small>
       <div class="d-none name"><code>FAQ.Rmd</code></div>
     </div>
 
@@ -101,9 +103,8 @@ Em uma análise de óbitos ocorridos em 2020, por exemplo:</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_sim.html">process_sim</a></span><span class="op">(</span><span class="va">sim_raw</span><span class="op">)</span></span>
-<span><span class="va">sim</span><span class="op">$</span><span class="va">DTOBITO</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">DTOBITO</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">sim_2020</span> <span class="op">&lt;-</span> <span class="va">sim</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">DTOBITO</span>, <span class="st">"%Y"</span><span class="op">)</span> <span class="op">==</span> <span class="st">"2020"</span>, <span class="op">]</span></span></code></pre></div>
+<span><span class="va">sim_2020</span> <span class="op">&lt;-</span> <span class="va">sim</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">DTOBITO</span><span class="op">)</span> <span class="op">&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">DTOBITO</span>, <span class="st">"%Y"</span><span class="op">)</span> <span class="op">==</span> <span class="st">"2020"</span>, <span class="op">]</span></span></code></pre></div>
 <p>Os capítulos do livro sobre <a href="https://rfsaldanha.github.io/sis/sim.html" class="external-link">SIM</a>, <a href="https://rfsaldanha.github.io/sis/sinasc.html" class="external-link">SINASC</a>, <a href="https://rfsaldanha.github.io/sis/sih.html" class="external-link">SIH</a>, <a href="https://rfsaldanha.github.io/sis/sia.html" class="external-link">SIA</a>, <a href="https://rfsaldanha.github.io/sis/sinan.html" class="external-link">SINAN</a> e <a href="https://rfsaldanha.github.io/sis/cnes.html" class="external-link">CNES</a> explicam
 quais dimensões temporais e territoriais existem em cada sistema.</p>
 </div>
@@ -169,6 +170,26 @@ arquivo for lido, o retorno é <code>NULL</code>.</p>
 download ou leitura interrompe a chamada.</p>
 </div>
 <div class="section level2">
+<h2 id="e-quando-o-computador-está-sem-internet-ou-o-datasus-está-indisponível">E quando o computador está sem internet ou o DataSUS está
+indisponível?<a class="anchor" aria-label="anchor" href="#e-quando-o-computador-est%C3%A1-sem-internet-ou-o-datasus-est%C3%A1-indispon%C3%ADvel"></a>
+</h2>
+<p>Com <code>stop_on_error = FALSE</code>, <code><a href="../reference/fetch_datasus.html">fetch_datasus()</a></code>
+informa as falhas de conexão com avisos e retorna <code>NULL</code>
+quando não consegue obter nenhum arquivo. Verifique esse retorno antes
+de chamar uma função <code>process_*()</code>. Ter acesso à internet não
+garante acesso ao FTP do DataSUS: o servidor também pode estar
+indisponível ou bloquear conexões de determinadas redes ou países.</p>
+<p>Os exemplos de download da ajuda só executam em sessões interativas
+com acesso à internet. Os testes automáticos usam arquivos locais e
+conexões simuladas; os testes que acessam o DataSUS precisam ser
+ativados explicitamente e não executam no CRAN. Assim, os checks não
+dependem da disponibilidade do servidor.</p>
+<p>As tabelas de referência incluídas no pacote, como
+<code>tabMun</code>, podem ser usadas sem conexão. O pacote também
+inclui os arquivos de origem necessários para reconstruir essa
+referência municipal.</p>
+</div>
+<div class="section level2">
 <h2 id="como-saber-de-qual-arquivo-veio-cada-linha">Como saber de qual arquivo veio cada linha?<a class="anchor" aria-label="anchor" href="#como-saber-de-qual-arquivo-veio-cada-linha"></a>
 </h2>
 <p>Use <code>track_source = TRUE</code>:</p>
@@ -200,7 +221,13 @@ não sobrescreve uma coluna <code>source</code> já existente no DBC.</p>
 <span>  vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DTOBITO"</span>, <span class="st">"CODMUNRES"</span>, <span class="st">"CAUSABAS"</span>, <span class="st">"IDADE"</span>, <span class="st">"SEXO"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Para muitos anos, meses ou UFs, baixe lotes menores e grave cada lote
-em um banco de dados. O exemplo abaixo usa SQLite:</p>
+em um banco de dados. Outra opção é
+<code>fetch_datasus(process = TRUE, collect = FALSE, destination = "dados")</code>,
+que grava um RDS por arquivo e retorna um manifesto. O maior DBC
+descomprimido, os dicionários e os objetos temporários ainda devem caber
+em memória.</p>
+<p>O exemplo abaixo usa SQLite e processa o layout completo antes de
+selecionar as colunas de saída:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dbi.r-dbi.org" class="external-link">DBI</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rsqlite.r-dbi.org" class="external-link">RSQLite</a></span><span class="op">)</span></span>
@@ -223,6 +250,8 @@ em um banco de dados. O exemplo abaixo usa SQLite:</p>
 <span>    uf <span class="op">=</span> <span class="va">grade</span><span class="op">$</span><span class="va">uf</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,</span>
 <span>    information_system <span class="op">=</span> <span class="st">"SIH-RD"</span>,</span>
 <span>    vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"MUNIC_RES"</span>, <span class="st">"DT_INTER"</span>, <span class="st">"DIAG_PRINC"</span>, <span class="st">"SEXO"</span><span class="op">)</span>,</span>
+<span>    process <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    process_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>municipality_data <span class="op">=</span> <span class="cn">FALSE</span>, labels <span class="op">=</span> <span class="st">"character"</span><span class="op">)</span>,</span>
 <span>    track_source <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>    timeout <span class="op">=</span> <span class="fl">600</span>,</span>
 <span>    stop_on_error <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -232,7 +261,6 @@ em um banco de dados. O exemplo abaixo usa SQLite:</p>
 <span>    <span class="kw">next</span></span>
 <span>  <span class="op">}</span></span>
 <span></span>
-<span>  <span class="va">lote</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_sih.html">process_sih</a></span><span class="op">(</span><span class="va">lote</span><span class="op">)</span></span>
 <span>  <span class="fu">dbWriteTable</span><span class="op">(</span></span>
 <span>    <span class="va">con</span>,</span>
 <span>    <span class="st">"sih"</span>,</span>
@@ -256,26 +284,65 @@ em um banco de dados. O exemplo abaixo usa SQLite:</p>
 <span><span class="fu">dbDisconnect</span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="por-que-as-colunas-processadas-são-texto">Por que as colunas processadas são texto?<a class="anchor" aria-label="anchor" href="#por-que-as-colunas-processadas-s%C3%A3o-texto"></a>
+<h2 id="como-acelerar-o-processamento">Como acelerar o processamento?<a class="anchor" aria-label="anchor" href="#como-acelerar-o-processamento"></a>
 </h2>
-<p>As funções <code>process_*()</code> recodificam valores conhecidos e
-normalizam sequências Unicode em todas as colunas. Essa etapa final
-retorna um tibble de colunas <code>character</code>.</p>
-<p>Converta somente o que a análise exige:</p>
+<p>As funções já convertem datas repetidas uma vez por campo e formato,
+restringem o desescape de texto e usam operações vetorizadas em códigos
+e limites CNV. Essas otimizações não exigem um argumento adicional.</p>
+<p>Ative o cache persistente para reutilizar dicionários:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>microdatasus.cache_dir <span class="op">=</span> <span class="fu"><a href="../reference/datasus_cache_dir.html">datasus_cache_dir</a></span><span class="op">(</span>create <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>Desative apenas o que sua análise não precisa:
+<code>municipality_data = FALSE</code> omite atributos territoriais, e
+<code>diagnostics = FALSE</code> (padrão) evita construir o relatório.
+Use <code>labels = "none"</code> se quiser os códigos categóricos. Essa
+opção não garante execução sem rede: SIA, CNES e SINAN ainda consultam
+os DEFs e podem avaliar suas relações.</p>
+<p>Ao medir desempenho, separe a leitura do DBC da primeira chamada do
+processador e das chamadas com dicionários já em cache. Sempre reutilize
+a entrada bruta. Consulte o exemplo de medição em <a href="dicionarios-cache-e-escala.html">Dicionários, cache e
+processamento em escala</a>.</p>
+</div>
+<div class="section level2">
+<h2 id="vars-sempre-reduz-a-memória-de-leitura">
+<code>vars</code> sempre reduz a memória de leitura?<a class="anchor" aria-label="anchor" href="#vars-sempre-reduz-a-mem%C3%B3ria-de-leitura"></a>
+</h2>
+<p>Sem <code>process</code> e sem <code>row_filter</code>, as colunas
+solicitadas são selecionadas pelo leitor de DBC. Com processamento ou
+filtro, o layout completo é lido e <code>vars</code> seleciona a saída
+depois dessas etapas. Isso permite usar campos derivados e conservar as
+colunas necessárias às relações históricas. Selecionar poucas colunas de
+saída não torna a leitura inicial menor nesse segundo caso.</p>
+</div>
+<div class="section level2">
+<h2 id="quais-tipos-as-funções-de-processamento-retornam">Quais tipos as funções de processamento retornam?<a class="anchor" aria-label="anchor" href="#quais-tipos-as-fun%C3%A7%C3%B5es-de-processamento-retornam"></a>
+</h2>
+<p>As funções <code>process_*()</code> mantêm tipos coerentes com o
+papel de cada campo. Datas completas são <code>Date</code>; contagens e
+componentes de idade são inteiros; valores contínuos podem ser
+<code>double</code>; identificadores e texto livre permanecem
+<code>character</code>; e campos categóricos são fatores por padrão.</p>
+<p>Confira os tipos antes de aplicar transformações específicas da
+análise:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_sim.html">process_sim</a></span><span class="op">(</span><span class="va">sim_raw</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">sim</span><span class="op">$</span><span class="va">DTOBITO</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">DTOBITO</span><span class="op">)</span></span>
-<span><span class="va">sim</span><span class="op">$</span><span class="va">IDADEanos</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">IDADEanos</span><span class="op">)</span></span></code></pre></div>
-<p>Faça a conversão depois de inspecionar códigos especiais, ausências e
-mudanças de layout. O livro de SIS apresenta checklists e seções de
-estrutura dos dados para cada sistema.</p>
+<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">DTOBITO</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">IDADEanos</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">SEXO</span><span class="op">)</span></span></code></pre></div>
+<p>Use <code>labels = "character"</code> para devolver descrições
+categóricas como texto ou <code>labels = "none"</code> para manter os
+códigos de origem. Códigos não cobertos pela relação oficial continuam
+visíveis, em vez de serem transformados silenciosamente em
+<code>NA</code>. Com <code>diagnostics = TRUE</code>, falhas de coerção
+e códigos desconhecidos ficam disponíveis em
+<code><a href="../reference/processing_diagnostics.html">processing_diagnostics()</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="posso-baixar-várias-ufs-de-uma-vez">Posso baixar várias UFs de uma vez?<a class="anchor" aria-label="anchor" href="#posso-baixar-v%C3%A1rias-ufs-de-uma-vez"></a>
 </h2>
 <p>Sim:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dados</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_datasus.html">fetch_datasus</a></span><span class="op">(</span></span>
 <span>  year_start <span class="op">=</span> <span class="fl">2023</span>,</span>
 <span>  month_start <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -307,13 +374,48 @@ interpretação do capítulo correspondente no <a href="https://rfsaldanha.githu
 <h2 id="posso-ler-um-arquivo-dbc-que-já-tenho">Posso ler um arquivo DBC que já tenho?<a class="anchor" aria-label="anchor" href="#posso-ler-um-arquivo-dbc-que-j%C3%A1-tenho"></a>
 </h2>
 <p>Sim:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dados</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_dbc.html">read_dbc</a></span><span class="op">(</span><span class="st">"arquivo.dbc"</span><span class="op">)</span></span></code></pre></div>
 <p>Por padrão, todas as colunas são texto. Para manter os tipos
 inferidos do DBF:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dados</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_dbc.html">read_dbc</a></span><span class="op">(</span><span class="st">"arquivo.dbc"</span>, as_character <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p>O DBF intermediário é temporário e removido automaticamente.</p>
+<p>O pacote descomprime e interpreta o fluxo diretamente, sem criar um
+DBF intermediário. Layout, registros e CRC32 são validados antes do
+retorno. Use <code>vars</code> para ler somente as colunas necessárias
+sem deixar de verificar a estrutura completa do arquivo.</p>
+</div>
+<div class="section level2">
+<h2 id="o-que-fazer-diante-de-aviso-de-codificação-ou-caracteres-multibyte">O que fazer diante de aviso de codificação ou caracteres
+multibyte?<a class="anchor" aria-label="anchor" href="#o-que-fazer-diante-de-aviso-de-codifica%C3%A7%C3%A3o-ou-caracteres-multibyte"></a>
+</h2>
+<p>O padrão <code>encoding = "auto"</code> combina o marcador de página
+de código do DBF com evidência dos bytes de cada coluna e linha. Texto
+identificado com segurança é convertido para UTF-8. Sequências ambíguas
+e identificadores binários são preservados sem perda com
+<code>Encoding(x) == "bytes"</code> e produzem um aviso.</p>
+<p>Se a origem do arquivo for conhecida, um valor explícito exige uma
+leitura estrita:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">dados_cp850</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_dbc.html">read_dbc</a></span><span class="op">(</span><span class="st">"arquivo_historico.dbc"</span>, encoding <span class="op">=</span> <span class="st">"CP850"</span><span class="op">)</span></span></code></pre></div>
+<p>Uma sequência incompatível com o <code>encoding</code> informado gera
+<code>microdatasus_dbc_encoding_error</code>; nenhum caractere
+substituto é inserido. Os cinco bytes indefinidos do Windows-1252 são
+tratados da mesma forma no Windows, Linux e macOS. Consulte <a href="formatos-dbc-def-cnv.html">Formatos DBC, DEF e CNV</a> antes de
+forçar uma codificação.</p>
+</div>
+<div class="section level2">
+<h2 id="como-são-resolvidos-códigos-repetidos-em-cnv-ou-dbf">Como são resolvidos códigos repetidos em CNV ou DBF?<a class="anchor" aria-label="anchor" href="#como-s%C3%A3o-resolvidos-c%C3%B3digos-repetidos-em-cnv-ou-dbf"></a>
+</h2>
+<p>O parser usa a última ocorrência física aplicável, como o TabWin. Em
+CNV, um código posterior substitui o anterior e uma categoria repetida
+usa sua última descrição não vazia. Em tabelas DBF relacionadas, a
+última linha com a mesma chave é usada.</p>
+<p>Conflitos de chave DBF e divergências entre a quantidade de
+categorias declarada e observada no CNV não são ocultados:
+<code><a href="../reference/datasus_variables.html">datasus_variables()</a></code> os marca como <code>fallback</code>,
+com <code>issue_class</code> e mensagem explicativa. Relações ambíguas
+não são escolhidas por aproximação.</p>
 </div>
 <div class="section level2">
 <h2 id="por-que-o-datasus-não-está-acessível">Por que o DataSUS não está acessível?<a class="anchor" aria-label="anchor" href="#por-que-o-datasus-n%C3%A3o-est%C3%A1-acess%C3%ADvel"></a>
@@ -332,6 +434,7 @@ paralelas.</p>
 sistema</a></li>
 <li><a href="download-e-rastreabilidade.html">Download e
 rastreabilidade</a></li>
+<li><a href="formatos-dbc-def-cnv.html">Formatos DBC, DEF e CNV</a></li>
 <li><a href="../reference/index.html">Referência das funções</a></li>
 <li><a href="https://rfsaldanha.github.io/sis/" class="external-link">Livro <em>Sistemas de
 Informação em Saúde no Brasil</em></a></li>

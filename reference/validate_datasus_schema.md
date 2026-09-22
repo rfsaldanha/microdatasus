@@ -1,0 +1,82 @@
+# Validate a DBC table against its dictionary and processor
+
+Builds a field-level contract from a raw DataSUS table (or local DBC),
+the official DEF selected for each represented period, and the column
+classes produced by the corresponding `process_*()` function.
+
+## Usage
+
+``` r
+validate_datasus_schema(
+  data,
+  information_system,
+  process = TRUE,
+  period = NULL,
+  timeout = 240,
+  refresh = FALSE,
+  quiet = FALSE,
+  cache_dir = getOption("microdatasus.cache_dir", NULL),
+  sample_n = 100L,
+  sample_by_dictionary = TRUE
+)
+```
+
+## Arguments
+
+- data:
+
+  A data frame returned by
+  [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+  or one local DBC path. Reading a path loads that DBC in memory.
+
+- information_system:
+
+  One public value listed by
+  [`datasus_information_systems()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_information_systems.md).
+
+- process:
+
+  Logical scalar. If `TRUE`, process one representative row to report
+  the resulting column types without processing the full table.
+
+- period:
+
+  Optional scalar label stored in the returned contract, such as a year
+  or competence. Historical DEF selection uses fields in `data`.
+
+- timeout:
+
+  A positive numeric scalar. Download and connection timeout, in
+  seconds.
+
+- refresh:
+
+  Logical scalar. If `TRUE`, discard the session cache and download the
+  archive again.
+
+- quiet:
+
+  Logical scalar. If `TRUE`, suppress download progress and status
+  messages.
+
+- cache_dir:
+
+  Optional persistent cache root. The package option
+  `microdatasus.cache_dir` is used by default; `NULL` uses only the
+  current session cache.
+
+- sample_n:
+
+  Positive integer giving the maximum deterministic sample size
+  processed for each represented historical dictionary.
+
+- sample_by_dictionary:
+
+  Logical scalar. If `TRUE`, sample every represented current or
+  historical definition instead of only the table as a whole.
+
+## Value
+
+A tibble with one row per field observed, declared by a selected DEF, or
+added by the processor. `status` distinguishes matched, observed-only,
+dictionary-only, and processor-added fields.

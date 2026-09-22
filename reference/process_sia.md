@@ -1,9 +1,12 @@
 # Prepare SIA outpatient-production microdata
 
-Recodes supported fields from SIA individual outpatient-production
-records (`"SIA-PA"`) into descriptive values and normalizes escaped
-Unicode text. Lookup joins can add procedure, occupation, team, and
-municipality descriptions.
+Uses the official DataSUS TabWin definitions to label all twelve SIA
+file families supported by
+[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md).
+The required ZIP is downloaded on first use and cached for the rest of
+the R session. For `"SIA-PA"`, the function selects one of three
+historical definitions by record competence when processing files from
+before 2008.
 
 ## Usage
 
@@ -14,7 +17,9 @@ process_sia(
   nome_proced = TRUE,
   nome_ocupacao = TRUE,
   nome_equipe = TRUE,
-  municipality_data = TRUE
+  municipality_data = TRUE,
+  labels = c("factor", "character", "none"),
+  diagnostics = FALSE
 )
 ```
 
@@ -24,46 +29,88 @@ process_sia(
 
   A data frame returned by
   [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
-  with `information_system = "SIA-PA"`, or a compatible layout.
+  for a supported SIA file family, or another data frame with a
+  compatible layout.
 
 - information_system:
 
-  A single character string. Currently only `"SIA-PA"` is supported.
+  SIA file family represented by `data`. The default `"SIA-PA"`
+  preserves previous calls.
 
 - nome_proced:
 
-  Logical scalar. If `TRUE`, download the current SIGTAB table with
-  [`fetch_sigtab()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_sigtab.md)
-  and join procedure names. This requires network access.
+  Logical scalar. If `TRUE`, use procedure-description tables declared
+  by the official DEF. Kept in its original position for compatibility.
 
 - nome_ocupacao:
 
-  Logical scalar. If `TRUE`, join occupation descriptions for supported
-  occupation-code columns.
+  Logical scalar. If `TRUE`, use occupation-description tables declared
+  by the official DEF.
 
 - nome_equipe:
 
-  Logical scalar retained for API compatibility. Team descriptions are
-  currently joined whenever `PA_INE` is present, regardless of this
-  value.
+  Logical scalar. If `TRUE`, use team-description tables declared by the
+  official DEF.
 
 - municipality_data:
 
   Logical scalar. If `TRUE`, add municipality names and available
-  territorial attributes for supported municipality-code columns.
+  territorial attributes for the patient/residence field supported by
+  the selected layout.
+
+- labels:
+
+  Output type for categorical labels: `"factor"` (the default),
+  `"character"`, or `"none"` to retain the original codes.
+
+- diagnostics:
+
+  Logical scalar. If `TRUE`, attach a processing report, including codes
+  absent from official conversion tables. Retrieve it with
+  [`processing_diagnostics()`](https://rfsaldanha.github.io/microdatasus/reference/processing_diagnostics.md).
 
 ## Value
 
-A tibble with character columns. Supported codes are replaced with
-descriptions, and requested lookup fields are added where applicable.
+A tibble. Full dates are returned as `Date`; quantities and derived
+`IDADEdias`, `IDADEmeses`, and `IDADEanos` fields as integer; values as
+double; labelled categorical fields as factors; and identifiers and free
+text as character. Derived age fields are added whenever the selected
+layout contains patient-age information.
 
-## Details
+## Performance and cache
 
-Columns not explicitly recoded are retained, but Unicode normalization
-is applied to every column and consequently the returned tibble contains
-character columns. Other SIA layouts downloadable with
+Processing uses vectorized code padding and CNV thresholds, parses
+repeated dates once per field and format, and unescapes only text
+containing backslashes. UTF-8 conversion is still performed for text;
+values marked as `"bytes"` bypass text normalization. Historical
+relation selection subsets only the source columns it needs. These
+optimizations are automatic.
+
+Dictionaries are reused within the R session. For reuse across sessions,
+set
+`options(microdatasus.cache_dir = datasus_cache_dir(create = TRUE))`;
+calling
+[`datasus_cache_dir()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_cache_dir.md)
+alone does not enable persistent caching. The first processing call can
+include dictionary downloads and parsing. `labels = "none"` controls
+categorical output, not network access: some processors still need DEF
+metadata or relations for field semantics.
+
+`diagnostics = FALSE` avoids collecting the optional report, and
+`municipality_data = FALSE` omits territorial enrichment when it is not
+needed. For requests spanning many files, use
 [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
-are not currently supported by this processing function.
+with `process = TRUE`, `collect = FALSE`, and `destination` to save each
+file separately. A processor called directly still holds its input and
+output in memory. See the [processing
+guide](https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.html).
+
+Territorial enrichment uses the fixed
+[tabMun](https://rfsaldanha.github.io/microdatasus/reference/tabMun.md)
+snapshot identified by
+[`datasus_reference_tables()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_reference_tables.md),
+not an automatically selected edition for each observation year. Enable
+diagnostics to record that version in the report.
 
 ## References
 
@@ -72,31 +119,13 @@ SUS](https://rfsaldanha.github.io/sis/sia.html).
 
 ## See also
 
-[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md),
-[`fetch_sigtab()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_sigtab.md)
+[`fetch_tabwin_dictionary()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_tabwin_dictionary.md),
+[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
 
 ## Examples
 
 ``` r
+if (FALSE) { # interactive() && curl::has_internet()
 process_sia(sia_pa_sample, nome_proced = FALSE)
-#> # A tibble: 100 × 81
-#>    PA_CODUNI PA_GESTAO PA_CONDIC PA_UFMUN PA_REGCT  PA_INCOUT PA_INCURG PA_TPUPS
-#>    <chr>     <chr>     <chr>     <chr>    <chr>     <chr>     <chr>     <chr>   
-#>  1 7334710   120000    EP        120020   SEM REGR… Sem incr… 0000      FARMACIA
-#>  2 7334710   120000    EP        120020   SEM REGR… Sem incr… 0000      FARMACIA
-#>  3 7334710   120000    EP        120020   SEM REGR… Sem incr… 0000      FARMACIA
-#>  4 7334710   120000    EP        120020   SEM REGR… Sem incr… 0000      FARMACIA
-#>  5 7334710   120000    EP        120020   SEM REGR… Sem incr… 0000      FARMACIA
-#>  6 7334710   120000    EP        120020   SEM REGR… Sem incr… 0000      FARMACIA
-#>  7 7334710   120000    EP        120020   SEM REGR… Sem incr… 0000      FARMACIA
-#>  8 7334710   120000    EP        120020   SEM REGR… Sem incr… 0000      FARMACIA
-#>  9 7334710   120000    EP        120020   SEM REGR… Sem incr… 0000      FARMACIA
-#> 10 7334710   120000    EP        120020   SEM REGR… Sem incr… 0000      FARMACIA
-#> # ℹ 90 more rows
-#> # ℹ 73 more variables: PA_TIPPRE <chr>, PA_MN_IND <chr>, PA_CNPJCPF <chr>,
-#> #   PA_CNPJMNT <chr>, PA_CNPJ_CC <chr>, PA_MVM <chr>, PA_CMP <chr>,
-#> #   PA_PROC_ID <chr>, PA_TPFIN <chr>, PA_SUBFIN <chr>, PA_NIVCPL <chr>,
-#> #   PA_DOCORIG <chr>, PA_AUTORIZ <chr>, PA_CNSMED <chr>, PA_CBOCOD <chr>,
-#> #   PA_MOTSAI <chr>, PA_OBITO <chr>, PA_ENCERR <chr>, PA_PERMAN <chr>,
-#> #   PA_ALTA <chr>, PA_TRANSF <chr>, PA_CIDPRI <chr>, PA_CIDSEC <chr>, …
+}
 ```

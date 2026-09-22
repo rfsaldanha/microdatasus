@@ -1,13 +1,20 @@
 # Prepare SINASC live-birth microdata
 
-Recodes supported SINASC live-birth fields into descriptive values and
-normalizes escaped Unicode text. Codes without a documented conversion
-are retained.
+Uses the official DataSUS TabWin definitions to label SINASC live-birth
+fields. The processor supports both the original 1994-1995 layout and
+the layout used from 1996 onward, including data sets that contain
+columns from both periods. Required dictionaries are downloaded on first
+use and cached for the rest of the R session.
 
 ## Usage
 
 ``` r
-process_sinasc(data, municipality_data = TRUE)
+process_sinasc(
+  data,
+  municipality_data = TRUE,
+  labels = c("factor", "character", "none"),
+  diagnostics = FALSE
+)
 ```
 
 ## Arguments
@@ -21,19 +28,65 @@ process_sinasc(data, municipality_data = TRUE)
 - municipality_data:
 
   Logical scalar. If `TRUE`, add municipality names and available
-  territorial attributes for supported municipality-code columns.
+  territorial attributes for the residence municipality.
+
+- labels:
+
+  Output type for categorical labels: `"factor"` (the default),
+  `"character"`, or `"none"` to retain the original codes.
+
+- diagnostics:
+
+  Logical scalar. If `TRUE`, attach a processing report, including codes
+  absent from official conversion tables. Retrieve it with
+  [`processing_diagnostics()`](https://rfsaldanha.github.io/microdatasus/reference/processing_diagnostics.md).
 
 ## Value
 
-A tibble with character columns. Supported codes are replaced with
-descriptions, and municipality fields are added when requested and
-available.
+A tibble. Dates are returned as `Date`, counts and measurements as
+integer, labelled categorical fields as factors, and identifiers and
+free text as character.
 
 ## Details
 
-Columns not explicitly recoded are retained, but Unicode normalization
-is applied to every column and consequently the returned tibble contains
-character columns.
+Codes absent from the official conversion table remain visible as factor
+levels. Dates, integer quantities, categorical variables, and
+identifiers retain distinct types.
+
+## Performance and cache
+
+Processing uses vectorized code padding and CNV thresholds, parses
+repeated dates once per field and format, and unescapes only text
+containing backslashes. UTF-8 conversion is still performed for text;
+values marked as `"bytes"` bypass text normalization. Historical
+relation selection subsets only the source columns it needs. These
+optimizations are automatic.
+
+Dictionaries are reused within the R session. For reuse across sessions,
+set
+`options(microdatasus.cache_dir = datasus_cache_dir(create = TRUE))`;
+calling
+[`datasus_cache_dir()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_cache_dir.md)
+alone does not enable persistent caching. The first processing call can
+include dictionary downloads and parsing. `labels = "none"` controls
+categorical output, not network access: some processors still need DEF
+metadata or relations for field semantics.
+
+`diagnostics = FALSE` avoids collecting the optional report, and
+`municipality_data = FALSE` omits territorial enrichment when it is not
+needed. For requests spanning many files, use
+[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+with `process = TRUE`, `collect = FALSE`, and `destination` to save each
+file separately. A processor called directly still holds its input and
+output in memory. See the [processing
+guide](https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.html).
+
+Territorial enrichment uses the fixed
+[tabMun](https://rfsaldanha.github.io/microdatasus/reference/tabMun.md)
+snapshot identified by
+[`datasus_reference_tables()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_reference_tables.md),
+not an automatically selected edition for each observation year. Enable
+diagnostics to record that version in the report.
 
 ## References
 
@@ -42,30 +95,13 @@ Vivos](https://rfsaldanha.github.io/sis/sinasc.html).
 
 ## See also
 
+[`fetch_tabwin_dictionary()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_tabwin_dictionary.md),
 [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
 
 ## Examples
 
 ``` r
+if (FALSE) { # interactive() && curl::has_internet()
 process_sinasc(sinasc_sample)
-#> # A tibble: 100 × 69
-#>    contador ORIGEM CODESTAB CODMUNNASC LOCNASC  IDADEMAE ESTCIVMAE        ESCMAE
-#>    <chr>    <chr>  <chr>    <chr>      <chr>    <chr>    <chr>            <chr> 
-#>  1 1        1      5618347  110020     Hospital 29       União consensual 4 a 7…
-#>  2 2        1      5618347  110020     Hospital 14       União consensual 4 a 7…
-#>  3 3        1      4001303  110020     Hospital 30       Casada           4 a 7…
-#>  4 4        1      5618347  110020     Hospital 23       Solteira         8 a 1…
-#>  5 5        1      5618347  110020     Hospital 30       Casada           8 a 1…
-#>  6 6        1      3970442  110020     Hospital 25       União consensual 8 a 1…
-#>  7 7        1      5701929  120001     Hospital 21       União consensual 1 a 3…
-#>  8 8        1      5701929  120001     Hospital 16       União consensual 8 a 1…
-#>  9 9        1      5701929  120001     Hospital 25       NA               8 a 1…
-#> 10 10       1      5701929  120001     Hospital 25       Solteira         4 a 7…
-#> # ℹ 90 more rows
-#> # ℹ 61 more variables: QTDFILVIVO <chr>, QTDFILMORT <chr>, CODMUNRES <chr>,
-#> #   GESTACAO <chr>, GRAVIDEZ <chr>, PARTO <chr>, CONSULTAS <chr>, DTNASC <chr>,
-#> #   HORANASC <chr>, SEXO <chr>, APGAR1 <chr>, APGAR5 <chr>, RACACOR <chr>,
-#> #   PESO <chr>, IDANOMAL <chr>, DTCADASTRO <chr>, CODANOMAL <chr>,
-#> #   NUMEROLOTE <chr>, VERSAOSIST <chr>, DTRECEBIM <chr>, DIFDATA <chr>,
-#> #   DTRECORIGA <chr>, NATURALMAE <chr>, CODMUNNATU <chr>, CODUFNATU <chr>, …
+}
 ```

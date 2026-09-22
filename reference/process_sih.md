@@ -1,13 +1,23 @@
 # Prepare SIH hospital-admission microdata
 
-Recodes supported fields from reduced hospital-admission records
-(`"SIH-RD"`) into descriptive values and normalizes escaped Unicode
-text.
+Uses the official DataSUS TabWin definitions to label all four SIH file
+families available from
+[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md):
+reduced admissions (`"SIH-RD"`), rejected admissions (`"SIH-RJ"`),
+professional services (`"SIH-SP"`), and rejected/error records
+(`"SIH-ER"`). Dictionaries are downloaded on first use and cached for
+the rest of the R session.
 
 ## Usage
 
 ``` r
-process_sih(data, information_system = "SIH-RD", municipality_data = TRUE)
+process_sih(
+  data,
+  information_system = "SIH-RD",
+  municipality_data = TRUE,
+  labels = c("factor", "character", "none"),
+  diagnostics = FALSE
+)
 ```
 
 ## Arguments
@@ -16,30 +26,81 @@ process_sih(data, information_system = "SIH-RD", municipality_data = TRUE)
 
   A data frame returned by
   [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
-  with `information_system = "SIH-RD"`, or a compatible layout.
+  for a supported SIH file family, or another data frame with a
+  compatible layout.
 
 - information_system:
 
-  A single character string. Currently only `"SIH-RD"` is supported.
+  SIH file family represented by `data`. One of `"SIH-RD"`, `"SIH-RJ"`,
+  `"SIH-SP"`, or `"SIH-ER"`. The default preserves previous calls to
+  `process_sih()`.
 
 - municipality_data:
 
   Logical scalar. If `TRUE`, add municipality names and available
-  territorial attributes for supported municipality-code columns.
+  territorial attributes for the residence municipality in RD, RJ, and
+  ER files.
+
+- labels:
+
+  Output type for categorical labels: `"factor"` (the default),
+  `"character"`, or `"none"` to retain the original codes.
+
+- diagnostics:
+
+  Logical scalar. If `TRUE`, attach a processing report, including codes
+  absent from official conversion tables. Retrieve it with
+  [`processing_diagnostics()`](https://rfsaldanha.github.io/microdatasus/reference/processing_diagnostics.md).
 
 ## Value
 
-A tibble with character columns. Supported codes are replaced with
-descriptions, and municipality fields are added when requested and
-available.
+A tibble. Dates are returned as `Date`, counts, quantities, and derived
+`IDADEdias`, `IDADEmeses`, and `IDADEanos` fields as integer, monetary
+values as double, labelled categorical fields as factors, and
+identifiers and free text as character. Derived age fields are added
+when the source contains both `COD_IDADE` and `IDADE`.
 
 ## Details
 
-Columns not explicitly recoded are retained, but Unicode normalization
-is applied to every column and consequently the returned tibble contains
-character columns. Other SIH layouts downloadable with
+For RD and RJ, the definition is selected from the official historical
+archives according to each row's competence. This supports data sets
+concatenated across the 1997, July 2003, and 2007 layout boundaries.
+Codes absent from a conversion table remain visible as factor levels.
+
+## Performance and cache
+
+Processing uses vectorized code padding and CNV thresholds, parses
+repeated dates once per field and format, and unescapes only text
+containing backslashes. UTF-8 conversion is still performed for text;
+values marked as `"bytes"` bypass text normalization. Historical
+relation selection subsets only the source columns it needs. These
+optimizations are automatic.
+
+Dictionaries are reused within the R session. For reuse across sessions,
+set
+`options(microdatasus.cache_dir = datasus_cache_dir(create = TRUE))`;
+calling
+[`datasus_cache_dir()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_cache_dir.md)
+alone does not enable persistent caching. The first processing call can
+include dictionary downloads and parsing. `labels = "none"` controls
+categorical output, not network access: some processors still need DEF
+metadata or relations for field semantics.
+
+`diagnostics = FALSE` avoids collecting the optional report, and
+`municipality_data = FALSE` omits territorial enrichment when it is not
+needed. For requests spanning many files, use
 [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
-are not currently supported by this processing function.
+with `process = TRUE`, `collect = FALSE`, and `destination` to save each
+file separately. A processor called directly still holds its input and
+output in memory. See the [processing
+guide](https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.html).
+
+Territorial enrichment uses the fixed
+[tabMun](https://rfsaldanha.github.io/microdatasus/reference/tabMun.md)
+snapshot identified by
+[`datasus_reference_tables()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_reference_tables.md),
+not an automatically selected edition for each observation year. Enable
+diagnostics to record that version in the report.
 
 ## References
 
@@ -48,30 +109,13 @@ SUS](https://rfsaldanha.github.io/sis/sih.html).
 
 ## See also
 
+[`fetch_tabwin_dictionary()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_tabwin_dictionary.md),
 [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
 
 ## Examples
 
 ``` r
+if (FALSE) { # interactive() && curl::has_internet()
 process_sih(sih_rd_sample)
-#> # A tibble: 100 × 121
-#>    UF_ZI  ANO_CMPT MES_CMPT ESPEC CGC_HOSP     N_AIH IDENT CEP   MUNIC_RES NASC 
-#>    <chr>  <chr>    <chr>    <chr> <chr>        <chr> <chr> <chr> <chr>     <chr>
-#>  1 120000 2016     6        03    04034526001… 1216… Prin… 6994… 120050    1934…
-#>  2 120000 2016     6        03    04034526001… 1216… Prin… 6994… 120050    1982…
-#>  3 120000 2016     6        03    04034526001… 1216… Prin… 6994… 120050    1973…
-#>  4 120000 2016     6        03    04034526001… 1216… Prin… 6994… 120050    1938…
-#>  5 120000 2016     6        03    04034526001… 1216… Prin… 6994… 120050    1943…
-#>  6 120000 2016     6        03    04034526001… 1216… Prin… 6994… 120050    1947…
-#>  7 120000 2016     6        01    04034526002… 1216… Prin… 6998… 120020    2006…
-#>  8 120000 2016     6        01    04034526002… 1216… Prin… 6998… 120020    1978…
-#>  9 120000 2016     6        02    04034526001… 1216… Prin… 6994… 120050    1993…
-#> 10 120000 2016     6        02    04034526001… 1216… Prin… 6994… 120050    1992…
-#> # ℹ 90 more rows
-#> # ℹ 111 more variables: SEXO <chr>, UTI_MES_IN <chr>, UTI_MES_AN <chr>,
-#> #   UTI_MES_AL <chr>, UTI_MES_TO <chr>, MARCA_UTI <chr>, UTI_INT_IN <chr>,
-#> #   UTI_INT_AN <chr>, UTI_INT_AL <chr>, UTI_INT_TO <chr>, DIAR_ACOM <chr>,
-#> #   QT_DIARIAS <chr>, PROC_SOLIC <chr>, PROC_REA <chr>, VAL_SH <chr>,
-#> #   VAL_SP <chr>, VAL_SADT <chr>, VAL_RN <chr>, VAL_ACOMP <chr>,
-#> #   VAL_ORTP <chr>, VAL_SANGUE <chr>, VAL_SADTSR <chr>, VAL_TRANSP <chr>, …
+}
 ```

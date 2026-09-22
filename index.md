@@ -15,23 +15,44 @@ Brasil*](https://rfsaldanha.github.io/sis/).
 ## O que o pacote oferece
 
 - [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
-  localiza, baixa e combina microdados publicados pelo DataSUS.
+  localiza, baixa e combina microdados publicados pelo DataSUS; também
+  pode processar e salvar cada arquivo separadamente.
 - [`read_dbc()`](https://rfsaldanha.github.io/microdatasus/reference/read_dbc.md)
-  lê um arquivo DBC já disponível no computador.
-- As funções `process_*()` recodificam campos conhecidos, normalizam
-  textos e, quando implementado, acrescentam informações municipais ou
-  tabelas auxiliares.
+  lê diretamente um arquivo DBC já disponível no computador, validando
+  estrutura e CRC32 sem gravar um DBF intermediário.
+- As funções `process_*()` interpretam os arquivos oficiais DEF, CNV e
+  DBF do TabWin, selecionam definições históricas por registro,
+  padronizam tipos e podem relatar códigos ainda não mapeados.
+- [`datasus_variables()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_variables.md)
+  consulta relações oficiais,
+  [`datasus_schema()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_schema.md)
+  cria contratos por campo,
+  [`validate_datasus_schema()`](https://rfsaldanha.github.io/microdatasus/reference/validate_datasus_schema.md)
+  confronta DBC, DEF e tipos produzidos, e
+  [`audit_datasus_dictionaries()`](https://rfsaldanha.github.io/microdatasus/reference/audit_datasus_dictionaries.md)
+  verifica todas as definições e
+  [`compare_datasus_dictionary()`](https://rfsaldanha.github.io/microdatasus/reference/compare_datasus_dictionary.md)
+  identifica mudanças entre versões.
 - [`fetch_cadger()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_cadger.md)
   e
   [`fetch_sigtab()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_sigtab.md)
   obtêm tabelas auxiliares atuais de CNES e SIA.
+- [`datasus_reference_tables()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_reference_tables.md)
+  torna explícita a origem das tabelas legadas;
+  [`datasus_lockfile()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_lockfile.md)
+  registra e
+  [`verify_datasus_lockfile()`](https://rfsaldanha.github.io/microdatasus/reference/verify_datasus_lockfile.md)
+  confere os arquivos usados em uma análise.
 
-Os downloads são sequenciais, usam arquivos temporários e fazem novas
-tentativas em falhas transitórias. Quando `stop_on_error = FALSE`, os
-arquivos válidos podem ser retornados mesmo que parte da solicitação
-falhe.
+Os downloads fazem novas tentativas em falhas transitórias e podem usar
+um cache persistente, com checksum e proveniência. Quando
+`stop_on_error = FALSE`, os arquivos válidos podem ser retornados mesmo
+que parte da solicitação falhe.
 
 ## Instalação
+
+Este README acompanha a versão de desenvolvimento `3.0.0.9000`; a versão
+publicada no CRAN pode oferecer um conjunto diferente de recursos.
 
 Instale a versão estável publicada no CRAN:
 
@@ -48,9 +69,13 @@ Ou instale a versão de desenvolvimento:
 remotes::install_github("rfsaldanha/microdatasus", ref = "dev")
 ```
 
-A leitura de DBC é interna ao pacote e não depende mais de `read.dbc`. A
-implementação foi adaptada do pacote
-[healthbR](https://github.com/SidneyBissoli/healthbR).
+A leitura de DBC é interna ao pacote, não chama
+[`foreign::read.dbf()`](https://rdrr.io/pkg/foreign/man/read.dbf.html) e
+não depende mais de `read.dbc`. A implementação foi adaptada do pacote
+[healthbR](https://github.com/SidneyBissoli/healthbR). O pacote mantém
+`foreign` apenas para tabelas DBF auxiliares ou referenciadas pelos
+dicionários TabWin; esses arquivos não fazem parte do caminho de leitura
+de um DBC.
 
 No Windows, a instalação pelo GitHub requer uma versão do
 [Rtools](https://cran.r-project.org/bin/windows/Rtools/) compatível com
@@ -78,14 +103,12 @@ sim_raw <- fetch_datasus(
 sim <- process_sim(sim_raw)
 ```
 
-Os processadores retornam um tibble com colunas de texto após a
-normalização Unicode. Converta explicitamente os campos necessários à
-análise:
-
-``` r
-
-sim$DTOBITO <- as.Date(sim$DTOBITO)
-```
+[`process_sim()`](https://rfsaldanha.github.io/microdatasus/reference/process_sim.md)
+usa `SIM-DO` por padrão. Para os subconjuntos nacionais, informe o mesmo
+tipo usado no download, por exemplo
+`process_sim(sim_fetal_raw, information_system = "SIM-DOFET")`. O
+resultado padroniza datas como `Date`, quantidades como inteiros e
+variáveis rotuladas como fatores.
 
 Os anos, meses e UFs solicitados identificam as partições publicadas
 pelo DataSUS. A data e o local analíticos devem ser escolhidos nas
@@ -117,10 +140,16 @@ sih <- process_sih(sih_raw)
 |----|----|----|----|----|
 | SIM | Anual | `SIM-DO`, `SIM-DOFET`, `SIM-DOEXT`, `SIM-DOINF`, `SIM-DOMAT` | [`process_sim()`](https://rfsaldanha.github.io/microdatasus/reference/process_sim.md) | [SIM](https://rfsaldanha.github.io/sis/sim.html) |
 | SINASC | Anual | `SINASC` | [`process_sinasc()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinasc.md) | [SINASC](https://rfsaldanha.github.io/sis/sinasc.html) |
-| SIH | Mensal | `SIH-RD`, `SIH-RJ`, `SIH-SP`, `SIH-ER` | [`process_sih()`](https://rfsaldanha.github.io/microdatasus/reference/process_sih.md) para `SIH-RD` | [SIH](https://rfsaldanha.github.io/sis/sih.html) |
-| SIA | Mensal | Doze layouts `SIA-*` | [`process_sia()`](https://rfsaldanha.github.io/microdatasus/reference/process_sia.md) para `SIA-PA` | [SIA](https://rfsaldanha.github.io/sis/sia.html) |
-| CNES | Mensal | Treze layouts `CNES-*` | [`process_cnes()`](https://rfsaldanha.github.io/microdatasus/reference/process_cnes.md) para `CNES-ST` e `CNES-PF` | [CNES](https://rfsaldanha.github.io/sis/cnes.html) |
-| SINAN | Anual e nacional | Dengue, chikungunya, Zika, malária, Chagas, leishmanioses e leptospirose | Processadores específicos, exceto leptospirose | [SINAN](https://rfsaldanha.github.io/sis/sinan.html) |
+| SIH | Mensal | `SIH-RD`, `SIH-RJ`, `SIH-SP`, `SIH-ER` | [`process_sih()`](https://rfsaldanha.github.io/microdatasus/reference/process_sih.md) | [SIH](https://rfsaldanha.github.io/sis/sih.html) |
+| SIA | Mensal | Doze layouts `SIA-*` | [`process_sia()`](https://rfsaldanha.github.io/microdatasus/reference/process_sia.md) | [SIA](https://rfsaldanha.github.io/sis/sia.html) |
+| CNES | Mensal | Treze layouts `CNES-*` | [`process_cnes()`](https://rfsaldanha.github.io/microdatasus/reference/process_cnes.md) para os treze layouts | [CNES](https://rfsaldanha.github.io/sis/cnes.html) |
+| SINAN | Anual e nacional | 58 famílias oficiais `SINAN-*` | [`process_sinan()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan.md) para as 58 famílias | [SINAN](https://rfsaldanha.github.io/sis/sinan.html) |
+
+Use
+[`datasus_information_systems()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_information_systems.md)
+para consultar todos os 93 valores aceitos em `information_system`, seus
+nomes, periodicidade, abrangência, siglas usadas nos arquivos DBC e
+aliases.
 
 A lista completa dos identificadores está na [referência de
 `fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.html).
@@ -130,7 +159,9 @@ A lista completa dos identificadores está na [referência de
 Algumas opções úteis de
 [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md):
 
-- `vars` limita as colunas lidas e reduz o uso de memória.
+- `vars` limita as colunas retornadas. Sem processamento ou filtro de
+  linhas, também evita alocar as demais colunas durante a leitura do
+  DBC.
 - `track_source = TRUE` acrescenta o nome do DBC de origem de cada
   registro.
 - `timeout` controla o limite de cada operação de rede, sem alterar
@@ -147,6 +178,84 @@ Consulte o artigo [Download e
 rastreabilidade](https://rfsaldanha.github.io/microdatasus/articles/download-e-rastreabilidade.html)
 para exemplos de todas essas opções.
 
+## Dicionários, cache e tabelas grandes
+
+Um diretório explícito reutiliza DBC e ZIP do TabWin entre sessões.
+Configure também a opção do pacote para que chamadas diretas a
+`process_*()` usem esse mesmo cache:
+
+``` r
+
+cache <- datasus_cache_dir(create = TRUE)
+options(microdatasus.cache_dir = cache)
+variables <- datasus_variables("SIM-DO", cache_dir = cache)
+schema <- datasus_schema("SIM-DO", cache_dir = cache)
+contract <- validate_datasus_schema(sim_do_sample, "SIM-DO", period = 2020, cache_dir = cache)
+audit <- audit_datasus_dictionaries(c("SIM-DO", "SINASC"), cache_dir = cache)
+datasus_cache_info(cache)
+```
+
+Os processadores aceitam `labels = "factor"`, `"character"` ou `"none"`.
+Com `diagnostics = TRUE`,
+[`processing_diagnostics()`](https://rfsaldanha.github.io/microdatasus/reference/processing_diagnostics.md)
+informa códigos ausentes das conversões, campos esperados ou não
+mapeados, falhas de coerção e a proveniência — fonte, definição e
+checksum — de cada dicionário usado.
+
+As otimizações de processamento são automáticas: datas repetidas são
+convertidas uma vez por campo e formato; o desescape só é aplicado a
+textos com barras invertidas; preenchimentos de códigos e faixas CNV `F`
+são vetorizados; e a seleção de relações históricas acessa as colunas
+necessárias. A conversão textual para UTF-8 permanece ativa, preservando
+identificadores marcados como `"bytes"` na etapa de normalização.
+
+Use `labels = "none"` se precisar dos códigos,
+`municipality_data = FALSE` se não precisar dos atributos territoriais e
+`diagnostics = FALSE` (padrão) se não precisar do relatório.
+`labels = "none"` não garante execução sem rede: SIA, CNES e SINAN ainda
+consultam os dicionários para determinar a semântica dos campos. Uma
+primeira chamada pode incluir download e análise desses arquivos;
+chamadas seguintes podem reutilizar o cache.
+
+Para solicitações grandes, combine `destination`, `collect = FALSE` e
+`process = TRUE`: cada DBC é processado e gravado antes da leitura do
+próximo. O retorno é um manifesto com caminhos, número de linhas, origem
+e checksum.
+
+Use `row_filter` para descartar linhas de cada DBC antes do
+processamento e reduzir memória e tempo. Novos manifests usam SHA-256;
+espelhos HTTP/FTP podem ser informados por
+`options(microdatasus.mirrors = c("https://..."))`. Com `process = TRUE`
+ou `row_filter`, a leitura usa o layout completo, e `vars` é aplicado
+depois dessas etapas. Isso preserva os campos necessários para datas
+históricas, idades e relações entre colunas.
+
+Com `provenance = TRUE`, `datasus_lockfile(dados, "datasus.lock.rds")`
+registra a consulta e os DBC. Acrescente `process = TRUE` e
+`process_args = list(diagnostics = TRUE)` para registrar também os
+dicionários e as tabelas de referência usados no processamento.
+
+O enriquecimento municipal usa uma referência fixa, identificada por
+[`datasus_reference_tables()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_reference_tables.md)
+como `datasus-territorio-2023-txt-20220516`. Ela foi reconstruída sem
+alterar os valores de `tabMun`, usando os TXT oficiais congelados no
+pacote. Não representa automaticamente os limites territoriais vigentes
+no ano de cada registro. Use `municipality_data = FALSE` para aplicar
+outra referência; consulte
+[`tabMun`](https://rfsaldanha.github.io/microdatasus/reference/tabMun.html)
+para a origem e as transformações de compatibilidade.
+
+O guia [Dicionários, cache e processamento em
+escala](https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.html)
+apresenta o fluxo completo e um exemplo para medir o processamento dos
+seus dados. A [documentação dos
+benchmarks](https://github.com/rfsaldanha/microdatasus/blob/dev/benchmarks/README.md)
+explica o escopo dos testes de desempenho do repositório. O artigo
+[Formatos DBC, DEF e
+CNV](https://rfsaldanha.github.io/microdatasus/articles/formatos-dbc-def-cnv.html)
+descreve as regras de leitura, precedência e diagnóstico. O suporte do
+SIM nesta versão é restrito a CID-10.
+
 ## Arquivos DBC locais
 
 Use
@@ -159,7 +268,33 @@ dados <- read_dbc("arquivo.dbc")
 
 # Preserva os tipos inferidos dos metadados DBF
 dados_tipados <- read_dbc("arquivo.dbc", as_character = FALSE)
+
+# Lê somente as colunas necessárias, sem alocar as demais
+dados_selecionados <- read_dbc(
+  "arquivo.dbc",
+  vars = c("CODMUNRES", "DTOBITO")
+)
+
+# Para arquivos cujo marcador de code page esteja ausente ou incorreto
+dados_latin1 <- read_dbc("arquivo.dbc", encoding = "latin1")
+
+# Alguns arquivos históricos usam a página de código DOS CP850
+dados_cp850 <- read_dbc("arquivo_historico.dbc", encoding = "CP850")
 ```
+
+[`read_dbc()`](https://rfsaldanha.github.io/microdatasus/reference/read_dbc.md)
+descomprime e interpreta os registros diretamente, sem criar um DBF
+intermediário. O fluxo completo, o layout DBF, os marcadores de registro
+e o CRC32 são validados mesmo quando `vars` seleciona poucas colunas.
+
+`encoding = "auto"` combina o marcador DBF com evidência de bytes por
+coluna e por linha. Texto reconhecido é convertido para UTF-8; misturas
+ambíguas e alguns identificadores ofuscados são preservados sem perda
+como strings com codificação `"bytes"`, acompanhadas de aviso. Um
+`encoding` explícito é estrito e interrompe a leitura diante de bytes
+inválidos. Isso inclui, em qualquer sistema operacional, os cinco
+valores indefinidos do Windows-1252 (`81`, `8D`, `8F`, `90` e `9D` em
+hexadecimal).
 
 ## Guias
 
@@ -167,6 +302,10 @@ dados_tipados <- read_dbc("arquivo.dbc", as_character = FALSE)
   sistema](https://rfsaldanha.github.io/microdatasus/articles/exemplos.html)
 - [Download e
   rastreabilidade](https://rfsaldanha.github.io/microdatasus/articles/download-e-rastreabilidade.html)
+- [Dicionários, cache e processamento em
+  escala](https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.html)
+- [Formatos DBC, DEF e
+  CNV](https://rfsaldanha.github.io/microdatasus/articles/formatos-dbc-def-cnv.html)
 - [Perguntas
   frequentes](https://rfsaldanha.github.io/microdatasus/articles/FAQ.html)
 - [Livro *Sistemas de Informação em Saúde no

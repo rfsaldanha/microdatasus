@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">microdatasus</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.0.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,6 +46,8 @@
     <li><h6 class="dropdown-header" data-toc-skip>Guias</h6></li>
     <li><a class="dropdown-item" href="../articles/exemplos.html">Primeiros passos e exemplos por sistema</a></li>
     <li><a class="dropdown-item" href="../articles/download-e-rastreabilidade.html">Download e rastreabilidade</a></li>
+    <li><a class="dropdown-item" href="../articles/dicionarios-cache-e-escala.html">Dicionários, cache e processamento em escala</a></li>
+    <li><a class="dropdown-item" href="../articles/formatos-dbc-def-cnv.html">Formatos DBC, DEF e CNV</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/index.html">More articles...</a></li>
   </ul>
@@ -74,7 +76,7 @@
       <h1>Primeiros passos e exemplos por sistema</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/rfsaldanha/microdatasus/blob/master/vignettes/articles/exemplos.Rmd" class="external-link"><code>vignettes/articles/exemplos.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/rfsaldanha/microdatasus/blob/dev/vignettes/articles/exemplos.Rmd" class="external-link"><code>vignettes/articles/exemplos.Rmd</code></a></small>
       <div class="d-none name"><code>exemplos.Rmd</code></div>
     </div>
 
@@ -89,8 +91,8 @@
 <ol style="list-style-type: decimal">
 <li>definir o sistema, o período e a abrangência geográfica;</li>
 <li>baixar os arquivos com <code><a href="../reference/fetch_datasus.html">fetch_datasus()</a></code>;</li>
-<li>aplicar o processador específico e converter explicitamente os tipos
-necessários à análise.</li>
+<li>aplicar o processador específico e conferir os tipos, rótulos e
+diagnósticos necessários à análise.</li>
 </ol>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sim_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_datasus.html">fetch_datasus</a></span><span class="op">(</span></span>
@@ -102,12 +104,23 @@ necessários à análise.</li>
 <span>  track_source <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_sim.html">process_sim</a></span><span class="op">(</span><span class="va">sim_raw</span><span class="op">)</span></span>
-<span><span class="va">sim</span><span class="op">$</span><span class="va">DTOBITO</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">DTOBITO</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_sim.html">process_sim</a></span><span class="op">(</span><span class="va">sim_raw</span><span class="op">)</span></span></code></pre></div>
 <p>As funções <code>process_*()</code> normalizam textos e substituem
-códigos conhecidos por descrições. Ao final, suas colunas são retornadas
-como texto; datas e números usados na análise devem ser convertidos
-explicitamente.</p>
+códigos conhecidos por descrições. Datas, quantidades, valores,
+identificadores e categorias mantêm tipos distintos: por padrão, datas
+completas são <code>Date</code>, contagens são inteiros e rótulos
+categóricos são fatores. Use <code>labels = "character"</code> ou
+<code>"none"</code> para alterar somente a política dos campos
+categóricos.</p>
+<p>As otimizações de datas, textos e relações CNV são automáticas. Para
+reutilizar dicionários entre sessões em chamadas diretas aos
+processadores, configure
+<code>options(microdatasus.cache_dir = datasus_cache_dir(create = TRUE))</code>.
+<code>labels = "none"</code> mantém os códigos, mas SIA, CNES e SINAN
+ainda podem acessar dicionários para determinar tipos e relações. Veja
+<a href="dicionarios-cache-e-escala.html">Dicionários, cache e
+processamento em escala</a> para escolher opções e medir o custo com
+seus dados.</p>
 <p>Os argumentos de período e UF identificam as partições publicadas
 pelo DataSUS. Eles não substituem a escolha da variável temporal ou
 territorial adequada à pergunta de pesquisa. O livro <a href="https://rfsaldanha.github.io/sis/" class="external-link"><em>Sistemas de Informação em
@@ -133,9 +146,10 @@ residência, ocorrência e análise temporal.</p>
 <span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_sim.html">process_sim</a></span><span class="op">(</span><span class="va">sim_raw</span><span class="op">)</span></span></code></pre></div>
 <p>Também podem ser baixados os subconjuntos nacionais
 <code>SIM-DOFET</code>, <code>SIM-DOEXT</code>, <code>SIM-DOINF</code> e
-<code>SIM-DOMAT</code>. A função <code><a href="../reference/process_sim.html">process_sim()</a></code> deve ser
-usada apenas quando o layout for compatível com as variáveis que ela
-conhece.</p>
+<code>SIM-DOMAT</code>. Passe o mesmo tipo a <code><a href="../reference/process_sim.html">process_sim()</a></code>;
+por exemplo,
+<code>process_sim(sim_fetal_raw, information_system = "SIM-DOFET")</code>.
+O padrão continua sendo <code>SIM-DO</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="sinasc-nascidos-vivos">SINASC — nascidos vivos<a class="anchor" aria-label="anchor" href="#sinasc-nascidos-vivos"></a>
@@ -152,8 +166,7 @@ SINASC</a> para conhecer seu fluxo, cobertura e cuidados analíticos.</p>
 <span>  information_system <span class="op">=</span> <span class="st">"SINASC"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">sinasc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_sinasc.html">process_sinasc</a></span><span class="op">(</span><span class="va">sinasc_raw</span><span class="op">)</span></span>
-<span><span class="va">sinasc</span><span class="op">$</span><span class="va">DTNASC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="va">sinasc</span><span class="op">$</span><span class="va">DTNASC</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">sinasc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_sinasc.html">process_sinasc</a></span><span class="op">(</span><span class="va">sinasc_raw</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="sih-internações-hospitalares">SIH — internações hospitalares<a class="anchor" aria-label="anchor" href="#sih-interna%C3%A7%C3%B5es-hospitalares"></a>
@@ -174,10 +187,12 @@ interpretação da produção hospitalar.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">sih</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_sih.html">process_sih</a></span><span class="op">(</span><span class="va">sih_raw</span><span class="op">)</span></span></code></pre></div>
-<p><code><a href="../reference/process_sih.html">process_sih()</a></code> processa atualmente o layout reduzido
-<code>SIH-RD</code>. Os layouts <code>SIH-RJ</code>, <code>SIH-SP</code>
-e <code>SIH-ER</code> podem ser baixados, mas não têm processadores
-específicos.</p>
+<p><code><a href="../reference/process_sih.html">process_sih()</a></code> processa os quatro layouts disponíveis.
+<code>SIH-RD</code> é o padrão; para os demais, informe o mesmo tipo
+usado no download, por exemplo
+<code>process_sih(sih_rj_raw, information_system = "SIH-RJ")</code>. Nos
+layouts RD e RJ, a função seleciona automaticamente a definição
+histórica correspondente à competência de cada registro.</p>
 </div>
 <div class="section level2">
 <h2 id="sia-produção-ambulatorial">SIA — produção ambulatorial<a class="anchor" aria-label="anchor" href="#sia-produ%C3%A7%C3%A3o-ambulatorial"></a>
@@ -198,21 +213,29 @@ de dois meses:</p>
 <span>  information_system <span class="op">=</span> <span class="st">"SIA-PA"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># FALSE evita um segundo download da tabela SIGTAB neste exemplo</span></span>
+<span><span class="co"># FALSE mantém o código do procedimento sem acrescentar seu rótulo</span></span>
 <span><span class="va">sia</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_sia.html">process_sia</a></span><span class="op">(</span><span class="va">sia_raw</span>, nome_proced <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p><code><a href="../reference/process_sia.html">process_sia()</a></code> processa atualmente apenas
-<code>SIA-PA</code>. Quando <code>nome_proced = TRUE</code>, seu valor
-padrão, a função baixa a SIGTAB atual e acrescenta os nomes dos
-procedimentos.</p>
+<p><code><a href="../reference/process_sia.html">process_sia()</a></code> processa os doze layouts disponíveis.
+Informe em <code>information_system</code> o mesmo tipo usado no
+download; <code>SIA-PA</code> permanece como padrão. Quando
+<code>nome_proced = TRUE</code>, a função usa a tabela de procedimentos
+declarada no DEF correspondente. Para PA anterior a 2008, a definição
+correta é selecionada automaticamente pela competência de cada
+registro.</p>
 </div>
 <div class="section level2">
-<h2 id="cnes-estabelecimentos-e-profissionais">CNES — estabelecimentos e profissionais<a class="anchor" aria-label="anchor" href="#cnes-estabelecimentos-e-profissionais"></a>
+<h2 id="cnes-treze-layouts-cadastrais">CNES — treze layouts cadastrais<a class="anchor" aria-label="anchor" href="#cnes-treze-layouts-cadastrais"></a>
 </h2>
 <p>O CNES é um cadastro atualizado continuamente. Cada arquivo mensal
 representa uma posição do cadastro, não um conjunto de eventos ocorridos
 durante o mês. O <a href="https://rfsaldanha.github.io/sis/cnes.html" class="external-link">capítulo sobre o
 CNES</a> discute estabelecimentos, profissionais, leitos, equipamentos e
-mudanças cadastrais.</p>
+mudanças cadastrais. <code><a href="../reference/process_cnes.html">process_cnes()</a></code> aceita os treze tipos
+disponíveis em <code><a href="../reference/fetch_datasus.html">fetch_datasus()</a></code>: <code>LT</code>,
+<code>ST</code>, <code>DC</code>, <code>EQ</code>, <code>SR</code>,
+<code>HB</code>, <code>PF</code>, <code>EP</code>, <code>RC</code>,
+<code>IN</code>, <code>EE</code>, <code>EF</code> e <code>GM</code>,
+todos com o prefixo <code>CNES-</code>.</p>
 <p>Estabelecimentos:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cnes_st_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_datasus.html">fetch_datasus</a></span><span class="op">(</span></span>
@@ -244,8 +267,11 @@ mudanças cadastrais.</p>
 <span>  <span class="va">cnes_pf_raw</span>,</span>
 <span>  information_system <span class="op">=</span> <span class="st">"CNES-PF"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>Em <code>CNES-ST</code>, <code>nomes = TRUE</code> baixa a tabela
-CADGER atual para acrescentar o nome fantasia do estabelecimento.</p>
+<p>Com <code>nomes = TRUE</code>, a função acrescenta o nome fantasia do
+estabelecimento usando a tabela CADGER declarada no DEF. O ZIP do TabWin
+e as conversões usadas ficam em cache durante a sessão. Para
+<code>CNES-SR</code>, a definição anterior ou posterior a março de 2008
+é escolhida pela competência de cada registro.</p>
 </div>
 <div class="section level2">
 <h2 id="sinan-agravos-de-notificação">SINAN — agravos de notificação<a class="anchor" aria-label="anchor" href="#sinan-agravos-de-notifica%C3%A7%C3%A3o"></a>
@@ -263,11 +289,23 @@ diferenças entre agravos.</p>
 <span>  information_system <span class="op">=</span> <span class="st">"SINAN-DENGUE"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">sinan_dengue</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_sinan_dengue.html">process_sinan_dengue</a></span><span class="op">(</span><span class="va">sinan_raw</span><span class="op">)</span></span></code></pre></div>
-<p>Há download e processamento para dengue, chikungunya, Zika, malária,
-Chagas e leishmanioses tegumentar e visceral. Leptospirose pode ser
-baixada, mas ainda não possui uma função de processamento
-específica.</p>
+<span><span class="va">sinan_dengue</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_sinan.html">process_sinan</a></span><span class="op">(</span></span>
+<span>  <span class="va">sinan_raw</span>,</span>
+<span>  information_system <span class="op">=</span> <span class="st">"SINAN-DENGUE"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="../reference/fetch_datasus.html">fetch_datasus()</a></code> e <code><a href="../reference/process_sinan.html">process_sinan()</a></code> cobrem as
+58 famílias apresentadas pela página oficial de transferência. Os
+valores preferenciais são legíveis, como
+<code>SINAN-ACIDENTE-POR-ANIMAIS-PECONHENTOS</code>,
+<code>SINAN-HANSENIASE</code> e <code>SINAN-TUBERCULOSE</code>. Consulte
+nomes, siglas dos arquivos e aliases com:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fu"><a href="../reference/datasus_information_systems.html">datasus_information_systems</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">system</span> <span class="op">==</span> <span class="st">"SINAN"</span><span class="op">)</span></span></code></pre></div>
+<p>Os antigos identificadores baseados em siglas, como
+<code>SINAN-ANIM</code> e <code>SINAN-TUBE</code>, continuam aceitos
+para retrocompatibilidade. As antigas funções
+<code>process_sinan_*()</code> também continuam disponíveis com aviso de
+depreciação.</p>
 </div>
 <div class="section level2">
 <h2 id="próximos-passos">Próximos passos<a class="anchor" aria-label="anchor" href="#pr%C3%B3ximos-passos"></a>

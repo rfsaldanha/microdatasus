@@ -1,9 +1,12 @@
 # Prepare CNES microdata
 
-Recodes supported CNES fields into descriptive values and normalizes
-escaped Unicode text. Establishment (`"CNES-ST"`) and professional
-(`"CNES-PF"`) records have different layouts and are processed
-accordingly.
+Uses the official DataSUS TabWin definitions to label all thirteen CNES
+file families supported by
+[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md).
+The shared ZIP is downloaded on first use and cached for the rest of the
+R session. For `"CNES-SR"`, the service/classification definition is
+selected by record competence because DataSUS changed that table in
+March 2008.
 
 ## Usage
 
@@ -12,7 +15,9 @@ process_cnes(
   data,
   information_system = c("CNES-ST", "CNES-PF"),
   nomes = FALSE,
-  municipality_data = TRUE
+  municipality_data = TRUE,
+  labels = c("factor", "character", "none"),
+  diagnostics = FALSE
 )
 ```
 
@@ -22,37 +27,77 @@ process_cnes(
 
   A data frame returned by
   [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
-  or another data frame with a compatible CNES layout.
+  for a supported CNES file family, or another data frame with a
+  compatible layout.
 
 - information_system:
 
-  A single character string: `"CNES-ST"` for establishments or
-  `"CNES-PF"` for professionals.
+  CNES file family represented by `data`. If omitted, `"CNES-ST"` is
+  used, preserving the first value of the historical default.
 
 - nomes:
 
-  Logical scalar. For `"CNES-ST"` data, if `TRUE`, download the current
-  CADGER table with
-  [`fetch_cadger()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_cadger.md)
-  and add establishment trade names. This requires network access. It
-  has no effect for `"CNES-PF"`.
+  Logical scalar. If `TRUE`, add `FANTASIA` using the establishment-name
+  DBF declared by the official definition. The `CNES` identifier itself
+  is preserved.
 
 - municipality_data:
 
   Logical scalar. If `TRUE`, add municipality names and available
-  territorial attributes for supported municipality-code columns.
+  territorial attributes. Professional files prefer `UFMUNRES`; other
+  layouts use the establishment field `CODUFMUN`.
+
+- labels:
+
+  Output type for categorical labels: `"factor"` (the default),
+  `"character"`, or `"none"` to retain the original codes.
+
+- diagnostics:
+
+  Logical scalar. If `TRUE`, attach a processing report, including codes
+  absent from official conversion tables. Retrieve it with
+  [`processing_diagnostics()`](https://rfsaldanha.github.io/microdatasus/reference/processing_diagnostics.md).
 
 ## Value
 
-A tibble with character columns. Supported codes are replaced with
-descriptions, and requested lookup fields are added where applicable.
+A tibble. Full dates are returned as `Date`, quantities as integer,
+labelled categorical fields as factors, and identifiers, reference
+months, and free text as character.
 
-## Details
+## Performance and cache
 
-Columns not explicitly recoded are retained, but Unicode normalization
-is applied to every column and consequently the returned tibble contains
-character columns. Lookup joins can add establishment, occupation, and
-municipality information.
+Processing uses vectorized code padding and CNV thresholds, parses
+repeated dates once per field and format, and unescapes only text
+containing backslashes. UTF-8 conversion is still performed for text;
+values marked as `"bytes"` bypass text normalization. Historical
+relation selection subsets only the source columns it needs. These
+optimizations are automatic.
+
+Dictionaries are reused within the R session. For reuse across sessions,
+set
+`options(microdatasus.cache_dir = datasus_cache_dir(create = TRUE))`;
+calling
+[`datasus_cache_dir()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_cache_dir.md)
+alone does not enable persistent caching. The first processing call can
+include dictionary downloads and parsing. `labels = "none"` controls
+categorical output, not network access: some processors still need DEF
+metadata or relations for field semantics.
+
+`diagnostics = FALSE` avoids collecting the optional report, and
+`municipality_data = FALSE` omits territorial enrichment when it is not
+needed. For requests spanning many files, use
+[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+with `process = TRUE`, `collect = FALSE`, and `destination` to save each
+file separately. A processor called directly still holds its input and
+output in memory. See the [processing
+guide](https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.html).
+
+Territorial enrichment uses the fixed
+[tabMun](https://rfsaldanha.github.io/microdatasus/reference/tabMun.md)
+snapshot identified by
+[`datasus_reference_tables()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_reference_tables.md),
+not an automatically selected edition for each observation year. Enable
+diagnostics to record that version in the report.
 
 ## References
 
@@ -61,52 +106,15 @@ Saúde](https://rfsaldanha.github.io/sis/cnes.html).
 
 ## See also
 
+[`fetch_tabwin_dictionary()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_tabwin_dictionary.md),
 [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md),
 [`fetch_cadger()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_cadger.md)
 
 ## Examples
 
 ``` r
+if (FALSE) { # interactive() && curl::has_internet()
 process_cnes(cnes_st_sample, information_system = "CNES-ST")
-#> # A tibble: 100 × 209
-#>    CNES    CODUFMUN COD_CEP  CPF_CNPJ     PF_PJ NIV_DEP CNPJ_MAN COD_IR REGSAUDE
-#>    <chr>   <chr>    <chr>    <chr>        <chr> <chr>   <chr>    <chr>  <chr>   
-#>  1 2002043 120001   69945000 00000000000… Pess… Mantida 8430673… NA     NA      
-#>  2 2002159 120001   69945000 00000000000… Pess… Mantida 8430673… NA     NA      
-#>  3 3006166 120001   69945000 00000000000… Pess… Mantida 8430673… NA     NA      
-#>  4 3382745 120001   69945000 00000000000… Pess… Mantida 8430673… NA     NA      
-#>  5 3393984 120001   69945000 00000000000… Pess… Mantida 8430673… NA     NA      
-#>  6 3638685 120001   69945000 00000000000… Pess… Mantida 8430673… NA     NA      
-#>  7 5403669 120001   69945000 00000000000… Pess… Mantida 8430673… NA     NA      
-#>  8 5701929 120001   69945000 00000000000… Pess… Mantida 4034526… NA     NA      
-#>  9 6514669 120001   69945000 00000000000… Pess… Mantida 8430673… NA     NA      
-#> 10 7026641 120001   69945000 00000000000… Pess… Mantida 4034526… NA     NA      
-#> # ℹ 90 more rows
-#> # ℹ 200 more variables: MICR_REG <chr>, DISTRSAN <chr>, DISTRADM <chr>,
-#> #   VINC_SUS <chr>, TPGESTAO <chr>, ESFERA_A <chr>, RETENCAO <chr>,
-#> #   ATIVIDAD <chr>, NATUREZA <chr>, CLIENTEL <chr>, TP_UNID <chr>,
-#> #   TURNO_AT <chr>, NIV_HIER <chr>, TP_PREST <chr>, CO_BANCO <chr>,
-#> #   CO_AGENC <chr>, C_CORREN <chr>, CONTRATM <chr>, DT_PUBLM <chr>,
-#> #   CONTRATE <chr>, DT_PUBLE <chr>, ALVARA <chr>, DT_EXPED <chr>, …
 process_cnes(cnes_pf_sample, information_system = "CNES-PF")
-#> # A tibble: 100 × 48
-#>    CNES    CODUFMUN REGSAUDE MICR_REG DISTRSAN DISTRADM TPGESTAO  PF_PJ CPF_CNPJ
-#>    <chr>   <chr>    <chr>    <chr>    <chr>    <chr>    <chr>     <chr> <chr>   
-#>  1 2002043 120001   NA       NA       NA       NA       Municipal Pess… 0       
-#>  2 2002159 120001   NA       NA       NA       NA       Municipal Pess… 0       
-#>  3 3006166 120001   NA       NA       NA       NA       Municipal Pess… 0       
-#>  4 3006166 120001   NA       NA       NA       NA       Municipal Pess… 0       
-#>  5 3006166 120001   NA       NA       NA       NA       Municipal Pess… 0       
-#>  6 3006166 120001   NA       NA       NA       NA       Municipal Pess… 0       
-#>  7 3006166 120001   NA       NA       NA       NA       Municipal Pess… 0       
-#>  8 3006166 120001   NA       NA       NA       NA       Municipal Pess… 0       
-#>  9 3006166 120001   NA       NA       NA       NA       Municipal Pess… 0       
-#> 10 3006166 120001   NA       NA       NA       NA       Municipal Pess… 0       
-#> # ℹ 90 more rows
-#> # ℹ 39 more variables: NIV_DEP <chr>, CNPJ_MAN <chr>, ESFERA_A <chr>,
-#> #   ATIVIDAD <chr>, RETENCAO <chr>, NATUREZA <chr>, CLIENTEL <chr>,
-#> #   TP_UNID <chr>, TURNO_AT <chr>, NIV_HIER <chr>, TERCEIRO <chr>,
-#> #   CPFUNICO <chr>, CBO <chr>, CBOUNICO <chr>, NOMEPROF <chr>, CNS_PROF <chr>,
-#> #   CONSELHO <chr>, REGISTRO <chr>, VINCULAC <chr>, VINCUL_C <chr>,
-#> #   VINCUL_A <chr>, VINCUL_N <chr>, PROF_SUS <chr>, PROFNSUS <chr>, …
+}
 ```

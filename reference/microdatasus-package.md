@@ -4,8 +4,10 @@ Provides a reproducible workflow for DataSUS microdata:
 [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
 discovers, downloads, and combines published DBC files;
 [`read_dbc()`](https://rfsaldanha.github.io/microdatasus/reference/read_dbc.md)
-reads a local DBC file; and the `process_*()` functions convert
-system-specific fields into analysis-ready values and labels.
+reads a local DBC file directly, with structural and checksum
+validation; and the `process_*()` functions interpret official TabWin
+DEF/CNV/DBF dictionaries to produce period-correct values, labels, and
+column types.
 
 ## Details
 
@@ -17,11 +19,32 @@ and then use the processor corresponding to the selected system, such as
 [`process_sih()`](https://rfsaldanha.github.io/microdatasus/reference/process_sih.md),
 [`process_sia()`](https://rfsaldanha.github.io/microdatasus/reference/process_sia.md),
 [`process_cnes()`](https://rfsaldanha.github.io/microdatasus/reference/process_cnes.md),
-or one of the `process_sinan_*()` functions.
+or
+[`process_sinan()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan.md).
 [`fetch_cadger()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_cadger.md)
 and
 [`fetch_sigtab()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_sigtab.md)
-retrieve current auxiliary tables used by CNES and SIA processing.
+also retrieve current auxiliary tables for standalone use.
+
+Use
+[`datasus_variables()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_variables.md)
+to inspect parsed dictionary definitions and relations,
+[`validate_datasus_schema()`](https://rfsaldanha.github.io/microdatasus/reference/validate_datasus_schema.md)
+to compare raw DBC fields with the selected historical definitions and
+processed types, and
+[`processing_diagnostics()`](https://rfsaldanha.github.io/microdatasus/reference/processing_diagnostics.md)
+to retrieve unknown codes, coercion failures, and dictionary provenance
+from an individual processing call.
+
+Processing automatically reuses repeated date values and vectorizes code
+padding and CNV threshold lookup. For large requests,
+[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+can process and save one file at a time with `process = TRUE`,
+`collect = FALSE`, and `destination`. Configure `microdatasus.cache_dir`
+for persistent dictionary reuse by processors called directly; see
+[`datasus_cache_dir()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_cache_dir.md)
+and the performance section of
+[`process_sim()`](https://rfsaldanha.github.io/microdatasus/reference/process_sim.md).
 
 For concepts, coverage, data flows, and caveats of each Brazilian health
 information system, see Saldanha (2026), [*Sistemas de Informação em

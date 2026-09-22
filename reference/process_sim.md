@@ -1,13 +1,21 @@
 # Prepare SIM mortality microdata
 
-Recodes supported SIM mortality fields into descriptive values and
-normalizes escaped Unicode text. Codes without a documented conversion
-are retained.
+Uses the official DataSUS TabWin CID-10 and historical CID-9
+dictionaries to label supported SIM mortality fields with period-correct
+domains. The dictionary is downloaded on first use and cached for the
+rest of the R session. Dates, integer quantities, categorical variables,
+and identifier fields retain distinct and consistent types.
 
 ## Usage
 
 ``` r
-process_sim(data, municipality_data = TRUE)
+process_sim(
+  data,
+  municipality_data = TRUE,
+  information_system = "SIM-DO",
+  labels = c("factor", "character", "none"),
+  diagnostics = FALSE
+)
 ```
 
 ## Arguments
@@ -16,25 +24,80 @@ process_sim(data, municipality_data = TRUE)
 
   A data frame returned by
   [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
-  for a SIM mortality system, or another data frame with a compatible
-  layout.
+  for a supported SIM mortality type, or another data frame with a
+  compatible layout.
 
 - municipality_data:
 
   Logical scalar. If `TRUE`, add municipality names and available
-  territorial attributes for supported municipality-code columns.
+  territorial attributes for `CODMUNRES`.
+
+- information_system:
+
+  SIM data type represented by `data`. One of `"SIM-DO"`, `"SIM-DOFET"`,
+  `"SIM-DOEXT"`, `"SIM-DOINF"`, or `"SIM-DOMAT"`. The default preserves
+  the previous `process_sim()` call.
+
+- labels:
+
+  Output type for categorical labels: `"factor"` (the default),
+  `"character"`, or `"none"` to retain the original codes.
+
+- diagnostics:
+
+  Logical scalar. If `TRUE`, attach a processing report, including codes
+  absent from official conversion tables. Retrieve it with
+  [`processing_diagnostics()`](https://rfsaldanha.github.io/microdatasus/reference/processing_diagnostics.md).
 
 ## Value
 
-A tibble with character columns. Supported codes are replaced with
-descriptions, and municipality fields are added when requested and
-available.
+A tibble. Dates are returned as `Date`, quantities as integer, labelled
+categorical fields as factors, and identifiers and free text as
+character.
 
 ## Details
 
-Columns not explicitly recoded are retained, but Unicode normalization
-is applied to every column and consequently the returned tibble contains
-character columns.
+Codes not covered by the applicable TabWin conversion are retained as
+factor levels instead of being silently discarded. Historical fields
+kept in early CID-10 fetal-death files use their original CID-9
+definitions. Official numeric missing sentinels and out-of-domain
+measurements are returned as `NA`; malformed values are included in
+diagnostics.
+
+## Performance and cache
+
+Processing uses vectorized code padding and CNV thresholds, parses
+repeated dates once per field and format, and unescapes only text
+containing backslashes. UTF-8 conversion is still performed for text;
+values marked as `"bytes"` bypass text normalization. Historical
+relation selection subsets only the source columns it needs. These
+optimizations are automatic.
+
+Dictionaries are reused within the R session. For reuse across sessions,
+set
+`options(microdatasus.cache_dir = datasus_cache_dir(create = TRUE))`;
+calling
+[`datasus_cache_dir()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_cache_dir.md)
+alone does not enable persistent caching. The first processing call can
+include dictionary downloads and parsing. `labels = "none"` controls
+categorical output, not network access: some processors still need DEF
+metadata or relations for field semantics.
+
+`diagnostics = FALSE` avoids collecting the optional report, and
+`municipality_data = FALSE` omits territorial enrichment when it is not
+needed. For requests spanning many files, use
+[`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
+with `process = TRUE`, `collect = FALSE`, and `destination` to save each
+file separately. A processor called directly still holds its input and
+output in memory. See the [processing
+guide](https://rfsaldanha.github.io/microdatasus/articles/dicionarios-cache-e-escala.html).
+
+Territorial enrichment uses the fixed
+[tabMun](https://rfsaldanha.github.io/microdatasus/reference/tabMun.md)
+snapshot identified by
+[`datasus_reference_tables()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_reference_tables.md),
+not an automatically selected edition for each observation year. Enable
+diagnostics to record that version in the report.
 
 ## References
 
@@ -43,30 +106,13 @@ Mortalidade](https://rfsaldanha.github.io/sis/sim.html).
 
 ## See also
 
+[`fetch_tabwin_dictionary()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_tabwin_dictionary.md),
 [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
 
 ## Examples
 
 ``` r
+if (FALSE) { # interactive() && curl::has_internet()
 process_sim(sim_do_sample)
-#> # A tibble: 100 × 101
-#>    CONTADOR ORIGEM TIPOBITO  DTOBITO    HORAOBITO CODMUNNATU DTNASC  IDADE SEXO 
-#>    <chr>    <chr>  <chr>     <chr>      <chr>     <chr>      <chr>   <chr> <chr>
-#>  1 1        1      Não Fetal 2016-01-01 NA        120033     1988-1… 427   Masc…
-#>  2 2        1      Não Fetal 2016-01-01 NA        120030     2002-1… 413   Femi…
-#>  3 3        1      Não Fetal 2016-01-01 NA        120030     1985-1… 430   Masc…
-#>  4 4        1      Não Fetal 2016-01-01 2100      NA         1959-1… 456   Masc…
-#>  5 5        1      Não Fetal 2016-01-01 2050      120040     2014-1… 401   Femi…
-#>  6 6        1      Não Fetal 2016-01-01 2040      120050     1974-0… 441   Masc…
-#>  7 7        1      Não Fetal 2016-01-01 0530      120040     1970-0… 445   Masc…
-#>  8 8        1      Não Fetal 2016-01-01 0230      130350     1978-0… 437   Masc…
-#>  9 9        1      Não Fetal 2016-01-01 0600      120040     1989-0… 426   Masc…
-#> 10 10       1      Não Fetal 2016-01-01 0450      120060     1958-0… 457   Femi…
-#> # ℹ 90 more rows
-#> # ℹ 92 more variables: RACACOR <chr>, ESTCIV <chr>, ESC <chr>, ESC2010 <chr>,
-#> #   SERIESCFAL <chr>, CODMUNRES <chr>, LOCOCOR <chr>, CODESTAB <chr>,
-#> #   ESTABDESCR <chr>, CODMUNOCOR <chr>, IDADEMAE <chr>, ESCMAE <chr>,
-#> #   ESCMAE2010 <chr>, SERIESCMAE <chr>, QTDFILVIVO <chr>, QTDFILMORT <chr>,
-#> #   GRAVIDEZ <chr>, SEMAGESTAC <chr>, GESTACAO <chr>, PARTO <chr>,
-#> #   OBITOPARTO <chr>, PESO <chr>, TPMORTEOCO <chr>, OBITOGRAV <chr>, …
+}
 ```

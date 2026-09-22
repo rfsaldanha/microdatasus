@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">microdatasus</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.0.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -28,6 +28,8 @@
     <li><h6 class="dropdown-header" data-toc-skip>Guias</h6></li>
     <li><a class="dropdown-item" href="../articles/exemplos.html">Primeiros passos e exemplos por sistema</a></li>
     <li><a class="dropdown-item" href="../articles/download-e-rastreabilidade.html">Download e rastreabilidade</a></li>
+    <li><a class="dropdown-item" href="../articles/dicionarios-cache-e-escala.html">Dicionários, cache e processamento em escala</a></li>
+    <li><a class="dropdown-item" href="../articles/formatos-dbc-def-cnv.html">Formatos DBC, DEF e CNV</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/index.html">More articles...</a></li>
   </ul></li>
@@ -79,6 +81,111 @@
 
         </dt>
         <dd>Download DataSUS microdata</dd>
+
+        <dt>
+
+          <code><a href="datasus_information_systems.html">datasus_information_systems()</a></code>
+
+        </dt>
+        <dd>Consult supported DataSUS information systems</dd>
+
+        <dt>
+
+          <code><a href="fetch_tabwin_dictionary.html">fetch_tabwin_dictionary()</a></code>
+
+        </dt>
+        <dd>Download a TabWin data dictionary</dd>
+
+        <dt>
+
+          <code><a href="datasus_variables.html">datasus_variables()</a></code>
+
+        </dt>
+        <dd>Consult variables in an official DataSUS dictionary</dd>
+
+        <dt>
+
+          <code><a href="datasus_schema.html">datasus_schema()</a></code>
+
+        </dt>
+        <dd>Build a dictionary-derived DataSUS schema contract</dd>
+
+        <dt>
+
+          <code><a href="validate_datasus_schema.html">validate_datasus_schema()</a></code>
+
+        </dt>
+        <dd>Validate a DBC table against its dictionary and processor</dd>
+
+        <dt>
+
+          <code><a href="audit_datasus_dictionaries.html">audit_datasus_dictionaries()</a></code>
+
+        </dt>
+        <dd>Audit all supported DataSUS TabWin dictionaries</dd>
+
+        <dt>
+
+          <code><a href="compare_datasus_dictionary.html">compare_datasus_dictionary()</a></code>
+
+        </dt>
+        <dd>Compare cached and current DataSUS dictionaries</dd>
+
+        <dt>
+
+          <code><a href="datasus_cache_dir.html">datasus_cache_dir()</a></code>
+
+        </dt>
+        <dd>Cache directory used by microdatasus</dd>
+
+        <dt>
+
+          <code><a href="datasus_cache_info.html">datasus_cache_info()</a></code>
+
+        </dt>
+        <dd>Inspect the persistent DataSUS cache</dd>
+
+        <dt>
+
+          <code><a href="clear_datasus_cache.html">clear_datasus_cache()</a></code>
+
+        </dt>
+        <dd>Clear persistent DataSUS cache contents</dd>
+
+        <dt>
+
+          <code><a href="datasus_provenance.html">datasus_provenance()</a></code>
+
+        </dt>
+        <dd>Extract download provenance</dd>
+
+        <dt>
+
+          <code><a href="datasus_lockfile.html">datasus_lockfile()</a></code>
+
+        </dt>
+        <dd>Create a reproducibility lockfile for a DataSUS download</dd>
+
+        <dt>
+
+          <code><a href="read_datasus_lockfile.html">read_datasus_lockfile()</a></code>
+
+        </dt>
+        <dd>Read a DataSUS reproducibility lockfile</dd>
+
+        <dt>
+
+          <code><a href="verify_datasus_lockfile.html">verify_datasus_lockfile()</a></code>
+
+        </dt>
+        <dd>Verify files pinned by a DataSUS reproducibility lockfile</dd>
+
+        <dt>
+
+          <code><a href="datasus_reference_tables.html">datasus_reference_tables()</a></code>
+
+        </dt>
+        <dd>Inspect packaged reference-table provenance</dd>
 
         <dt>
 
@@ -147,52 +254,75 @@
 
         <dt>
 
+          <code><a href="process_sinan.html">process_sinan()</a></code>
+
+        </dt>
+        <dd>Prepare SINAN notification microdata</dd>
+
+        <dt>
+
+          <code><a href="processing_diagnostics.html">processing_diagnostics()</a></code>
+
+        </dt>
+        <dd>Extract processing diagnostics</dd>
+      </dl></div><div class="section level2">
+      <h2 id="compatibilidade-sinan">Compatibilidade SINAN<a class="anchor" aria-label="anchor" href="#compatibilidade-sinan"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
           <code><a href="process_sinan_dengue.html">process_sinan_dengue()</a></code>
 
         </dt>
-        <dd>Prepare SINAN dengue microdata</dd>
+        <dd>Prepare SINAN dengue microdata (deprecated)</dd>
 
         <dt>
 
           <code><a href="process_sinan_zika.html">process_sinan_zika()</a></code>
 
         </dt>
-        <dd>Prepare SINAN Zika virus disease microdata</dd>
+        <dd>Prepare SINAN Zika virus disease microdata (deprecated)</dd>
 
         <dt>
 
           <code><a href="process_sinan_chikungunya.html">process_sinan_chikungunya()</a></code>
 
         </dt>
-        <dd>Prepare SINAN chikungunya microdata</dd>
+        <dd>Prepare SINAN chikungunya microdata (deprecated)</dd>
 
         <dt>
 
           <code><a href="process_sinan_malaria.html">process_sinan_malaria()</a></code>
 
         </dt>
-        <dd>Prepare SINAN malaria microdata</dd>
+        <dd>Prepare SINAN malaria microdata (deprecated)</dd>
 
         <dt>
 
           <code><a href="process_sinan_chagas.html">process_sinan_chagas()</a></code>
 
         </dt>
-        <dd>Prepare SINAN Chagas disease microdata</dd>
+        <dd>Prepare SINAN Chagas disease microdata (deprecated)</dd>
 
         <dt>
 
           <code><a href="process_sinan_leishmaniose_tegumentar.html">process_sinan_leishmaniose_tegumentar()</a></code>
 
         </dt>
-        <dd>Prepare SINAN tegumentary leishmaniasis microdata</dd>
+        <dd>Prepare SINAN tegumentary leishmaniasis microdata (deprecated)</dd>
 
         <dt>
 
           <code><a href="process_sinan_leishmaniose_visceral.html">process_sinan_leishmaniose_visceral()</a></code>
 
         </dt>
-        <dd>Prepare SINAN visceral leishmaniasis microdata</dd>
+        <dd>Prepare SINAN visceral leishmaniasis microdata (deprecated)</dd>
       </dl></div><div class="section level2">
       <h2 id="dados-de-exemplo">Dados de exemplo<a class="anchor" aria-label="anchor" href="#dados-de-exemplo"></a></h2>
 
@@ -308,7 +438,7 @@
           <code><a href="tabMun.html">tabMun</a></code>
 
         </dt>
-        <dd>Municipalities table</dd>
+        <dd>Fixed municipal and special territorial-code reference</dd>
 
         <dt>
 

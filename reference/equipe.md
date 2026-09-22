@@ -1,7 +1,7 @@
 # Equipe table
 
-Equipe table, based on INE_EQUIPE_BR.dbf file from SIM TabWIN
-definitions file.
+Legacy packaged snapshot retained for compatibility; its exact source
+archive and date are unavailable.
 
 ## Usage
 
@@ -11,7 +11,7 @@ equipe
 
 ## Format
 
-A data frame with 2428 rows and 2 variables:
+A data frame with 107438 rows and 2 variables:
 
 - COD:
 

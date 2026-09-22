@@ -1,7 +1,7 @@
 # paisnet table
 
-paisnet table, based on PAISNET.DBF file from CNES TabWIN definitions
-file.
+Legacy packaged snapshot retained for compatibility; its exact source
+archive and date are unavailable.
 
 ## Usage
 

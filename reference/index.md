@@ -10,6 +10,36 @@
 
 - [`fetch_datasus()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_datasus.md)
   : Download DataSUS microdata
+- [`datasus_information_systems()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_information_systems.md)
+  : Consult supported DataSUS information systems
+- [`fetch_tabwin_dictionary()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_tabwin_dictionary.md)
+  : Download a TabWin data dictionary
+- [`datasus_variables()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_variables.md)
+  : Consult variables in an official DataSUS dictionary
+- [`datasus_schema()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_schema.md)
+  : Build a dictionary-derived DataSUS schema contract
+- [`validate_datasus_schema()`](https://rfsaldanha.github.io/microdatasus/reference/validate_datasus_schema.md)
+  : Validate a DBC table against its dictionary and processor
+- [`audit_datasus_dictionaries()`](https://rfsaldanha.github.io/microdatasus/reference/audit_datasus_dictionaries.md)
+  : Audit all supported DataSUS TabWin dictionaries
+- [`compare_datasus_dictionary()`](https://rfsaldanha.github.io/microdatasus/reference/compare_datasus_dictionary.md)
+  : Compare cached and current DataSUS dictionaries
+- [`datasus_cache_dir()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_cache_dir.md)
+  : Cache directory used by microdatasus
+- [`datasus_cache_info()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_cache_info.md)
+  : Inspect the persistent DataSUS cache
+- [`clear_datasus_cache()`](https://rfsaldanha.github.io/microdatasus/reference/clear_datasus_cache.md)
+  : Clear persistent DataSUS cache contents
+- [`datasus_provenance()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_provenance.md)
+  : Extract download provenance
+- [`datasus_lockfile()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_lockfile.md)
+  : Create a reproducibility lockfile for a DataSUS download
+- [`read_datasus_lockfile()`](https://rfsaldanha.github.io/microdatasus/reference/read_datasus_lockfile.md)
+  : Read a DataSUS reproducibility lockfile
+- [`verify_datasus_lockfile()`](https://rfsaldanha.github.io/microdatasus/reference/verify_datasus_lockfile.md)
+  : Verify files pinned by a DataSUS reproducibility lockfile
+- [`datasus_reference_tables()`](https://rfsaldanha.github.io/microdatasus/reference/datasus_reference_tables.md)
+  : Inspect packaged reference-table provenance
 - [`fetch_sigtab()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_sigtab.md)
   : Download the current SIGTAB table
 - [`fetch_cadger()`](https://rfsaldanha.github.io/microdatasus/reference/fetch_cadger.md)
@@ -29,20 +59,27 @@
   : Prepare SIA outpatient-production microdata
 - [`process_cnes()`](https://rfsaldanha.github.io/microdatasus/reference/process_cnes.md)
   : Prepare CNES microdata
+- [`process_sinan()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan.md)
+  : Prepare SINAN notification microdata
+- [`processing_diagnostics()`](https://rfsaldanha.github.io/microdatasus/reference/processing_diagnostics.md)
+  : Extract processing diagnostics
+
+## Compatibilidade SINAN
+
 - [`process_sinan_dengue()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan_dengue.md)
-  : Prepare SINAN dengue microdata
+  : Prepare SINAN dengue microdata (deprecated)
 - [`process_sinan_zika()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan_zika.md)
-  : Prepare SINAN Zika virus disease microdata
+  : Prepare SINAN Zika virus disease microdata (deprecated)
 - [`process_sinan_chikungunya()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan_chikungunya.md)
-  : Prepare SINAN chikungunya microdata
+  : Prepare SINAN chikungunya microdata (deprecated)
 - [`process_sinan_malaria()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan_malaria.md)
-  : Prepare SINAN malaria microdata
+  : Prepare SINAN malaria microdata (deprecated)
 - [`process_sinan_chagas()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan_chagas.md)
-  : Prepare SINAN Chagas disease microdata
+  : Prepare SINAN Chagas disease microdata (deprecated)
 - [`process_sinan_leishmaniose_tegumentar()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan_leishmaniose_tegumentar.md)
-  : Prepare SINAN tegumentary leishmaniasis microdata
+  : Prepare SINAN tegumentary leishmaniasis microdata (deprecated)
 - [`process_sinan_leishmaniose_visceral()`](https://rfsaldanha.github.io/microdatasus/reference/process_sinan_leishmaniose_visceral.md)
-  : Prepare SINAN visceral leishmaniasis microdata
+  : Prepare SINAN visceral leishmaniasis microdata (deprecated)
 
 ## Dados de exemplo
 
@@ -76,7 +113,7 @@
 ## Tabelas de referência
 
 - [`tabMun`](https://rfsaldanha.github.io/microdatasus/reference/tabMun.md)
-  : Municipalities table
+  : Fixed municipal and special territorial-code reference
 - [`paisnet`](https://rfsaldanha.github.io/microdatasus/reference/paisnet.md)
   : paisnet table
 - [`sigtab`](https://rfsaldanha.github.io/microdatasus/reference/sigtab.md)

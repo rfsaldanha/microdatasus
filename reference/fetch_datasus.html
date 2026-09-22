@@ -15,7 +15,7 @@ and combines the records in deterministic period, state, and file-part order."><
 
     <a class="navbar-brand me-2" href="../index.html">microdatasus</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.0.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,6 +30,8 @@ and combines the records in deterministic period, state, and file-part order."><
     <li><h6 class="dropdown-header" data-toc-skip>Guias</h6></li>
     <li><a class="dropdown-item" href="../articles/exemplos.html">Primeiros passos e exemplos por sistema</a></li>
     <li><a class="dropdown-item" href="../articles/download-e-rastreabilidade.html">Download e rastreabilidade</a></li>
+    <li><a class="dropdown-item" href="../articles/dicionarios-cache-e-escala.html">Dicionários, cache e processamento em escala</a></li>
+    <li><a class="dropdown-item" href="../articles/formatos-dbc-def-cnv.html">Formatos DBC, DEF e CNV</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/index.html">More articles...</a></li>
   </ul></li>
@@ -47,7 +49,7 @@ and combines the records in deterministic period, state, and file-part order."><
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Download DataSUS microdata</h1>
-      <small class="dont-index">Source: <a href="https://github.com/rfsaldanha/microdatasus/blob/master/R/fetch_datasus.R" class="external-link"><code>R/fetch_datasus.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/rfsaldanha/microdatasus/blob/dev/R/fetch_datasus.R" class="external-link"><code>R/fetch_datasus.R</code></a></small>
       <div class="d-none name"><code>fetch_datasus.Rd</code></div>
     </div>
 
@@ -69,7 +71,16 @@ and combines the records in deterministic period, state, and file-part order.</p
 <span>  stop_on_error <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  timeout <span class="op">=</span> <span class="fl">240</span>,</span>
 <span>  track_source <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  quiet <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  quiet <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  cache_dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"microdatasus.cache_dir"</span>, <span class="cn">NULL</span><span class="op">)</span>,</span>
+<span>  refresh <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  destination <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  collect <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  process <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  process_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  provenance <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  keep_files <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  row_filter <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -101,8 +112,13 @@ systems published only as national files.</p></dd>
 
 
 <dt id="arg-vars">vars<a class="anchor" aria-label="anchor" href="#arg-vars"></a></dt>
-<dd><p><code>NULL</code>, or a character vector of column names to retain. Selection
-is applied to each file before the files are combined.</p></dd>
+<dd><p><code>NULL</code>, or a character vector of column names to retain. When
+neither <code>process</code> nor <code>row_filter</code> needs a complete row, selection is
+pushed into the DBC reader so unselected fields are not allocated or
+parsed. With <code>process = TRUE</code> or <code>row_filter</code>, the full row is read;
+<code>vars</code> selects output columns after filtering and processing. It can
+therefore include derived fields when <code>process = TRUE</code>. Selection is
+always applied before files are combined.</p></dd>
 
 
 <dt id="arg-stop-on-error">stop_on_error<a class="anchor" aria-label="anchor" href="#arg-stop-on-error"></a></dt>
@@ -129,24 +145,93 @@ progress reported by <code><a href="https://jeroen.r-universe.dev/curl/reference
 downloading it. If <code>TRUE</code>, suppress status messages, per-file
 announcements, and progress meters. Warnings and errors are not suppressed.</p></dd>
 
+
+<dt id="arg-cache-dir">cache_dir<a class="anchor" aria-label="anchor" href="#arg-cache-dir"></a></dt>
+<dd><p>Optional directory used as a persistent cache for downloaded
+DBC files and TabWin dictionaries. The <code>microdatasus.cache_dir</code> option
+supplies the default; <code>NULL</code> preserves the historical session-temporary
+behavior.</p></dd>
+
+
+<dt id="arg-refresh">refresh<a class="anchor" aria-label="anchor" href="#arg-refresh"></a></dt>
+<dd><p>Logical scalar. If <code>TRUE</code>, download files again even when a
+valid cached copy is available.</p></dd>
+
+
+<dt id="arg-destination">destination<a class="anchor" aria-label="anchor" href="#arg-destination"></a></dt>
+<dd><p>Optional directory in which each prepared file is saved
+separately as RDS. This supports requests too large to combine in memory.</p></dd>
+
+
+<dt id="arg-collect">collect<a class="anchor" aria-label="anchor" href="#arg-collect"></a></dt>
+<dd><p>Logical scalar. If <code>TRUE</code> (the default), combine and return
+records as before. If <code>FALSE</code>, write per-file RDS outputs and return their
+provenance table; in that case <code>destination</code> is required.</p></dd>
+
+
+<dt id="arg-process">process<a class="anchor" aria-label="anchor" href="#arg-process"></a></dt>
+<dd><p>Logical scalar. If <code>TRUE</code>, run the processor matching
+<code>information_system</code> independently on each downloaded file.</p></dd>
+
+
+<dt id="arg-process-args">process_args<a class="anchor" aria-label="anchor" href="#arg-process-args"></a></dt>
+<dd><p>Named list of additional arguments passed to the matching
+<code>process_*()</code> function. It cannot replace <code>data</code> or <code>information_system</code>.</p></dd>
+
+
+<dt id="arg-provenance">provenance<a class="anchor" aria-label="anchor" href="#arg-provenance"></a></dt>
+<dd><p>Logical scalar. If <code>TRUE</code>, attach download URLs, checksums,
+sizes, timestamps, cache status, and paths. Retrieve the table with
+<code><a href="datasus_provenance.html">datasus_provenance()</a></code>.</p></dd>
+
+
+<dt id="arg-keep-files">keep_files<a class="anchor" aria-label="anchor" href="#arg-keep-files"></a></dt>
+<dd><p>Logical scalar. If <code>TRUE</code> and <code>destination</code> is supplied,
+retain a copy of each raw DBC file under <code>destination/dbc</code>.</p></dd>
+
+
+<dt id="arg-row-filter">row_filter<a class="anchor" aria-label="anchor" href="#arg-row-filter"></a></dt>
+<dd><p>Optional function called on each raw DBC table immediately
+after reading and before processing or column selection. It must return one
+non-missing logical value per row. This bounds downstream processing and
+output without changing which source files are downloaded.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble containing all successfully read records, or <code>NULL</code> if no
-requested file could be read. No diagnostic attributes are added.</p>
+    <p>With <code>collect = TRUE</code>, a tibble containing all successfully read
+records, or <code>NULL</code> if no requested file could be read. With
+<code>collect = FALSE</code>, a provenance tibble with one row per output file.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The function first lists the relevant DataSUS directories and downloads only
-files present in those listings. When more than one publication represents
+files present in those listings. If a state-period or national period is
+published in multiple parts, every listed part is downloaded and combined;
+there is no fixed limit on their number or suffix length. Part names are
+taken from the listing, including their original case, rather than generated
+from a sequence of letters. Parts are discovered independently for each
+state and period, so different states need not have the same number of files.
+When more than one publication represents
 the same system, period, state, and file part, definitive/current data take
 precedence over preliminary data, and current data take precedence over
 historical copies.</p>
-<p>Downloads are sequential. Unless <code>quiet = TRUE</code>, transfer progress is
+<p>Files are handled sequentially and, when requested, processed and written
+before the next file is read. Thus <code>collect = FALSE</code> bounds working memory
+to approximately one source file. Unless <code>quiet = TRUE</code>, transfer progress is
 displayed by <code><a href="https://jeroen.r-universe.dev/curl/reference/curl_download.html" class="external-link">curl::curl_download()</a></code>. Transient network failures are retried
 up to two times; missing, empty, invalid DBC, and incompatible-schema files
 are not retried. Partial files and other temporary files are removed before
 the function returns or aborts.</p>
+<p>When <code>cache_dir</code> is supplied, complete DBC files and dictionaries persist
+across R sessions. Cache entries include a manifest and SHA-256 checksum (while still accepting legacy MD5 manifests).
+<code><a href="datasus_cache_info.html">datasus_cache_info()</a></code> inspects them and <code><a href="clear_datasus_cache.html">clear_datasus_cache()</a></code> removes only
+files managed by microdatasus.</p>
+<p>For processed downloads, <code>cache_dir</code> also supplies the dictionary cache to
+the processor for that call. <code>row_filter</code> sees raw codes and must handle
+missing values explicitly. Use <code>process_args = list(diagnostics = TRUE)</code>
+alongside <code>provenance = TRUE</code> when a <code><a href="datasus_lockfile.html">datasus_lockfile()</a></code> should also record
+the dictionaries and reference tables actually used in processing.</p>
 <p>Years and state abbreviations refer to DataSUS processing periods and places
 of processing, which may differ from dates or places of occurrence and
 residence contained in the records.</p>
@@ -165,17 +250,27 @@ residence contained in the records.</p>
 <li><p><strong>SIA:</strong> <code>"SIA-AB"</code>, <code>"SIA-ABO"</code>, <code>"SIA-ACF"</code>, <code>"SIA-AD"</code>, <code>"SIA-AN"</code>,
 <code>"SIA-AM"</code>, <code>"SIA-AQ"</code>, <code>"SIA-AR"</code>, <code>"SIA-ATD"</code>, <code>"SIA-PA"</code>, <code>"SIA-PS"</code>,
 and <code>"SIA-SAD"</code>.</p></li>
-<li><p><strong>SINAN:</strong> <code>"SINAN-DENGUE"</code>, <code>"SINAN-CHIKUNGUNYA"</code>, <code>"SINAN-ZIKA"</code>,
-<code>"SINAN-MALARIA"</code>, <code>"SINAN-CHAGAS"</code>,
-<code>"SINAN-LEISHMANIOSE-VISCERAL"</code>,
-<code>"SINAN-LEISHMANIOSE-TEGUMENTAR"</code>, and <code>"SINAN-LEPTOSPIROSE"</code>.</p></li>
+<li><p><strong>SINAN:</strong> 58 readable identifiers, including <code>"SINAN-DENGUE"</code>,
+<code>"SINAN-TUBERCULOSE"</code>, and
+<code>"SINAN-ACIDENTE-POR-ANIMAIS-PECONHENTOS"</code>. Former acronym-based
+identifiers remain accepted as aliases. The complete lookup table is
+returned by <code><a href="datasus_information_systems.html">datasus_information_systems()</a></code>.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="network-access">Network access<a class="anchor" aria-label="anchor" href="#network-access"></a></h2>
 
 
 <p>An Internet connection and FTP access to DataSUS are required. DataSUS may
-restrict FTP access from some countries.</p>
+restrict FTP access from some countries. Interrupted transfers are resumed
+when supported. Alternative base URLs can be configured with the
+<code>microdatasus.mirrors</code> option; the official DataSUS URL is always tried
+first.
+General Internet connectivity does not guarantee access to the DataSUS
+server. With <code>stop_on_error = FALSE</code>, failed listings or downloads are
+reported as warnings and successful files are retained; the result is
+<code>NULL</code> if no file can be read. Check for <code>NULL</code> before processing the result.
+Set <code>stop_on_error = TRUE</code> when an incomplete download must interrupt an
+analysis.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
@@ -189,9 +284,10 @@ restrict FTP access from some countries.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="read_dbc.html">read_dbc()</a></code> for local DBC files; <code><a href="process_sim.html">process_sim()</a></code>, <code><a href="process_sinasc.html">process_sinasc()</a></code>,
-<code><a href="process_sih.html">process_sih()</a></code>, <code><a href="process_sia.html">process_sia()</a></code>, <code><a href="process_cnes.html">process_cnes()</a></code>, and the
-<code>process_sinan_*()</code> functions for system-specific recoding.</p></div>
+    <div class="dont-index"><p><code><a href="read_dbc.html">read_dbc()</a></code> for local DBC files; <code><a href="datasus_information_systems.html">datasus_information_systems()</a></code> for the
+complete identifier lookup; <code><a href="process_sim.html">process_sim()</a></code>, <code><a href="process_sinasc.html">process_sinasc()</a></code>,
+<code><a href="process_sih.html">process_sih()</a></code>, <code><a href="process_sia.html">process_sia()</a></code>, <code><a href="process_cnes.html">process_cnes()</a></code>, and <code><a href="process_sinan.html">process_sinan()</a></code>
+for system-specific recoding.</p></div>
     </div>
 
     <div class="section level2">
