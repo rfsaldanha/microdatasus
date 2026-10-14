@@ -65,6 +65,13 @@ fetch_tabwin_dictionary(
 An object of class `microdatasus_tabwin_dictionary`. Its `definitions`
 element describes the conversions found in the official DEF file.
 
+## Details
+
+Only the requested DEF and conversion members are extracted. Original
+ZIP member bytes are retained for lookup, while extracted files use safe
+local paths, including for historical SINASC archives with
+legacy-encoded names.
+
 ## Network access
 
 A call without a valid cached archive downloads the relevant TabWin ZIP

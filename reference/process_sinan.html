@@ -125,12 +125,20 @@ including codes absent from official conversion tables. Retrieve it with
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A tibble. Dates are returned as <code>Date</code>, DEF increment fields and
 derived age components as integer, labelled categorical fields as factors,
-and identifiers and free text as character.</p>
+and identifiers and free text as character.
+<code>PRE_MUNIRE</code> retains the municipal code as character, like other municipal
+identifiers; it is not replaced by a UF or municipality category label.</p>
     </div>
     <div class="section level2">
     <h2 id="performance-and-cache">Performance and cache<a class="anchor" aria-label="anchor" href="#performance-and-cache"></a></h2>
 
 
+<p>An unchanged raw table from <code><a href="fetch_datasus.html">fetch_datasus()</a></code> retains each source file's
+physical layout. Processing that table restores each layout and combines
+the processed parts in file order, including column types and factor levels.
+Process the original download before externally changing its rows or columns;
+stale source context is rejected. Tables without source context continue to
+use the processor's ordinary layout inference.</p>
 <p>Processing uses vectorized code padding and CNV thresholds, parses repeated
 dates once per field and format, and unescapes only text containing
 backslashes. UTF-8 conversion is still performed for text; values marked as
