@@ -28,7 +28,14 @@
       sources[[url]] <- archive
     }
   }
+  for (i in seq_len(nrow(cases))) {
+    sources[[cases$source_url[[i]]]] <- file.path(.historical_root, cases$case[[i]], "input.dbc")
+  }
   testthat::local_mocked_bindings(
+    .datasus_list_directory = function(url, timeout) {
+      selected <- cases$source_url[paste0(dirname(cases$source_url), "/") == url]
+      paste(basename(selected), collapse = "\n")
+    },
     .datasus_download_file = function(url, destination, ...) {
       if (!url %in% names(sources)) stop("Unexpected network request: ", url)
       stopifnot(file.copy(sources[[url]], destination, overwrite = TRUE))
@@ -75,6 +82,46 @@ test_that("frozen historical inputs and official dictionary members match their 
     expected <- members[members$case == case$case, ]
     for (j in seq_len(nrow(expected))) {
       expect_identical(checksum(file.path(extracted, expected$member[[j]])), expected$sha256[[j]])
+    }
+  }
+})
+
+test_that("downloaded historical layouts retain exact per-file processing in all modes", {
+  for (system in unique(.historical_manifest$information_system)) {
+    cases <- .historical_manifest[.historical_manifest$information_system == system, ]
+    .local_historical_sources(cases$case)
+    args <- switch(system,
+      SINASC = list(year_start = 1995, year_end = 1996),
+      `SIH-RD` = list(year_start = 1997, month_start = 12, year_end = 1998, month_end = 1),
+      `SIA-PA` = list(year_start = 1999, month_start = 10, year_end = 1999, month_end = 11),
+      `CNES-SR` = list(year_start = 2008, month_start = 2, year_end = 2008, month_end = 3))
+    args <- c(args, list(uf = "AC", information_system = system, quiet = TRUE, stop_on_error = TRUE))
+    for (tracked in c(FALSE, TRUE)) {
+      raw <- do.call(fetch_datasus, c(args, list(track_source = tracked, provenance = tracked)))
+      parts <- lapply(seq_len(nrow(cases)), function(i) {
+        value <- read_dbc(file.path(.historical_root, cases$case[[i]], "input.dbc"))
+        if (tracked) value$source <- basename(cases$source_url[[i]])
+        value
+      })
+      for (labels in c("factor", "character", "none")) {
+        options <- list(municipality_data = FALSE, labels = labels, diagnostics = TRUE)
+        expected <- microdatasus:::.datasus_bind_processed(lapply(parts, function(part) {
+          microdatasus:::.datasus_process_file(part, system, options)
+        }))
+        after <- microdatasus:::.datasus_process_file(raw, system, options)
+        integrated <- do.call(fetch_datasus, c(args, list(track_source = tracked,
+          process = TRUE, process_args = options)))
+        destination <- withr::local_tempdir()
+        written <- do.call(fetch_datasus, c(args, list(track_source = tracked,
+          process = TRUE, process_args = options, collect = FALSE, destination = destination)))
+        saved <- microdatasus:::.datasus_bind_processed(lapply(written$data_path, readRDS))
+        for (actual in list(after, integrated, saved)) {
+          expect_identical(names(actual), names(expected), info = system)
+          for (field in names(expected)) expect_identical(actual[[field]], expected[[field]], info = paste(system, labels, field))
+        }
+        expect_identical(processing_diagnostics(after)$input_rows, nrow(raw))
+        expect_identical(processing_diagnostics(after)$output_rows, nrow(raw))
+      }
     }
   }
 })

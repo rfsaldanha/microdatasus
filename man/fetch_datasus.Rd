@@ -126,6 +126,18 @@ the same system, period, state, and file part, definitive/current data take
 precedence over preliminary data, and current data take precedence over
 historical copies.
 
+Raw collected tables retain internal per-file layouts and row fingerprints,
+independently of \code{track_source} and \code{provenance}. Passing an unchanged table
+to its \verb{process_*()} function processes each original layout separately and
+then combines the results. With complete raw columns and the same processing
+options, this matches \code{process = TRUE} exactly by column.
+Process before externally editing, filtering, or reordering the raw table;
+stale retained context raises an error. \code{row_filter} and \code{vars} supplied to
+this function are recorded in the context. Plain data frames without that
+context retain the processors' existing layout-inference behavior.
+Processed binding preserves first-occurrence column order, unions factor
+levels in file order, and promotes mixed factor/character columns to text.
+
 Files are handled sequentially and, when requested, processed and written
 before the next file is read. Thus \code{collect = FALSE} bounds working memory
 to approximately one source file. Unless \code{quiet = TRUE}, transfer progress is

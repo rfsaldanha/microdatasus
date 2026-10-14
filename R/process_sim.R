@@ -171,6 +171,13 @@
 #'   [processing_diagnostics()].
 #'
 #' @section Performance and cache:
+#' An unchanged raw table from [fetch_datasus()] retains each source file's
+#' physical layout. Processing that table restores each layout and combines
+#' the processed parts in file order, including column types and factor levels.
+#' Process the original download before externally changing its rows or columns;
+#' stale source context is rejected. Tables without source context continue to
+#' use the processor's ordinary layout inference.
+#'
 #' Processing uses vectorized code padding and CNV thresholds, parses repeated
 #' dates once per field and format, and unescapes only text containing
 #' backslashes. UTF-8 conversion is still performed for text; values marked as
@@ -233,6 +240,12 @@ process_sim <- function(
       "{.arg information_system} must be one of: {.val {sim_types}}."
     )
   }
+
+  grouped <- .process_source_context(
+    data, information_system,
+    list(municipality_data = municipality_data, labels = labels, diagnostics = diagnostics)
+  )
+  if (!is.null(grouped)) return(grouped)
 
   result <- tibble::as_tibble(data)
   collector <- .process_diagnostic_collector(

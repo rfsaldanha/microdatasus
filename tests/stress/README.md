@@ -12,6 +12,27 @@ approximately 150 complete DBC files, and tests raw downloads, processors,
 cache reuse, provenance, and multi-file aggregation. It does not modify the
 package implementation or use the globally installed `microdatasus` package.
 
+To validate a corrected commit against exactly the saved selection and sources:
+
+```sh
+Rscript --vanilla tests/stress/live-intensive.R \
+  --commit <SHA> --from-run .cache/intensive/20261014T185652Z
+```
+
+This creates a new run and isolated installation of the selected commit. It
+copies and verifies the original DBC/ZIP cache entries and reuses saved directory
+listings at the transport boundary. No live downloads are allowed in this mode;
+missing or invalid cached sources fail explicitly. Reading, processing, cache
+checks, and aggregation use the selected package normally. Prior reports,
+libraries, and caches are never overwritten. The report identifies the source
+run and records the fully resolved commit. Commit implementation changes before
+running: uncommitted edits are not part of `git archive`.
+
+`--commit <SHA>` alone starts a new live sample using that revision. Without
+`--commit`, the original pinned revision remains the default. `--resume` and
+`--replay` retain the installation chosen for their original run; they cannot
+be combined with a new commit or source run.
+
 The seed is `20260922`. The sample covers the six system families, all available
 non-SINAN identifiers, 20 randomly selected SINAN identifiers, and the 16
 historical layout-transition cases. Coverage extensions may increase the

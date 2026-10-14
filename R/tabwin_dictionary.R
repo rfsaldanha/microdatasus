@@ -41,7 +41,7 @@
       "Auxiliar/Arq_Para_Tabulacao_A_Partir_1996.zip"
     ),
     definition = "/NASCIDO.def",
-    extract_all = TRUE
+    legacy_names = TRUE
   )
   specs[["SINASC-1994-1995"]] <- list(
     archive_key = "SINASC-1994-1995",
@@ -51,7 +51,7 @@
       "Auxiliar/Arq_Para_Tabulacao_Ate_1995.zip"
     ),
     definition = "/NASC.DEF",
-    extract_all = TRUE
+    legacy_names = TRUE
   )
 
   # SIH publishes one current archive with separate definitions for each file
@@ -604,26 +604,50 @@
   basename(.tabwin_path_key(path))
 }
 
-.tabwin_extract_legacy_entry <- function(dictionary, file_name, destination) {
-  # libzip can list a legacy-encoded member but fail to select it by its
-  # converted UTF-8 name. Extracting to an isolated directory preserves the
-  # original member bytes and lets us identify the basename afterwards.
-  directory <- tempfile("tabwin-legacy-", tmpdir = dictionary$cache_dir)
-  if (!dir.create(directory)) return(FALSE)
-  on.exit(unlink(directory, recursive = TRUE, force = TRUE), add = TRUE)
-  extracted <- tryCatch(
-    zip::unzip(dictionary$archive, exdir = directory),
-    error = function(error) NULL
-  )
-  if (is.null(extracted)) return(FALSE)
-  candidates <- list.files(directory, recursive = TRUE, full.names = TRUE)
-  matches <- which(
-    .tabwin_filename_key(candidates) == .tabwin_filename_key(file_name)
-  )
-  if (length(matches) != 1L || file.size(candidates[[matches]]) == 0) {
-    return(FALSE)
-  }
-  isTRUE(file.copy(candidates[[matches]], destination, overwrite = TRUE))
+.tabwin_extract_member <- function(dictionary, entry) {
+  # Keep the exact central-directory bytes for ZIP lookup, but never ask the
+  # filesystem to create a legacy-encoded path. Each member gets its own
+  # directory, so flattening cannot overwrite a same-named unrelated member.
+  key <- substr(digest::digest(charToRaw(entry), algo = "sha256", serialize = FALSE), 1L, 32L)
+  checksum <- dictionary[["archive_checksum"]]
+  if (is.null(checksum)) checksum <- dictionary[["checksum"]]
+  if (is.null(checksum)) checksum <- digest::digest(dictionary$archive, algo = "sha256", file = TRUE)
+  name <- basename(.tabwin_path_key(entry))
+  name <- gsub("[^a-zA-Z0-9._-]", "_", name)
+  if (!nzchar(name) || name %in% c(".", "..")) name <- "member"
+  directory <- file.path(dictionary$cache_dir, "members-v1", substr(checksum, 1L, 32L), key)
+  destination <- file.path(directory, name)
+  listing <- dictionary$member_sizes
+  expected <- if (is.null(listing)) NA_real_ else unname(listing[match(entry, dictionary$entries)])
+  if (file.exists(destination) && file.size(destination) > 0 &&
+      (is.na(expected) || file.size(destination) == expected)) return(destination)
+  dir.create(directory, recursive = TRUE, showWarnings = FALSE)
+  temporary <- .datasus_temporary_path(destination)
+  on.exit(unlink(temporary), add = TRUE)
+  tryCatch({
+    input <- unz(dictionary$archive, entry, open = "rb")
+    on.exit(close(input), add = TRUE)
+    output <- file(temporary, open = "wb")
+    tryCatch({
+      repeat {
+        bytes <- readBin(input, "raw", n = 1048576L)
+        if (!length(bytes)) break
+        writeBin(bytes, output)
+      }
+    }, finally = close(output))
+    if (!file.size(temporary) ||
+        (!is.na(expected) && file.size(temporary) != expected)) {
+      .tabwin_abort("The extracted TabWin member is empty or incomplete.",
+                    "microdatasus_dictionary_invalid_error")
+    }
+    .datasus_commit_file(temporary, destination)
+  }, error = function(error) {
+    if (inherits(error, "microdatasus_dictionary_error")) stop(error)
+    .tabwin_abort(c("Failed to extract TabWin file {.file {name}}.",
+                   "i" = conditionMessage(error)),
+                 "microdatasus_dictionary_relation_error")
+  })
+  destination
 }
 
 .tabwin_extract_entry <- function(dictionary, file_name) {
@@ -666,44 +690,7 @@
     dictionary$entries,
     relative_file
   )
-  destination <- file.path(dictionary$cache_dir, basename(entry))
-  if (file.exists(destination) && file.size(destination) > 0) {
-    return(destination)
-  }
-  extracted <- tryCatch(
-    zip::unzip(
-      zipfile = dictionary$archive,
-      files = entry,
-      exdir = dictionary$cache_dir,
-      junkpaths = TRUE,
-      overwrite = TRUE
-    ),
-    error = identity
-  )
-  if (inherits(extracted, "error")) {
-    recovered <- .tabwin_extract_legacy_entry(
-      dictionary, file_name, destination
-    )
-    if (!recovered) {
-      .tabwin_abort(c(
-        "Failed to extract TabWin file {.file {file_name}}.",
-        "i" = conditionMessage(extracted)
-      ), "microdatasus_dictionary_relation_error")
-    }
-  }
-  if (!file.exists(destination)) {
-    .tabwin_abort(
-      "The extracted TabWin file {.file {file_name}} is missing.",
-      "microdatasus_dictionary_missing_error"
-    )
-  }
-  if (file.size(destination) == 0) {
-    .tabwin_abort(
-      "The extracted TabWin file {.file {file_name}} is empty.",
-      "microdatasus_dictionary_invalid_error"
-    )
-  }
-  destination
+  .tabwin_extract_member(dictionary, entry)
 }
 
 .tabwin_alpha_to_number <- function(value) {

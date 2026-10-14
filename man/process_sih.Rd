@@ -53,6 +53,13 @@ absent from a conversion table remain visible as factor levels.
 }
 \section{Performance and cache}{
 
+An unchanged raw table from \code{\link[=fetch_datasus]{fetch_datasus()}} retains each source file's
+physical layout. Processing that table restores each layout and combines
+the processed parts in file order, including column types and factor levels.
+Process the original download before externally changing its rows or columns;
+stale source context is rejected. Tables without source context continue to
+use the processor's ordinary layout inference.
+
 Processing uses vectorized code padding and CNV thresholds, parses repeated
 dates once per field and format, and unescapes only text containing
 backslashes. UTF-8 conversion is still performed for text; values marked as
