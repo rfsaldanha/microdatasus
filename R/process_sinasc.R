@@ -167,6 +167,12 @@ process_sinasc <- function(
   options <- .process_validate_options(labels, diagnostics)
   labels <- options$labels
 
+  grouped <- .process_source_context(
+    data, "SINASC",
+    list(municipality_data = municipality_data, labels = labels, diagnostics = diagnostics)
+  )
+  if (!is.null(grouped)) return(grouped)
+
   result <- tibble::as_tibble(data)
   collector <- .process_diagnostic_collector(diagnostics, "SINASC", result)
   result <- .process_normalize_text(result)

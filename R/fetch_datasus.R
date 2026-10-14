@@ -79,6 +79,18 @@
 #' precedence over preliminary data, and current data take precedence over
 #' historical copies.
 #'
+#' Raw collected tables retain internal per-file layouts and row fingerprints,
+#' independently of `track_source` and `provenance`. Passing an unchanged table
+#' to its `process_*()` function processes each original layout separately and
+#' then combines the results. With complete raw columns and the same processing
+#' options, this matches `process = TRUE` exactly by column.
+#' Process before externally editing, filtering, or reordering the raw table;
+#' stale retained context raises an error. `row_filter` and `vars` supplied to
+#' this function are recorded in the context. Plain data frames without that
+#' context retain the processors' existing layout-inference behavior.
+#' Processed binding preserves first-occurrence column order, unions factor
+#' levels in file order, and promotes mixed factor/character columns to text.
+#'
 #' Files are handled sequentially and, when requested, processed and written
 #' before the next file is read. Thus `collect = FALSE` bounds working memory
 #' to approximately one source file. Unless `quiet = TRUE`, transfer progress is
@@ -549,11 +561,9 @@ fetch_datasus <- function(
   }
   if (!length(parts)) return(NULL)
 
-  combined <- tibble::as_tibble(data.table::rbindlist(
-    parts,
-    use.names = TRUE,
-    fill = TRUE
-  ))
+  combined <- if (process) .datasus_bind_processed(parts) else {
+    .datasus_bind_raw(parts, information_system)
+  }
   attr(combined, "microdatasus_request") <- request_record
   if (provenance) {
     attr(combined, "microdatasus_provenance") <- provenance_table

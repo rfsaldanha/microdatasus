@@ -1,0 +1,18 @@
+17 4 L
+      1  AMBULATORIAL SUS                                   0100
+      2  AMBULATORIAL SUS/NAO SUS                           1100
+      3  AMBULATORIAL NAO SUS                               1000
+      4  HOSPITALAR SUS                                     0001
+      5  HOSPITALAR SUS/NAO SUS                             0011
+      6  HOSPITALAR NAO SUS                                 0010
+      7  AMBULATORIAL SUS E HOSPITALAR SUS                  0101
+      8  AMBULATORIAL SUS E HOSPITALAR SUS/NAO SUS          0111
+      9  AMBULATORIAL SUS E HOSPITALAR NAO SUS              0110
+     10  AMBULATORIAL SUS/NAO SUS E HOSPITALAR SUS          1101
+     11  AMBULATORIAL SUS/NAO SUS E HOSPITALAR SUS/NAO SUS  1111
+     12  AMBULATORIAL SUS/NAO SUS E HOSPITALAR NAO SUS      1110
+     13  AMBULATORIAL NAO SUS E HOSPITALAR SUS              1001
+     14  AMBULATORIAL NAO SUS E HOSPITALAR SUS/NAO SUS      1011
+     15  AMBULATORIAL NAO SUS E HOSPITALAR NAO SUS          1010
+     16  NEM HOSPITALAR NEM AMBULATORIAL                    0000
+     17  ESPAÇOS, Zeros ou Outros Códigos Inválidos             ,0000-9999

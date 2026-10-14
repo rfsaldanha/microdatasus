@@ -90,6 +90,10 @@
 #' service-classification periods. SINAN supports all 58 transfer-page file
 #' families.
 #'
+#' Only the requested DEF and conversion members are extracted. Original ZIP
+#' member bytes are retained for lookup, while extracted files use safe local
+#' paths, including for historical SINASC archives with legacy-encoded names.
+#'
 #' @param information_system Information system whose dictionary should be
 #'   downloaded. Supported values include the five SIM mortality types,
 #'   `"SINASC"` for files from 1996 onward, `"SINASC-1994-1995"` for the
@@ -250,8 +254,8 @@ fetch_tabwin_dictionary <- function(
         quiet = quiet
       )
     }
-    entries <- tryCatch(
-      zip::zip_list(archive)$filename,
+    members <- tryCatch(
+      utils::unzip(archive, list = TRUE),
       error = function(error) {
         cli::cli_abort(c(
           "Failed to list the downloaded TabWin archive.",
@@ -259,6 +263,7 @@ fetch_tabwin_dictionary <- function(
         ))
       }
     )
+    entries <- members$Name
     provenance <- if (disk_hit && file.exists(manifest_path)) {
       tryCatch(readRDS(manifest_path), error = function(error) NULL)
     } else {
@@ -287,6 +292,7 @@ fetch_tabwin_dictionary <- function(
         source = spec$url,
         archive = archive,
         entries = entries,
+        member_sizes = members$Length,
         cache_dir = work_dir,
         persistent = !is.null(cache_root)
       ),
@@ -300,51 +306,8 @@ fetch_tabwin_dictionary <- function(
     archive_created <- TRUE
     complete <- TRUE
   }
-  extract_all <- isTRUE(spec$extract_all)
-  if (extract_all) {
-    # Base R's internal unzip handles the legacy directory encodings used by
-    # some DataSUS packages. Flattening is safe for these single-folder ZIPs.
-    extracted <- suppressWarnings(utils::unzip(
-      zipfile = archive_cache$archive,
-      exdir = archive_cache$cache_dir,
-      junkpaths = TRUE,
-      overwrite = TRUE
-    ))
-    definition_entry <- spec$definition
-    candidates <- list.files(archive_cache$cache_dir, full.names = TRUE)
-    definition_matches <- which(
-      .tabwin_filename_key(candidates) ==
-        .tabwin_filename_key(spec$definition)
-    )
-    definition_path <- if (length(definition_matches) == 1L) {
-      candidates[[definition_matches]]
-    } else {
-      file.path(archive_cache$cache_dir, basename(spec$definition))
-    }
-  } else {
-    # Archives with portable paths keep lazy extraction of CNV/DBF files.
-    definition_entry <- .tabwin_find_entry(
-      archive_cache$entries,
-      spec$definition
-    )
-    extracted <- zip::unzip(
-      zipfile = archive_cache$archive,
-      files = definition_entry,
-      exdir = archive_cache$cache_dir,
-      junkpaths = TRUE,
-      overwrite = TRUE
-    )
-    definition_path <- file.path(
-      archive_cache$cache_dir,
-      basename(definition_entry)
-    )
-  }
-  if (!length(extracted) || !file.exists(definition_path)) {
-    if (archive_created) {
-      .tabwin_clear_cache()
-    }
-    cli::cli_abort("Failed to extract the TabWin DEF file.")
-  }
+  definition_entry <- .tabwin_find_entry(archive_cache$entries, spec$definition)
+  definition_path <- .tabwin_extract_member(archive_cache, definition_entry)
 
   dictionary <- structure(
     list(
@@ -357,14 +320,16 @@ fetch_tabwin_dictionary <- function(
       archive_checksum = archive_cache$checksum,
       archive_checksum_algorithm = archive_cache$checksum_algorithm,
       cache_hit = archive_cache$cached,
-      definition = definition_entry,
+      definition = if (isTRUE(spec$legacy_names)) spec$definition else definition_entry,
+      archive_definition = definition_entry,
       definitions = .tabwin_parse_def(definition_path),
       numeric_fields = .tabwin_parse_increment_fields(definition_path),
       archive = archive_cache$archive,
       entries = archive_cache$entries,
-      definition_dir = dirname(gsub("\\\\", "/", definition_entry)),
+      member_sizes = archive_cache$member_sizes,
+      definition_dir = dirname(.tabwin_path_key(definition_entry)),
       cache_dir = archive_cache$cache_dir,
-      extracted_all = extract_all,
+      extracted_all = FALSE,
       persistent = isTRUE(archive_cache$persistent),
       conversions = new.env(parent = emptyenv())
     ),

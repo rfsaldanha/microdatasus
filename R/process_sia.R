@@ -319,6 +319,12 @@ process_sia <- function(
     )
   }
 
+  grouped <- .process_source_context(
+    data, information_system,
+    list(nome_proced = nome_proced, nome_ocupacao = nome_ocupacao, nome_equipe = nome_equipe, municipality_data = municipality_data, labels = labels, diagnostics = diagnostics)
+  )
+  if (!is.null(grouped)) return(grouped)
+
   result <- tibble::as_tibble(data)
   collector <- .process_diagnostic_collector(
     diagnostics, information_system, result

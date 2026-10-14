@@ -118,37 +118,11 @@
   if (isTRUE(dictionary$extracted_all) || !nrow(definitions)) {
     return(invisible(NULL))
   }
-  files <- unique(definitions$file)
-  entries <- vapply(files, function(file) {
-    definition_dir <- dictionary$definition_dir
-    relative_file <- if (definition_dir %in% c("", ".", "/")) {
-      file
-    } else {
-      paste0(definition_dir, "/", file)
-    }
-    tryCatch(
-      .tabwin_find_entry(dictionary$entries, relative_file),
-      error = function(error) NA_character_
-    )
-  }, character(1))
-  entries <- unique(entries[!is.na(entries)])
-  destinations <- file.path(dictionary$cache_dir, basename(entries))
-  pending <- !file.exists(destinations) | file.size(destinations) == 0
-  if (!any(pending)) {
-    return(invisible(NULL))
+  # Use the same selective, atomic extraction as processing. An unavailable
+  # relation remains an individual diagnostic rather than aborting inspection.
+  for (file in unique(definitions$file)) {
+    tryCatch(.tabwin_extract_entry(dictionary, file), error = function(error) NULL)
   }
-  # If batch extraction fails, the existing lazy extractor gets another chance
-  # for each relation and preserves its more specific diagnostic messages.
-  tryCatch(
-    zip::unzip(
-      zipfile = dictionary$archive,
-      files = entries[pending],
-      exdir = dictionary$cache_dir,
-      junkpaths = TRUE,
-      overwrite = TRUE
-    ),
-    error = function(error) NULL
-  )
   invisible(NULL)
 }
 

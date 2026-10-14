@@ -2,6 +2,21 @@
 
 ## Development
 
+* Fixes historical SINASC dictionary extraction on systems that reject legacy
+  ZIP filename bytes. Extracts only required members atomically and reuses
+  verified source archives while repairing incomplete extracted files.
+* Preserves per-file physical layouts in raw downloads, so processing an
+  unchanged combined table matches individual and integrated processing,
+  including column order, dates, factor levels, and mixed factor/text columns.
+  Restores layout-dependent `AMB_NSUS` conversions and the `Date` class of
+  `ATE_INTERN`. Stale context after external edits is rejected.
+* Keeps SINAN `PRE_MUNIRE` as a municipal identifier, preserving normalized
+  codes and missing values instead of selecting competing UF/municipality
+  labels across historical files.
+* Adds offline stress regressions and `--commit`/`--from-run` audit options to
+  compare another revision against frozen inputs without altering prior runs.
+  The offline rerun of the October 14, 2026 sample passes all 150 files and
+  18 aggregation groups, with 2,532 strict checks and no skipped cases.
 * Updates Windows binary-installation instructions, including dependencies and
   R compatibility. Aligns the README, help and articles on connection failures,
   empty results, the limits of `stop_on_error`, and the difference between local

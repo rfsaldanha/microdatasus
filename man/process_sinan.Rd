@@ -37,6 +37,8 @@ including codes absent from official conversion tables. Retrieve it with
 A tibble. Dates are returned as \code{Date}, DEF increment fields and
 derived age components as integer, labelled categorical fields as factors,
 and identifiers and free text as character.
+\code{PRE_MUNIRE} retains the municipal code as character, like other municipal
+identifiers; it is not replaced by a UF or municipality category label.
 }
 \description{
 Uses the official DataSUS TabWin definitions to label all SINAN file
@@ -49,6 +51,13 @@ Historical chikungunya records that use the former generic classification
 domain additionally reuse its official relation from \code{TAB_SINANNET.zip}.
 }
 \section{Performance and cache}{
+
+An unchanged raw table from \code{\link[=fetch_datasus]{fetch_datasus()}} retains each source file's
+physical layout. Processing that table restores each layout and combines
+the processed parts in file order, including column types and factor levels.
+Process the original download before externally changing its rows or columns;
+stale source context is rejected. Tables without source context continue to
+use the processor's ordinary layout inference.
 
 Processing uses vectorized code padding and CNV thresholds, parses repeated
 dates once per field and format, and unescapes only text containing

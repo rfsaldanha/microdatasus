@@ -280,6 +280,12 @@ process_cnes <- function(
     )
   }
 
+  grouped <- .process_source_context(
+    data, information_system,
+    list(nomes = nomes, municipality_data = municipality_data, labels = labels, diagnostics = diagnostics)
+  )
+  if (!is.null(grouped)) return(grouped)
+
   result <- tibble::as_tibble(data)
   collector <- .process_diagnostic_collector(
     diagnostics, information_system, result

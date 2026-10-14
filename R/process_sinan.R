@@ -34,7 +34,7 @@
   fields <- names(data)
   upper <- toupper(fields)
   fields[
-    upper %in% c("ID_MUNICIP", "ID_MN_RESI", "MUNICIPIO") |
+    upper %in% c("ID_MUNICIP", "ID_MN_RESI", "MUNICIPIO", "PRE_MUNIRE") |
       grepl("^ID_MN_|^MUN(_|$)|^CO_MUN", upper)
   ]
 }
@@ -235,6 +235,8 @@
 #' @return A tibble. Dates are returned as `Date`, DEF increment fields and
 #'   derived age components as integer, labelled categorical fields as factors,
 #'   and identifiers and free text as character.
+#'   `PRE_MUNIRE` retains the municipal code as character, like other municipal
+#'   identifiers; it is not replaced by a UF or municipality category label.
 #'
 #' @references
 #' Saldanha, R. F. (2026). [SINAN -- Sistema de Informação de Agravos de
@@ -273,6 +275,12 @@ process_sinan <- function(
       "{.arg information_system} must be one of: {.val {sinan_types}}."
     )
   }
+
+  grouped <- .process_source_context(
+    data, information_system,
+    list(municipality_data = municipality_data, labels = labels, diagnostics = diagnostics)
+  )
+  if (!is.null(grouped)) return(grouped)
 
   result <- tibble::as_tibble(data)
   collector <- .process_diagnostic_collector(

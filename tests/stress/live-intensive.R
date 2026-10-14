@@ -44,22 +44,29 @@ audit_assert <- function(ok, message) {
 audit_equal <- function(actual, expected) {
   audit_assert(is.data.frame(actual) && is.data.frame(expected), "Expected two data frames")
   audit_assert(nrow(actual) == nrow(expected), paste("Row count:", nrow(actual), "!=", nrow(expected)))
-  audit_assert(identical(names(actual), names(expected)), paste(
+  detail <- character()
+  if (!identical(names(actual), names(expected))) detail <- c(detail, paste(
     "Column names/order differ; actual-only:", paste(setdiff(names(actual), names(expected)), collapse = ","),
     "expected-only:", paste(setdiff(names(expected), names(actual)), collapse = ",")
   ))
-  differences <- names(actual)[!vapply(names(actual), function(field) {
+  common <- intersect(names(actual), names(expected))
+  differences <- common[!vapply(common, function(field) {
     identical(actual[[field]], expected[[field]])
   }, logical(1))]
   if (length(differences)) {
-    detail <- vapply(head(differences, 12L), function(field) {
+    detail <- c(detail, vapply(head(differences, 12L), function(field) {
       a <- actual[[field]]; b <- expected[[field]]
+      values_a <- if (is.factor(a)) as.character(a) else a
+      values_b <- if (is.factor(b)) as.character(b) else b
       paste0(field, " [", paste(class(a), collapse = "/"), " vs ",
              paste(class(b), collapse = "/"), "]: ",
+             "types=", identical(class(a), class(b)),
+             "; levels=", identical(levels(a), levels(b)),
+             "; values=", identical(values_a, values_b), "; ",
              paste(head(all.equal(a, b, tolerance = 0), 2L), collapse = "; "))
-    }, character(1))
-    stop(paste(c(paste(length(differences), "columns differ"), detail), collapse = "\n"), call. = FALSE)
+    }, character(1)))
   }
+  if (length(detail)) stop(paste(detail, collapse = "\n"), call. = FALSE)
   invisible(TRUE)
 }
 
@@ -373,6 +380,19 @@ audit_dictionary <- function(key, config) {
 }
 
 audit_case <- function(config, case) {
+  if (!is.null(config$from_run)) {
+    # Reproduce transport inputs exactly, while exercising the real reader,
+    # processors, source context, cache validation and aggregation code.
+    testthat::local_mocked_bindings(
+      .datasus_list_directory = function(url, timeout) {
+        path <- file.path(config$root, "listings", paste0(digest::digest(url), ".txt"))
+        audit_assert(file.exists(path), paste("Missing frozen listing:", url))
+        paste(readLines(path, warn = FALSE), collapse = "\n")
+      },
+      .datasus_download_file = function(...) stop("Frozen run requires a verified cached source", call. = FALSE),
+      .package = "microdatasus"
+    )
+  }
   if (grepl("-replay-", case$id, fixed = TRUE)) {
     config$dictionary_failures_before_skip <- NULL
     config$download_deadline <- Sys.time() + 600
@@ -719,6 +739,7 @@ audit_report <- function(config, plan) {
   lines <- c("# Teste intensivo do microdatasus", "",
     paste("Commit:", config$commit, "| versão: 3.0.0.9000 | semente:", config$seed),
     paste("Início:", config$started, "| atualização:", Sys.time()),
+    if (!is.null(config$from_run)) paste("Comparação offline com seleção e fontes congeladas:", config$from_run),
     "Limites: 4 horas, 20 GB de artefatos, 6 GB de memória por subprocesso, 10 minutos por caso.", "",
     "## Resultado", "",
     sprintf("Arquivos únicos: %d selecionados; %d baixados; %d lidos; %d processados; %d pelo caminho integrado; %d aprovados; %d com falhas/limites; %d não executados.",
@@ -758,11 +779,13 @@ audit_report <- function(config, plan) {
   invisible(results)
 }
 
-audit_setup <- function(root) {
+audit_setup <- function(root, commit = audit_commit, from_run = NULL) {
   repository <- normalizePath(".")
+  commit <- trimws(processx::run("git", c("rev-parse", "--verify", "--end-of-options",
+    paste0(commit, "^{commit}")))$stdout)
   dir.create(root, recursive = TRUE, showWarnings = FALSE)
   root <- normalizePath(root)
-  config <- list(root = root, commit = audit_commit, seed = 20260922L,
+  config <- list(root = root, commit = commit, seed = 20260922L,
     library = file.path(root, "library"), cache = file.path(root, "cache"), tmp = file.path(root, "tmp"),
     runner = file.path(root, "runner.R"), memory_limit = 6e9, disk_limit = 20e9)
   for (path in c(config$library, config$cache, config$tmp, file.path(root, "source"))) dir.create(path, showWarnings = FALSE)
@@ -777,11 +800,40 @@ audit_setup <- function(root) {
     error_on_status = FALSE, timeout = 600000)
   writeLines(c(install$stdout, install$stderr), file.path(root, "installation.log"))
   audit_assert(install$status == 0L, "Isolated installation failed; see installation.log")
+  if (!is.null(from_run)) config$from_run <- normalizePath(from_run, mustWork = TRUE)
   config$started <- Sys.time()
   config$download_deadline <- config$started + 3 * 3600
   config$deadline <- config$started + 4 * 3600
   audit_save(config, file.path(root, "config.rds"))
   config
+}
+
+audit_import_run <- function(config) {
+  baseline <- config$from_run
+  audit_assert(!identical(config$root, baseline), "Comparison must use a new directory")
+  for (name in c("catalog.rds", "catalog.csv", "sample.csv", "groups.csv", "systems.csv", "discovery-failures.csv")) {
+    audit_assert(file.copy(file.path(baseline, name), file.path(config$root, name)), paste("Cannot copy", name))
+  }
+  audit_assert(file.copy(file.path(baseline, "listings"), config$root, recursive = TRUE), "Cannot copy listings")
+  manifests <- list.files(file.path(baseline, "cache"), pattern = "^manifest[.]rds$", recursive = TRUE, full.names = TRUE)
+  for (manifest in manifests) {
+    entry <- readRDS(manifest)
+    name <- if (entry$type == "dbc") "data.dbc" else "dictionary.zip"
+    source <- file.path(dirname(manifest), name)
+    audit_assert(microdatasus:::.datasus_cache_valid(source, manifest), paste("Invalid baseline source:", source))
+    relative <- substring(dirname(manifest), nchar(file.path(baseline, "cache")) + 2L)
+    destination <- file.path(config$cache, relative)
+    dir.create(destination, recursive = TRUE, showWarnings = FALSE)
+    audit_assert(all(file.copy(c(source, manifest), destination)), paste("Cannot copy cache:", relative))
+    audit_assert(microdatasus:::.datasus_cache_valid(file.path(destination, name), file.path(destination, "manifest.rds")),
+                 paste("Copied cache failed verification:", relative))
+  }
+  plan <- readRDS(file.path(baseline, "plan.rds"))
+  for (kind in c("files", "groups")) for (i in seq_along(plan[[kind]])) {
+    plan[[kind]][[i]]$args$cache_dir <- config$cache
+  }
+  audit_save(plan, file.path(config$root, "plan.rds"))
+  plan
 }
 
 audit_main <- function(args = commandArgs(TRUE)) {
@@ -804,6 +856,8 @@ audit_main <- function(args = commandArgs(TRUE)) {
     return(invisible(NULL))
   }
   if (length(args) && args[[1L]] %in% c("--worker", "--replay")) {
+    audit_assert(length(args) == if (args[[1L]] == "--worker") 4L else 3L,
+                 "Worker/replay arguments cannot be combined with a new commit or source run")
     config <- readRDS(file.path(args[[2L]], "config.rds"))
     .libPaths(c(config$library, .libPaths()))
     library(microdatasus)
@@ -820,6 +874,16 @@ audit_main <- function(args = commandArgs(TRUE)) {
     return(audit_case(config, readRDS(file.path(config$root, "cases", args[[4L]], "case.rds"))))
   }
   resume <- length(args) && args[[1L]] == "--resume"
+  if (resume) audit_assert(length(args) == 2L, "Use --resume <run> without other options")
+  commit <- audit_commit; from_run <- NULL
+  if (!resume && length(args)) {
+    audit_assert(length(args) %% 2L == 0L, "Expected --commit <SHA> and/or --from-run <directory>")
+    flags <- args[seq.int(1L, length(args), 2L)]
+    audit_assert(!anyDuplicated(flags) && all(flags %in% c("--commit", "--from-run")), "Unknown or duplicate argument")
+    values <- stats::setNames(args[seq.int(2L, length(args), 2L)], flags)
+    if ("--commit" %in% flags) commit <- values[["--commit"]]
+    if ("--from-run" %in% flags) from_run <- values[["--from-run"]]
+  }
   root <- if (resume) args[[2L]] else Sys.getenv("MICRODATASUS_INTENSIVE_ROOT", file.path(".cache", "intensive", format(Sys.time(), "%Y%m%dT%H%M%SZ", tz = "UTC")))
   if (resume) {
     config <- readRDS(file.path(root, "config.rds"))
@@ -827,16 +891,18 @@ audit_main <- function(args = commandArgs(TRUE)) {
     file.copy("tests/stress/live-intensive.R", config$runner, overwrite = TRUE)
   } else {
     audit_assert(!file.exists(file.path(root, "config.rds")), "Run directory already exists; use --resume or --replay")
-    config <- audit_setup(root)
+    config <- audit_setup(root, commit, from_run)
   }
   message("ARTIFACTS: ", config$root)
   .libPaths(c(config$library, .libPaths()))
   library(microdatasus)
-  if (!resume) {
+  if (!resume && is.null(config$from_run)) {
     audit_supervise(config, action = "discover", limit = 1200)
     audit_assert(file.exists(file.path(config$root, "catalog.rds")), "Discovery did not finish; inspect discovery logs")
   }
-  plan <- if (resume) readRDS(file.path(root, "plan.rds")) else audit_select(config)
+  plan <- if (resume) readRDS(file.path(root, "plan.rds")) else {
+    if (is.null(config$from_run)) audit_select(config) else audit_import_run(config)
+  }
   on.exit(audit_report(config, plan), add = TRUE)
   pending <- function(case) {
     directory <- file.path(config$root, "cases", case$id)

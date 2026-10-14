@@ -1,2 +1,3 @@
 # Keep checksum-pinned historical CSV bytes identical on Windows checkouts.
 /tests/fixtures/historical/**/*.csv text eol=lf
+/tests/fixtures/stress/*.CNV -text

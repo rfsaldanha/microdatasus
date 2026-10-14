@@ -33,14 +33,14 @@
   fallback <- function(value, default) {
     if (is.null(value) || !length(value)) default else value[[1L]]
   }
-  key <- fallback(dictionary$information_system, collector$information_system)
+  key <- fallback(dictionary[["information_system"]], collector$information_system)
   collector$dictionaries[[key]] <- data.frame(
     information_system = key,
-    definition = fallback(dictionary$definition, NA_character_),
-    archive_checksum = fallback(dictionary$archive_checksum, NA_character_),
-    archive_checksum_algorithm = fallback(dictionary$archive_checksum_algorithm, "md5"),
-    archive_path = fallback(dictionary$archive, NA_character_),
-    source = fallback(dictionary$source, NA_character_),
+    definition = fallback(dictionary[["definition"]], NA_character_),
+    archive_checksum = fallback(dictionary[["archive_checksum"]], NA_character_),
+    archive_checksum_algorithm = fallback(dictionary[["archive_checksum_algorithm"]], "md5"),
+    archive_path = fallback(dictionary[["archive"]], NA_character_),
+    source = fallback(dictionary[["source"]], NA_character_),
     stringsAsFactors = FALSE
   )
   definitions <- dictionary$definitions

@@ -53,6 +53,11 @@ historical PA definitions; and CNES supports all thirteen layouts plus both
 service-classification periods. SINAN supports all 58 transfer-page file
 families.
 }
+\details{
+Only the requested DEF and conversion members are extracted. Original ZIP
+member bytes are retained for lookup, while extracted files use safe local
+paths, including for historical SINASC archives with legacy-encoded names.
+}
 \section{Network access}{
 
 A call without a valid cached archive downloads the relevant TabWin ZIP from
