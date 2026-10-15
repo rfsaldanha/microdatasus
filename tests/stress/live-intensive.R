@@ -1,10 +1,10 @@
 # Opt-in live audit. Run from the repository root:
 # Rscript tests/stress/live-intensive.R
 # Artifacts are kept under .cache/intensive/<UTC timestamp>.
-# This script installs the pinned source into an isolated library; it never
+# This script installs HEAD (or --commit) into an isolated library; it never
 # changes package implementation or runs as part of R CMD check.
 
-audit_commit <- "c1ad20b2034df021e3eb8105455efb72b8cc5aa5"
+audit_commit <- "HEAD"
 audit_families <- c("SIM", "SINASC", "SIH", "SIA", "CNES", "SINAN")
 
 audit_save <- function(value, path) {
@@ -37,6 +37,54 @@ audit_rows <- function(values) {
 audit_assert <- function(ok, message) {
   if (!isTRUE(ok)) stop(message, call. = FALSE)
   invisible(TRUE)
+}
+
+audit_revision <- function(repository = ".", requested = audit_commit) {
+  audit_assert(length(requested) == 1L && !is.na(requested) && nzchar(requested),
+               "Expected a nonempty Git commit reference")
+  revision <- processx::run("git", c("rev-parse", "--verify", "--end-of-options",
+    paste0(requested, "^{commit}")), wd = repository, error_on_status = FALSE)
+  audit_assert(revision$status == 0L, paste("Cannot resolve Git commit reference:", requested))
+  commit <- trimws(revision$stdout)
+  status <- processx::run("git", c("status", "--porcelain=v1", "--untracked-files=no"), wd = repository)
+  dirty <- nzchar(trimws(status$stdout))
+  if (dirty) warning(
+    "Tracked files have uncommitted changes. The installed package contains only commit ",
+    commit, "; local package edits are excluded. The audit will continue.",
+    call. = FALSE, immediate. = TRUE
+  )
+  list(requested_commit = requested, commit = commit, uncommitted_tracked = dirty)
+}
+
+audit_metadata <- function(config) {
+  # Legacy runs retain their saved commit and library, without consulting Git.
+  if (is.null(config$requested_commit)) config$requested_commit <- "not recorded (legacy run)"
+  if (is.null(config$package_version)) {
+    description <- file.path(config$library, "microdatasus", "DESCRIPTION")
+    audit_assert(file.exists(description), paste("Missing isolated package installation:", description))
+    config$package_version <- unname(read.dcf(description, fields = "Version")[[1L]])
+  }
+  config$mode <- if (is.null(config$from_run)) "live" else "frozen"
+  config
+}
+
+audit_load_config <- function(root) {
+  audit_metadata(readRDS(file.path(root, "config.rds")))
+}
+
+audit_identity <- function(config) {
+  config <- audit_metadata(config)
+  c(paste("Revisão solicitada:", config$requested_commit),
+    paste("Commit:", config$commit, "| versão:", config$package_version, "| semente:", config$seed),
+    paste("Biblioteca isolada:", config$library),
+    paste("Modo:", if (config$mode == "live") "downloads ao vivo" else "fontes congeladas"))
+}
+
+audit_load_package <- function(config) {
+  .libPaths(c(config$library, .libPaths()))
+  library(microdatasus)
+  audit_assert(normalizePath(find.package("microdatasus")) ==
+                 normalizePath(file.path(config$library, "microdatasus")), "Wrong package installation")
 }
 
 # Compare every column, including types, factor levels, and column attributes.
@@ -737,7 +785,7 @@ audit_report <- function(config, plan) {
     audit_csv(failures, file.path(config$root, "failures.csv"))
   } else failures <- data.frame()
   lines <- c("# Teste intensivo do microdatasus", "",
-    paste("Commit:", config$commit, "| versão: 3.0.0.9000 | semente:", config$seed),
+    audit_identity(config),
     paste("Início:", config$started, "| atualização:", Sys.time()),
     if (!is.null(config$from_run)) paste("Comparação offline com seleção e fontes congeladas:", config$from_run),
     "Limites: 4 horas, 20 GB de artefatos, 6 GB de memória por subprocesso, 10 minutos por caso.", "",
@@ -781,26 +829,26 @@ audit_report <- function(config, plan) {
 
 audit_setup <- function(root, commit = audit_commit, from_run = NULL) {
   repository <- normalizePath(".")
-  commit <- trimws(processx::run("git", c("rev-parse", "--verify", "--end-of-options",
-    paste0(commit, "^{commit}")))$stdout)
+  revision <- audit_revision(repository, commit)
+  if (!is.null(from_run)) from_run <- normalizePath(from_run, mustWork = TRUE)
   dir.create(root, recursive = TRUE, showWarnings = FALSE)
   root <- normalizePath(root)
-  config <- list(root = root, commit = commit, seed = 20260922L,
+  config <- c(revision, list(root = root, seed = 20260922L, from_run = from_run,
     library = file.path(root, "library"), cache = file.path(root, "cache"), tmp = file.path(root, "tmp"),
-    runner = file.path(root, "runner.R"), memory_limit = 6e9, disk_limit = 20e9)
+    runner = file.path(root, "runner.R"), memory_limit = 6e9, disk_limit = 20e9))
   for (path in c(config$library, config$cache, config$tmp, file.path(root, "source"))) dir.create(path, showWarnings = FALSE)
   file.copy(file.path(repository, "tests/stress/live-intensive.R"), config$runner, overwrite = TRUE)
   archive <- file.path(root, "source.tar")
   processx::run("git", c("archive", "--format=tar", paste0("--output=", archive), config$commit), echo = FALSE)
   utils::untar(archive, exdir = file.path(root, "source"))
   unlink(archive)
-  message("Installing pinned source in ", config$library)
+  message("Installing commit ", config$commit, " (requested: ", config$requested_commit, ") in ", config$library)
   install <- processx::run(file.path(R.home("bin"), "R"),
     c("CMD", "INSTALL", "--no-multiarch", paste0("--library=", config$library), file.path(root, "source")),
     error_on_status = FALSE, timeout = 600000)
   writeLines(c(install$stdout, install$stderr), file.path(root, "installation.log"))
   audit_assert(install$status == 0L, "Isolated installation failed; see installation.log")
-  if (!is.null(from_run)) config$from_run <- normalizePath(from_run, mustWork = TRUE)
+  config <- audit_metadata(config)
   config$started <- Sys.time()
   config$download_deadline <- config$started + 3 * 3600
   config$deadline <- config$started + 4 * 3600
@@ -836,6 +884,110 @@ audit_import_run <- function(config) {
   plan
 }
 
+audit_revision_self_test <- function() {
+  repository <- tempfile("audit git repository ")
+  dir.create(repository)
+  repository <- normalizePath(repository)
+  previous <- setwd(repository)
+  on.exit({ setwd(previous); unlink(repository, recursive = TRUE) }, add = TRUE)
+  git <- function(...) processx::run("git", c(...), wd = repository)$stdout
+  git("init", "--quiet")
+  git("config", "user.name", "Audit self-test")
+  git("config", "user.email", "audit@example.invalid")
+  git("config", "commit.gpgsign", "false")
+  git("config", "core.hooksPath", file.path(repository, "no-hooks"))
+  git("config", "core.autocrlf", "false")
+  writeLines(c("Package: microdatasus", "Version: 1.0.0"), "DESCRIPTION")
+  git("add", "DESCRIPTION")
+  git("commit", "--quiet", "-m", "First fixture revision")
+  original <- trimws(git("rev-parse", "HEAD"))
+  writeLines(c("Package: microdatasus", "Version: 2.0.0"), "DESCRIPTION")
+  git("commit", "--quiet", "-am", "Second fixture revision")
+  current <- trimws(git("rev-parse", "HEAD"))
+  capture <- function(expr) {
+    warnings <- character()
+    value <- withCallingHandlers(expr, warning = function(w) {
+      warnings <<- c(warnings, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    })
+    list(value = value, warnings = warnings)
+  }
+  selected <- capture(audit_revision())
+  stopifnot(identical(selected$value$requested_commit, "HEAD"),
+            identical(selected$value$commit, current), !selected$value$uncommitted_tracked,
+            !length(selected$warnings))
+  stopifnot(identical(audit_revision(requested = original)$commit, original))
+  writeLines("Untracked notes", "prompts.txt")
+  selected <- capture(audit_revision())
+  stopifnot(!selected$value$uncommitted_tracked, !length(selected$warnings))
+  writeLines(c("Package: microdatasus", "Version: 2.1.0"), "DESCRIPTION")
+  for (state in c("unstaged", "staged", "both")) {
+    if (state == "staged") git("add", "DESCRIPTION")
+    if (state == "both") writeLines(c("Package: microdatasus", "Version: 2.2.0"), "DESCRIPTION")
+    selected <- capture(audit_revision())
+    stopifnot(selected$value$uncommitted_tracked, length(selected$warnings) == 1L,
+              grepl(current, selected$warnings, fixed = TRUE),
+              grepl("local package edits are excluded", selected$warnings, fixed = TRUE),
+              identical(selected$value$commit, current))
+  }
+  invalid_root <- file.path(repository, "invalid-run")
+  invalid <- tryCatch(audit_setup(invalid_root, commit = "missing-reference"), error = identity)
+  stopifnot(inherits(invalid, "error"),
+            grepl("Cannot resolve Git commit reference", conditionMessage(invalid), fixed = TRUE),
+            !file.exists(invalid_root))
+
+  # Exercise the actual resume/replay dispatch with a legacy configuration.
+  # Package loading and case execution are stubbed; neither should resolve HEAD.
+  root <- file.path(repository, "legacy-run")
+  library <- file.path(root, "library")
+  dir.create(file.path(library, "microdatasus"), recursive = TRUE)
+  writeLines(c("Package: microdatasus", "Version: 1.0.0"),
+             file.path(library, "microdatasus", "DESCRIPTION"))
+  config <- list(root = root, commit = original, library = library, seed = 20260922L,
+                 runner = file.path(root, "runner.R"), deadline = Sys.time() + 3600,
+                 download_deadline = Sys.time() + 3600)
+  saveRDS(config, file.path(root, "config.rds"))
+  config_checksum <- unname(tools::md5sum(file.path(root, "config.rds")))
+  saveRDS(list(files = list(), groups = list()), file.path(root, "plan.rds"))
+  dir.create(file.path(root, "cases", "file-001"), recursive = TRUE)
+  saveRDS(list(id = "file-001"), file.path(root, "cases", "file-001", "case.rds"))
+  dir.create(file.path(repository, "tests", "stress"), recursive = TRUE)
+  writeLines("# current runner", file.path(repository, "tests", "stress", "live-intensive.R"))
+  writeLines("# saved runner", config$runner)
+  loaded <- audit_load_config(root)
+  stopifnot(identical(loaded$commit, original), identical(loaded$library, library),
+            identical(loaded$package_version, "1.0.0"), identical(loaded$mode, "live"),
+            identical(loaded$requested_commit, "not recorded (legacy run)"),
+            any(grepl("versão: 1.0.0", audit_identity(loaded), fixed = TRUE)))
+  frozen <- loaded; frozen$from_run <- "saved-sources"
+  stopifnot(identical(audit_metadata(frozen)$mode, "frozen"))
+  runtime <- new.env(parent = environment(audit_main))
+  observed <- new.env(parent = emptyenv())
+  runtime$audit_revision <- function(...) stop("Saved runs must not resolve Git references")
+  runtime$audit_setup <- function(...) stop("Saved runs must not reinstall packages")
+  runtime$audit_load_package <- function(config) { observed$loaded <- config }
+  runtime$audit_supervise <- function(config, case, ...) {
+    observed$executed <- config
+    observed$case <- case
+  }
+  runtime$audit_report <- function(config, plan) { observed$reported <- config }
+  dispatch <- audit_main
+  environment(dispatch) <- runtime
+  suppressMessages(dispatch(c("--replay", root, "file-001")))
+  stopifnot(identical(observed$loaded$commit, original),
+            identical(observed$executed$library, library),
+            startsWith(observed$case$id, "file-001-replay-"))
+  suppressMessages(dispatch(c("--resume", root)))
+  stopifnot(identical(observed$loaded$commit, original),
+            identical(observed$reported$package_version, "1.0.0"),
+            identical(unname(tools::md5sum(file.path(root, "config.rds"))), config_checksum))
+  for (args in list(c("--resume", root, "--commit", "HEAD"),
+                    c("--replay", root, "file-001", "--commit", "HEAD"))) {
+    stopifnot(inherits(tryCatch(dispatch(args), error = identity), "error"))
+  }
+  cat("Git revision, dirty-worktree, installed-version, and legacy resume/replay checks passed.\n")
+}
+
 audit_main <- function(args = commandArgs(TRUE)) {
   if (length(args) && args[[1L]] == "--self-test") {
     invalid_name <- rawToChar(as.raw(c(0x43, 0xa2, 0x70, 0x69, 0x61)))
@@ -853,17 +1005,17 @@ audit_main <- function(args = commandArgs(TRUE)) {
     stopifnot(identical(audit_period_date(c("9712", "9801", "2601"), "month"), as.Date(c("1997-12-01", "1998-01-01", "2026-01-01"))))
     audit_equal(audit_bind(list(x, x)), dplyr::bind_rows(x, x))
     cat("Comparator, factor-level, type, and historical-period checks passed.\n")
+    audit_revision_self_test()
     return(invisible(NULL))
   }
   if (length(args) && args[[1L]] %in% c("--worker", "--replay")) {
     audit_assert(length(args) == if (args[[1L]] == "--worker") 4L else 3L,
                  "Worker/replay arguments cannot be combined with a new commit or source run")
-    config <- readRDS(file.path(args[[2L]], "config.rds"))
-    .libPaths(c(config$library, .libPaths()))
-    library(microdatasus)
-    audit_assert(normalizePath(find.package("microdatasus")) == normalizePath(file.path(config$library, "microdatasus")), "Wrong package installation")
+    config <- audit_load_config(args[[2L]])
+    audit_load_package(config)
     capture.output(sessionInfo(), file = file.path(config$root, "session-info.txt"))
     if (args[[1L]] == "--replay") {
+      message(paste(audit_identity(config), collapse = "\n"))
       original <- args[[3L]]
       case <- readRDS(file.path(config$root, "cases", original, "case.rds"))
       case$id <- paste0(original, "-replay-", format(Sys.time(), "%Y%m%dT%H%M%S"))
@@ -886,7 +1038,7 @@ audit_main <- function(args = commandArgs(TRUE)) {
   }
   root <- if (resume) args[[2L]] else Sys.getenv("MICRODATASUS_INTENSIVE_ROOT", file.path(".cache", "intensive", format(Sys.time(), "%Y%m%dT%H%M%SZ", tz = "UTC")))
   if (resume) {
-    config <- readRDS(file.path(root, "config.rds"))
+    config <- audit_load_config(root)
     file.copy(config$runner, file.path(root, paste0("runner-before-resume-", format(Sys.time(), "%H%M%S"), ".R")))
     file.copy("tests/stress/live-intensive.R", config$runner, overwrite = TRUE)
   } else {
@@ -894,8 +1046,8 @@ audit_main <- function(args = commandArgs(TRUE)) {
     config <- audit_setup(root, commit, from_run)
   }
   message("ARTIFACTS: ", config$root)
-  .libPaths(c(config$library, .libPaths()))
-  library(microdatasus)
+  message(paste(audit_identity(config), collapse = "\n"))
+  audit_load_package(config)
   if (!resume && is.null(config$from_run)) {
     audit_supervise(config, action = "discover", limit = 1200)
     audit_assert(file.exists(file.path(config$root, "catalog.rds")), "Discovery did not finish; inspect discovery logs")
