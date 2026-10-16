@@ -6,17 +6,17 @@ Run the live audit from the repository root:
 Rscript --vanilla tests/stress/live-intensive.R
 ```
 
-This command accesses the public DataSUS FTP service. It installs commit
-`c1ad20b2034df021e3eb8105455efb72b8cc5aa5` into an isolated library, samples
+This command accesses the public DataSUS FTP service. It installs the local
+branch's latest commit (`HEAD`) into an isolated library, samples
 approximately 150 complete DBC files, and tests raw downloads, processors,
 cache reuse, provenance, and multi-file aggregation. It does not modify the
 package implementation or use the globally installed `microdatasus` package.
 
-To validate a corrected commit against exactly the saved selection and sources:
+To validate `HEAD` against exactly the saved selection and sources:
 
 ```sh
 Rscript --vanilla tests/stress/live-intensive.R \
-  --commit <SHA> --from-run .cache/intensive/20261014T185652Z
+  --from-run .cache/intensive/20261014T210016Z
 ```
 
 This creates a new run and isolated installation of the selected commit. It
@@ -25,13 +25,32 @@ listings at the transport boundary. No live downloads are allowed in this mode;
 missing or invalid cached sources fail explicitly. Reading, processing, cache
 checks, and aggregation use the selected package normally. Prior reports,
 libraries, and caches are never overwritten. The report identifies the source
-run and records the fully resolved commit. Commit implementation changes before
-running: uncommitted edits are not part of `git archive`.
+run and records the fully resolved commit. The requested reference is resolved
+once before installation. Startup output, `config.rds`, and the report identify
+the requested reference, full SHA, installed package version, isolated library,
+and whether the run uses live downloads or frozen sources.
 
-`--commit <SHA>` alone starts a new live sample using that revision. Without
-`--commit`, the original pinned revision remains the default. `--resume` and
+Tracked files with uncommitted changes produce a warning and the audit
+continues using the selected commit. Commit package changes before running:
+uncommitted package edits are not part of `git archive`. Untracked files do not
+trigger this warning. The executor itself is copied from the local script into
+the run directory, independently of the package revision being tested.
+
+`--commit <reference>` alone starts a new live sample using that revision; it
+can also be combined with `--from-run`. Invalid references fail before
+installation or downloads. For example, to test the historical baseline:
+
+```sh
+Rscript --vanilla tests/stress/live-intensive.R \
+  --commit c1ad20b2034df021e3eb8105455efb72b8cc5aa5
+```
+
+Without `--commit`, `HEAD` is used. `--resume` and
 `--replay` retain the installation chosen for their original run; they cannot
-be combined with a new commit or source run.
+be combined with a new commit or source run. This remains true after the local
+branch advances. Older saved configurations remain supported; their original
+requested reference is marked as unrecorded and their version is read from
+the saved installation.
 
 The seed is `20260922`. The sample covers the six system families, all available
 non-SINAN identifiers, 20 randomly selected SINAN identifiers, and the 16
@@ -105,8 +124,12 @@ integer counts of at least two to exercise other sizes; these are test sizes,
 not limits imposed by the package. This controlled check does not establish
 that every system currently publishes multipart files.
 
-Run the harness's small offline checks with:
+Run the harness's small offline checks with (Git must be available):
 
 ```sh
 Rscript --vanilla tests/stress/live-intensive.R --self-test
 ```
+
+These checks include temporary Git repositories, revision selection, warnings
+for uncommitted tracked files, and legacy resume/replay behavior. They also run
+in the existing macOS, Linux, and Windows CI matrix without contacting DataSUS.

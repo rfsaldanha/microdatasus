@@ -2,6 +2,11 @@
 
 ## Development
 
+* Makes new intensive stress audits test `HEAD` by default, while retaining
+  `--commit` for historical revisions. Warns about uncommitted tracked files
+  and reports the selected SHA, actual installed version, isolated library,
+  and live/frozen mode. Existing runs keep their original installation when
+  resumed or replayed. Adds offline Git-selection regressions to the CI matrix.
 * Fixes historical SINASC dictionary extraction on systems that reject legacy
   ZIP filename bytes. Extracts only required members atomically and reuses
   verified source archives while repairing incomplete extracted files.

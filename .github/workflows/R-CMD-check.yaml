@@ -45,6 +45,9 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
 
+      - name: Check offline stress harness
+        run: Rscript --vanilla tests/stress/live-intensive.R --self-test
+
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
