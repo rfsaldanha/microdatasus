@@ -687,10 +687,13 @@ audit_supervise <- function(config, case = NULL, action = "case", limit = 600) {
   directory <- file.path(config$root, "cases", id)
   dir.create(directory, recursive = TRUE, showWarnings = FALSE)
   if (!is.null(case)) audit_save(case, file.path(directory, "case.rds"))
-  args <- c(config$runner, "--worker", config$root, action, id)
+  args <- c("--vanilla", config$runner, "--worker", config$root, action, id)
+  # Keep the selected package first, followed by the parent's dependency
+  # libraries, including paths added with .libPaths() in the current session.
+  libraries <- paste(unique(c(config$library, .libPaths())), collapse = .Platform$path.sep)
   child <- processx::process$new(file.path(R.home("bin"), "Rscript"), args,
     stdout = file.path(directory, "stdout.log"), stderr = file.path(directory, "stderr.log"),
-    cleanup_tree = TRUE, env = c("R_LIBS_USER" = config$library, "TMPDIR" = config$tmp))
+    cleanup_tree = TRUE, env = c("R_LIBS" = libraries, "TMPDIR" = config$tmp))
   started <- Sys.time(); peak <- 0; reason <- NULL
   repeat {
     child$poll_io(1000)
@@ -988,6 +991,48 @@ audit_revision_self_test <- function() {
   cat("Git revision, dirty-worktree, installed-version, and legacy resume/replay checks passed.\n")
 }
 
+audit_worker_self_test <- function() {
+  root <- tempfile("audit-worker-")
+  dir.create(root)
+  root <- normalizePath(root)
+  previous <- .libPaths()
+  on.exit({ .libPaths(previous); unlink(root, recursive = TRUE) }, add = TRUE)
+  config <- list(root = root, library = file.path(root, "isolated"),
+    tmp = file.path(root, "tmp"), runner = file.path(root, "runner.R"),
+    memory_limit = 6e9, disk_limit = 20e9, deadline = Sys.time() + 120)
+  dependencies <- file.path(root, "parent dependencies")
+  source <- file.path(root, "auditlibraryfixture")
+  for (path in c(config$library, config$tmp, dependencies, source)) dir.create(path)
+  dir.create(file.path(source, "R"))
+  writeLines(c("Package: auditlibraryfixture", "Version: 1.0.0",
+    "Title: Offline Worker Library Fixture",
+    "Description: Checks dependency loading in a stress-test subprocess.",
+    "License: MIT", "Author: Audit self-test",
+    "Maintainer: Audit self-test <audit@example.invalid>"), file.path(source, "DESCRIPTION"))
+  writeLines("export(check_dependency)", file.path(source, "NAMESPACE"))
+  writeLines('check_dependency <- function() "dependency loaded"', file.path(source, "R", "fixture.R"))
+  install <- processx::run(file.path(R.home("bin"), "R"),
+    c("CMD", "INSTALL", "--no-multiarch", paste0("--library=", dependencies), source),
+    error_on_status = FALSE, timeout = 60000)
+  audit_assert(install$status == 0L, paste(install$stdout, install$stderr))
+  # This library is visible only through the parent's runtime .libPaths();
+  # it is not a default library and is not advertised in the environment.
+  .libPaths(c(config$library, dependencies, previous))
+  writeLines(c(
+    "root <- commandArgs(TRUE)[[2L]]",
+    "library(auditlibraryfixture)",
+    'stopifnot(identical(check_dependency(), "dependency loaded"))',
+    'stopifnot(identical(normalizePath(.libPaths()[[1L]]), normalizePath(file.path(root, "isolated"))))',
+    'saveRDS(find.package("auditlibraryfixture"), file.path(root, "loaded-dependency.rds"))'
+  ), config$runner)
+  state <- audit_supervise(config, action = "library-check", limit = 60)
+  log <- file.path(root, "cases", "library-check", "stderr.log")
+  audit_assert(is.null(state$status), paste(readLines(log, warn = FALSE), collapse = "\n"))
+  stopifnot(identical(normalizePath(readRDS(file.path(root, "loaded-dependency.rds"))),
+                      normalizePath(file.path(dependencies, "auditlibraryfixture"))))
+  cat("Worker dependency-library inheritance and isolated-library precedence checks passed.\n")
+}
+
 audit_main <- function(args = commandArgs(TRUE)) {
   if (length(args) && args[[1L]] == "--self-test") {
     invalid_name <- rawToChar(as.raw(c(0x43, 0xa2, 0x70, 0x69, 0x61)))
@@ -1006,6 +1051,7 @@ audit_main <- function(args = commandArgs(TRUE)) {
     audit_equal(audit_bind(list(x, x)), dplyr::bind_rows(x, x))
     cat("Comparator, factor-level, type, and historical-period checks passed.\n")
     audit_revision_self_test()
+    audit_worker_self_test()
     return(invisible(NULL))
   }
   if (length(args) && args[[1L]] %in% c("--worker", "--replay")) {
@@ -1050,7 +1096,8 @@ audit_main <- function(args = commandArgs(TRUE)) {
   audit_load_package(config)
   if (!resume && is.null(config$from_run)) {
     audit_supervise(config, action = "discover", limit = 1200)
-    audit_assert(file.exists(file.path(config$root, "catalog.rds")), "Discovery did not finish; inspect discovery logs")
+    audit_assert(file.exists(file.path(config$root, "catalog.rds")),
+                 paste("Discovery did not finish; inspect", file.path(config$root, "cases", "discover", "stderr.log")))
   }
   plan <- if (resume) readRDS(file.path(root, "plan.rds")) else {
     if (is.null(config$from_run)) audit_select(config) else audit_import_run(config)

@@ -11,6 +11,8 @@ branch's latest commit (`HEAD`) into an isolated library, samples
 approximately 150 complete DBC files, and tests raw downloads, processors,
 cache reuse, provenance, and multi-file aggregation. It does not modify the
 package implementation or use the globally installed `microdatasus` package.
+Workers run with `--vanilla` and inherit the parent R session's library paths
+for dependencies, with the isolated package library taking precedence.
 
 To validate `HEAD` against exactly the saved selection and sources:
 
@@ -131,5 +133,6 @@ Rscript --vanilla tests/stress/live-intensive.R --self-test
 ```
 
 These checks include temporary Git repositories, revision selection, warnings
-for uncommitted tracked files, and legacy resume/replay behavior. They also run
-in the existing macOS, Linux, and Windows CI matrix without contacting DataSUS.
+for uncommitted tracked files, legacy resume/replay behavior, and dependency
+loading from the parent session's libraries in a real worker. They also run in
+the existing macOS, Linux, and Windows CI matrix without contacting DataSUS.
