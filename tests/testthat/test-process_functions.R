@@ -50,6 +50,8 @@ test_that("sim do works", {
 test_that("sinasc works", {
   sinasc <- process_sinasc(data = sinasc_sample, municipality_data = TRUE)
   expect_true("tbl_df" %in% class(sinasc))
+  expect_type(sinasc$PESO, "integer")
+  expect_equal(sum(!is.na(sinasc$PESO)), 98L)
 })
 
 test_that("sinan-chikungunya at 2022", {
